@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunting Calls Perfection | Master the Hunt</title>
+    <meta name="description" content="Refine your animal calling techniques with real-time audio analysis and feedback.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <div class="logo-container">
+            <img src="../assets/images/logo.png" alt="Hunting Calls Logo">
+            <span class="logo-text">HUNTING CALLS</span>
+        </div>
+        <div class="nav-links">
+            <a href="https://github.com/user/hunting_calls" class="btn btn-outline">GitHub</a>
+        </div>
+    </nav>
+
+    <header>
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <h1>PERFECT YOUR<br><span style="color: var(--accent);">CALL.</span></h1>
+            <p>Advanced real-time audio analysis and AI feedback to help you master animal calling techniques for elk, turkey, and more.</p>
+            <div class="cta-group">
+                <a href="#features" class="btn btn-primary">Explore Features</a>
+                <a href="https://github.com/user/hunting_calls" class="btn btn-outline">View Source Code</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="features">
+        <div class="section-title">
+            <h2>Precision Engineered</h2>
+            <p>Tools designed for the modern hunter who demands perfection.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-microphone-lines"></i>
+                <h3>Studio Quality Capture</h3>
+                <p>Native PCM16 WAV recording across all platforms ensures no detail of your call is lost.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-wave-square"></i>
+                <h3>Frequency Analysis</h3>
+                <p>Immediate visual feedback with live waveform and amplitude tracking using FFTEA technology.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-trophy"></i>
+                <h3>Comparison Scoring</h3>
+                <p>Compare your calls against professional reference tracks and receive instant accuracy scores.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-user-shield"></i>
+                <h3>Secure Profiles</h3>
+                <p>Track your development over time with local profile persistence and detailed performance stats.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Hunting Calls Perfection. All rights reserved.</p>
+        <p style="margin-top: 10px; font-size: 0.8rem;">Inspired by the wild. Built for the challenge.</p>
+    </footer>
+
+    <script>
+        // Subtle scroll reveal effect
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = "1";
+                    entry.target.style.transform = "translateY(0)";
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.style.opacity = "0";
+            card.style.transform = "translateY(30px)";
+            card.style.transition = "all 0.6s ease-out";
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
