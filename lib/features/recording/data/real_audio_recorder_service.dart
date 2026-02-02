@@ -70,7 +70,7 @@ class RealAudioRecorderService implements AudioRecorderService {
 
       await _recorder!.start(config, path: filePath);
 
-      _amplitudeSubscription = _recorder!.onAmplitudeChanged(const Duration(milliseconds: 100)).listen((amp) {
+      _amplitudeSubscription = _recorder!.onAmplitudeChanged(const Duration(milliseconds: 50)).listen((amp) {
         double normalized = (amp.current + 160) / 160.0;
         if (normalized < 0) normalized = 0;
         if (normalized > 1) normalized = 1;

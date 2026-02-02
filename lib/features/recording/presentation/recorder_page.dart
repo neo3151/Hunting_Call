@@ -3,6 +3,7 @@ import '../../../../injection_container.dart';
 import '../domain/audio_recorder_service.dart';
 import '../../rating/presentation/rating_screen.dart';
 import '../../library/data/mock_reference_database.dart';
+import 'widgets/live_visualizer.dart';
 
 class RecorderPage extends StatefulWidget {
   final String userId;
@@ -127,23 +128,9 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
           ),
           const SizedBox(height: 40),
 
-           SizedBox(
-            height: 100,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: amplitudes.map((amp) {
-                return Container(
-                  width: 5,
-                  height: 10 + (amp * 80),
-                  margin: const EdgeInsets.symmetric(horizontal: 1),
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                );
-              }).toList(),
-            ),
+          LiveVisualizer(
+            amplitudes: amplitudes,
+            isRecording: isRecording,
           ),
           const SizedBox(height: 40),
           GestureDetector(
