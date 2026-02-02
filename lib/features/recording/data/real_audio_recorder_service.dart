@@ -11,6 +11,10 @@ class RealAudioRecorderService implements AudioRecorderService {
   final _amplitudeController = StreamController<double>.broadcast();
   StreamSubscription? _recorderSubscription;
   bool _isRecorderInit = false;
+  String? _lastError;
+
+  @override
+  String? get lastError => _lastError;
   
   // Linux Native Recording
   Process? _linuxRecorderProcess;
@@ -26,17 +30,15 @@ class RealAudioRecorderService implements AudioRecorderService {
   @override
   Future<void> init() async {
     if (_isRecorderInit) return;
+    _lastError = null;
     
-    // Linux: No init needed for 'arecord' command, just checking permissions theoretically
+    // Linux: No init needed for 'arecord' command
     if (Platform.isLinux) {
-       _isRecorderInit = true; // We assume arecord works if the OS works
+       _isRecorderInit = true;
        return;
     }
 
-    // Mobile/Other: Init Flutter Sound
     try {
-      // Permission handler is primarily for Mobile (iOS/Android)
-      // On Windows/Linux, permissions are usually managed by the OS or unnecessary for Win32
       if (Platform.isAndroid || Platform.isIOS) {
          final status = await Permission.microphone.request();
          if (status != PermissionStatus.granted) {
@@ -50,28 +52,23 @@ class RealAudioRecorderService implements AudioRecorderService {
       await _recorder.setSubscriptionDuration(const Duration(milliseconds: 100));
       debugPrint("Real Recorder: Initialized");
     } catch (e) {
-      debugPrint("Real Recorder Init Error: $e");
+      _lastError = "Init Error: $e";
+      debugPrint(_lastError);
     }
   }
 
   @override
   Future<bool> startRecorder(String path) async {
+    _lastError = null;
     if (!_isRecorderInit) await init();
+    if (!_isRecorderInit) return false;
 
     try {
       final tempDir = await getTemporaryDirectory();
       final filePath = '${tempDir.path}/hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
 
-      // --- LINUX NATIVE STRATEGY ---
       if (Platform.isLinux) {
-        // Use 'arecord' system command to bypass plugin issues
-        // -f S16_LE: Signed 16-bit Little Endian
-        // -r 44100: 44.1kHz
-        // -c 1: Mono
-        // -t wav: WAV format
         _linuxRecordingPath = filePath;
-        debugPrint("Starting arecord to: $filePath");
-        
         _linuxRecorderProcess = await Process.start('arecord', [
           '-f', 'S16_LE',
           '-r', '44100',
@@ -80,18 +77,13 @@ class RealAudioRecorderService implements AudioRecorderService {
           filePath
         ]);
         
-        // Simulate visualizer since we can't easily parse stdout stream in real-time without blocking
         _linuxVisualizerTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-           // Create a "breathing" effect + random noise to look active
            double noise = (DateTime.now().millisecond % 100) / 200.0;
            _amplitudeController.add(0.3 + noise); 
         });
         
         return true;
       }
-
-      // --- MOBILE / STANDARD STRATEGY ---
-      if (!_isRecorderInit) return false;
 
       await _recorder.startRecorder(
         toFile: filePath,
@@ -105,10 +97,10 @@ class RealAudioRecorderService implements AudioRecorderService {
         _amplitudeController.add(amp);
       });
       
-      debugPrint("Real Recorder: Started recording to $filePath");
       return true;
     } catch (e) {
-      debugPrint("Real Recorder Start Error: $e");
+      _lastError = "Start Error: $e";
+      debugPrint(_lastError);
       return false;
     }
   }

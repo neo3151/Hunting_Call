@@ -76,8 +76,13 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
       if (success) {
          setState(() => isRecording = true);
       } else {
+         final error = recorder.lastError ?? "Unknown Error";
          ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text("Could not start recorder. Is your microphone enabled?")),
+             SnackBar(
+               content: Text("Recording Failed: $error"),
+               backgroundColor: Colors.red,
+               duration: const Duration(seconds: 5),
+             ),
          );
       }
     }

@@ -15,6 +15,9 @@ class MockAudioRecorderService implements AudioRecorderService {
   Stream<double> get onAmplitudeChanged => _amplitudeController.stream;
 
   @override
+  String? get lastError => null;
+
+  @override
   Future<void> init() async {
     // Simulate perm request
     // await Future.delayed(const Duration(milliseconds: 200));

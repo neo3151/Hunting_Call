@@ -6,5 +6,6 @@ abstract class AudioRecorderService {
   Future<String?> stopRecorder();
   Stream<double> get onAmplitudeChanged;
   bool get isRecording;
+  String? get lastError;
   void dispose();
 }
