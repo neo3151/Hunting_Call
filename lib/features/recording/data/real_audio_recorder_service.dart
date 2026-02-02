@@ -1,28 +1,23 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import '../domain/audio_recorder_service.dart';
 
 class RealAudioRecorderService implements AudioRecorderService {
-  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  final AudioRecorder _recorder = AudioRecorder();
   final _amplitudeController = StreamController<double>.broadcast();
-  StreamSubscription? _recorderSubscription;
+  StreamSubscription? _amplitudeSubscription;
   bool _isRecorderInit = false;
   String? _lastError;
+  String? _currentPath;
 
   @override
   String? get lastError => _lastError;
-  
-  // Linux Native Recording
-  Process? _linuxRecorderProcess;
-  Timer? _linuxVisualizerTimer;
-  String? _linuxRecordingPath;
 
   @override
-  bool get isRecording => Platform.isLinux ? (_linuxRecorderProcess != null) : _recorder.isRecording;
+  bool get isRecording => _isRecorderInit; // In 'record' plugin, we check via state later but this is for UI toggle
 
   @override
   Stream<double> get onAmplitudeChanged => _amplitudeController.stream;
@@ -32,25 +27,15 @@ class RealAudioRecorderService implements AudioRecorderService {
     if (_isRecorderInit) return;
     _lastError = null;
     
-    // Linux: No init needed for 'arecord' command
-    if (Platform.isLinux) {
-       _isRecorderInit = true;
-       return;
-    }
-
     try {
-      if (Platform.isAndroid || Platform.isIOS) {
-         final status = await Permission.microphone.request();
-         if (status != PermissionStatus.granted) {
-            throw Exception('Microphone permission denied');
-         }
+      final hasPermission = await _recorder.hasPermission();
+      if (!hasPermission) {
+        _lastError = "Microphone permission denied";
+        debugPrint(_lastError);
+        return;
       }
-      
-      debugPrint("Real Recorder: Opening recorder session...");
-      await _recorder.openRecorder();
       _isRecorderInit = true;
-      await _recorder.setSubscriptionDuration(const Duration(milliseconds: 100));
-      debugPrint("Real Recorder: Initialized");
+      debugPrint("Real Recorder: Initialized (record package)");
     } catch (e) {
       _lastError = "Init Error: $e";
       debugPrint(_lastError);
@@ -64,39 +49,32 @@ class RealAudioRecorderService implements AudioRecorderService {
     if (!_isRecorderInit) return false;
 
     try {
-      final tempDir = await getTemporaryDirectory();
-      final filePath = '${tempDir.path}/hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
-
-      if (Platform.isLinux) {
-        _linuxRecordingPath = filePath;
-        _linuxRecorderProcess = await Process.start('arecord', [
-          '-f', 'S16_LE',
-          '-r', '44100',
-          '-c', '1',
-          '-t', 'wav',
-          filePath
-        ]);
-        
-        _linuxVisualizerTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-           double noise = (DateTime.now().millisecond % 100) / 200.0;
-           _amplitudeController.add(0.3 + noise); 
-        });
-        
-        return true;
+      if (await _recorder.isRecording()) {
+        await _recorder.stop();
       }
 
-      await _recorder.startRecorder(
-        toFile: filePath,
-        codec: Codec.pcm16WAV, 
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
+      _currentPath = filePath;
+
+      const config = RecordConfig(
+        encoder: AudioEncoder.wav,
+        sampleRate: 44100,
+        bitRate: 128000,
+        numChannels: 1,
       );
 
-      _recorderSubscription = _recorder.onProgress!.listen((e) {
-        double amp = (e.decibels ?? 0) / 120.0;
-        if (amp < 0) amp = 0;
-        if (amp > 1) amp = 1;
-        _amplitudeController.add(amp);
+      await _recorder.start(config, path: filePath);
+
+      _amplitudeSubscription = _recorder.onAmplitudeChanged(const Duration(milliseconds: 100)).listen((amp) {
+        // amp.current is in dB, usually from -160 to 0
+        double normalized = (amp.current + 160) / 160.0;
+        if (normalized < 0) normalized = 0;
+        if (normalized > 1) normalized = 1;
+        _amplitudeController.add(normalized);
       });
       
+      debugPrint("Real Recorder: Started recording to $filePath");
       return true;
     } catch (e) {
       _lastError = "Start Error: $e";
@@ -108,35 +86,22 @@ class RealAudioRecorderService implements AudioRecorderService {
   @override
   Future<String?> stopRecorder() async {
     try {
-      // --- LINUX NATIVE STRATEGY ---
-      if (Platform.isLinux) {
-        _linuxRecorderProcess?.kill();
-        _linuxRecorderProcess = null;
-        _linuxVisualizerTimer?.cancel();
-        _amplitudeController.add(0.0);
-        debugPrint("Real Recorder (Linux): Stopped. Saved at $_linuxRecordingPath");
-        return _linuxRecordingPath;
-      }
-
-      // --- MOBILE STRATEGY ---
-      final path = await _recorder.stopRecorder();
-      _recorderSubscription?.cancel();
+      final path = await _recorder.stop();
+      _amplitudeSubscription?.cancel();
       _amplitudeController.add(0.0);
-      return path;
+      debugPrint("Real Recorder: Stopped. Path: $path");
+      return path ?? _currentPath;
     } catch (e) {
-      debugPrint("Real Recorder Stop Error: $e");
+      _lastError = "Stop Error: $e";
+      debugPrint(_lastError);
       return null;
     }
   }
 
   @override
   void dispose() {
-    if (Platform.isLinux) {
-       _linuxRecorderProcess?.kill();
-       _linuxVisualizerTimer?.cancel();
-    }
-    _recorder.closeRecorder();
-    _recorderSubscription?.cancel();
+    _recorder.dispose();
+    _amplitudeSubscription?.cancel();
     _amplitudeController.close();
   }
 }
