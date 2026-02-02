@@ -1,0 +1,47 @@
+name: hunting_calls_perfection
+description: A mobile app to help hunters perfect their animal calls.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  provider: ^6.0.0
+  
+  # Core Utilities
+  equatable: ^2.0.5
+  get_it: ^9.2.0
+  
+  # Audio
+  flutter_sound: ^9.2.13
+  permission_handler: ^12.0.1
+  
+  # UI
+  google_fonts: ^6.3.0
+  flutter_svg: ^2.0.7
+  intl: ^0.18.0
+  
+  # Backend / Data
+  # firebase_core: ^2.14.0  # Commented out until setup
+  # firebase_auth: ^4.6.3   # Commented out until setup
+  # cloud_firestore: ^4.8.1 # Commented out until setup
+  json_annotation: ^4.8.1
+  fftea: ^1.5.0+1
+  shared_preferences: ^2.5.4
+  path_provider: ^2.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.6
+  json_serializable: ^6.7.1
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true

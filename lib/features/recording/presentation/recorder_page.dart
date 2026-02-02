@@ -1,0 +1,195 @@
+import 'package:flutter/material.dart';
+import '../../../../injection_container.dart';
+import '../domain/audio_recorder_service.dart';
+import '../../rating/presentation/rating_screen.dart';
+import '../../library/data/mock_reference_database.dart';
+
+class RecorderPage extends StatefulWidget {
+  final String userId;
+  const RecorderPage({super.key, required this.userId});
+
+  @override
+  State<RecorderPage> createState() => _RecorderPageState();
+}
+
+class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderStateMixin {
+  final recorder = sl<AudioRecorderService>();
+  bool isRecording = false;
+  List<double> amplitudes = [];
+  String selectedCallId = MockReferenceDatabase.calls.first.id;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(_pulseController);
+
+    recorder.init();
+    recorder.onAmplitudeChanged.listen((amp) {
+      if (mounted) {
+        setState(() {
+          amplitudes.add(amp);
+          if (amplitudes.length > 50) amplitudes.removeAt(0);
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // BUG FIX: Do NOT dispose the singleton service here. It kills the stream controller for future visits.
+    // Instead, just ensure recording is stopped.
+    if (isRecording) {
+      recorder.stopRecorder(); 
+    }
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  void _toggleRecording() async {
+    if (isRecording) {
+      final path = await recorder.stopRecorder();
+      setState(() => isRecording = false);
+      
+      if (mounted) {
+        if (path != null && path.isNotEmpty && !path.contains("not open")) {
+           Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => RatingScreen(
+                audioPath: path, 
+                animalId: selectedCallId,
+                userId: widget.userId,
+              ))
+           );
+        } else {
+           ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text("Recording Failed: Could not save audio file.")),
+           );
+        }
+      }
+    } else {
+      final success = await recorder.startRecorder('temp_path'); 
+      if (success) {
+         setState(() => isRecording = true);
+      } else {
+         ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text("Could not start recorder. Is your microphone enabled?")),
+         );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Record Call')),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Animal Selection Dropdown
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: selectedCallId,
+                  hint: const Text("Select Call to Practice"),
+                  onChanged: isRecording ? null : (String? newValue) {
+                    setState(() {
+                      selectedCallId = newValue!;
+                    });
+                  },
+                  items: MockReferenceDatabase.calls.map((call) {
+                    return DropdownMenuItem<String>(
+                      value: call.id,
+                      child: Text(call.animalName, style: const TextStyle(fontWeight: FontWeight.w500)),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+
+           SizedBox(
+            height: 100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: amplitudes.map((amp) {
+                return Container(
+                  width: 5,
+                  height: 10 + (amp * 80),
+                  margin: const EdgeInsets.symmetric(horizontal: 1),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 40),
+          GestureDetector(
+            onTap: _toggleRecording,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Pulsing Ring
+                if (isRecording)
+                  ScaleTransition(
+                    scale: _pulseAnimation,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.red.withOpacity(0.5), width: 4),
+                      ),
+                    ),
+                  ),
+                // Main Button
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: isRecording ? Colors.red : Colors.green,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isRecording ? Colors.red : Colors.green).withOpacity(0.4),
+                        blurRadius: 15,
+                        spreadRadius: 5,
+                      )
+                    ],
+                  ),
+                  child: Icon(
+                    isRecording ? Icons.stop : Icons.mic,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            isRecording ? 'Recording...' : 'Tap to Record',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ],
+      ),
+    );
+  }
+}
