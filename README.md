@@ -57,7 +57,11 @@
 
 ## 📸 Screenshots
 
-*(Screenshots coming soon!)*
+<p align="center">
+  <img src="assets/images/screenshots/login.png" width="250" alt="Login Screen">
+  <img src="assets/images/screenshots/home.png" width="250" alt="Dashboard">
+  <img src="assets/images/screenshots/recorder.png" width="250" alt="Recorder Screen">
+</p>
 
 ## 📄 License
 
