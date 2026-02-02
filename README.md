@@ -41,7 +41,7 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/user/hunting_calls.git
+   git clone https://github.com/neo3151/Hunting_Call.git
    cd hunting_calls
    ```
 

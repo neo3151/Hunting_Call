@@ -57,8 +57,14 @@ class RealAudioRecorderService implements AudioRecorderService {
     try {
       _recorder = AudioRecorder();
 
-      final tempDir = await getTemporaryDirectory();
-      final filePath = '${tempDir.path}/hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
+      String filePath;
+      if (kIsWeb) {
+        // On web, we don't need a file path; the plugin handles it in-memory
+        filePath = 'recording.wav'; 
+      } else {
+        final tempDir = await getTemporaryDirectory();
+        filePath = '${tempDir.path}/hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
+      }
       _currentPath = filePath;
 
       const config = RecordConfig(
