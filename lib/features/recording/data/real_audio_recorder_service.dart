@@ -35,12 +35,16 @@ class RealAudioRecorderService implements AudioRecorderService {
 
     // Mobile/Other: Init Flutter Sound
     try {
-      if (!Platform.isLinux) {
+      // Permission handler is primarily for Mobile (iOS/Android)
+      // On Windows/Linux, permissions are usually managed by the OS or unnecessary for Win32
+      if (Platform.isAndroid || Platform.isIOS) {
          final status = await Permission.microphone.request();
          if (status != PermissionStatus.granted) {
-            throw Exception('Permission denied');
+            throw Exception('Microphone permission denied');
          }
       }
+      
+      debugPrint("Real Recorder: Opening recorder session...");
       await _recorder.openRecorder();
       _isRecorderInit = true;
       await _recorder.setSubscriptionDuration(const Duration(milliseconds: 100));
