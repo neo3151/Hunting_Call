@@ -6,10 +6,10 @@ import 'package:path_provider/path_provider.dart';
 import '../domain/audio_recorder_service.dart';
 
 class RealAudioRecorderService implements AudioRecorderService {
-  final AudioRecorder _recorder = AudioRecorder();
+  AudioRecorder? _recorder;
   final _amplitudeController = StreamController<double>.broadcast();
   StreamSubscription? _amplitudeSubscription;
-  bool _isRecorderInit = false;
+  bool _isInitialized = false;
   String? _lastError;
   String? _currentPath;
 
@@ -17,41 +17,45 @@ class RealAudioRecorderService implements AudioRecorderService {
   String? get lastError => _lastError;
 
   @override
-  bool get isRecording => _isRecorderInit; // In 'record' plugin, we check via state later but this is for UI toggle
+  bool get isRecording => _recorder != null; 
 
   @override
   Stream<double> get onAmplitudeChanged => _amplitudeController.stream;
 
   @override
   Future<void> init() async {
-    if (_isRecorderInit) return;
     _lastError = null;
-    
     try {
-      final hasPermission = await _recorder.hasPermission();
+      // We create a temporary recorder just to check permission
+      final tempRecorder = AudioRecorder();
+      final hasPermission = await tempRecorder.hasPermission();
+      await tempRecorder.dispose();
+      
       if (!hasPermission) {
         _lastError = "Microphone permission denied";
-        debugPrint(_lastError);
         return;
       }
-      _isRecorderInit = true;
-      debugPrint("Real Recorder: Initialized (record package)");
+      _isInitialized = true;
     } catch (e) {
       _lastError = "Init Error: $e";
-      debugPrint(_lastError);
     }
   }
 
   @override
   Future<bool> startRecorder(String path) async {
     _lastError = null;
-    if (!_isRecorderInit) await init();
-    if (!_isRecorderInit) return false;
+    
+    // 1. Full cleanup of any previous session
+    await _cleanup();
+    
+    if (!_isInitialized) await init();
+    if (!_isInitialized) return false;
+
+    // 2. Tiny delay to allow Windows to release the audio stream
+    await Future.delayed(const Duration(milliseconds: 150));
 
     try {
-      if (await _recorder.isRecording()) {
-        await _recorder.stop();
-      }
+      _recorder = AudioRecorder();
 
       final tempDir = await getTemporaryDirectory();
       final filePath = '${tempDir.path}/hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
@@ -64,21 +68,19 @@ class RealAudioRecorderService implements AudioRecorderService {
         numChannels: 1,
       );
 
-      await _recorder.start(config, path: filePath);
+      await _recorder!.start(config, path: filePath);
 
-      _amplitudeSubscription = _recorder.onAmplitudeChanged(const Duration(milliseconds: 100)).listen((amp) {
-        // amp.current is in dB, usually from -160 to 0
+      _amplitudeSubscription = _recorder!.onAmplitudeChanged(const Duration(milliseconds: 100)).listen((amp) {
         double normalized = (amp.current + 160) / 160.0;
         if (normalized < 0) normalized = 0;
         if (normalized > 1) normalized = 1;
         _amplitudeController.add(normalized);
       });
       
-      debugPrint("Real Recorder: Started recording to $filePath");
       return true;
     } catch (e) {
       _lastError = "Start Error: $e";
-      debugPrint(_lastError);
+      await _cleanup();
       return false;
     }
   }
@@ -86,23 +88,44 @@ class RealAudioRecorderService implements AudioRecorderService {
   @override
   Future<String?> stopRecorder() async {
     try {
-      final path = await _recorder.stop();
-      _amplitudeSubscription?.cancel();
-      _amplitudeController.add(0.0);
-      debugPrint("Real Recorder: Stopped. Path: $path");
+      if (_recorder == null) return _currentPath;
+      
+      final path = await _recorder!.stop();
+      
+      // 3. Give the OS time to finish writing the file handle
+      await Future.delayed(const Duration(milliseconds: 150));
+      
       return path ?? _currentPath;
     } catch (e) {
       _lastError = "Stop Error: $e";
-      debugPrint(_lastError);
       return null;
+    } finally {
+      // 4. Force disposal immediately after stopping
+      await _cleanup();
+    }
+  }
+
+  Future<void> _cleanup() async {
+    _amplitudeSubscription?.cancel();
+    _amplitudeSubscription = null;
+    _amplitudeController.add(0.0);
+    
+    if (_recorder != null) {
+      try {
+        if (await _recorder!.isRecording()) {
+          await _recorder!.stop();
+        }
+      } catch (_) {}
+      await _recorder!.dispose();
+      _recorder = null;
     }
   }
 
   @override
   void dispose() {
-    _recorder.dispose();
-    _amplitudeSubscription?.cancel();
+    _cleanup();
     _amplitudeController.close();
   }
 }
+
 
