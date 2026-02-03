@@ -3,7 +3,7 @@ import '../../rating/domain/rating_model.dart';
 import '../../rating/domain/rating_service.dart';
 import '../domain/frequency_analyzer.dart';
 import '../../library/data/mock_reference_database.dart';
-import '../../library/domain/reference_call_model.dart';
+
 import '../../profile/data/profile_repository.dart';
 
 class RealRatingService implements RatingService {

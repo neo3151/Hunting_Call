@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'dart:math';
-import 'dart:typed_data';
+
+
 import 'package:fftea/fftea.dart';
 import 'package:flutter/foundation.dart';
 import '../domain/frequency_analyzer.dart';
@@ -25,7 +25,7 @@ class FFTEAFrequencyAnalyzer implements FrequencyAnalyzer {
     // Little-endian 16-bit integer -> -1.0 to 1.0 double
     final numSamples = (bytes.length - 44) ~/ 2;
     // Limit processing to first ~4 seconds (approx 180k samples at 44.1kHz) to avoid OOM on mobile
-    final maxSamples = min(numSamples, 131072); // Power of 2 (2^17) typical
+
     
     // Find next power of 2 for chunk length usually, 
     // but FFTEA handles arbitrary sizes by padding or we just take a chunk.
@@ -51,7 +51,7 @@ class FFTEAFrequencyAnalyzer implements FrequencyAnalyzer {
 
     // 3. Run FFT
     final stft = STFT(chunkLength, Window.hanning(chunkLength));
-    final spectrogram = stft.run(signal, (freq) {}); // simple run?
+    stft.run(signal, (freq) {}); // simple run?
 
     // FFTEA's API for simple spectral analysis:
     final fft = FFT(processLength);

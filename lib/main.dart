@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'injection_container.dart' as di;
 import 'core/theme/theme_notifier.dart';
 import 'core/presentation/theme_switch_floating_button.dart';

@@ -100,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: _getScoreColor(item.result.score).withOpacity(0.2),
+                                backgroundColor: _getScoreColor(item.result.score).withValues(alpha: 0.2),
                                 child: Text(item.result.score.toStringAsFixed(0), style: TextStyle(color: _getScoreColor(item.result.score), fontWeight: FontWeight.bold)),
                               ),
                               title: Text(item.animalId.toUpperCase()), // We should map ID to Name later

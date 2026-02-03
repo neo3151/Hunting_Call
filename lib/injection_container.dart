@@ -3,17 +3,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'features/profile/data/local_profile_data_source.dart';
 import 'features/auth/data/mock_auth_repository.dart';
 import 'features/auth/domain/auth_repository.dart';
-import 'features/recording/data/mock_audio_recorder_service.dart'; // fallback
 import 'features/recording/data/real_audio_recorder_service.dart';
 import 'features/recording/domain/audio_recorder_service.dart';
-import 'features/rating/data/mock_rating_service.dart'; // Keep for reference or fallback
 import 'features/rating/domain/rating_service.dart';
 import 'features/analysis/data/real_rating_service.dart';
 import 'features/analysis/data/fftea_frequency_analyzer.dart';
 import 'features/analysis/domain/frequency_analyzer.dart';
 
 import 'features/profile/data/profile_repository.dart';
-import 'features/profile/domain/profile_model.dart';
 
 final sl = GetIt.instance;
 

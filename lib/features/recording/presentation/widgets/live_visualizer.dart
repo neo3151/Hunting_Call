@@ -44,7 +44,7 @@ class _VisualizerPainter extends CustomPainter {
     if (amplitudes.isEmpty) return;
 
     final paint = Paint()
-      ..color = isRecording ? color : color.withOpacity(0.3)
+      ..color = isRecording ? color : color.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill
       ..strokeCap = StrokeCap.round;
 

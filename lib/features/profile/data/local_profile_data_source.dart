@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../rating/domain/rating_model.dart';
+
 import '../domain/profile_model.dart';
 
 abstract class ProfileDataSource {
@@ -63,7 +63,9 @@ class LocalProfileDataSource implements ProfileDataSource {
     
     // Recalculate stats
     double totalScore = 0;
-    for (var h in updatedHistory) totalScore += h.result.score;
+    for (var h in updatedHistory) {
+      totalScore += h.result.score;
+    }
     double newAvg = updatedHistory.isEmpty ? 0 : totalScore / updatedHistory.length;
     
     final updatedProfile = profile.copyWith(

@@ -107,10 +107,10 @@ class _RatingScreenState extends State<RatingScreen> {
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: _getScoreColor(result!.score).withOpacity(0.5), width: 2),
+                        border: Border.all(color: _getScoreColor(result!.score).withValues(alpha: 0.5), width: 2),
                         boxShadow: [
                            BoxShadow(
-                             color: Colors.black.withOpacity(0.05),
+                             color: Colors.black.withValues(alpha: 0.05),
                              blurRadius: 10,
                              offset: const Offset(0, 4),
                            )

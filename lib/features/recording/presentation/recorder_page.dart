@@ -78,6 +78,7 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
          setState(() => isRecording = true);
       } else {
          final error = recorder.lastError ?? "Unknown Error";
+         if (!mounted) return;
          ScaffoldMessenger.of(context).showSnackBar(
              SnackBar(
                content: Text("Recording Failed: $error"),
@@ -147,7 +148,7 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
                       height: 100,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.red.withOpacity(0.5), width: 4),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.5), width: 4),
                       ),
                     ),
                   ),
@@ -160,7 +161,7 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: (isRecording ? Colors.red : Colors.green).withOpacity(0.4),
+                        color: (isRecording ? Colors.red : Colors.green).withValues(alpha: 0.4),
                         blurRadius: 15,
                         spreadRadius: 5,
                       )

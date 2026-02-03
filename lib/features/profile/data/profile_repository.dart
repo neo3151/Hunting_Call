@@ -1,7 +1,7 @@
 import '../domain/profile_model.dart';
 import '../data/local_profile_data_source.dart'; // import the interface definition if simpler
 import '../../rating/domain/rating_model.dart';
-import '../../rating/domain/rating_model.dart';
+
 
 abstract class ProfileRepository {
   Future<UserProfile> getProfile([String? userId]);
@@ -37,7 +37,7 @@ class LocalProfileRepository implements ProfileRepository {
   @override
   Future<UserProfile> createProfile(String name) async {
     // Generate simple ID
-    final id = name.toLowerCase().replaceAll(RegExp(r'\s+'), '_') + "_${DateTime.now().millisecondsSinceEpoch}";
+    final id = "${name.toLowerCase().replaceAll(RegExp(r'\s+'), '_')}_${DateTime.now().millisecondsSinceEpoch}";
     
     final newProfile = UserProfile(
       id: id,

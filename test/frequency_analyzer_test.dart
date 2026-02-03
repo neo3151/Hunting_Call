@@ -57,6 +57,7 @@ void main() {
     final analyzer = FFTEAFrequencyAnalyzer();
     final detectedHz = await analyzer.getDominantFrequency(file.path);
     
+    // ignore: avoid_print
     print('Detected: $detectedHz Hz (Expected: 440 Hz)');
     
     // 3. Assert (Allow small margin of error due to FFT bin width)

@@ -54,6 +54,10 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 
+# Fix for Clang not finding GCC headers defined in host environment
+include_directories(/usr/include/c++/13)
+include_directories(/usr/include/x86_64-linux-gnu/c++/13)
+
 add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 
 # Define the application target. To change its name, change BINARY_NAME above,
