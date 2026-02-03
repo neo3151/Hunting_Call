@@ -1,9 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'injection_container.dart' as di;
 import 'core/theme/theme_notifier.dart';
-import 'core/presentation/theme_switch_floating_button.dart';
 import 'features/auth/domain/auth_repository.dart';
 import 'features/recording/presentation/recorder_page.dart';
 import 'features/profile/presentation/profile_screen.dart';
@@ -28,7 +28,8 @@ class HuntingCallsApp extends StatelessWidget {
           return MaterialApp(
             title: 'Hunting Calls Perfection',
             theme: themeNotifier.currentTheme,
-            home: const AuthWrapper(),
+            home: const RecorderPage(userId: 'test_user'),
+            // home: const RatingScreen(audioPath: 'dummy_path.wav', animalId: 'Elk', userId: 'test_user'),
             builder: (context, child) {
                // Global Overlay for Theme Switcher could go here, 
                // but FloatingActionButton is requested on screens.
@@ -117,13 +118,10 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1B3B24), // Deep Forest Green
-              Color(0xFF0F1E12), // Darker Green/Black
-            ],
+          image: DecorationImage(
+            image: AssetImage('assets/images/forest_background.png'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
           ),
         ),
         child: SafeArea(
@@ -226,40 +224,42 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildProfileCard(UserProfile p) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => di.sl<AuthRepository>().signIn(p.id),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
-                child: Text(p.name[0].toUpperCase()),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text(
-                      "${p.totalCalls} calls • ${p.averageScore.toStringAsFixed(0)}% avg",
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
-                    ),
-                  ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: InkWell(
+          onTap: () => di.sl<AuthRepository>().signIn(p.id),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: const Color(0xFF81C784).withValues(alpha: 0.2),
+                  foregroundColor: Colors.white,
+                  child: Text(p.name[0].toUpperCase()),
                 ),
-              ),
-              const Icon(Icons.chevron_right, color: Colors.white24),
-            ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        "${p.totalCalls} calls • ${p.averageScore.toStringAsFixed(0)}% avg",
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: Colors.white54),
+              ],
+            ),
           ),
         ),
       ),
@@ -351,8 +351,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F5), // Light grey-green background
-      body: SafeArea(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/forest_background.png'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(Colors.black45, BlendMode.darken),
+          ),
+        ),
+        child: SafeArea(
         child: Column(
           children: [
              // Header
@@ -366,57 +373,63 @@ class _HomeScreenState extends State<HomeScreen> {
                    crossAxisAlignment: CrossAxisAlignment.start,
                    children: [
                       // Quick Actions Grid
-                      Text("QUICK ACTIONS", style: GoogleFonts.oswald(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800])),
-                      const SizedBox(height: 16),
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.1,
+                      const SizedBox(height: 8),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                           _buildActionCard(
-                             context,
-                             title: "Practice\nCall",
-                             icon: Icons.mic_external_on,
-                             color: const Color(0xFF2E7D32),
-                             onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => RecorderPage(userId: widget.userId)),
-                             ),
-                           ),
-                           _buildActionCard(
-                             context,
-                             title: "My\nProfile",
-                             icon: Icons.person_outline,
-                             color: const Color(0xFF5D4037),
-                             onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => ProfileScreen(userId: widget.userId)),
-                             ),
-                           ),
-                           // Placeholder for future features
-                           _buildActionCard(
-                             context,
-                             title: "Call\nLibrary",
-                             icon: Icons.library_music_outlined,
-                             color: const Color(0xFF455A64),
-                             onTap: () {}, // TODO
-                           ),
-                           _buildActionCard(
-                             context,
-                             title: "Settings",
-                             icon: Icons.settings_outlined,
-                             color: const Color(0xFF607D8B),
-                             onTap: () {}, // TODO
-                           ),
+                          Expanded(
+                            flex: 3,
+                            child: SizedBox(
+                              height: 220,
+                              child: _buildActionCard(
+                                context,
+                                title: "PRACTICE\nCALL",
+                                icon: Icons.mic_external_on,
+                                color: const Color(0xFFC5E1A5),
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => RecorderPage(userId: widget.userId)),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  height: 102,
+                                  child: _buildActionCard(
+                                    context,
+                                    title: "PROFILE",
+                                    icon: Icons.person_outline,
+                                    color: const Color(0xFFD7CCC8),
+                                    onTap: () => Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => ProfileScreen(userId: widget.userId)),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  height: 102,
+                                  child: _buildActionCard(
+                                    context,
+                                    title: "LIBRARY",
+                                    icon: Icons.library_music_outlined,
+                                    color: const Color(0xFFCFD8DC),
+                                    onTap: () {}, // TODO
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-
                       const SizedBox(height: 32),
                       
-                      // Recent Activity Preview (Simple for now)
+                      // Recent Activity Preview
                       if (_profile != null && _profile!.history.isNotEmpty) ...[
-                        Text("RECENT HUNTS", style: GoogleFonts.oswald(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800])),
+                        Text("RECENT HUNTS", style: GoogleFonts.oswald(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white70)),
                         const SizedBox(height: 16),
                         _buildRecentActivityCard(_profile!.history.first),
                       ],
@@ -424,62 +437,100 @@ class _HomeScreenState extends State<HomeScreen> {
                  ),
                ),
              ),
-          ],
+            ],
+          ),
         ),
       ),
-      floatingActionButton: const ThemeSwitchFloatingButton(),
+
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1B3B24),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-             crossAxisAlignment: CrossAxisAlignment.start,
-             children: [
-                const Text("WELCOME BACK", style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
-                const SizedBox(height: 4),
-                Text(userName, style: GoogleFonts.oswald(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
-             ],
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1B3B24).withValues(alpha: 0.4),
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          IconButton(
-            onPressed: () => di.sl<AuthRepository>().signOut(),
-            icon: const Icon(Icons.logout, color: Colors.white70),
-            tooltip: "Sign Out",
-          )
-        ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("WELCOME BACK,",
+                        style: GoogleFonts.oswald(
+                            color: Colors.white70,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w300,
+                            letterSpacing: 1.0)),
+                    Text(userName.toUpperCase(),
+                        style: GoogleFonts.oswald(
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            height: 1.1)),
+                  ],
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: () => di.sl<AuthRepository>().signOut(),
+                  icon: const Icon(Icons.logout, color: Colors.white70),
+                  tooltip: "Sign Out",
+                ),
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildActionCard(BuildContext context, {required String title, required IconData icon, required Color color, required VoidCallback onTap}) {
-    return Material(
-      color: Colors.white,
-      elevation: 2,
+  Widget _buildActionCard(BuildContext context,
+      {required String title,
+      required IconData icon,
+      required Color color,
+      required VoidCallback onTap}) {
+    return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-               CircleAvatar(
-                 backgroundColor: color.withValues(alpha: 0.1),
-                 foregroundColor: color,
-                 child: Icon(icon),
-               ),
-               Text(title, style: GoogleFonts.lato(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-            ],
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CircleAvatar(
+                  backgroundColor: color.withValues(alpha: 0.2),
+                  foregroundColor: Colors.white,
+                  child: Icon(icon),
+                ),
+                Text(title,
+                    style: GoogleFonts.lato(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
+              ],
+            ),
           ),
         ),
       ),
@@ -488,38 +539,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildRecentActivityCard(dynamic historyItem) {
     // Assuming check logic, reusing simple display
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        children: [
-           Container(
-             width: 50, height: 50,
-             alignment: Alignment.center,
-             decoration: BoxDecoration(
-               color: Colors.orange.withValues(alpha: 0.1),
-               borderRadius: BorderRadius.circular(8),
-             ),
-             child: Text(
-               historyItem.result.score.toStringAsFixed(0),
-               style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.deepOrange, fontSize: 18),
-             ),
-           ),
-           const SizedBox(width: 16),
-           Column(
-             crossAxisAlignment: CrossAxisAlignment.start,
-             children: [
-                Text(historyItem.animalId.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text("Last Session", style: const TextStyle(color: Colors.grey, fontSize: 12)),
-             ],
-           ),
-           const Spacer(),
-           const Icon(Icons.chevron_right, color: Colors.grey),
-        ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  historyItem.result.score.toStringAsFixed(0),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orangeAccent, fontSize: 18),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(historyItem.animalId.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text("Last Session", style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                ],
+              ),
+              const Spacer(),
+              const Icon(Icons.chevron_right, color: Colors.white54),
+            ],
+          ),
+        ),
       ),
     );
   }

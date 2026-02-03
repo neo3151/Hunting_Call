@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../../injection_container.dart';
 import '../domain/audio_recorder_service.dart';
@@ -124,102 +126,159 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Record Call')),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Animal Selection Dropdown
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: selectedCallId,
-                  hint: const Text("Select Call to Practice"),
-                  onChanged: isRecording ? null : (String? newValue) {
-                    setState(() {
-                      selectedCallId = newValue!;
-                    });
-                  },
-                  items: MockReferenceDatabase.calls.map((call) {
-                    return DropdownMenuItem<String>(
-                      value: call.id,
-                      child: Text(call.animalName, style: const TextStyle(fontWeight: FontWeight.w500)),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text('RECORD CALL', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/forest_background.png'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
           ),
-          const SizedBox(height: 20),
-          TextButton.icon(
-            onPressed: isRecording ? null : _playReferenceSound,
-            icon: Icon(isPlayingReference ? Icons.stop_circle_outlined : Icons.volume_up_rounded),
-            label: Text(isPlayingReference ? "Stop Reference" : "Hear Sample"),
-            style: TextButton.styleFrom(foregroundColor: Colors.grey[700]),
-          ),
-          const SizedBox(height: 20),
-
-          LiveVisualizer(
-            amplitudes: amplitudes,
-            isRecording: isRecording,
-          ),
-          const SizedBox(height: 40),
-          GestureDetector(
-            onTap: _toggleRecording,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Pulsing Ring
-                if (isRecording)
-                  ScaleTransition(
-                    scale: _pulseAnimation,
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Animal Selection Card (Glassmorphism)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Container(
-                      width: 100,
-                      height: 100,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.red.withValues(alpha: 0.5), width: 4),
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedCallId,
+                          dropdownColor: const Color(0xFF1B3B24),
+                          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
+                          hint: Text("Select Call to Practice", style: GoogleFonts.lato(color: Colors.white70)),
+                          onChanged: isRecording ? null : (String? newValue) {
+                            setState(() {
+                              selectedCallId = newValue!;
+                            });
+                          },
+                          items: MockReferenceDatabase.calls.map((call) {
+                            return DropdownMenuItem<String>(
+                              value: call.id,
+                              child: Text(
+                                call.animalName.toUpperCase(), 
+                                style: GoogleFonts.oswald(fontWeight: FontWeight.w500, color: Colors.white)
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                   ),
-                // Main Button
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: isRecording ? Colors.red : Colors.green,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isRecording ? Colors.red : Colors.green).withValues(alpha: 0.4),
-                        blurRadius: 15,
-                        spreadRadius: 5,
-                      )
-                    ],
-                  ),
-                  child: Icon(
-                    isRecording ? Icons.stop : Icons.mic,
-                    color: Colors.white,
-                    size: 32,
-                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Sample Playback Button
+              _buildGlassButton(
+                onPressed: isRecording ? null : _playReferenceSound,
+                icon: isPlayingReference ? Icons.stop_circle_outlined : Icons.volume_up_rounded,
+                label: isPlayingReference ? "STOP REFERENCE" : "HEAR SAMPLE",
+              ),
+              
+              const Spacer(),
+
+              LiveVisualizer(
+                amplitudes: amplitudes,
+                isRecording: isRecording,
+              ),
+              
+              const Spacer(),
+              
+              GestureDetector(
+                onTap: _toggleRecording,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Pulsing Ring
+                    if (isRecording)
+                      ScaleTransition(
+                        scale: _pulseAnimation,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.red.withValues(alpha: 0.3), width: 4),
+                          ),
+                        ),
+                      ),
+                    // Main Button
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: isRecording ? Colors.red.withValues(alpha: 0.8) : Colors.green.withValues(alpha: 0.8),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isRecording ? Colors.red : Colors.green).withValues(alpha: 0.4),
+                            blurRadius: 20,
+                            spreadRadius: 5,
+                          )
+                        ],
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                      ),
+                      child: Icon(
+                        isRecording ? Icons.stop : Icons.mic,
+                        color: Colors.white,
+                        size: 36,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                isRecording ? 'RECORDING IN PROGRESS...' : 'READY TO RECORD',
+                style: GoogleFonts.oswald(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isRecording ? Colors.redAccent.shade100 : Colors.white70,
+                  letterSpacing: 2.0,
+                ),
+              ),
+              const SizedBox(height: 40),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            isRecording ? 'Recording...' : 'Tap to Record',
-            style: Theme.of(context).textTheme.titleMedium,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassButton({required VoidCallback? onPressed, required IconData icon, required String label}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(30),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: TextButton.icon(
+          onPressed: onPressed,
+          icon: Icon(icon, color: Colors.white70, size: 20),
+          label: Text(label, style: GoogleFonts.lato(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.white.withValues(alpha: 0.05),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -48,5 +48,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audio/
+    - assets/images/
 dependency_overrides:
   record_linux: 1.3.0
