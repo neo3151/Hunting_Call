@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../../rating/domain/rating_model.dart';
 import '../../rating/domain/rating_service.dart';
 import '../domain/frequency_analyzer.dart';
@@ -20,8 +22,27 @@ class RealRatingService implements RatingService {
 
     // 2. Analyze the user's audio
     final detectedPitch = await analyzer.getDominantFrequency(audioPath);
-    // Simulate duration for now (since we don't have real file decoding yet)
-    final detectedDuration = reference.idealDurationSec * (0.8 + (Random().nextDouble() * 0.4)); 
+    
+    // Calculate real duration
+    double detectedDuration = 0.0;
+    try {
+      final file = File(audioPath);
+      final bytes = await file.readAsBytes();
+      if (bytes.length > 44) {
+        final ByteData view = bytes.buffer.asByteData();
+        int sampleRate = 44100;
+        if (bytes.length >= 28) {
+          sampleRate = view.getUint32(24, Endian.little);
+        }
+        // Duration = (Total Bytes - Header) / (Sample Rate * Channels * BytesPerSample)
+        // We assume 1 channel, 2 bytes per sample (16-bit) as per RecorderConfig
+        detectedDuration = (bytes.length - 44) / (sampleRate * 1 * 2);
+      }
+    } catch (e) {
+      debugPrint("Duration Analysis Error: $e");
+      // Fallback to reference duration to avoid division by zero or errors
+      detectedDuration = reference.idealDurationSec;
+    }
 
     // 3. Compare (The Algorithm)
     final pitchDiff = (detectedPitch - reference.idealPitchHz).abs();
@@ -57,10 +78,14 @@ class RealRatingService implements RatingService {
                  feedback = "Too Low! Raise your pitch by approx ${(reference.idealPitchHz - detectedPitch).toInt()}Hz.";
              }
         } else {
-             if (detectedDuration > reference.idealDurationSec) {
-                 feedback = "Too Long! Shorten the call by ${(detectedDuration - reference.idealDurationSec).toStringAsFixed(1)}s.";
+             if (durationDiff > reference.toleranceDuration) {
+               if (detectedDuration > reference.idealDurationSec) {
+                   feedback = "Too Long! Shorten the call by ${(detectedDuration - reference.idealDurationSec).toStringAsFixed(1)}s.";
+               } else {
+                   feedback = "Too Short! Hold the call for ${(reference.idealDurationSec - detectedDuration).toStringAsFixed(1)}s longer.";
+               }
              } else {
-                 feedback = "Too Short! Hold the call longer.";
+               feedback = "Pitch is good, but try to be more consistent.";
              }
         }
     }

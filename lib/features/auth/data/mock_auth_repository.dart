@@ -3,12 +3,16 @@ import 'package:flutter/foundation.dart';
 import '../domain/auth_repository.dart';
 
 class MockAuthRepository implements AuthRepository {
-  final _controller = StreamController<String?>.broadcast();
+  late final StreamController<String?> _controller;
   String? _currentUser;
 
   MockAuthRepository() {
-    // Start with no user
-    _controller.add(null);
+    _controller = StreamController<String?>.broadcast(
+      onListen: () {
+        _controller.add(_currentUser);
+      },
+    );
+    // Initial state is already null in _currentUser
   }
 
   @override

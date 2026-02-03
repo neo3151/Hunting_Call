@@ -19,6 +19,7 @@ class _RatingScreenState extends State<RatingScreen> {
   RatingResult? result;
   bool isLoading = true;
 
+  @override
   void initState() {
     super.initState();
     _analyzeCall();
@@ -87,13 +88,13 @@ class _RatingScreenState extends State<RatingScreen> {
                               ),
                             ),
                              Text(
-                              "${result!.score.toStringAsFixed(0)}%",
-                              style: GoogleFonts.oswald(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                               "${result!.score.toStringAsFixed(0)}%",
+                               style: GoogleFonts.oswald(
+                                 fontSize: 48,
+                                 fontWeight: FontWeight.bold,
+                                 color: Colors.white,
+                               ),
+                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -165,7 +166,7 @@ class _RatingScreenState extends State<RatingScreen> {
                                 ),
                               ],
                             ),
-                          )).toList(),
+                          )),
                           
                       const SizedBox(height: 48),
                       
@@ -190,6 +191,7 @@ class _RatingScreenState extends State<RatingScreen> {
       ),
     );
   }
+
   Color _getScoreColor(double score) {
     if (score >= 80) return Colors.greenAccent;
     if (score >= 50) return Colors.orangeAccent;
