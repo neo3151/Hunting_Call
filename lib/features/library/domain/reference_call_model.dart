@@ -3,6 +3,7 @@ class ReferenceCall {
   final String animalName;
   final double idealPitchHz;
   final double idealDurationSec;
+  final String audioAssetPath;
   final double tolerancePitch; // +/- Hz allowed
   final double toleranceDuration; // +/- seconds allowed
 
@@ -11,6 +12,7 @@ class ReferenceCall {
     required this.animalName,
     required this.idealPitchHz,
     required this.idealDurationSec,
+    required this.audioAssetPath,
     this.tolerancePitch = 50.0,
     this.toleranceDuration = 0.5,
   });

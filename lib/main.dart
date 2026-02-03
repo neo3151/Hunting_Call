@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'injection_container.dart' as di;
 import 'core/theme/theme_notifier.dart';
 import 'core/presentation/theme_switch_floating_button.dart';
@@ -97,29 +98,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _createNewProfile() async {
-    String? name = await showDialog<String>(
+    String? name = await showModalBottomSheet<String>(
       context: context,
-      builder: (context) {
-        String value = '';
-        return AlertDialog(
-          title: const Text('New Hunter Profile'),
-          content: TextField(
-            autofocus: true,
-            decoration: const InputDecoration(labelText: 'Hunter Name'),
-            onChanged: (v) => value = v,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, value),
-              child: const Text('Create'),
-            ),
-          ],
-        );
-      },
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _CreateProfileSheet(),
     );
 
     if (name != null && name.isNotEmpty) {
@@ -132,47 +115,206 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.forest, size: 80, color: Colors.green),
-              const SizedBox(height: 20),
-              Text('Hunting Calls', style: Theme.of(context).textTheme.displaySmall),
-              const SizedBox(height: 8),
-              const Text('Select Your Profile', style: TextStyle(color: Colors.grey)),
-              const SizedBox(height: 40),
-              
-              if (isLoading)
-                const CircularProgressIndicator()
-              else if (profiles.isEmpty)
-                 const Text("No profiles found. Create one to start.")
-              else
-                ...profiles.map((p) => Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                  child: ListTile(
-                    leading: CircleAvatar(child: Text(p.name[0].toUpperCase())),
-                    title: Text(p.name),
-                    subtitle: Text("${p.totalCalls} calls • ${p.averageScore.toStringAsFixed(1)}% avg"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () => di.sl<AuthRepository>().signIn(p.id),
-                  ),
-                )),
-
-              const SizedBox(height: 30),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.person_add),
-                label: const Text('Create New Profile'),
-                onPressed: _createNewProfile,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-              ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1B3B24), // Deep Forest Green
+              Color(0xFF0F1E12), // Darker Green/Black
             ],
           ),
         ),
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Spacer(),
+                    // Logo / Hero Section
+                    const Icon(Icons.forest_rounded, size: 80, color: Color(0xFF81C784)),
+                    const SizedBox(height: 24),
+                    Text(
+                      'HUNTING\nCALLS',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.oswald(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        height: 1.0,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'MASTER THE WILD',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lato(
+                        fontSize: 16,
+                        color: Colors.white70,
+                        letterSpacing: 4.0,
+                      ),
+                    ),
+                    const Spacer(),
+                    
+                    // Profile List
+                    Text(
+                       "WHO IS HUNTING?",
+                       style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    if (isLoading)
+                      const Center(child: CircularProgressIndicator(color: Colors.white))
+                    else if (profiles.isEmpty)
+                       _buildEmptyState()
+                    else
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 300),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: profiles.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final p = profiles[index];
+                            return _buildProfileCard(p);
+                          },
+                        ),
+                      ),
+                    
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: _createNewProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF81C784),
+                        foregroundColor: const Color(0xFF0F1E12),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Text('NEW HUNTER PROFILE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0)),
+                    ),
+                    const Spacer(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: const Text(
+        "No profiles found.\nCreate your first hunter profile to begin.",
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.white60),
+      ),
+    );
+  }
+
+  Widget _buildProfileCard(UserProfile p) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => di.sl<AuthRepository>().signIn(p.id),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: const Color(0xFF2E7D32),
+                foregroundColor: Colors.white,
+                child: Text(p.name[0].toUpperCase()),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(
+                      "${p.totalCalls} calls • ${p.averageScore.toStringAsFixed(0)}% avg",
+                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.white24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CreateProfileSheet extends StatefulWidget {
+  @override
+  State<_CreateProfileSheet> createState() => _CreateProfileSheetState();
+}
+
+class _CreateProfileSheetState extends State<_CreateProfileSheet> {
+  String value = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        top: 24, left: 24, right: 24
+      ),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1B3B24),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Create Profile', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          TextField(
+            autofocus: true,
+            style: const TextStyle(color: Colors.white),
+            cursorColor: Colors.greenAccent,
+            decoration: InputDecoration(
+              labelText: 'Hunter Name',
+              labelStyle: const TextStyle(color: Colors.white70),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+              focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+            ),
+            onChanged: (v) => value = v,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, value),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF81C784),
+              foregroundColor: const Color(0xFF0F1E12),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: const Text('START HUNTING'),
+          ),
+        ],
       ),
     );
   }
@@ -187,18 +329,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String userName = "Handler";
+  String userName = "Hunter";
+  UserProfile? _profile;
 
   @override
   void initState() {
     super.initState();
-    _loadUserName();
+    _loadProfile();
   }
 
-  Future<void> _loadUserName() async {
+  Future<void> _loadProfile() async {
     final profile = await di.sl<ProfileRepository>().getProfile(widget.userId);
     if (mounted) {
       setState(() {
+        _profile = profile;
         userName = profile.name;
       });
     }
@@ -207,43 +351,176 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {
-               Navigator.of(context).push(
-                 MaterialPageRoute(builder: (_) => ProfileScreen(userId: widget.userId)),
-               );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => di.sl<AuthRepository>().signOut(),
-          ),
-        ],
-      ),
-      body: Center(
+      backgroundColor: const Color(0xFFF5F7F5), // Light grey-green background
+      body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Welcome, $userName!', style: Theme.of(context).textTheme.headlineSmall),
-            Text('ID: ${widget.userId}', style: const TextStyle(fontFamily: 'monospace')),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.mic),
-              label: const Text('Record Call'),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => RecorderPage(userId: widget.userId)),
-                );
-              },
-            ),
+             // Header
+             _buildHeader(context),
+             
+             // Content
+             Expanded(
+               child: SingleChildScrollView(
+                 padding: const EdgeInsets.all(24),
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                      // Quick Actions Grid
+                      Text("QUICK ACTIONS", style: GoogleFonts.oswald(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800])),
+                      const SizedBox(height: 16),
+                      GridView.count(
+                        crossAxisCount: 2,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 1.1,
+                        children: [
+                           _buildActionCard(
+                             context,
+                             title: "Practice\nCall",
+                             icon: Icons.mic_external_on,
+                             color: const Color(0xFF2E7D32),
+                             onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => RecorderPage(userId: widget.userId)),
+                             ),
+                           ),
+                           _buildActionCard(
+                             context,
+                             title: "My\nProfile",
+                             icon: Icons.person_outline,
+                             color: const Color(0xFF5D4037),
+                             onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => ProfileScreen(userId: widget.userId)),
+                             ),
+                           ),
+                           // Placeholder for future features
+                           _buildActionCard(
+                             context,
+                             title: "Call\nLibrary",
+                             icon: Icons.library_music_outlined,
+                             color: const Color(0xFF455A64),
+                             onTap: () {}, // TODO
+                           ),
+                           _buildActionCard(
+                             context,
+                             title: "Settings",
+                             icon: Icons.settings_outlined,
+                             color: const Color(0xFF607D8B),
+                             onTap: () {}, // TODO
+                           ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 32),
+                      
+                      // Recent Activity Preview (Simple for now)
+                      if (_profile != null && _profile!.history.isNotEmpty) ...[
+                        Text("RECENT HUNTS", style: GoogleFonts.oswald(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800])),
+                        const SizedBox(height: 16),
+                        _buildRecentActivityCard(_profile!.history.first),
+                      ],
+                   ],
+                 ),
+               ),
+             ),
           ],
         ),
       ),
       floatingActionButton: const ThemeSwitchFloatingButton(),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1B3B24),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+                const Text("WELCOME BACK", style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
+                const SizedBox(height: 4),
+                Text(userName, style: GoogleFonts.oswald(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+             ],
+          ),
+          IconButton(
+            onPressed: () => di.sl<AuthRepository>().signOut(),
+            icon: const Icon(Icons.logout, color: Colors.white70),
+            tooltip: "Sign Out",
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionCard(BuildContext context, {required String title, required IconData icon, required Color color, required VoidCallback onTap}) {
+    return Material(
+      color: Colors.white,
+      elevation: 2,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+               CircleAvatar(
+                 backgroundColor: color.withValues(alpha: 0.1),
+                 foregroundColor: color,
+                 child: Icon(icon),
+               ),
+               Text(title, style: GoogleFonts.lato(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentActivityCard(dynamic historyItem) {
+    // Assuming check logic, reusing simple display
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+           Container(
+             width: 50, height: 50,
+             alignment: Alignment.center,
+             decoration: BoxDecoration(
+               color: Colors.orange.withValues(alpha: 0.1),
+               borderRadius: BorderRadius.circular(8),
+             ),
+             child: Text(
+               historyItem.result.score.toStringAsFixed(0),
+               style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.deepOrange, fontSize: 18),
+             ),
+           ),
+           const SizedBox(width: 16),
+           Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+                Text(historyItem.animalId.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text("Last Session", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+             ],
+           ),
+           const Spacer(),
+           const Icon(Icons.chevron_right, color: Colors.grey),
+        ],
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../../../injection_container.dart';
 import '../domain/audio_recorder_service.dart';
 import '../../rating/presentation/rating_screen.dart';
@@ -20,6 +21,8 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
   String selectedCallId = MockReferenceDatabase.calls.first.id;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool isPlayingReference = false;
 
   @override
   void initState() {
@@ -39,6 +42,10 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
         });
       }
     });
+    
+    _audioPlayer.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => isPlayingReference = false);
+    });
   }
 
   @override
@@ -48,6 +55,7 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
     if (isRecording) {
       recorder.stopRecorder(); 
     }
+    _audioPlayer.dispose();
     _pulseController.dispose();
     super.dispose();
   }
@@ -90,6 +98,29 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
     }
   }
 
+  Future<void> _playReferenceSound() async {
+    if (isPlayingReference) {
+      await _audioPlayer.stop();
+      setState(() => isPlayingReference = false);
+    } else {
+      final call = MockReferenceDatabase.getById(selectedCallId);
+      // Remove 'assets/' prefix if AudioCache logic confusingly adds it, 
+      // but modern audioplayers uses AssetSource which takes full path usually sans 'assets/'.
+      // Wait, AssetSource behavior: "Prefixes the path with 'assets/'".
+      // Let's strip 'assets/' from our model-stored path.
+      final assetPath = call.audioAssetPath.replaceFirst('assets/', '');
+      
+      try {
+        await _audioPlayer.play(AssetSource(assetPath));
+        setState(() => isPlayingReference = true);
+      } catch (e) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Could not play audio: $e")));
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,7 +158,14 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
               ),
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 20),
+          TextButton.icon(
+            onPressed: isRecording ? null : _playReferenceSound,
+            icon: Icon(isPlayingReference ? Icons.stop_circle_outlined : Icons.volume_up_rounded),
+            label: Text(isPlayingReference ? "Stop Reference" : "Hear Sample"),
+            style: TextButton.styleFrom(foregroundColor: Colors.grey[700]),
+          ),
+          const SizedBox(height: 20),
 
           LiveVisualizer(
             amplitudes: amplitudes,

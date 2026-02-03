@@ -14,8 +14,8 @@ void main() {
     await tester.pumpWidget(const HuntingCallsApp());
     await tester.pumpAndSettle();
 
-    // Check if we are on the login screen (since no user is logged in by default)
-    expect(find.text('Hunting Calls'), findsOneWidget);
-    expect(find.byIcon(Icons.forest), findsOneWidget);
+    // Check if we are on the login screen
+    expect(find.text('HUNTING\nCALLS'), findsOneWidget);
+    expect(find.byIcon(Icons.forest_rounded), findsOneWidget);
   });
 }
