@@ -1,0 +1,98 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configurations and scripts you may want to
+# share with team members. However, if you'd like to customize these
+# configurations for your personal use, keep this out of git.
+# .vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+__pycache__/
+build/
+
+# Android related
+**/android/app/src/main/res/generated/
+**/android/gen/
+**/*.iml
+**/*.jks
+**/*.keystore
+**/*.properties
+**/*.release.json
+**/*.temp.apk
+**/*.temp.apk.idsig
+**/*.temp.apk.idsig.temp
+**/*.temp.aab
+**/*.temp.aab.idsig
+**/*.temp.aab.idsig.temp
+android/app/local.properties
+android/app/src/main/java/io/flutter/plugins/
+android/local.properties
+gen/
+local.properties
+
+# iOS/macOS related
+**/ios/Flutter/Config/Generated.xcconfig
+**/ios/Flutter/Ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.framework
+**/ios/Module_v2.storyboard
+**/ios/Pods/
+**/ios/Runner.xcworkspace/
+**/ios/Runner.xcodeproj/project.xcworkspace/
+**/ios/Runner.xcodeproj/xcuserdata/
+**/ios/ServiceDefinitions.json
+**/ios/config/
+**/ios/shared/
+**/macos/Flutter/Ephemeral/
+**/macos/Flutter/Generated.xcconfig
+**/macos/Pods/
+**/macos/Runner.xcworkspace/
+**/macos/Runner.xcodeproj/project.xcworkspace/
+**/macos/Runner.xcodeproj/xcuserdata/
+**/macos/ServiceDefinitions.json
+**/macos/config/
+**/macos/shared/
+DerivedData/
+*.moved-aside
+*.xcuserstate
+xcuserdata/
+
+# Windows related
+**/windows/flutter/ephemeral/
+**/windows/flutter/generated_config.cmake
+**/windows/CMakeCache.txt
+**/windows/CMakeFiles/
+**/windows/CMakeLists.txt.user
+**/windows/cmake_install.cmake
+**/windows/_CPack_Packages/
+**/windows/CPackConfig.cmake
+**/windows/CPackSourceConfig.cmake
+**/windows/install_manifest.txt
+**/windows/x64/
+bin/
+obj/
+
+# Symbols
+*.pdb
