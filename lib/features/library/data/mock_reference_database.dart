@@ -7,7 +7,7 @@ class MockReferenceDatabase {
       animalName: 'Mallard Duck (Greeting)',
       idealPitchHz: 479.0, // Scientifically verified: ~479Hz fundamental
       idealDurationSec: 1.2,
-      audioAssetPath: 'assets/audio/duck_mallard_greeting.ogg',
+      audioAssetPath: 'assets/audio/duck_mallard_greeting.wav',
       tolerancePitch: 50.0,
     ),
     ReferenceCall(
@@ -15,7 +15,7 @@ class MockReferenceDatabase {
       animalName: 'Elk (Bull Bugle)',
       idealPitchHz: 2000.0, // High whistle fundamental is ~2kHz
       idealDurationSec: 3.0,
-      audioAssetPath: 'assets/audio/elk_bull_bugle.ogg',
+      audioAssetPath: 'assets/audio/elk_bull_bugle.wav',
       tolerancePitch: 200.0, // Wider tolerance for high pitch calls
     ),
     ReferenceCall(
@@ -39,7 +39,7 @@ class MockReferenceDatabase {
       animalName: 'Coyote (Howl)',
       idealPitchHz: 1000.0, // Variable, but 1kHz is a strong center point
       idealDurationSec: 2.5,
-      audioAssetPath: 'assets/audio/coyote_howl.ogg',
+      audioAssetPath: 'assets/audio/coyote_howl.wav',
       tolerancePitch: 200.0,
     ),
     ReferenceCall(
@@ -47,16 +47,48 @@ class MockReferenceDatabase {
       animalName: 'Canadian Goose (Honk)',
       idealPitchHz: 400.0,
       idealDurationSec: 0.4,
-      audioAssetPath: 'assets/audio/goose_canadian_honk.ogg',
+      audioAssetPath: 'assets/audio/goose_canadian_honk.wav',
       tolerancePitch: 50.0,
     ),
     ReferenceCall(
       id: 'owl_barred_hoot',
       animalName: 'Barred Owl',
-      idealPitchHz: 550.0, // Research says ~548Hz-613Hz
+      idealPitchHz: 550.0,
       idealDurationSec: 1.5,
-      audioAssetPath: 'assets/audio/owl_barred_hoot.ogg',
+      audioAssetPath: 'assets/audio/owl_barred_hoot.wav',
       tolerancePitch: 50.0,
+    ),
+    ReferenceCall(
+      id: 'turkey_gobble',
+      animalName: 'Turkey (Gobble)',
+      idealPitchHz: 1000.0,
+      idealDurationSec: 1.5,
+      audioAssetPath: 'assets/audio/turkey_gobble.wav',
+      tolerancePitch: 200.0,
+    ),
+    ReferenceCall(
+      id: 'moose_cow_call',
+      animalName: 'Moose (Cow Call)',
+      idealPitchHz: 240.0,
+      idealDurationSec: 5.0,
+      audioAssetPath: 'assets/audio/moose_cow_call.wav',
+      tolerancePitch: 40.0,
+    ),
+    ReferenceCall(
+      id: 'deer_doe_bleat',
+      animalName: 'Whitetail Doe (Bleat)',
+      idealPitchHz: 550.0,
+      idealDurationSec: 1.2,
+      audioAssetPath: 'assets/audio/deer_doe_bleat.wav',
+      tolerancePitch: 100.0,
+    ),
+    ReferenceCall(
+      id: 'coyote_challenge',
+      animalName: 'Coyote (Challenge Bark)',
+      idealPitchHz: 800.0,
+      idealDurationSec: 0.4,
+      audioAssetPath: 'assets/audio/coyote_challenge.wav',
+      tolerancePitch: 150.0,
     ),
   ];
 
