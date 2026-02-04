@@ -4,8 +4,20 @@ import 'package:fftea/fftea.dart';
 import 'package:flutter/foundation.dart';
 import '../domain/frequency_analyzer.dart';
 import '../domain/audio_analysis_model.dart';
+import 'waveform_cache_database.dart';
 
 class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
+  final _cache = WaveformCacheDatabase();
+  
+  ComprehensiveAudioAnalyzer() {
+    // Auto-cleanup old cache entries on initialization
+    _cache.clearOldCache(maxAge: const Duration(days: 7)).then((deleted) {
+      if (deleted > 0) {
+        debugPrint('WaveformCache: Cleaned up $deleted old entries');
+      }
+    });
+  }
+
   @override
   Future<double> getDominantFrequency(String audioPath) async {
     final analysis = await analyzeAudio(audioPath);
@@ -94,7 +106,8 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         noiseLevel: quality['noise']!,
         
         // Visualization
-        waveform: _extractWaveform(samples, 100),
+        waveform: await getWaveformFromSamples(samples, 100, audioPath),
+        pitchTrack: pitchAnalysis['pitchTrack'] as List<double>,
       );
     } catch (e, stack) {
       debugPrint("Comprehensive Analysis Error: $e\n$stack");
@@ -205,6 +218,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       'averageFrequency': avgFreq,
       'peaks': topPeaks.take(5).map((e) => e.key).toList(),
       'stability': stability,
+      'pitchTrack': dominantFreqs,
     };
   }
 
@@ -515,5 +529,19 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     }
     
     return result;
+  }
+
+  /// Get waveform with caching
+  Future<List<double>> getWaveformFromSamples(Float64List samples, int points, String path) async {
+    // Try to get from cache first
+    final cached = await _cache.getCachedWaveform(path);
+    if (cached != null && cached.length == points) {
+      return cached;
+    }
+
+    // Extract and cache
+    final waveform = _extractWaveform(samples, points);
+    await _cache.cacheWaveform(path, waveform);
+    return waveform;
   }
 }

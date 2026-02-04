@@ -95,7 +95,6 @@ class RealRatingService implements RatingService {
         feedback = "Duration is off. Pitch also needs work.";
       }
     } else if (!pitchIsGood) {
-      final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
       feedback = detectedPitch > reference.idealPitchHz ? "Too High! Lower your pitch." : "Too Low! Raise your pitch.";
     } else {
       feedback = detectedDuration > reference.idealDurationSec ? "Too Long!" : "Too Short!";

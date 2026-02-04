@@ -1,7 +1,10 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../domain/audio_analysis_model.dart';
+import 'widgets/spectral_centroid_graph.dart';
+import 'widgets/pitch_track_graph.dart';
 
 /// Widget to display comprehensive audio analytics
 class AudioAnalyticsDisplay extends StatelessWidget {
@@ -20,6 +23,16 @@ class AudioAnalyticsDisplay extends StatelessWidget {
           _buildMetric("Average Frequency", analysis.averageFrequencyHz, "Hz"),
           _buildMetric("Pitch Stability", analysis.pitchStability, "%"),
         ]),
+        
+        if (analysis.pitchTrack.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(
+            "Pitch Development",
+            style: GoogleFonts.lato(color: Colors.white70, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          PitchTrackGraph(pitchTrack: analysis.pitchTrack),
+        ],
         
         const SizedBox(height: 24),
         
@@ -52,6 +65,16 @@ class AudioAnalyticsDisplay extends StatelessWidget {
           _buildMetric("Warmth", analysis.warmth, "%"),
           _buildMetric("Nasality", analysis.nasality, "%"),
         ]),
+        
+        if (analysis.spectralCentroid.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(
+            "Timbre Dynamics (Spectral Centroid)",
+            style: GoogleFonts.lato(color: Colors.white70, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          SpectralCentroidGraph(centroids: analysis.spectralCentroid),
+        ],
         
         const SizedBox(height: 24),
         

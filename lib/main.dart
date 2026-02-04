@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as legacy_provider;
 import 'injection_container.dart' as di;
 import 'core/theme/theme_notifier.dart';
-import 'features/auth/presentation/auth_wrapper.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'theme/app_theme.dart';
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:hunting_calls_perfection/injection_container.dart';
@@ -25,8 +26,10 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return const MaterialApp(
-      home: LoginScreen(),
+    return const ProviderScope(
+      child: MaterialApp(
+        home: LoginScreen(),
+      ),
     );
   }
 

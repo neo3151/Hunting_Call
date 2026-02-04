@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import '../features/analysis/domain/frequency_analyzer.dart';
 import '../features/rating/domain/rating_service.dart';
 import '../features/rating/domain/rating_model.dart';
-import 'profile_provider.dart';
 
 /// Provides the FrequencyAnalyzer instance
 final frequencyAnalyzerProvider = Provider<FrequencyAnalyzer>((ref) {
@@ -56,7 +55,7 @@ class RatingNotifier extends Notifier<RatingState> {
     state = state.copyWith(isAnalyzing: true, error: null);
     try {
       final result = await _ratingService.rateCall(userId, audioPath, animalId);
-      debugPrint("RatingNotifier: Analysis complete. Success: ${result != null}");
+      debugPrint("RatingNotifier: Analysis complete. Success: ${result.score > 0}");
       state = state.copyWith(isAnalyzing: false, result: result);
       return result;
     } catch (e, stack) {

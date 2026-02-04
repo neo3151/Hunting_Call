@@ -14,6 +14,9 @@ AudioAnalysis _$AudioAnalysisFromJson(Map<String, dynamic> json) =>
           .map((e) => (e as num).toDouble())
           .toList(),
       pitchStability: (json['pitchStability'] as num).toDouble(),
+      pitchTrack: (json['pitchTrack'] as List<dynamic>)
+          .map((e) => (e as num).toDouble())
+          .toList(),
       averageVolume: (json['averageVolume'] as num).toDouble(),
       peakVolume: (json['peakVolume'] as num).toDouble(),
       volumeConsistency: (json['volumeConsistency'] as num).toDouble(),
@@ -50,6 +53,7 @@ Map<String, dynamic> _$AudioAnalysisToJson(AudioAnalysis instance) =>
       'averageFrequencyHz': instance.averageFrequencyHz,
       'frequencyPeaks': instance.frequencyPeaks,
       'pitchStability': instance.pitchStability,
+      'pitchTrack': instance.pitchTrack,
       'averageVolume': instance.averageVolume,
       'peakVolume': instance.peakVolume,
       'volumeConsistency': instance.volumeConsistency,

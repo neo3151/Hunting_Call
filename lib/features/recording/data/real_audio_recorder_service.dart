@@ -52,17 +52,22 @@ class RealAudioRecorderService implements AudioRecorderService {
   Future<void> init() async {
     _lastError = null;
     try {
+      debugPrint("RealAudioRecorder: Initializing...");
       final tempRecorder = AudioRecorder();
       final hasPermission = await tempRecorder.hasPermission();
+      debugPrint("RealAudioRecorder: Has permission: $hasPermission");
       await tempRecorder.dispose();
       
       if (!hasPermission) {
         _lastError = "Microphone permission denied";
+        debugPrint("RealAudioRecorder: ERROR - $_lastError");
         return;
       }
       _isInitialized = true;
+      debugPrint("RealAudioRecorder: Initialized successfully");
     } catch (e) {
       _lastError = "Init Error: $e";
+      debugPrint("RealAudioRecorder: ERROR - $_lastError");
     }
   }
 
@@ -70,11 +75,18 @@ class RealAudioRecorderService implements AudioRecorderService {
   Future<bool> startRecorder(String path) async {
     _lastError = null;
     
+    debugPrint("RealAudioRecorder: startRecorder called");
     // 1. Full cleanup of any previous session
     await _cleanup();
     
-    if (!_isInitialized) await init();
-    if (!_isInitialized) return false;
+    if (!_isInitialized) {
+      debugPrint("RealAudioRecorder: Not initialized, calling init()");
+      await init();
+    }
+    if (!_isInitialized) {
+      debugPrint("RealAudioRecorder: Still not initialized after init(), aborting");
+      return false;
+    }
 
     // 2. Allow OS to release the audio stream from previous recording
     await Future.delayed(_osStreamReleaseDelay);
@@ -90,6 +102,7 @@ class RealAudioRecorderService implements AudioRecorderService {
         filePath = '${tempDir.path}/hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
       }
       _currentPath = filePath;
+      debugPrint("RealAudioRecorder: Recording to: $filePath");
 
       const config = RecordConfig(
         encoder: AudioEncoder.wav,
@@ -99,6 +112,7 @@ class RealAudioRecorderService implements AudioRecorderService {
       );
 
       await _recorder!.start(config, path: filePath);
+      debugPrint("RealAudioRecorder: Recording started successfully");
 
       _amplitudeSubscription = _recorder!.onAmplitudeChanged(_amplitudeSampleInterval).listen((amp) {
         double normalized = (amp.current - _amplitudeDbMin) / (-_amplitudeDbMin);
@@ -109,6 +123,7 @@ class RealAudioRecorderService implements AudioRecorderService {
       return true;
     } catch (e) {
       _lastError = "Start Error: $e";
+      debugPrint("RealAudioRecorder: ERROR - $_lastError");
       await _cleanup();
       return false;
     }
@@ -117,9 +132,14 @@ class RealAudioRecorderService implements AudioRecorderService {
   @override
   Future<String?> stopRecorder() async {
     try {
-      if (_recorder == null) return _currentPath;
+      debugPrint("RealAudioRecorder: stopRecorder called");
+      if (_recorder == null) {
+        debugPrint("RealAudioRecorder: No active recorder, returning cached path");
+        return _currentPath;
+      }
       
       final path = await _recorder!.stop();
+      debugPrint("RealAudioRecorder: Stopped, path: $path");
       
       // 3. Give the OS time to finish writing the file handle
       await Future.delayed(_fileWriteCompleteDelay);
@@ -127,6 +147,7 @@ class RealAudioRecorderService implements AudioRecorderService {
       return path ?? _currentPath;
     } catch (e) {
       _lastError = "Stop Error: $e";
+      debugPrint("RealAudioRecorder: ERROR - $_lastError");
       return null;
     } finally {
       // 4. Force disposal immediately after stopping

@@ -69,9 +69,87 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           ),
         ),
         child: isLoading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF5FF7B6)))
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 80,
+                      height: 80,
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF5FF7B6),
+                        strokeWidth: 6,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'ANALYZING YOUR CALL',
+                      style: GoogleFonts.oswald(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Extracting frequency patterns...',
+                      style: GoogleFonts.lato(
+                        fontSize: 13,
+                        color: Colors.white60,
+                      ),
+                    ),
+                  ],
+                ),
+              )
             : error != null
-                ? Center(child: Text("Error: $error", style: const TextStyle(color: Colors.white)))
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.redAccent, size: 64),
+                        const SizedBox(height: 24),
+                        Text(
+                          "Analysis Failed",
+                          style: GoogleFonts.oswald(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40),
+                          child: Text(
+                            error,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.lato(
+                              fontSize: 14,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            ref.read(ratingNotifierProvider.notifier).reset();
+                            ref.read(ratingNotifierProvider.notifier).analyzeCall(
+                              widget.userId,
+                              widget.audioPath,
+                              widget.animalId,
+                            );
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: Text('RETRY ANALYSIS', style: GoogleFonts.oswald(letterSpacing: 1.5)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF5FF7B6),
+                            foregroundColor: Colors.black87,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                 : result == null
                     ? const Center(child: CircularProgressIndicator(color: Color(0xFF5FF7B6)))
                     : Scrollbar(

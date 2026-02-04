@@ -19,6 +19,7 @@ void main() {
   late Directory tempDir;
 
   setUp(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
     mockAnalyzer = MockFrequencyAnalyzer();
     mockProfileRepository = MockProfileRepository();
     ratingService = RealRatingService(
@@ -69,7 +70,7 @@ void main() {
       final reference = ReferenceDatabase.getById(animalId);
       final audioPath = await createDummyWav(reference.idealDurationSec);
       
-      when(() => mockAnalyzer.analyzeAudio(audioPath)).thenAnswer((_) async => AudioAnalysis.simple(
+      when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
         frequencyHz: reference.idealPitchHz,
         durationSec: reference.idealDurationSec,
       ));
@@ -88,7 +89,7 @@ void main() {
       
       // Detected is ideal + tolerance + 100Hz
       final detectedPitch = reference.idealPitchHz + reference.tolerancePitch + 100.0;
-      when(() => mockAnalyzer.analyzeAudio(audioPath)).thenAnswer((_) async => AudioAnalysis.simple(
+      when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
         frequencyHz: detectedPitch,
         durationSec: reference.idealDurationSec,
       ));
@@ -104,7 +105,7 @@ void main() {
       final reference = ReferenceDatabase.getById(animalId);
       final audioPath = await createDummyWav(reference.idealDurationSec * 0.5); 
       
-      when(() => mockAnalyzer.analyzeAudio(audioPath)).thenAnswer((_) async => AudioAnalysis.simple(
+      when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
         frequencyHz: reference.idealPitchHz,
         durationSec: reference.idealDurationSec * 0.5,
       ));
@@ -122,7 +123,7 @@ void main() {
       final lowAnimal = ReferenceDatabase.getById('turkey_hen_yelp');
       final lowPath = await createDummyWav(lowAnimal.idealDurationSec);
       // 20% deviation
-      when(() => mockAnalyzer.analyzeAudio(lowPath)).thenAnswer((_) async => AudioAnalysis.simple(
+      when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
         frequencyHz: lowAnimal.idealPitchHz * 1.2,
         durationSec: lowAnimal.idealDurationSec,
       ));
@@ -132,7 +133,7 @@ void main() {
       final highAnimal = ReferenceDatabase.getById('elk_bull_bugle');
       final highPath = await createDummyWav(highAnimal.idealDurationSec);
       // 20% deviation
-      when(() => mockAnalyzer.analyzeAudio(highPath)).thenAnswer((_) async => AudioAnalysis.simple(
+      when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
         frequencyHz: highAnimal.idealPitchHz * 1.2,
         durationSec: highAnimal.idealDurationSec,
       ));

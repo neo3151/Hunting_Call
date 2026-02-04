@@ -24,6 +24,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool isPlayingReference = false;
   StreamSubscription? _playerCompleteSubscription;
+  int? _countdownValue; // null = no countdown, 3/2/1 = counting down
 
   @override
   void initState() {
@@ -75,6 +76,20 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         }
       }
     } else {
+      // Start countdown
+      setState(() => _countdownValue = 3);
+      
+      // Countdown: 3, 2, 1
+      for (int i = 3; i > 0; i--) {
+        if (!mounted) return;
+        setState(() => _countdownValue = i);
+        await Future.delayed(const Duration(seconds: 1));
+      }
+      
+      // Clear countdown and start recording
+      if (!mounted) return;
+      setState(() => _countdownValue = null);
+      
       final success = await notifier.startRecording();
       if (!success) {
          final error = ref.read(recordingNotifierProvider).error ?? "Unknown Error";
@@ -113,6 +128,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   Widget build(BuildContext context) {
     final recordingState = ref.watch(recordingNotifierProvider);
     final isRecording = recordingState.status == RecordingStatus.recording;
+    final isCountingDown = _countdownValue != null;
     
     // Listen to amplitude changes to update the visualizer via the notifier
     ref.listen(amplitudeStreamProvider, (previous, next) {
@@ -161,7 +177,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                           dropdownColor: const Color(0xFF1B3B24),
                           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
                           hint: Text("Select Call to Practice", style: GoogleFonts.lato(color: Colors.white70)),
-                          onChanged: isRecording ? null : (String? newValue) {
+                          onChanged: (isRecording || isCountingDown) ? null : (String? newValue) {
                             setState(() {
                               selectedCallId = newValue!;
                             });
@@ -229,7 +245,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               const SizedBox(height: 24),
               
               _buildGlassButton(
-                onPressed: isRecording ? null : _playReferenceSound,
+                onPressed: (isRecording || isCountingDown) ? null : _playReferenceSound,
                 icon: isPlayingReference ? Icons.stop_circle_outlined : Icons.volume_up_rounded,
                 label: isPlayingReference ? "STOP REFERENCE" : "HEAR SAMPLE",
               ),
@@ -244,7 +260,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               const Spacer(),
               
               GestureDetector(
-                onTap: _toggleRecording,
+                onTap: isCountingDown ? null : _toggleRecording,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
@@ -260,33 +276,61 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                           ),
                         ),
                       ),
+                    if (isCountingDown)
+                      Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 3),
+                        ),
+                      ),
                     Container(
                       width: 90,
                       height: 90,
                       decoration: BoxDecoration(
-                        color: isRecording ? Colors.red.withValues(alpha: 0.8) : Colors.green.withValues(alpha: 0.8),
+                        color: isRecording 
+                            ? Colors.red.withValues(alpha: 0.8) 
+                            : isCountingDown 
+                                ? Colors.orange.withValues(alpha: 0.8)
+                                : Colors.green.withValues(alpha: 0.8),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: (isRecording ? Colors.red : Colors.green).withValues(alpha: 0.4),
+                            color: (isRecording ? Colors.red : isCountingDown ? Colors.orange : Colors.green).withValues(alpha: 0.4),
                             blurRadius: 20,
                             spreadRadius: 5,
                           )
                         ],
                         border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
                       ),
-                      child: Icon(
-                        isRecording ? Icons.stop : Icons.mic,
-                        color: Colors.white,
-                        size: 36,
-                      ),
+                      child: isCountingDown
+                          ? Center(
+                              child: Text(
+                                '$_countdownValue',
+                                style: GoogleFonts.oswald(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
+                          : Icon(
+                              isRecording ? Icons.stop : Icons.mic,
+                              color: Colors.white,
+                              size: 36,
+                            ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                isRecording ? 'RECORDING IN PROGRESS...' : 'READY TO RECORD',
+                isCountingDown 
+                    ? 'GET READY...' 
+                    : isRecording 
+                        ? 'RECORDING IN PROGRESS...' 
+                        : 'READY TO RECORD',
                 style: GoogleFonts.oswald(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

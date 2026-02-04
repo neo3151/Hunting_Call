@@ -10,6 +10,7 @@ class AudioAnalysis {
   final double averageFrequencyHz;
   final List<double> frequencyPeaks; // Top 5 frequency peaks
   final double pitchStability; // 0-100, how stable the pitch is
+  final List<double> pitchTrack; // Pitch over time
   
   /// Volume Analysis
   final double averageVolume; // RMS amplitude 0-1
@@ -49,6 +50,7 @@ class AudioAnalysis {
     required this.averageFrequencyHz,
     required this.frequencyPeaks,
     required this.pitchStability,
+    required this.pitchTrack,
     required this.averageVolume,
     required this.peakVolume,
     required this.volumeConsistency,
@@ -85,6 +87,7 @@ class AudioAnalysis {
       averageFrequencyHz: frequencyHz,
       frequencyPeaks: [frequencyHz],
       pitchStability: 50.0,
+      pitchTrack: [],
       averageVolume: volume,
       peakVolume: volume * 1.5,
       volumeConsistency: 50.0,

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:fftea/fftea.dart';
 import 'package:flutter/foundation.dart';
