@@ -4,6 +4,8 @@ import 'package:provider/provider.dart' as legacy_provider;
 import 'injection_container.dart' as di;
 import 'core/theme/theme_notifier.dart';
 import 'features/auth/presentation/auth_wrapper.dart';
+import 'features/splash/presentation/splash_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +26,11 @@ class HuntingCallsApp extends StatelessWidget {
           return MaterialApp(
             title: 'Hunting Calls Perfection',
             debugShowCheckedModeBanner: false,
-            theme: themeNotifier.currentTheme,
-            home: const AuthWrapper(),
+            theme: AppTheme.darkTheme,
+            home: const SplashScreen(),
           );
         },
       ),
     );
   }
 }
-
