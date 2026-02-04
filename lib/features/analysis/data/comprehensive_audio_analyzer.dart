@@ -92,6 +92,9 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         // Quality
         callQualityScore: quality['score']!,
         noiseLevel: quality['noise']!,
+        
+        // Visualization
+        waveform: _extractWaveform(samples, 100),
       );
     } catch (e, stack) {
       debugPrint("Comprehensive Analysis Error: $e\n$stack");
@@ -114,6 +117,12 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       
       if (chunk.length < chunkSize) continue;
       
+      // Calculate chunk energy - skip if too quiet
+      double energy = 0.0;
+      for (var s in chunk) energy += s * s;
+      energy = sqrt(energy / chunkSize);
+      if (energy < 0.01) continue; // Skip near-silent chunks
+      
       // Apply window
       final windowed = Float64List(chunkSize);
       for (int j = 0; j < chunkSize; j++) {
@@ -127,24 +136,39 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       
       // Find peaks
       List<MapEntry<int, double>> peaks = [];
+      double maxMag = 0.0;
       for (int j = 2; j < magnitudes.length ~/ 2 - 2; j++) {
         if (magnitudes[j] > magnitudes[j - 1] &&
-            magnitudes[j] > magnitudes[j + 1] &&
-            magnitudes[j] > magnitudes[j - 2] &&
-            magnitudes[j] > magnitudes[j + 2]) {
+            magnitudes[j] > magnitudes[j + 1]) {
           peaks.add(MapEntry(j, magnitudes[j]));
+          if (magnitudes[j] > maxMag) maxMag = magnitudes[j];
         }
       }
       
-      peaks.sort((a, b) => b.value.compareTo(a.value));
-      
       if (peaks.isNotEmpty) {
-        final dominantFreq = fft.frequency(peaks[0].key, sampleRate.toDouble());
-        dominantFreqs.add(dominantFreq);
+        // Preference for fundamental: 
+        // If we find a peak that is at least 30% of maxMag but at a lower frequency, 
+        // it might be the fundamental.
+        peaks.sort((a, b) => a.key.compareTo(b.key)); // Sort by frequency
         
-        allPeaks.add(peaks.take(5).map((p) => 
-          fft.frequency(p.key, sampleRate.toDouble())
-        ).toList());
+        int selectedIdx = -1;
+        for (var peak in peaks) {
+          if (peak.value > maxMag * 0.3) {
+            selectedIdx = peak.key;
+            break;
+          }
+        }
+        
+        if (selectedIdx != -1) {
+          final dominantFreq = fft.frequency(selectedIdx, sampleRate.toDouble());
+          // Basic filtering for extreme outliers in animal calls (very few are > 3kHz)
+          if (dominantFreq > 50 && dominantFreq < 5000) {
+            dominantFreqs.add(dominantFreq);
+            allPeaks.add(peaks.take(5).map((p) => 
+              fft.frequency(p.key, sampleRate.toDouble())
+            ).toList());
+          }
+        }
       }
     }
     
@@ -454,5 +478,42 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
 
   double _hanningWindow(int n, int N) {
     return 0.5 * (1 - cos(2 * pi * n / (N - 1)));
+  }
+
+  /// Extract a downsampled waveform for visualization
+  List<double> _extractWaveform(Float64List samples, int points) {
+    if (samples.isEmpty) return List.filled(points, 0.0);
+    
+    final result = List<double>.filled(points, 0.0);
+    final chunkSize = samples.length ~/ points;
+    
+    if (chunkSize < 1) {
+      for (int i = 0; i < samples.length; i++) {
+        result[i] = samples[i].abs();
+      }
+      return result;
+    }
+    
+    for (int i = 0; i < points; i++) {
+      double maxVal = 0.0;
+      final start = i * chunkSize;
+      final end = min(start + chunkSize, samples.length);
+      
+      for (int j = start; j < end; j++) {
+        final abs = samples[j].abs();
+        if (abs > maxVal) maxVal = abs;
+      }
+      result[i] = maxVal;
+    }
+    
+    // Normalize to 0-1 range
+    double peak = result.reduce(max);
+    if (peak > 0) {
+      for (int i = 0; i < points; i++) {
+        result[i] /= peak;
+      }
+    }
+    
+    return result;
   }
 }

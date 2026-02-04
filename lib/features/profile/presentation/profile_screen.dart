@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../providers/providers.dart';
-import '../../library/data/mock_reference_database.dart';
+import '../../library/data/reference_database.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -101,7 +101,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     backgroundColor: _getScoreColor(item.result.score).withValues(alpha: 0.2),
                                     child: Text(item.result.score.toStringAsFixed(0), style: TextStyle(color: _getScoreColor(item.result.score), fontWeight: FontWeight.bold)),
                                   ),
-                                  title: Text(MockReferenceDatabase.getById(item.animalId).animalName),
+                                  title: Text(ReferenceDatabase.getById(item.animalId).animalName),
                                   subtitle: Text(DateFormat.yMMMd().add_jm().format(item.timestamp)),
                                   trailing: const Icon(Icons.chevron_right),
                                 ),

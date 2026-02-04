@@ -38,9 +38,11 @@ class AudioAnalysis {
   final double rhythmRegularity; // 0-100, how regular the rhythm is
   final bool isPulsedCall; // Whether call has rhythmic pulses
   
-  /// Overall Metrics
   final double callQualityScore; // 0-100, overall technical quality
   final double noiseLevel; // 0-100, background noise estimate
+  
+  /// Visualization
+  final List<double> waveform; // Normalized amplitudes for display
   
   AudioAnalysis({
     required this.dominantFrequencyHz,
@@ -66,6 +68,7 @@ class AudioAnalysis {
     required this.isPulsedCall,
     required this.callQualityScore,
     required this.noiseLevel,
+    required this.waveform,
   });
 
   factory AudioAnalysis.fromJson(Map<String, dynamic> json) => _$AudioAnalysisFromJson(json);
@@ -101,6 +104,7 @@ class AudioAnalysis {
       isPulsedCall: false,
       callQualityScore: 50.0,
       noiseLevel: 20.0,
+      waveform: List.filled(100, 0.1),
     );
   }
 }

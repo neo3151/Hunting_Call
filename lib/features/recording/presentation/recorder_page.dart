@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../providers/providers.dart';
 import '../../rating/presentation/rating_screen.dart';
-import '../../library/data/mock_reference_database.dart';
+import '../../library/data/reference_database.dart';
 import 'widgets/live_visualizer.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
@@ -18,7 +18,7 @@ class RecorderPage extends ConsumerStatefulWidget {
 }
 
 class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerProviderStateMixin {
-  String selectedCallId = MockReferenceDatabase.calls.first.id;
+  String selectedCallId = ReferenceDatabase.calls.first.id;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -95,7 +95,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       await _audioPlayer.stop();
       setState(() => isPlayingReference = false);
     } else {
-      final call = MockReferenceDatabase.getById(selectedCallId);
+      final call = ReferenceDatabase.getById(selectedCallId);
       final assetPath = call.audioAssetPath.replaceFirst('assets/', '');
       
       try {
@@ -166,7 +166,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                               selectedCallId = newValue!;
                             });
                           },
-                          items: MockReferenceDatabase.calls.map((call) {
+                          items: ReferenceDatabase.calls.map((call) {
                             final parts = _parseCallName(call.animalName);
                             return DropdownMenuItem<String>(
                               value: call.id,

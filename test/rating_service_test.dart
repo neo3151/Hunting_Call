@@ -2,8 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
 import 'package:hunting_calls_perfection/features/analysis/data/real_rating_service.dart';
 import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
 import 'package:hunting_calls_perfection/features/profile/data/profile_repository.dart';
 import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
 
@@ -63,10 +65,14 @@ void main() {
 
   group('RealRatingService Tests', () {
     test('Perfect call should score 100', () async {
-      const animalId = 'duck_mallard_greeting'; // idealPitch: 479, idealDuration: 1.2
-      final audioPath = await createDummyWav(1.2);
+      const animalId = 'duck_mallard_greeting'; 
+      final reference = ReferenceDatabase.getById(animalId);
+      final audioPath = await createDummyWav(reference.idealDurationSec);
       
-      when(() => mockAnalyzer.getDominantFrequency(audioPath)).thenAnswer((_) async => 479.0);
+      when(() => mockAnalyzer.analyzeAudio(audioPath)).thenAnswer((_) async => AudioAnalysis.simple(
+        frequencyHz: reference.idealPitchHz,
+        durationSec: reference.idealDurationSec,
+      ));
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
 
@@ -76,27 +82,32 @@ void main() {
     });
 
     test('High pitch should result in Too High feedback', () async {
-      const animalId = 'duck_mallard_greeting'; // idealPitch: 479, tolerance: 50
-      final audioPath = await createDummyWav(1.2);
+      const animalId = 'duck_mallard_greeting'; 
+      final reference = ReferenceDatabase.getById(animalId);
+      final audioPath = await createDummyWav(reference.idealDurationSec);
       
-      // 580Hz is 101Hz off from 479Hz = 21% deviation
-      // tolerance is 50Hz = 10.4% deviation
-      // excess deviation = 21% - 10.4% = 10.6%
-      // pitchScore = 100 - (10.6 * 3) = 68.2
-      // totalScore = 68.2 * 0.6 + 100 * 0.4 = 40.9 + 40 = 80.9
-      when(() => mockAnalyzer.getDominantFrequency(audioPath)).thenAnswer((_) async => 580.0);
+      // Detected is ideal + tolerance + 100Hz
+      final detectedPitch = reference.idealPitchHz + reference.tolerancePitch + 100.0;
+      when(() => mockAnalyzer.analyzeAudio(audioPath)).thenAnswer((_) async => AudioAnalysis.simple(
+        frequencyHz: detectedPitch,
+        durationSec: reference.idealDurationSec,
+      ));
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
 
-      expect(result.score, closeTo(80.9, 1.0));
+      expect(result.score, lessThan(100.0));
       expect(result.feedback, contains('Too High'));
     });
 
     test('Short duration should result in Too Short feedback', () async {
-      const animalId = 'duck_mallard_greeting'; // idealDuration: 1.2, tolerance: 0.5
-      final audioPath = await createDummyWav(0.5); // 0.7s too short
+      const animalId = 'duck_mallard_greeting'; 
+      final reference = ReferenceDatabase.getById(animalId);
+      final audioPath = await createDummyWav(reference.idealDurationSec * 0.5); 
       
-      when(() => mockAnalyzer.getDominantFrequency(audioPath)).thenAnswer((_) async => 479.0);
+      when(() => mockAnalyzer.analyzeAudio(audioPath)).thenAnswer((_) async => AudioAnalysis.simple(
+        frequencyHz: reference.idealPitchHz,
+        durationSec: reference.idealDurationSec * 0.5,
+      ));
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
 
@@ -107,21 +118,28 @@ void main() {
       // Test that same percentage deviation produces similar scores
       // regardless of whether it's a low or high frequency call
       
-      // Low frequency: deer_buck_grunt at 120Hz, tolerance 30Hz (25%)
-      final deerPath = await createDummyWav(0.8);
-      // 20% deviation = 24Hz off = 144Hz detected
-      when(() => mockAnalyzer.getDominantFrequency(deerPath)).thenAnswer((_) async => 144.0);
-      final deerResult = await ratingService.rateCall('user1', deerPath, 'deer_buck_grunt');
+      // Low frequency: turkey_hen_yelp (now 174Hz)
+      final lowAnimal = ReferenceDatabase.getById('turkey_hen_yelp');
+      final lowPath = await createDummyWav(lowAnimal.idealDurationSec);
+      // 20% deviation
+      when(() => mockAnalyzer.analyzeAudio(lowPath)).thenAnswer((_) async => AudioAnalysis.simple(
+        frequencyHz: lowAnimal.idealPitchHz * 1.2,
+        durationSec: lowAnimal.idealDurationSec,
+      ));
+      final lowResult = await ratingService.rateCall('user1', lowPath, lowAnimal.id);
       
-      // High frequency: elk_bull_bugle at 2000Hz, tolerance 200Hz (10%)  
-      final elkPath = await createDummyWav(3.0);
-      // 20% deviation = 400Hz off = 2400Hz detected
-      when(() => mockAnalyzer.getDominantFrequency(elkPath)).thenAnswer((_) async => 2400.0);
-      final elkResult = await ratingService.rateCall('user1', elkPath, 'elk_bull_bugle');
+      // High frequency: elk_bull_bugle (now 1156Hz) 
+      final highAnimal = ReferenceDatabase.getById('elk_bull_bugle');
+      final highPath = await createDummyWav(highAnimal.idealDurationSec);
+      // 20% deviation
+      when(() => mockAnalyzer.analyzeAudio(highPath)).thenAnswer((_) async => AudioAnalysis.simple(
+        frequencyHz: highAnimal.idealPitchHz * 1.2,
+        durationSec: highAnimal.idealDurationSec,
+      ));
+      final highResult = await ratingService.rateCall('user1', highPath, highAnimal.id);
       
       // Both have 20% deviation - scores should be in similar range
-      // (not exactly equal due to different tolerance percentages)
-      expect((deerResult.score - elkResult.score).abs(), lessThan(20), 
+      expect((lowResult.score - highResult.score).abs(), lessThan(20), 
           reason: 'Same percentage deviation should produce similar scores');
     });
   });

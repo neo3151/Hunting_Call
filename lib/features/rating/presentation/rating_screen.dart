@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../providers/providers.dart';
 import '../domain/rating_model.dart';
-import '../../library/data/mock_reference_database.dart';
+import '../../library/data/reference_database.dart';
+import './widgets/waveform_overlay.dart';
 
 class RatingScreen extends ConsumerStatefulWidget {
   final String audioPath;
@@ -16,6 +17,13 @@ class RatingScreen extends ConsumerStatefulWidget {
 }
 
 class _RatingScreenState extends ConsumerState<RatingScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
   @override
   void initState() {
     super.initState();
@@ -66,15 +74,13 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 ? Center(child: Text("Error: $error", style: const TextStyle(color: Colors.white)))
                 : result == null
                     ? const Center(child: CircularProgressIndicator(color: Color(0xFF5FF7B6)))
-                    : RawScrollbar(
-                        thumbColor: const Color(0xFF5FF7B6),
-                        radius: const Radius.circular(20),
-                        thickness: 6,
+                    : Scrollbar(
+                        controller: _scrollController,
+                        thumbVisibility: true,
                         trackVisibility: true,
-                        trackColor: Colors.white.withOpacity(0.1),
-                        trackBorderColor: Colors.transparent,
-                        padding: EdgeInsets.only(right: 4, top: topPadding, bottom: 20),
                         child: ListView(
+                          controller: _scrollController,
+                          primary: false,
                           padding: EdgeInsets.fromLTRB(20, topPadding, 20, 80),
                           children: [
                             _tryRender(() => _buildOverallProficiency(result.score), "Proficiency"),
@@ -82,6 +88,12 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                             _tryRender(() => _buildAIFeedback(result.feedback), "Feedback"),
                             const SizedBox(height: 32),
                             _tryRender(() => _buildPitchComparison(result), "Pitch Comparison"),
+                            const SizedBox(height: 24),
+                            if (result.userWaveform != null)
+                              WaveformOverlay(
+                                userWaveform: result.userWaveform!,
+                                referenceWaveform: result.referenceWaveform,
+                              ),
                             const SizedBox(height: 24),
                             _tryRender(() => _buildDetailedMetrics(result), "Metrics"),
                             const SizedBox(height: 40),
@@ -162,7 +174,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   }
 
   Widget _buildPitchComparison(RatingResult result) {
-    final reference = MockReferenceDatabase.getById(widget.animalId);
+    final reference = ReferenceDatabase.getById(widget.animalId);
     final targetPitch = _toSafe(reference.idealPitchHz);
     final userPitch = _toSafe(result.pitchHz);
     final diff = userPitch - targetPitch;
@@ -299,7 +311,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   }
 
   Widget _buildDetailedMetrics(RatingResult result) {
-    final reference = MockReferenceDatabase.getById(widget.animalId);
+    final reference = ReferenceDatabase.getById(widget.animalId);
     return Column(
       children: [
         _buildMetricRow("PITCH (HZ)", "Your frequency", "${_toSafe(result.pitchHz).toStringAsFixed(1)} Hz"),

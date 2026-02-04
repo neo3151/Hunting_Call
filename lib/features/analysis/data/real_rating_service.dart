@@ -1,10 +1,12 @@
 import 'dart:math';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import '../../rating/domain/rating_model.dart';
 import '../../rating/domain/rating_service.dart';
+import '../domain/audio_analysis_model.dart';
 import '../domain/frequency_analyzer.dart';
-import '../../library/data/mock_reference_database.dart';
+import '../../library/data/reference_database.dart';
 
 import '../../profile/data/profile_repository.dart';
 
@@ -19,85 +21,66 @@ class RealRatingService implements RatingService {
     debugPrint("RealRatingService: rateCall started for $animalType at $audioPath");
     // 1. Get the ideal metrics
     // We now pass the ID directly from the dropdown
-    final reference = MockReferenceDatabase.getById(animalType);
+    final reference = ReferenceDatabase.getById(animalType);
 
-    // 2. Analyze the user's audio
-    double detectedPitch = await analyzer.getDominantFrequency(audioPath);
-    if (!detectedPitch.isFinite || detectedPitch < 0) {
-      debugPrint("RealRatingService: Invalid pitch detected: $detectedPitch. Defaulting to 0.0");
-      detectedPitch = 0.0;
-    }
+    // 2. Analyze the user's audio and the reference audio
+    final userAnalysis = await analyzer.analyzeAudio(audioPath);
     
-    // Calculate real duration
-    double detectedDuration = 0.0;
+    // For comparison, we also need the reference audio characteristics
+    AudioAnalysis? refAnalysis;
     try {
-      final file = File(audioPath);
-      final bytes = await file.readAsBytes();
-      if (bytes.length > 44) {
-        final ByteData view = bytes.buffer.asByteData();
-        int sampleRate = 44100;
-        if (bytes.length >= 28) {
-          sampleRate = view.getUint32(24, Endian.little);
-        }
-        
-        if (sampleRate > 0) {
-          // Duration = (Total Bytes - Header) / (Sample Rate * Channels * BytesPerSample)
-          detectedDuration = (bytes.length - 44) / (sampleRate * 1 * 2);
-        }
-      }
+      final assetPath = reference.audioAssetPath;
       
-      if (!detectedDuration.isFinite || detectedDuration < 0) {
-        detectedDuration = reference.idealDurationSec;
-      }
+      // Since assetPath is a Flutter asset, we can't use File(assetPath) directly in a running app
+      // We need to load it via rootBundle and save to a temp file for the analyzer
+      final ByteData data = await rootBundle.load(assetPath);
+      final List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      
+      final tempDir = Directory.systemTemp;
+      final tempFile = File('${tempDir.path}/ref_${reference.id}.wav');
+      await tempFile.writeAsBytes(bytes);
+      
+      refAnalysis = await analyzer.analyzeAudio(tempFile.path);
+      debugPrint("RealRatingService: Reference analysis complete. Waveform: ${refAnalysis.waveform.length} pts");
+      
+      // Clean up temp file (optional, but good practice)
+      // await tempFile.delete(); 
     } catch (e) {
-      debugPrint("Duration Analysis Error: $e");
-      detectedDuration = reference.idealDurationSec;
+      debugPrint("Reference Analysis Error: $e");
     }
+
+    final detectedPitch = userAnalysis.dominantFrequencyHz;
+    final detectedDuration = userAnalysis.totalDurationSec;
 
     // 3. Compare (The Algorithm)
     final pitchDiff = (detectedPitch - reference.idealPitchHz).abs();
     final durationDiff = (detectedDuration - reference.idealDurationSec).abs();
 
     // 4. Calculate Score
-    // Pitch contributes 60% of score, Duration 40%
-    // Use PERCENTAGE-BASED deviation for fair scoring across frequency ranges
-    // (50Hz off on a 120Hz grunt is much worse than 50Hz off on a 2000Hz bugle)
-    
     double pitchScore = 100.0;
     if (reference.idealPitchHz > 0) {
-      // Calculate deviation as percentage of ideal frequency
       final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
-      // Tolerance also as percentage
       final tolerancePercent = (reference.tolerancePitch / reference.idealPitchHz) * 100;
       
       if (pitchDeviationPercent > tolerancePercent) {
-        // Deduct 3 points per 1% deviation beyond tolerance, capped at 0
         pitchScore = max(0, 100 - ((pitchDeviationPercent - tolerancePercent) * 3));
       }
     }
 
     double durationScore = 100.0;
     if (reference.idealDurationSec > 0) {
-      // Duration deviation as percentage of ideal duration
       final durationDeviationPercent = (durationDiff / reference.idealDurationSec) * 100;
       final toleranceDurationPercent = (reference.toleranceDuration / reference.idealDurationSec) * 100;
       
       if (durationDeviationPercent > toleranceDurationPercent) {
-        // Deduct 2 points per 1% deviation beyond tolerance, capped at 0
         durationScore = max(0, 100 - ((durationDeviationPercent - toleranceDurationPercent) * 2));
       }
     }
 
     double totalScore = (pitchScore * 0.6) + (durationScore * 0.4);
-    
-    // Safety check for NaN or Infinity
-    if (totalScore.isNaN || totalScore.isInfinite) {
-      totalScore = 0.0;
-    }
     totalScore = totalScore.clamp(0, 100);
 
     // 5. Generate Feedback
-    // Only give "Outstanding" if BOTH pitch and duration are within tolerance
     String feedback = "";
     final bool pitchIsGood = pitchScore >= 85;
     final bool durationIsGood = durationScore >= 85;
@@ -105,35 +88,17 @@ class RealRatingService implements RatingService {
     if (pitchIsGood && durationIsGood) {
       feedback = "Outstanding! You sound just like a ${reference.animalName}.";
     } else if (!pitchIsGood && !durationIsGood) {
-      // Both need work - prioritize the worse one
       if (pitchScore < durationScore) {
         final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
-        if (detectedPitch > reference.idealPitchHz) {
-          feedback = "Too High! Lower your pitch by ~${pitchDeviationPercent.toStringAsFixed(0)}% (${pitchDiff.toInt()}Hz). Duration also needs work.";
-        } else {
-          feedback = "Too Low! Raise your pitch by ~${pitchDeviationPercent.toStringAsFixed(0)}% (${pitchDiff.toInt()}Hz). Duration also needs work.";
-        }
+        feedback = "Pitch is off by ${pitchDeviationPercent.toStringAsFixed(0)}%. Duration also needs work.";
       } else {
-        if (detectedDuration > reference.idealDurationSec) {
-          feedback = "Too Long! Shorten by ${(detectedDuration - reference.idealDurationSec).toStringAsFixed(1)}s. Pitch also needs work.";
-        } else {
-          feedback = "Too Short! Hold for ${(reference.idealDurationSec - detectedDuration).toStringAsFixed(1)}s longer. Pitch also needs work.";
-        }
+        feedback = "Duration is off. Pitch also needs work.";
       }
     } else if (!pitchIsGood) {
       final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
-      if (detectedPitch > reference.idealPitchHz) {
-        feedback = "Too High! Lower your pitch by ~${pitchDeviationPercent.toStringAsFixed(0)}% (${pitchDiff.toInt()}Hz).";
-      } else {
-        feedback = "Too Low! Raise your pitch by ~${pitchDeviationPercent.toStringAsFixed(0)}% (${pitchDiff.toInt()}Hz).";
-      }
+      feedback = detectedPitch > reference.idealPitchHz ? "Too High! Lower your pitch." : "Too Low! Raise your pitch.";
     } else {
-      // Duration needs work
-      if (detectedDuration > reference.idealDurationSec) {
-        feedback = "Too Long! Shorten the call by ${(detectedDuration - reference.idealDurationSec).toStringAsFixed(1)}s.";
-      } else {
-        feedback = "Too Short! Hold the call for ${(reference.idealDurationSec - detectedDuration).toStringAsFixed(1)}s longer.";
-      }
+      feedback = detectedDuration > reference.idealDurationSec ? "Too Long!" : "Too Short!";
     }
 
     final result = RatingResult(
@@ -144,7 +109,18 @@ class RealRatingService implements RatingService {
         "Pitch (Hz)": detectedPitch,
         "Target Pitch": reference.idealPitchHz,
         "Duration (s)": detectedDuration,
+        "avg_volume": userAnalysis.averageVolume * 100,
+        "peak_volume": userAnalysis.peakVolume * 100,
+        "consistency": userAnalysis.volumeConsistency,
+        "tone_clarity": userAnalysis.toneClarity,
+        "harmonic_richness": userAnalysis.harmonicRichness,
+        "call_quality": userAnalysis.callQualityScore,
+        "brightness": userAnalysis.brightness,
+        "warmth": userAnalysis.warmth,
+        "nasality": userAnalysis.nasality,
       },
+      userWaveform: userAnalysis.waveform,
+      referenceWaveform: refAnalysis?.waveform,
     );
 
     // Save to history

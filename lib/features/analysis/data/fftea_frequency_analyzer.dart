@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:fftea/fftea.dart';
 import 'package:flutter/foundation.dart';
 import '../domain/frequency_analyzer.dart';
+import '../domain/audio_analysis_model.dart';
 
 class FFTEAFrequencyAnalyzer implements FrequencyAnalyzer {
   /// FFT chunk size - must be power of 2. Larger = better frequency resolution
@@ -134,6 +135,20 @@ class FFTEAFrequencyAnalyzer implements FrequencyAnalyzer {
     
     final peakFreq = fft.frequency(peakIndex, sampleRate.toDouble());
     return _ChunkResult(frequency: peakFreq, amplitude: maxMag);
+  }
+
+  @override
+  Future<AudioAnalysis> analyzeAudio(String audioPath) async {
+    debugPrint("--- USING FFTEA ANALYZER ---");
+    final freq = await getDominantFrequency(audioPath);
+    // Rough estimation of duration
+    double duration = 0.0;
+    try {
+      final file = File(audioPath);
+      final bytes = await file.readAsBytes();
+      duration = (bytes.length - 44) / (44100 * 2);
+    } catch (_) {}
+    return AudioAnalysis.simple(frequencyHz: freq, durationSec: duration);
   }
 }
 
