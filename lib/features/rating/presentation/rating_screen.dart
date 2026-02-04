@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,8 +19,8 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   @override
   void initState() {
     super.initState();
-    // Start analysis on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(ratingNotifierProvider.notifier).reset();
       ref.read(ratingNotifierProvider.notifier).analyzeCall(widget.userId, widget.audioPath, widget.animalId);
     });
   }
@@ -33,14 +32,27 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     final isLoading = ratingState.isAnalyzing;
     final error = ratingState.error;
 
+    // Calculate safe top padding to prevent AppBar overlap
+    final topPadding = MediaQuery.of(context).padding.top + kToolbarHeight + 20;
+
     return Scaffold(
+      backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('ANALYSIS RESULT', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+        title: Text('ANALYSIS RESULT', 
+          style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 16, color: Colors.white)
+        ),
+        centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/forest_background.png'),
@@ -48,388 +60,457 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
             colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
           ),
         ),
-        child: SafeArea(
-          child: isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.greenAccent))
-              : error != null
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.error_outline, color: Colors.red, size: 64),
-                          const SizedBox(height: 16),
-                          Text("Analysis failed: $error", style: GoogleFonts.lato(color: Colors.white)),
-                          const SizedBox(height: 24),
-                          ElevatedButton(
-                            onPressed: () => ref.read(ratingNotifierProvider.notifier).analyzeCall(widget.userId, widget.audioPath, widget.animalId),
-                            child: const Text("Retry"),
-                          ),
-                        ],
-                      ),
-                    )
-                  : result == null 
-                      ? Center(child: Text("Analysis failed.", style: GoogleFonts.lato(color: Colors.white)))
-                      : SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                            const SizedBox(height: 20),
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 180,
-                                  height: 180,
-                                  child: CircularProgressIndicator(
-                                    value: result.score / 100,
-                                    strokeWidth: 12,
-                                    color: _getScoreColor(result.score),
-                                    backgroundColor: Colors.white.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                 Text(
-                                   "${result.score.toStringAsFixed(0)}%",
-                                   style: GoogleFonts.oswald(
-                                     fontSize: 48,
-                                     fontWeight: FontWeight.bold,
-                                     color: Colors.white,
-                                   ),
-                                 ),
-                              ],
-                            ),
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFF5FF7B6)))
+            : error != null
+                ? Center(child: Text("Error: $error", style: const TextStyle(color: Colors.white)))
+                : result == null
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF5FF7B6)))
+                    : RawScrollbar(
+                        thumbColor: const Color(0xFF5FF7B6),
+                        radius: const Radius.circular(20),
+                        thickness: 6,
+                        trackVisibility: true,
+                        trackColor: Colors.white.withOpacity(0.1),
+                        trackBorderColor: Colors.transparent,
+                        padding: EdgeInsets.only(right: 4, top: topPadding, bottom: 20),
+                        child: ListView(
+                          padding: EdgeInsets.fromLTRB(20, topPadding, 20, 80),
+                          children: [
+                            _tryRender(() => _buildOverallProficiency(result.score), "Proficiency"),
+                            const SizedBox(height: 40),
+                            _tryRender(() => _buildAIFeedback(result.feedback), "Feedback"),
                             const SizedBox(height: 32),
-                            Text(
-                              result.feedback,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.lato(
-                                fontSize: 20,
-                                color: Colors.white,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                            const SizedBox(height: 48),
-
-                            // Pitch Analysis Visualization (from remote)
-                            _buildPitchComparisonCard(result),
-                            
+                            _tryRender(() => _buildPitchComparison(result), "Pitch Comparison"),
                             const SizedBox(height: 24),
-                            
-                            // Metrics Grid
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: 1.5,
-                              ),
-                              itemCount: result.metrics.length,
-                              itemBuilder: (context, index) {
-                                final key = result.metrics.keys.elementAt(index);
-                                final value = result.metrics[key]!;
-                                return _buildMetricCard(key, value);
-                              },
-                            ),
-
-                            const SizedBox(height: 32),
-                            
-                            // Comprehensive Analytics Section (from remote)
-                            _buildComprehensiveAnalytics(result),
-
-                            const SizedBox(height: 48),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white.withValues(alpha: 0.1),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 20),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                                  ),
-                                ),
-                                child: Text('DISMISS', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 2)),
-                              ),
-                            ),
+                            _tryRender(() => _buildDetailedMetrics(result), "Metrics"),
+                            const SizedBox(height: 40),
+                            _tryRender(() => _buildComprehensiveAnalytics(result), "Analytics"),
+                            const SizedBox(height: 40),
+                            _tryRender(() => _buildTipSection(), "Tip"),
                             const SizedBox(height: 24),
-                        ],
+                            _buildBackButton(),
+                          ],
+                        ),
                       ),
-                    ),
-        ),
       ),
     );
   }
 
-  Color _getScoreColor(double score) {
-    if (score >= 80) return Colors.greenAccent;
-    if (score >= 50) return Colors.orangeAccent;
-    return Colors.redAccent;
+  Widget _tryRender(Widget Function() builder, String sectionName) {
+    try {
+      return builder();
+    } catch (e, stack) {
+      debugPrint("RENDER ERROR in $sectionName: $e\n$stack");
+      return Container(
+        padding: const EdgeInsets.all(8),
+        color: Colors.red.withOpacity(0.2),
+        child: Text("Error in $sectionName: $e", style: const TextStyle(color: Colors.red, fontSize: 10)),
+      );
+    }
   }
 
-  Widget _buildPitchComparisonCard(RatingResult result) {
-    // New visualization component from remote
-    final reference = MockReferenceDatabase.getById(widget.animalId);
-    final userPitch = result.pitchHz;
-    final targetPitch = reference.idealPitchHz;
-    
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("PITCH FREQUENCY", style: GoogleFonts.oswald(color: Colors.white70, fontSize: 14, letterSpacing: 1.5)),
-              const SizedBox(height: 24),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  return Stack(
-                    children: [
-                      // Frequency Line
-                      Container(
-                        height: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 20),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      // Target Range (Shaded area)
-                      Positioned(
-                        left: _calculatePitchPosition(targetPitch - reference.tolerancePitch, targetPitch, context) * constraints.maxWidth,
-                        width: (_calculatePitchPosition(targetPitch + reference.tolerancePitch, targetPitch, context) - 
-                                _calculatePitchPosition(targetPitch - reference.tolerancePitch, targetPitch, context)) * constraints.maxWidth,
-                        child: Container(
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.greenAccent.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ),
-                      // Target Pointer
-                      Positioned(
-                        left: _calculatePitchPosition(targetPitch, targetPitch, context) * constraints.maxWidth - 1,
-                        child: Column(
-                          children: [
-                            Container(width: 2, height: 44, color: Colors.greenAccent),
-                            const SizedBox(height: 4),
-                            Text("${targetPitch.toInt()}Hz", style: GoogleFonts.lato(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                      // User Pointer
-                      Positioned(
-                        left: _calculatePitchPosition(userPitch, targetPitch, context) * constraints.maxWidth - 20,
-                        child: Column(
-                          children: [
-                            const Icon(Icons.location_on, color: Colors.blueAccent, size: 24),
-                            const SizedBox(height: 20),
-                            Text("${userPitch.toInt()}Hz", style: GoogleFonts.lato(color: Colors.blueAccent, fontSize: 12, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
+  Widget _buildOverallProficiency(dynamic score) {
+    final double s = _toSafe(score).clamp(0, 100);
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 180,
+              height: 180,
+              child: CircularProgressIndicator(
+                value: s / 100,
+                strokeWidth: 10,
+                color: const Color(0xFF5FF7B6),
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
               ),
-              const SizedBox(height: 50),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            Text("${s.toInt()}%", style: GoogleFonts.oswald(fontSize: 64, fontWeight: FontWeight.bold, color: Colors.white)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Text("OVERALL PROFICIENCY", style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white60, fontWeight: FontWeight.w500)),
+      ],
+    );
+  }
+
+  Widget _buildAIFeedback(String feedback) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.auto_awesome, color: Color(0xFF5FF7B6), size: 14),
+              const SizedBox(width: 8),
+              Text("AI FEEDBACK", style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(feedback, textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 14, color: Colors.white.withValues(alpha: 0.9), height: 1.5)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPitchComparison(RatingResult result) {
+    final reference = MockReferenceDatabase.getById(widget.animalId);
+    final targetPitch = _toSafe(reference.idealPitchHz);
+    final userPitch = _toSafe(result.pitchHz);
+    final diff = userPitch - targetPitch;
+    final isTooHigh = diff > 0;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        children: [
+          Text("PITCH COMPARISON", style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
                 children: [
-                   _buildSmallLegend("TARGET", Colors.greenAccent),
-                   _buildSmallLegend("YOU", Colors.blueAccent),
-                   _buildSmallLegend("TOLERANCE", Colors.greenAccent.withValues(alpha: 0.3)),
+                  Text("TARGET", style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
+                  const SizedBox(height: 4),
+                  Text("${targetPitch.toInt()} Hz", style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Column(
+                children: [
+                  Icon(isTooHigh ? Icons.arrow_upward : Icons.arrow_downward, color: const Color(0xFF5FF7B6), size: 20),
+                  const SizedBox(height: 2),
+                  Text(isTooHigh ? "TOO HIGH" : "TOO LOW", style: GoogleFonts.oswald(fontSize: 9, color: Colors.white70, fontWeight: FontWeight.bold)),
+                  Text("${diff.abs().toInt()} Hz", style: GoogleFonts.lato(fontSize: 9, color: Colors.white38)),
+                ],
+              ),
+              Column(
+                children: [
+                  Text("YOUR PITCH", style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
+                  const SizedBox(height: 4),
+                  Text("${userPitch.toInt()} Hz", style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 24),
+          _buildPitchSlider(userPitch, targetPitch, reference.tolerancePitch),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF5FF7B6).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text("Within tolerance ✓", style: GoogleFonts.lato(fontSize: 10, color: const Color(0xFF5FF7B6), fontWeight: FontWeight.w600)),
+          ),
+        ],
       ),
     );
   }
 
-  double _calculatePitchPosition(double current, double target, BuildContext context) {
-    // Relative position on a logarithmic or linear scale for visualization
-    const minFreq = 50.0;
-    final maxFreq = (target * 2).clamp(1000.0, 5000.0);
-    
-    final normalized = (current - minFreq) / (maxFreq - minFreq);
-    return normalized.clamp(0.0, 1.0);
+  Widget _buildPitchSlider(double user, double target, double tolerance) {
+    return SizedBox(
+      height: 20, // Explicit height to prevent collapse/infinite expansion
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          const minFreq = 100.0;
+          const maxFreq = 1000.0;
+          
+          double normalize(double val) => ((val - minFreq) / (maxFreq - minFreq)).clamp(0, 1);
+          
+          final targetNorm = normalize(target);
+          final userNorm = normalize(user);
+          final toleranceNorm = (tolerance / (maxFreq - minFreq)).clamp(0, 0.3);
+          
+          final maxWidth = constraints.maxWidth;
+          final targetPos = targetNorm * maxWidth;
+          final userPos = userNorm * maxWidth;
+          final toleranceWidth = toleranceNorm * maxWidth * 2;
+          
+          // Debugging values
+          // debugPrint("Slider: T=$targetPos, U=$userPos, TolW=$toleranceWidth, Max=$maxWidth");
+          
+          return Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.centerLeft,
+            children: [
+              // 1. Background Track
+              Container(
+                height: 8,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              
+              // 2. Tolerance Zone
+              Positioned(
+                left: (targetPos - toleranceWidth / 2).clamp(0, maxWidth),
+                width: toleranceWidth.clamp(0, maxWidth), // Explicit width
+                height: 8,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5FF7B6).withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              
+              // 3. User Indicator
+              Positioned(
+                left: (userPos - 2).clamp(0, maxWidth - 4),
+                width: 4,
+                height: 12, // Slightly taller
+                top: -2, // Center vertically relative to 8px track
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5FF7B6),
+                    borderRadius: BorderRadius.circular(2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF5FF7B6).withValues(alpha: 0.5), 
+                        blurRadius: 4, 
+                        spreadRadius: 1
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
-  Widget _buildSmallLegend(String label, Color color) {
-    return Row(
+  Widget _buildDetailedMetrics(RatingResult result) {
+    final reference = MockReferenceDatabase.getById(widget.animalId);
+    return Column(
       children: [
-        Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
-        const SizedBox(width: 8),
-        Text(label, style: GoogleFonts.lato(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold)),
+        _buildMetricRow("PITCH (HZ)", "Your frequency", "${_toSafe(result.pitchHz).toStringAsFixed(1)} Hz"),
+        const SizedBox(height: 8),
+        _buildMetricRow("TARGET PITCH", "Ideal frequency", "${_toSafe(reference.idealPitchHz).toStringAsFixed(1)} Hz"),
+        const SizedBox(height: 8),
+        _buildMetricRow("DURATION (S)", "Call length", "${_toSafe(result.metrics['Duration (s)'] ?? 1.0).toStringAsFixed(2)} s"),
       ],
     );
   }
 
-  Widget _buildMetricCard(String key, double value) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          child: Column(
+  Widget _buildMetricRow(String label, String sublabel, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(key.toUpperCase(), style: GoogleFonts.oswald(color: Colors.white54, fontSize: 10, letterSpacing: 1)),
-              const SizedBox(height: 4),
-              FittedBox(
-                child: Text(
-                  value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(2),
-                  style: GoogleFonts.oswald(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(_getMetricDescription(key), style: GoogleFonts.lato(color: Colors.white38, fontSize: 9)),
+              Text(label, style: GoogleFonts.oswald(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              Text(sublabel, style: GoogleFonts.lato(fontSize: 9, color: Colors.white38)),
             ],
           ),
-        ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(value, style: GoogleFonts.oswald(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
-  }
-
-  String _getMetricDescription(String key) {
-    switch (key.toLowerCase()) {
-      case 'pitch (hz)': return 'Dominant frequency detected';
-      case 'target pitch': return 'Ideal frequency for this call';
-      case 'duration (s)': return 'Total length of your call';
-      default: return 'Call characteristic';
-    }
   }
 
   Widget _buildComprehensiveAnalytics(RatingResult result) {
-    // This is from the remote pull - adding high-fidelity mock analytics
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildAnalyticsSectionHeader("ADVANCED SPECTRUM ANALYSIS"),
-        const SizedBox(height: 16),
-        _buildAnalyticsCategory(
-          "HARMONIC FIDELITY", 
-          Icons.auto_graph_rounded,
-          [
-            _buildAnalyticsMetric("Fundamental Sync", 94.2, "%", Colors.greenAccent),
-            _buildAnalyticsMetric("Overtone Stability", 82.5, "%", Colors.orangeAccent),
-          ]
+        Row(
+          children: [
+            Container(width: 3, height: 14, decoration: const BoxDecoration(color: Color(0xFF5FF7B6), borderRadius: BorderRadius.all(Radius.circular(2)))),
+            const SizedBox(width: 8),
+            Text("COMPREHENSIVE ANALYTICS", style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
         ),
-        const SizedBox(height: 16),
-        _buildAnalyticsCategory(
-          "TIMBRAL TEXTURE", 
-          Icons.waves_rounded,
-          [
-            _buildAnalyticsMetric("Spectral Flux", 12.4, "dB", Colors.blueAccent),
-            _buildAnalyticsMetric("Zero Crossing Rate", 458, "Hz", Colors.purpleAccent),
-          ]
-        ),
-        const SizedBox(height: 16),
-        _buildAnalyticsInfo("Your call exhibits strong fundamental stability but could benefit from more controlled breath support in the final 20% of the duration."),
+        const SizedBox(height: 20),
+        _buildAnalyticsSection("VOLUME ANALYSIS", Icons.volume_up, [
+          _buildAnalyticsCard("Average Volume", result.metrics['avg_volume'] ?? 65.0),
+          _buildAnalyticsCard("Peak Volume", result.metrics['peak_volume'] ?? 82.0),
+          _buildAnalyticsCard("Consistency", result.metrics['consistency'] ?? 78.0),
+        ]),
+        const SizedBox(height: 12),
+        _buildAnalyticsSection("TONE ANALYSIS", Icons.tune, [
+          _buildAnalyticsCard("Tone Clarity", result.metrics['tone_clarity'] ?? 85.0),
+          _buildAnalyticsCard("Harmonic Richness", result.metrics['harmonic_richness'] ?? 72.0),
+          _buildAnalyticsCard("Call Quality", result.metrics['call_quality'] ?? 88.0),
+        ]),
+        const SizedBox(height: 12),
+        _buildAnalyticsSection("TIMBRE ANALYSIS", Icons.waves, [
+          _buildAnalyticsCard("Brightness", result.metrics['brightness'] ?? 55.0),
+          _buildAnalyticsCard("Warmth", result.metrics['warmth'] ?? 68.0),
+          _buildAnalyticsCard("Nasality", result.metrics['nasality'] ?? 42.0),
+        ]),
+        const SizedBox(height: 12),
+        _buildAnalyticsSection("RHYTHM ANALYSIS", Icons.timeline, [
+          _buildAnalyticsCard("Tempo", null),
+          _buildAnalyticsCard("Regularity", null),
+        ], isNotPulsed: true),
       ],
     );
   }
 
-  Widget _buildAnalyticsSectionHeader(String title) {
-    return Row(
-      children: [
-        Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(title, style: GoogleFonts.oswald(color: Colors.white38, fontSize: 12, letterSpacing: 2)),
-        ),
-        Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
-      ],
-    );
-  }
-
-  Widget _buildAnalyticsCategory(String title, IconData icon, List<Widget> metrics) {
+  Widget _buildAnalyticsSection(String title, IconData icon, List<Widget> cards, {bool isNotPulsed = false}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: Colors.white38, size: 16),
+              Icon(icon, color: const Color(0xFF5FF7B6), size: 14),
               const SizedBox(width: 8),
-              Text(title, style: GoogleFonts.oswald(color: Colors.white70, fontSize: 13)),
+              Text(title, style: GoogleFonts.oswald(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 1)),
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: metrics,
-          ),
+          if (isNotPulsed)
+            Column(
+              children: [
+                Row(
+                  children: cards.map((c) => Expanded(child: Padding(padding: const EdgeInsets.only(right: 8), child: c))).toList(),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text("Not a pulsed call", textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 10, color: Colors.white24, fontStyle: FontStyle.italic)),
+                ),
+              ],
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(children: cards.map((c) => Padding(padding: const EdgeInsets.only(right: 8), child: c)).toList()),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildAnalyticsMetric(String label, double value, String unit, Color color) {
-    return Column(
-      children: [
-        Text(label, style: GoogleFonts.lato(color: Colors.white38, fontSize: 11)),
-        const SizedBox(height: 4),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(_formatAnalyticsValue(value), style: GoogleFonts.oswald(color: color, fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 2),
-            Text(unit, style: GoogleFonts.lato(color: Colors.white24, fontSize: 10)),
-          ],
-        ),
-      ],
+  Widget _buildAnalyticsCard(String label, double? value) {
+    final safeValue = value != null && value.isFinite ? value.clamp(0, 100) : null;
+    Color getColor(num? v) {
+      if (v == null) return Colors.white24;
+      if (v >= 80) return const Color(0xFF5FF7B6);
+      if (v >= 60) return const Color(0xFFB8E986);
+      return const Color(0xFFFFB74D);
+    }
+    
+    return Container(
+      width: 100,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: GoogleFonts.lato(fontSize: 9, color: Colors.white38, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Text(
+            safeValue != null ? "${safeValue.toStringAsFixed(1)} %" : "--",
+            style: GoogleFonts.oswald(fontSize: 18, color: getColor(safeValue), fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          if (safeValue != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: safeValue / 100,
+                minHeight: 3,
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
+                color: getColor(safeValue),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Widget _buildAnalyticsInfo(String text) {
+  Widget _buildTipSection() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blueAccent.withValues(alpha: 0.1),
+        color: const Color(0xFF5FF7B6).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
+        border: Border.all(color: const Color(0xFF5FF7B6).withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline, color: Colors.blueAccent, size: 20),
+          const Icon(Icons.lightbulb_outline, color: Color(0xFF5FF7B6), size: 18),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: GoogleFonts.lato(color: Colors.white70, fontSize: 12, height: 1.5))),
+          Expanded(
+            child: Text(
+              "Tip: These analytics help you understand the complete quality of your call, not just pitch and duration. Practice improving each dimension!",
+              style: GoogleFonts.lato(fontSize: 11, color: Colors.white70, height: 1.4),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  String _formatAnalyticsValue(double value) {
-    if (value % 1 == 0) return value.toInt().toString();
-    return value.toStringAsFixed(1);
+  Widget _buildBackButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () => Navigator.of(context).pop(),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF8BB781),
+          foregroundColor: Colors.black87,
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Text("BACK TO DASHBOARD", style: GoogleFonts.oswald(fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+      ),
+    );
+  }
+
+  double _toSafe(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is num) return val.isFinite ? val.toDouble() : 0.0;
+    return double.tryParse(val.toString()) ?? 0.0;
   }
 }

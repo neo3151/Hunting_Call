@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import '../features/auth/domain/auth_repository.dart';
-import '../features/auth/data/mock_auth_repository.dart';
 
 /// Provides the AuthRepository instance
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return MockAuthRepository();
+  return GetIt.I<AuthRepository>();
 });
 
 /// Tracks the current authenticated user ID
@@ -17,11 +17,7 @@ final authStateProvider = StreamProvider<String?>((ref) {
 class AuthNotifier extends Notifier<AsyncValue<String?>> {
   @override
   AsyncValue<String?> build() {
-    // Listen to auth state changes
-    ref.listen(authStateProvider, (previous, next) {
-      state = next;
-    });
-    return const AsyncValue.loading();
+    return ref.watch(authStateProvider);
   }
 
   Future<void> signIn(String userId) async {

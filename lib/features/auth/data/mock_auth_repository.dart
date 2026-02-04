@@ -9,10 +9,13 @@ class MockAuthRepository implements AuthRepository {
   MockAuthRepository() {
     _controller = StreamController<String?>.broadcast(
       onListen: () {
-        _controller.add(_currentUser);
+        scheduleMicrotask(() {
+          if (!_controller.isClosed) {
+            _controller.add(_currentUser);
+          }
+        });
       },
     );
-    // Initial state is already null in _currentUser
   }
 
   @override

@@ -81,8 +81,11 @@ class FFTEAFrequencyAnalyzer implements FrequencyAnalyzer {
     
     final dominantFreq = totalWeight > 0 ? weightedSum / totalWeight : 0.0;
     debugPrint("FFT Analysis: Weighted average = ${dominantFreq.toStringAsFixed(1)}Hz from $numChunks chunks");
-    
     return dominantFreq;
+    } catch (e) {
+      debugPrint("FFT Analysis Error: $e");
+      return 0.0;
+    }
   }
   
   /// Analyze a single chunk when audio is too short for multi-chunk analysis
@@ -93,6 +96,8 @@ class FFTEAFrequencyAnalyzer implements FrequencyAnalyzer {
   
   /// Analyze a chunk and return frequency + amplitude, or null if analysis fails
   _ChunkResult? _analyzeChunk(ByteData view, int offset, int length, int sampleRate) {
+    if (sampleRate <= 0) return null;
+    
     // Build signal array, normalized to -1.0 to 1.0
     final signal = Float64List(length);
     for (var i = 0; i < length; i++) {

@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import '../features/recording/domain/audio_recorder_service.dart';
-import '../features/recording/data/real_audio_recorder_service.dart';
 
 /// Provides the AudioRecorderService instance
 final audioRecorderServiceProvider = Provider<AudioRecorderService>((ref) {
-  return RealAudioRecorderService();
+  return GetIt.I<AudioRecorderService>();
 });
 
 /// State for recording session

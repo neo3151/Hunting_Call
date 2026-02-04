@@ -1,21 +1,19 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import '../features/analysis/domain/frequency_analyzer.dart';
-import '../features/analysis/data/fftea_frequency_analyzer.dart';
 import '../features/rating/domain/rating_service.dart';
-import '../features/analysis/data/real_rating_service.dart';
 import '../features/rating/domain/rating_model.dart';
 import 'profile_provider.dart';
 
 /// Provides the FrequencyAnalyzer instance
 final frequencyAnalyzerProvider = Provider<FrequencyAnalyzer>((ref) {
-  return FFTEAFrequencyAnalyzer();
+  return GetIt.I<FrequencyAnalyzer>();
 });
 
 /// Provides the RatingService instance
 final ratingServiceProvider = Provider<RatingService>((ref) {
-  final analyzer = ref.watch(frequencyAnalyzerProvider);
-  final profileRepo = ref.watch(profileRepositoryProvider);
-  return RealRatingService(analyzer: analyzer, profileRepository: profileRepo);
+  return GetIt.I<RatingService>();
 });
 
 /// State for rating/analysis operations
@@ -54,12 +52,15 @@ class RatingNotifier extends Notifier<RatingState> {
 
   /// Analyze a recorded call
   Future<RatingResult?> analyzeCall(String userId, String audioPath, String animalId) async {
+    debugPrint("RatingNotifier: Starting analysis for $animalId at $audioPath");
     state = state.copyWith(isAnalyzing: true, error: null);
     try {
       final result = await _ratingService.rateCall(userId, audioPath, animalId);
+      debugPrint("RatingNotifier: Analysis complete. Success: ${result != null}");
       state = state.copyWith(isAnalyzing: false, result: result);
       return result;
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint("RatingNotifier: Analysis error: $e\n$stack");
       state = state.copyWith(isAnalyzing: false, error: e.toString());
       return null;
     }
@@ -67,7 +68,26 @@ class RatingNotifier extends Notifier<RatingState> {
 
   /// Reset state
   void reset() {
+    debugPrint("RatingNotifier: Resetting state");
     state = const RatingState();
+  }
+
+  /// Force a success state for debugging
+  void forceSuccess() {
+    debugPrint("RatingNotifier: Forcing success state");
+    state = RatingState(
+      isAnalyzing: false,
+      result: RatingResult(
+        score: 95.0,
+        feedback: "Debug: This is a forced success result.",
+        pitchHz: 440.0,
+        metrics: {
+          "Pitch (Hz)": 440.0,
+          "Target Pitch": 440.0,
+          "Duration (s)": 1.5,
+        },
+      ),
+    );
   }
 }
 

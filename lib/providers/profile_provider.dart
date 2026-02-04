@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_it/get_it.dart';
 import '../features/profile/data/profile_repository.dart';
 import '../features/profile/data/local_profile_data_source.dart';
 import '../features/profile/domain/profile_model.dart';
@@ -6,7 +8,7 @@ import '../features/rating/domain/rating_model.dart';
 
 /// Provides the ProfileDataSource instance
 final profileDataSourceProvider = Provider<LocalProfileDataSource>((ref) {
-  return LocalProfileDataSource();
+  return LocalProfileDataSource(sharedPreferences: GetIt.I<SharedPreferences>());
 });
 
 /// Provides the ProfileRepository instance

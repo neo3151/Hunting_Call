@@ -16,12 +16,17 @@ class RealRatingService implements RatingService {
 
   @override
   Future<RatingResult> rateCall(String userId, String audioPath, String animalType) async {
+    debugPrint("RealRatingService: rateCall started for $animalType at $audioPath");
     // 1. Get the ideal metrics
     // We now pass the ID directly from the dropdown
     final reference = MockReferenceDatabase.getById(animalType);
 
     // 2. Analyze the user's audio
-    final detectedPitch = await analyzer.getDominantFrequency(audioPath);
+    double detectedPitch = await analyzer.getDominantFrequency(audioPath);
+    if (!detectedPitch.isFinite || detectedPitch < 0) {
+      debugPrint("RealRatingService: Invalid pitch detected: $detectedPitch. Defaulting to 0.0");
+      detectedPitch = 0.0;
+    }
     
     // Calculate real duration
     double detectedDuration = 0.0;
@@ -34,13 +39,18 @@ class RealRatingService implements RatingService {
         if (bytes.length >= 28) {
           sampleRate = view.getUint32(24, Endian.little);
         }
-        // Duration = (Total Bytes - Header) / (Sample Rate * Channels * BytesPerSample)
-        // We assume 1 channel, 2 bytes per sample (16-bit) as per RecorderConfig
-        detectedDuration = (bytes.length - 44) / (sampleRate * 1 * 2);
+        
+        if (sampleRate > 0) {
+          // Duration = (Total Bytes - Header) / (Sample Rate * Channels * BytesPerSample)
+          detectedDuration = (bytes.length - 44) / (sampleRate * 1 * 2);
+        }
+      }
+      
+      if (!detectedDuration.isFinite || detectedDuration < 0) {
+        detectedDuration = reference.idealDurationSec;
       }
     } catch (e) {
       debugPrint("Duration Analysis Error: $e");
-      // Fallback to reference duration to avoid division by zero or errors
       detectedDuration = reference.idealDurationSec;
     }
 
@@ -78,7 +88,13 @@ class RealRatingService implements RatingService {
       }
     }
 
-    final totalScore = (pitchScore * 0.6) + (durationScore * 0.4);
+    double totalScore = (pitchScore * 0.6) + (durationScore * 0.4);
+    
+    // Safety check for NaN or Infinity
+    if (totalScore.isNaN || totalScore.isInfinite) {
+      totalScore = 0.0;
+    }
+    totalScore = totalScore.clamp(0, 100);
 
     // 5. Generate Feedback
     // Only give "Outstanding" if BOTH pitch and duration are within tolerance
