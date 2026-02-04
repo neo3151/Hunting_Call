@@ -15,6 +15,10 @@
 *.iws
 .idea/
 
+# Test and coverage
+test_results.log
+coverage/
+
 # The .vscode folder contains launch configurations and scripts you may want to
 # share with team members. However, if you'd like to customize these
 # configurations for your personal use, keep this out of git.
