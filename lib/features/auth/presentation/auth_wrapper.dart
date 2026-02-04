@@ -1,36 +1,46 @@
 import 'package:flutter/material.dart';
-import '../../../injection_container.dart' as di;
-import '../../auth/domain/auth_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../providers/auth_provider.dart';
 import 'login_screen.dart';
 import '../../home/presentation/home_screen.dart';
 
-class AuthWrapper extends StatefulWidget {
+/// Watches auth state and shows LoginScreen or HomeScreen accordingly
+class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
 
   @override
-  State<AuthWrapper> createState() => _AuthWrapperState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
 
-class _AuthWrapperState extends State<AuthWrapper> {
-  String? userId;
-
-  @override
-  void initState() {
-    super.initState();
-    di.sl<AuthRepository>().onAuthStateChanged.listen((user) {
-      if (mounted) {
-        setState(() {
-          userId = user;
-        });
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (userId == null) {
-      return const LoginScreen();
-    }
-    return HomeScreen(userId: userId!);
+    return authState.when(
+      data: (userId) {
+        if (userId == null) {
+          return const LoginScreen();
+        }
+        return HomeScreen(userId: userId);
+      },
+      loading: () => const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (error, stack) => Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text('Auth Error: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(authStateProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

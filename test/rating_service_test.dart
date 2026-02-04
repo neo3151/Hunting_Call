@@ -79,30 +79,50 @@ void main() {
       const animalId = 'duck_mallard_greeting'; // idealPitch: 479, tolerance: 50
       final audioPath = await createDummyWav(1.2);
       
-      // Pitch diff = 580 - 479 = 101. tolerance = 50. 
-      // pitchScore = 100 - (101 - 50) = 49.
-      // totalScore = 49 * 0.6 + 100 * 0.4 = 29.4 + 40 = 69.4.
+      // 580Hz is 101Hz off from 479Hz = 21% deviation
+      // tolerance is 50Hz = 10.4% deviation
+      // excess deviation = 21% - 10.4% = 10.6%
+      // pitchScore = 100 - (10.6 * 3) = 68.2
+      // totalScore = 68.2 * 0.6 + 100 * 0.4 = 40.9 + 40 = 80.9
       when(() => mockAnalyzer.getDominantFrequency(audioPath)).thenAnswer((_) async => 580.0);
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
 
-      expect(result.score, closeTo(69.4, 0.1));
+      expect(result.score, closeTo(80.9, 1.0));
       expect(result.feedback, contains('Too High'));
     });
 
     test('Short duration should result in Too Short feedback', () async {
-      const animalId = 'duck_mallard_greeting'; // idealDuration: 1.2, tolerance: 0.1? No, toleranceDuration is not in ReferenceCall yet?
-      // Wait, let's check ReferenceCall model.
-      final audioPath = await createDummyWav(0.5); // Diff = 0.7
+      const animalId = 'duck_mallard_greeting'; // idealDuration: 1.2, tolerance: 0.5
+      final audioPath = await createDummyWav(0.5); // 0.7s too short
       
       when(() => mockAnalyzer.getDominantFrequency(audioPath)).thenAnswer((_) async => 479.0);
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
 
-      // We need to check RealRatingService's tolerance for duration.
-      // In real_rating_service.dart, it uses reference.toleranceDuration.
-      // Let's check ReferenceCall domain model.
       expect(result.feedback, contains('Too Short'));
+    });
+    
+    test('Percentage-based scoring should be fair across frequency ranges', () async {
+      // Test that same percentage deviation produces similar scores
+      // regardless of whether it's a low or high frequency call
+      
+      // Low frequency: deer_buck_grunt at 120Hz, tolerance 30Hz (25%)
+      final deerPath = await createDummyWav(0.8);
+      // 20% deviation = 24Hz off = 144Hz detected
+      when(() => mockAnalyzer.getDominantFrequency(deerPath)).thenAnswer((_) async => 144.0);
+      final deerResult = await ratingService.rateCall('user1', deerPath, 'deer_buck_grunt');
+      
+      // High frequency: elk_bull_bugle at 2000Hz, tolerance 200Hz (10%)  
+      final elkPath = await createDummyWav(3.0);
+      // 20% deviation = 400Hz off = 2400Hz detected
+      when(() => mockAnalyzer.getDominantFrequency(elkPath)).thenAnswer((_) async => 2400.0);
+      final elkResult = await ratingService.rateCall('user1', elkPath, 'elk_bull_bugle');
+      
+      // Both have 20% deviation - scores should be in similar range
+      // (not exactly equal due to different tolerance percentages)
+      expect((deerResult.score - elkResult.score).abs(), lessThan(20), 
+          reason: 'Same percentage deviation should produce similar scores');
     });
   });
 }

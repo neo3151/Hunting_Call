@@ -1,30 +1,29 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
-import '../../../../injection_container.dart';
-import '../domain/audio_recorder_service.dart';
+import '../../../providers/providers.dart';
 import '../../rating/presentation/rating_screen.dart';
 import '../../library/data/mock_reference_database.dart';
 import 'widgets/live_visualizer.dart';
 
-class RecorderPage extends StatefulWidget {
+class RecorderPage extends ConsumerStatefulWidget {
   final String userId;
   const RecorderPage({super.key, required this.userId});
 
   @override
-  State<RecorderPage> createState() => _RecorderPageState();
+  ConsumerState<RecorderPage> createState() => _RecorderPageState();
 }
 
-class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderStateMixin {
-  final recorder = sl<AudioRecorderService>();
-  bool isRecording = false;
-  List<double> amplitudes = [];
+class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerProviderStateMixin {
   String selectedCallId = MockReferenceDatabase.calls.first.id;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool isPlayingReference = false;
+  StreamSubscription? _playerCompleteSubscription;
 
   @override
   void initState() {
@@ -35,37 +34,30 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
     )..repeat(reverse: true);
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(_pulseController);
 
-    recorder.init();
-    recorder.onAmplitudeChanged.listen((amp) {
-      if (mounted) {
-        setState(() {
-          amplitudes.add(amp);
-          if (amplitudes.length > 50) amplitudes.removeAt(0);
-        });
-      }
+    // Initialize recorder via provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recordingNotifierProvider.notifier).initialize();
     });
     
-    _audioPlayer.onPlayerComplete.listen((_) {
+    _playerCompleteSubscription = _audioPlayer.onPlayerComplete.listen((_) {
       if (mounted) setState(() => isPlayingReference = false);
     });
   }
 
   @override
   void dispose() {
-    // BUG FIX: Do NOT dispose the singleton service here. It kills the stream controller for future visits.
-    // Instead, just ensure recording is stopped.
-    if (isRecording) {
-      recorder.stopRecorder(); 
-    }
+    _playerCompleteSubscription?.cancel();
     _audioPlayer.dispose();
     _pulseController.dispose();
     super.dispose();
   }
 
   void _toggleRecording() async {
-    if (isRecording) {
-      final path = await recorder.stopRecorder();
-      setState(() => isRecording = false);
+    final notifier = ref.read(recordingNotifierProvider.notifier);
+    final status = ref.read(recordingNotifierProvider).status;
+
+    if (status == RecordingStatus.recording) {
+      final path = await notifier.stopRecording();
       
       if (mounted) {
         if (path != null && path.isNotEmpty && !path.contains("not open")) {
@@ -83,11 +75,9 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
         }
       }
     } else {
-      final success = await recorder.startRecorder('temp_path'); 
-      if (success) {
-         setState(() => isRecording = true);
-      } else {
-         final error = recorder.lastError ?? "Unknown Error";
+      final success = await notifier.startRecording();
+      if (!success) {
+         final error = ref.read(recordingNotifierProvider).error ?? "Unknown Error";
          if (!mounted) return;
          ScaffoldMessenger.of(context).showSnackBar(
              SnackBar(
@@ -106,10 +96,6 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
       setState(() => isPlayingReference = false);
     } else {
       final call = MockReferenceDatabase.getById(selectedCallId);
-      // Remove 'assets/' prefix if AudioCache logic confusingly adds it, 
-      // but modern audioplayers uses AssetSource which takes full path usually sans 'assets/'.
-      // Wait, AssetSource behavior: "Prefixes the path with 'assets/'".
-      // Let's strip 'assets/' from our model-stored path.
       final assetPath = call.audioAssetPath.replaceFirst('assets/', '');
       
       try {
@@ -125,6 +111,16 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final recordingState = ref.watch(recordingNotifierProvider);
+    final isRecording = recordingState.status == RecordingStatus.recording;
+    
+    // Listen to amplitude changes to update the visualizer via the notifier
+    ref.listen(amplitudeStreamProvider, (previous, next) {
+      next.whenData((amplitude) {
+        ref.read(recordingNotifierProvider.notifier).updateAmplitudes(amplitude);
+      });
+    });
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -171,13 +167,11 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
                             });
                           },
                           items: MockReferenceDatabase.calls.map((call) {
-                            // Extract animal and call type for better display
                             final parts = _parseCallName(call.animalName);
                             return DropdownMenuItem<String>(
                               value: call.id,
                               child: Row(
                                 children: [
-                                  // Animal emoji/icon
                                   Text(
                                     _getAnimalEmoji(call.animalName),
                                     style: const TextStyle(fontSize: 20),
@@ -207,7 +201,6 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
                                       ],
                                     ),
                                   ),
-                                  // Frequency badge
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
@@ -235,7 +228,6 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
               ),
               const SizedBox(height: 24),
               
-              // Sample Playback Button
               _buildGlassButton(
                 onPressed: isRecording ? null : _playReferenceSound,
                 icon: isPlayingReference ? Icons.stop_circle_outlined : Icons.volume_up_rounded,
@@ -245,7 +237,7 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
               const Spacer(),
 
               LiveVisualizer(
-                amplitudes: amplitudes,
+                amplitudes: recordingState.amplitudes,
                 isRecording: isRecording,
               ),
               
@@ -256,7 +248,6 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Pulsing Ring
                     if (isRecording)
                       ScaleTransition(
                         scale: _pulseAnimation,
@@ -269,7 +260,6 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
                           ),
                         ),
                       ),
-                    // Main Button
                     Container(
                       width: 90,
                       height: 90,
@@ -332,10 +322,6 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
   }
 
   Map<String, String> _parseCallName(String fullName) {
-    // Parse "Animal (Call Type)" or "Animal - Call Type" format
-    // Examples: "Mallard Duck (Greeting)" -> {animal: "Mallard Duck", callType: "Greeting"}
-    //           "Whitetail Buck (Grunt)" -> {animal: "Whitetail Buck", callType: "Grunt"}
-    
     if (fullName.contains('(') && fullName.contains(')')) {
       final parts = fullName.split('(');
       return {
@@ -349,8 +335,6 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
         'callType': parts.length > 1 ? parts[1].trim() : '',
       };
     }
-    
-    // If no separator, treat whole name as animal
     return {
       'animal': fullName,
       'callType': '',
@@ -367,6 +351,6 @@ class _RecorderPageState extends State<RecorderPage> with SingleTickerProviderSt
     if (lower.contains('goose')) return '🪿';
     if (lower.contains('owl')) return '🦉';
     if (lower.contains('moose')) return '🫎';
-    return '🦌'; // Default
+    return '🦌';
   }
 }

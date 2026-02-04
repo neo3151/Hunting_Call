@@ -1,43 +1,39 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../injection_container.dart' as di;
+import '../../../providers/providers.dart';
 import '../../profile/domain/profile_model.dart';
-import '../../profile/data/profile_repository.dart';
-import '../../auth/domain/auth_repository.dart';
 import '../../recording/presentation/recorder_page.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../library/presentation/library_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   final String userId;
   const HomeScreen({super.key, required this.userId});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  String userName = "Hunter";
-  UserProfile? _profile;
-
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final profile = await di.sl<ProfileRepository>().getProfile(widget.userId);
-    if (mounted) {
-      setState(() {
-        _profile = profile;
-        userName = profile.name;
-      });
-    }
+    // Load profile on init
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final profileState = ref.watch(profileNotifierProvider);
+    final profile = profileState.profile;
+    final isLoading = profileState.isLoading;
+    final errorMessage = profileState.error;
+    final userName = profile?.name ?? "Hunter";
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -48,10 +44,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         child: SafeArea(
-        child: Column(
+        child: isLoading 
+          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+          : errorMessage != null
+            ? _buildErrorState(errorMessage)
+            : Column(
           children: [
              // Header
-             _buildHeader(context),
+             _buildHeader(context, userName),
              
              // Content
              Expanded(
@@ -104,7 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     title: "LIBRARY",
                                     icon: Icons.library_music_outlined,
                                     color: const Color(0xFFCFD8DC),
-                                    onTap: () {}, // TODO
+                                    onTap: () => Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const LibraryScreen()),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -114,10 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 32),
                       
-                      if (_profile != null && _profile!.history.isNotEmpty) ...[
+                      if (profile != null && profile.history.isNotEmpty) ...[
                         Text("RECENT HUNTS", style: GoogleFonts.oswald(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white70)),
                         const SizedBox(height: 16),
-                        _buildRecentActivityCard(_profile!.history.first),
+                        _buildRecentActivityCard(profile.history.first),
                       ],
                    ],
                  ),
@@ -130,7 +132,34 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildErrorState(String errorMessage) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 64),
+          const SizedBox(height: 16),
+          Text(
+            errorMessage,
+            style: const TextStyle(color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF81C784),
+              foregroundColor: const Color(0xFF0F1E12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, String userName) {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
       child: BackdropFilter(
@@ -170,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  onPressed: () => di.sl<AuthRepository>().signOut(),
+                  onPressed: () => ref.read(authRepositoryProvider).signOut(),
                   icon: const Icon(Icons.logout, color: Colors.white70),
                   tooltip: "Sign Out",
                 ),
@@ -222,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildRecentActivityCard(dynamic historyItem) {
+  Widget _buildRecentActivityCard(HistoryItem historyItem) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: BackdropFilter(

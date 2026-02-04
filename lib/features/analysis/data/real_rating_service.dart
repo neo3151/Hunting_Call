@@ -50,44 +50,74 @@ class RealRatingService implements RatingService {
 
     // 4. Calculate Score
     // Pitch contributes 60% of score, Duration 40%
-    // If diff is within tolerance, full points. If outside, penalty.
+    // Use PERCENTAGE-BASED deviation for fair scoring across frequency ranges
+    // (50Hz off on a 120Hz grunt is much worse than 50Hz off on a 2000Hz bugle)
     
     double pitchScore = 100.0;
-    if (pitchDiff > reference.tolerancePitch) {
-      // Deduct 1 point per Hz off, capped at 0
-      pitchScore = max(0, 100 - (pitchDiff - reference.tolerancePitch));
+    if (reference.idealPitchHz > 0) {
+      // Calculate deviation as percentage of ideal frequency
+      final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
+      // Tolerance also as percentage
+      final tolerancePercent = (reference.tolerancePitch / reference.idealPitchHz) * 100;
+      
+      if (pitchDeviationPercent > tolerancePercent) {
+        // Deduct 3 points per 1% deviation beyond tolerance, capped at 0
+        pitchScore = max(0, 100 - ((pitchDeviationPercent - tolerancePercent) * 3));
+      }
     }
 
     double durationScore = 100.0;
-    if (durationDiff > reference.toleranceDuration) {
-      // Deduct 20 points per 0.1s off
-      durationScore = max(0, 100 - ((durationDiff - reference.toleranceDuration) * 200));
+    if (reference.idealDurationSec > 0) {
+      // Duration deviation as percentage of ideal duration
+      final durationDeviationPercent = (durationDiff / reference.idealDurationSec) * 100;
+      final toleranceDurationPercent = (reference.toleranceDuration / reference.idealDurationSec) * 100;
+      
+      if (durationDeviationPercent > toleranceDurationPercent) {
+        // Deduct 2 points per 1% deviation beyond tolerance, capped at 0
+        durationScore = max(0, 100 - ((durationDeviationPercent - toleranceDurationPercent) * 2));
+      }
     }
 
     final totalScore = (pitchScore * 0.6) + (durationScore * 0.4);
 
     // 5. Generate Feedback
+    // Only give "Outstanding" if BOTH pitch and duration are within tolerance
     String feedback = "";
-    if (totalScore > 85) {
+    final bool pitchIsGood = pitchScore >= 85;
+    final bool durationIsGood = durationScore >= 85;
+    
+    if (pitchIsGood && durationIsGood) {
       feedback = "Outstanding! You sound just like a ${reference.animalName}.";
-    } else {
-        if (pitchScore < durationScore) {
-             if (detectedPitch > reference.idealPitchHz) {
-                 feedback = "Too High! Lower your pitch by approx ${(detectedPitch - reference.idealPitchHz).toInt()}Hz.";
-             } else {
-                 feedback = "Too Low! Raise your pitch by approx ${(reference.idealPitchHz - detectedPitch).toInt()}Hz.";
-             }
+    } else if (!pitchIsGood && !durationIsGood) {
+      // Both need work - prioritize the worse one
+      if (pitchScore < durationScore) {
+        final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
+        if (detectedPitch > reference.idealPitchHz) {
+          feedback = "Too High! Lower your pitch by ~${pitchDeviationPercent.toStringAsFixed(0)}% (${pitchDiff.toInt()}Hz). Duration also needs work.";
         } else {
-             if (durationDiff > reference.toleranceDuration) {
-               if (detectedDuration > reference.idealDurationSec) {
-                   feedback = "Too Long! Shorten the call by ${(detectedDuration - reference.idealDurationSec).toStringAsFixed(1)}s.";
-               } else {
-                   feedback = "Too Short! Hold the call for ${(reference.idealDurationSec - detectedDuration).toStringAsFixed(1)}s longer.";
-               }
-             } else {
-               feedback = "Pitch is good, but try to be more consistent.";
-             }
+          feedback = "Too Low! Raise your pitch by ~${pitchDeviationPercent.toStringAsFixed(0)}% (${pitchDiff.toInt()}Hz). Duration also needs work.";
         }
+      } else {
+        if (detectedDuration > reference.idealDurationSec) {
+          feedback = "Too Long! Shorten by ${(detectedDuration - reference.idealDurationSec).toStringAsFixed(1)}s. Pitch also needs work.";
+        } else {
+          feedback = "Too Short! Hold for ${(reference.idealDurationSec - detectedDuration).toStringAsFixed(1)}s longer. Pitch also needs work.";
+        }
+      }
+    } else if (!pitchIsGood) {
+      final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
+      if (detectedPitch > reference.idealPitchHz) {
+        feedback = "Too High! Lower your pitch by ~${pitchDeviationPercent.toStringAsFixed(0)}% (${pitchDiff.toInt()}Hz).";
+      } else {
+        feedback = "Too Low! Raise your pitch by ~${pitchDeviationPercent.toStringAsFixed(0)}% (${pitchDiff.toInt()}Hz).";
+      }
+    } else {
+      // Duration needs work
+      if (detectedDuration > reference.idealDurationSec) {
+        feedback = "Too Long! Shorten the call by ${(detectedDuration - reference.idealDurationSec).toStringAsFixed(1)}s.";
+      } else {
+        feedback = "Too Short! Hold the call for ${(reference.idealDurationSec - detectedDuration).toStringAsFixed(1)}s longer.";
+      }
     }
 
     final result = RatingResult(

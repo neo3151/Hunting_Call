@@ -1,36 +1,25 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../injection_container.dart' as di;
+import '../../../providers/providers.dart';
 import '../../profile/domain/profile_model.dart';
-import '../../profile/data/profile_repository.dart';
-import '../../auth/domain/auth_repository.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  List<UserProfile> profiles = [];
-  bool isLoading = true;
-
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfiles();
-  }
-
-  Future<void> _loadProfiles() async {
-    final allProfiles = await di.sl<ProfileRepository>().getAllProfiles();
-    if (mounted) {
-      setState(() {
-        profiles = allProfiles;
-        isLoading = false;
-      });
-    }
+    // Load profiles on init
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(profileNotifierProvider.notifier).loadAllProfiles();
+    });
   }
 
   Future<void> _createNewProfile() async {
@@ -42,14 +31,17 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (name != null && name.isNotEmpty) {
-      setState(() => isLoading = true);
-      final profile = await di.sl<ProfileRepository>().createProfile(name);
-      await di.sl<AuthRepository>().signIn(profile.id);
+      final profile = await ref.read(profileNotifierProvider.notifier).createProfile(name);
+      await ref.read(authRepositoryProvider).signIn(profile.id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final profileState = ref.watch(profileNotifierProvider);
+    final profiles = profileState.allProfiles;
+    final isLoading = profileState.isLoading;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -160,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: InkWell(
-          onTap: () => di.sl<AuthRepository>().signIn(p.id),
+          onTap: () => ref.read(authRepositoryProvider).signIn(p.id),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -206,7 +198,30 @@ class _CreateProfileSheet extends StatefulWidget {
 }
 
 class _CreateProfileSheetState extends State<_CreateProfileSheet> {
-  String value = '';
+  final _controller = TextEditingController();
+  bool _isValid = false;
+  
+  /// Minimum characters required for a valid profile name
+  static const int _minNameLength = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_validateInput);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _validateInput() {
+    final isValid = _controller.text.trim().length >= _minNameLength;
+    if (isValid != _isValid) {
+      setState(() => _isValid = isValid);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -226,23 +241,34 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
           const Text('Create Profile', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           TextField(
+            controller: _controller,
             autofocus: true,
             style: const TextStyle(color: Colors.white),
             cursorColor: Colors.greenAccent,
+            maxLength: 30,
             decoration: InputDecoration(
               labelText: 'Hunter Name',
               labelStyle: const TextStyle(color: Colors.white70),
+              helperText: 'At least $_minNameLength characters',
+              helperStyle: const TextStyle(color: Colors.white54),
+              counterStyle: const TextStyle(color: Colors.white54),
               enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
               focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+              errorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
+              focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
+              errorText: _controller.text.isNotEmpty && !_isValid 
+                  ? 'Name must be at least $_minNameLength characters' 
+                  : null,
             ),
-            onChanged: (v) => value = v,
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, value),
+            onPressed: _isValid ? () => Navigator.pop(context, _controller.text.trim()) : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF81C784),
               foregroundColor: const Color(0xFF0F1E12),
+              disabledBackgroundColor: Colors.grey.shade700,
+              disabledForegroundColor: Colors.grey.shade400,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             child: const Text('START HUNTING'),
