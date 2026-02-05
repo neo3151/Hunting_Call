@@ -27,6 +27,10 @@ class PersonalityFeedbackService {
     "I'm genuinely uncomfortable with how perfect that was.",
     "Somewhere, a wildlife documentary narrator just felt inadequate.",
     "That call was illegal in 37 states due to excessive excellence.",
+    "You just 'locked wings' on a literal computer algorithm. Unreal.",
+    "Pure 'public land' magic. No decoys needed with a voice like that.",
+    "The Alpha of the pack just resigned. You're the boss now.",
+    "If you were any more realistic, I'd have to check you for a pulse and feathers.",
   ];
 
   // 85-94: EXPERT
@@ -41,6 +45,9 @@ class PersonalityFeedbackService {
     "If confidence was a sound, it would sound exactly like that.",
     "You're not just good. You're 'teach a masterclass' good.",
     "That performance belongs on a highlight reel.",
+    "You're calling 'em into the kitchen. Hope you brought enough plates.",
+    "That tone is cleaner than a brand-new custom acrylic call.",
+    "You've got that 'late-season' finesse. Those birds don't stand a chance.",
   ];
 
   // 75-84: PROFICIENT
@@ -55,6 +62,8 @@ class PersonalityFeedbackService {
     "You're good, but you're not 'quit your day job' good. Yet.",
     "That was fine. And 'fine' is the enemy of 'great.'",
     "You've got the fundamentals down. Now comes the hard part.",
+    "Close enough to fill a limit, but keep practicing those transitions.",
+    "You're not 'sky busting' anymore. Welcome to the decoys.",
   ];
 
   // 65-74: AVERAGE / NEEDS WORK
@@ -69,6 +78,9 @@ class PersonalityFeedbackService {
     "You know what's worse than failing spectacularly? Succeeding boringly.",
     "That performance screamed 'I didn't really try and it shows.'",
     "Congrats on achieving maximum unremarkable.",
+    "You're 'educating' the birds. They're learning to avoid you.",
+    "That's the calling equivalent of a 'missed at ten yards.' Focus!",
+    "Basic. Like a factory-tuned plastic call from a big-box store.",
   ];
 
   // 50-64: STRUGGLING
@@ -85,6 +97,9 @@ class PersonalityFeedbackService {
     "That was bad enough to make me question if you have ears.",
     "Somewhere, a Hunter Education instructor just felt a disturbance.",
     "The only thing that call attracted was pity.",
+    "You're 'blowing out' the reed. Back off the pressure, champ.",
+    "Sounds like a kazoo in a wind tunnel. Not ideal for the blind.",
+    "That's a 'flock disclaimer.' One note and they're gone.",
   ];
 
   // 35-49: POOR
@@ -103,6 +118,8 @@ class PersonalityFeedbackService {
     "That was so bad I'm starting to think you're doing it wrong on purpose.",
     "The dumpster fire called. It wants its aesthetic back.",
     "You just proved that some people shouldn't have access to recording equipment.",
+    "Total 'sky buster' energy. You're scaring 'em off into the next county.",
+    "Stop. Just stop. You're making the decoys look bad.",
   ];
 
   // 0-34: TERRIBLE
@@ -127,5 +144,8 @@ class PersonalityFeedbackService {
     "I've heard better sounds from a garbage disposal eating silverware.",
     "You just proved that rock bottom has a basement. With sub-basements.",
     "That performance made me reconsider my stance on public shaming.",
+    "You just 'educated' the entire state. Everyone stay home.",
+    "I've seen decoys with more life and better tone than that.",
+    "That sound is the reason bag limits exist—to protect us from you.",
   ];
 }

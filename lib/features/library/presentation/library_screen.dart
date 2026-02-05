@@ -8,7 +8,8 @@ import '../../library/domain/reference_call_model.dart';
 import 'call_detail_screen.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
-  const LibraryScreen({super.key});
+  final String? userId;
+  const LibraryScreen({super.key, this.userId});
 
   @override
   ConsumerState<LibraryScreen> createState() => _LibraryScreenState();
@@ -73,7 +74,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CallDetailScreen(call: call),
+        builder: (context) => CallDetailScreen(
+          call: call, 
+          userId: widget.userId ?? 'anonymous'
+        ),
       ),
     );
   }

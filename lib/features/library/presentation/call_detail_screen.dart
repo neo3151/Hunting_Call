@@ -4,10 +4,13 @@ import 'package:audioplayers/audioplayers.dart';
 import '../domain/reference_call_model.dart';
 import 'acoustic_spectrum_widget.dart';
 
+import '../../recording/presentation/recorder_page.dart';
+
 class CallDetailScreen extends StatefulWidget {
   final ReferenceCall call;
+  final String userId;
 
-  const CallDetailScreen({super.key, required this.call});
+  const CallDetailScreen({super.key, required this.call, required this.userId});
 
   @override
   State<CallDetailScreen> createState() => _CallDetailScreenState();
@@ -149,8 +152,14 @@ class _CallDetailScreenState extends State<CallDetailScreen> with SingleTickerPr
                         ),
                         child: IconButton(
                           onPressed: () {
-                            // Link to Practice Screen (to be implemented)
-                            Navigator.pop(context, 'PRACTICE'); 
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => RecorderPage(
+                                  userId: widget.userId, 
+                                  preselectedAnimalId: widget.call.id
+                                ),
+                              ),
+                            );
                           },
                           icon: const Icon(Icons.mic, color: Colors.white70),
                           tooltip: "Start Practice",

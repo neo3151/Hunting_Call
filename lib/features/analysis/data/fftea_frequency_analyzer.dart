@@ -118,35 +118,29 @@ double _performFFTAnalysis(_AnalysisParams params) {
       return _analyzeChunk(view, 44, numSamples, sampleRateHeader, minFrequencyHz, maxFrequencyHz)?.frequency ?? 0.0;
     }
 
-    // 2. Analyze multiple chunks distributed through the audio
-    final chunkResults = <_ChunkResult>[];
-    final numChunks = (numSamples ~/ chunkSize).clamp(1, maxChunks);
-    final chunkSpacing = numSamples ~/ numChunks;
+    // 2. Identify the peak vocalization chunk
+    int bestOffset = 44;
+    double maxEnergy = -1.0;
     
-    for (int chunk = 0; chunk < numChunks; chunk++) {
-      final startSample = chunk * chunkSpacing;
-      final startOffset = 44 + (startSample * 2);
-      
-      if (startOffset + (chunkSize * 2) > bytes.length) continue;
-      
-      final result = _analyzeChunk(view, startOffset, chunkSize, sampleRate, minFrequencyHz, maxFrequencyHz);
-      if (result != null) {
-        chunkResults.add(result);
+    // Slide window to find highest energy 8k chunk
+    for (int offset = 44; offset + (chunkSize * 2 * numChannels) <= bytes.length; offset += (chunkSize ~/ 2) * 2 * numChannels) {
+      double currentEnergy = 0;
+      for (int i = 0; i < chunkSize; i++) {
+        final sample = view.getInt16(offset + (i * 2 * numChannels), Endian.little);
+        final double normalized = sample / 32768.0;
+        currentEnergy += normalized * normalized;
+      }
+      currentEnergy = currentEnergy / chunkSize;
+
+      if (currentEnergy > maxEnergy) {
+        maxEnergy = currentEnergy;
+        bestOffset = offset;
       }
     }
 
-    if (chunkResults.isEmpty) return 0.0;
-
-    // 3. Weight results by amplitude
-    double weightedSum = 0.0;
-    double totalWeight = 0.0;
-    
-    for (var result in chunkResults) {
-      weightedSum += result.frequency * result.amplitude;
-      totalWeight += result.amplitude;
-    }
-    
-    return totalWeight > 0 ? weightedSum / totalWeight : 0.0;
+    // Analyze the highest energy chunk
+    final result = _analyzeChunk(view, bestOffset, chunkSize, sampleRate, minFrequencyHz, maxFrequencyHz);
+    return result?.frequency ?? 0.0;
   } catch (e) {
     return 0.0;
   }

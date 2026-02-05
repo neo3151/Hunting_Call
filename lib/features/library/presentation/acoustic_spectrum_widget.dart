@@ -4,11 +4,13 @@ import 'package:google_fonts/google_fonts.dart';
 class AcousticSpectrumWidget extends StatelessWidget {
   final double pitchHz;
   final double durationSec;
+  final double? harmonicPurity; // New metric
 
   const AcousticSpectrumWidget({
     super.key,
     required this.pitchHz,
     required this.durationSec,
+    this.harmonicPurity,
   });
 
   @override
@@ -23,34 +25,53 @@ class AcousticSpectrumWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "BIOACOUSTIC SPECTRUM",
-            style: GoogleFonts.oswald(
-              color: Colors.white70,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "BIOACOUSTIC SPECTRUM",
+                style: GoogleFonts.oswald(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const Icon(Icons.analytics_outlined, color: Colors.white24, size: 16),
+            ],
           ),
           const SizedBox(height: 20),
           _buildSpectrumRow(
             label: "FREQUENCY",
             value: "${pitchHz.toInt()} Hz",
-            percentage: (pitchHz / 5000).clamp(0.0, 1.0), // Cap at 5kHz for visualization
+            percentage: (pitchHz / 5000).clamp(0.0, 1.0),
             color: const Color(0xFF64B5F6),
-            minLabel: "Low (Bass)",
-            maxLabel: "High (Treble)",
+            minLabel: "Low",
+            maxLabel: "High",
             icon: Icons.graphic_eq,
+            delayMs: 0,
           ),
           const SizedBox(height: 24),
           _buildSpectrumRow(
             label: "DURATION",
             value: "${durationSec.toStringAsFixed(1)} s",
-            percentage: (durationSec / 10.0).clamp(0.0, 1.0), // Cap at 10s
+            percentage: (durationSec / 10.0).clamp(0.0, 1.0),
             color: const Color(0xFFFFB74D),
             minLabel: "Short",
-            maxLabel: "Sustained",
+            maxLabel: "Long",
             icon: Icons.timer,
+            delayMs: 200,
+          ),
+          const SizedBox(height: 24),
+          _buildSpectrumRow(
+            label: "HARMONIC PURITY",
+            value: "${((harmonicPurity ?? 0.85) * 100).toInt()}%",
+            percentage: (harmonicPurity ?? 0.85).clamp(0.0, 1.0),
+            color: const Color(0xFF5FF7B6),
+            minLabel: "Noisy",
+            maxLabel: "Pure",
+            icon: Icons.waves,
+            delayMs: 400,
           ),
         ],
       ),
@@ -65,6 +86,7 @@ class AcousticSpectrumWidget extends StatelessWidget {
     required String minLabel,
     required String maxLabel,
     required IconData icon,
+    required int delayMs,
   }) {
     return Column(
       children: [
@@ -82,47 +104,61 @@ class AcousticSpectrumWidget extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        Stack(
-          children: [
-            // Background Track
-            Container(
-              height: 12,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white10,
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            // Gradient Fill
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return Container(
+        TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 1000),
+          curve: Curves.easeOutQuart,
+          tween: Tween(begin: 0.0, end: percentage),
+          builder: (context, animValue, child) {
+            return Stack(
+              children: [
+                // Background Track
+                Container(
                   height: 12,
-                  width: constraints.maxWidth * percentage,
+                  width: double.infinity,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [color.withValues(alpha: 0.5), color]),
+                    color: Colors.white10,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                );
-              },
-            ),
-            // Marker
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return Padding(
-                  padding: EdgeInsets.only(left: (constraints.maxWidth * percentage).clamp(0.0, constraints.maxWidth - 4) - 2), // Adjust for marker width
-                  child: Container(
-                    height: 12,
-                    width: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
+                ),
+                // Gradient Fill
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Container(
+                      height: 12,
+                      width: constraints.maxWidth * animValue,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [color.withValues(alpha: 0.3), color]),
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                            BoxShadow(
+                                color: color.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                            )
+                        ]
+                      ),
+                    );
+                  },
+                ),
+                // Marker
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Padding(
+                      padding: EdgeInsets.only(left: (constraints.maxWidth * animValue).clamp(0.0, constraints.maxWidth - 4) - 2),
+                      child: Container(
+                        height: 12,
+                        width: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
         ),
         const SizedBox(height: 4),
         Row(

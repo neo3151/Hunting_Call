@@ -9,6 +9,7 @@ import '../../recording/presentation/recorder_page.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../library/presentation/library_screen.dart';
 import '../../daily_challenge/data/daily_challenge_service.dart';
+import '../../daily_challenge/presentation/daily_challenge_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -103,7 +104,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     icon: Icons.library_music_outlined,
                                     color: const Color(0xFFCFD8DC),
                                     onTap: () => Navigator.of(context).push(
-                                      MaterialPageRoute(builder: (_) => const LibraryScreen()),
+                                      MaterialPageRoute(builder: (_) => LibraryScreen(userId: widget.userId)),
                                     ),
                                   ),
                                 ),
@@ -284,7 +285,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: InkWell(
               onTap: () {
                  Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => RecorderPage(userId: widget.userId, preselectedAnimalId: challengeCall.id)),
+                  MaterialPageRoute(builder: (_) => DailyChallengeScreen(userId: widget.userId)),
                 );
               },
               child: Padding(

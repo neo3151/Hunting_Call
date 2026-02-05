@@ -8,6 +8,12 @@ class ReferenceDatabase {
   static bool _isInitialized = false;
 
   static List<ReferenceCall> get calls => _calls;
+  
+  @visibleForTesting
+  static set calls(List<ReferenceCall> value) {
+    _calls = value;
+    _isInitialized = true;
+  }
 
   static Future<void> init() async {
     if (_isInitialized) return;

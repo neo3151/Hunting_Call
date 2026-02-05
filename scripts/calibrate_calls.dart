@@ -28,7 +28,7 @@ void main() async {
       if (stats.size < 100) continue; // Skip dummy files
 
       print("Calibrating $id...");
-      final analysis = await analyzeWav(audioFile);
+      final analysis = await analyzeWav(audioFile, id);
       
       if (analysis != null) {
         final double oldPitch = (call['idealPitchHz'] as num).toDouble();
@@ -54,7 +54,7 @@ class AnalysisResult {
   AnalysisResult(this.frequency, this.duration);
 }
 
-Future<AnalysisResult?> analyzeWav(File file) async {
+Future<AnalysisResult?> analyzeWav(File file, String id) async {
   try {
     final bytes = await file.readAsBytes();
     if (bytes.length < 44) return null;
@@ -68,16 +68,34 @@ Future<AnalysisResult?> analyzeWav(File file) async {
     final int numSamplesTotal = (bytes.length - 44) ~/ (numChannels * bytesPerSample);
     final double duration = numSamplesTotal / sampleRate;
 
-    // Use a robust chunk analysis
-    const int chunkSize = 8192;
-    if (numSamplesTotal < chunkSize) return AnalysisResult(0, duration);
+    if (numSamplesTotal < 1024) return AnalysisResult(0, duration);
 
-    // Analyze first clear chunk
-    final int offset = 44;
+    // Identify the "most active" 8192-sample chunk by RMS energy
+    const int chunkSize = 8192;
+    int bestOffset = 44;
+    double maxEnergy = -1.0;
+
+    // Slide window through the file to find the peak vocalization
+    // We step by chunkSize/2 for overlap
+    for (int offset = 44; offset + (chunkSize * bytesPerSample * numChannels) <= bytes.length; offset += (chunkSize ~/ 2) * bytesPerSample * numChannels) {
+      double currentEnergy = 0;
+      for (int i = 0; i < chunkSize; i++) {
+        final sample = view.getInt16(offset + (i * bytesPerSample * numChannels), Endian.little);
+        final double normalized = sample / 32768.0;
+        currentEnergy += normalized * normalized;
+      }
+      currentEnergy = currentEnergy / chunkSize;
+
+      if (currentEnergy > maxEnergy) {
+        maxEnergy = currentEnergy;
+        bestOffset = offset;
+      }
+    }
+
+    // Analyze the best chunk
     final signal = Float64List(chunkSize);
     for (var i = 0; i < chunkSize; i++) {
-        // Just take first channel
-        final sample = view.getInt16(offset + (i * bytesPerSample * numChannels), Endian.little);
+        final sample = view.getInt16(bestOffset + (i * bytesPerSample * numChannels), Endian.little);
         signal[i] = sample / 32768.0;
     }
 
@@ -91,9 +109,56 @@ Future<AnalysisResult?> analyzeWav(File file) async {
     final freqData = fft.realFft(windowed);
     final magnitudes = freqData.magnitudes();
     
-    // Find peak in human-audible/animal range (50Hz - 4000Hz)
-    final minBin = ((50.0 * chunkSize) / sampleRate).ceil();
-    final maxBin = ((4000.0 * chunkSize) / sampleRate).floor().clamp(0, magnitudes.length ~/ 2);
+    // Default range for most calls
+    double minFreq = 100.0;
+    double maxFreq = 5000.0;
+
+    // Species-specific biological overrides to skip harmonics/noise
+    if (id.contains('goose_canadian_honk')) {
+      minFreq = 400.0; // Focus on the main honk "scream" segment
+      maxFreq = 950.0; 
+    } else if (id.contains('goose_cluck')) {
+      minFreq = 400.0; // Filter out high harmonics, target fundamental
+      maxFreq = 1200.0;
+    } else if (id.contains('duck_mallard')) {
+      minFreq = 300.0;
+      maxFreq = 1200.0;
+    } else if (id.contains('pintail')) {
+      minFreq = 2000.0; // Target the 2.5k-7k whistle range
+      maxFreq = 8000.0;
+    } else if (id.contains('deer_snort_wheeze')) {
+      minFreq = 2000.0; // Target the high-freq wheeze
+      maxFreq = 8000.0;
+    } else if (id == 'great_horned_owl' || id == 'gho') {
+      minFreq = 250.0; // Target territorial hoots (300-450Hz)
+      maxFreq = 550.0;
+    } else if (id.contains('quail')) {
+      minFreq = 1500.0; // Target the ~2kHz whistle
+      maxFreq = 3000.0;
+    } else if (id.contains('canvasback')) {
+      minFreq = 400.0; // Target the guttural "krrr" Fundamental
+      maxFreq = 1500.0;
+    } else if (id.contains('wood_duck_sit')) {
+      minFreq = 1200.0;
+      maxFreq = 2200.0;
+    } else if (id.contains('caribou')) {
+      minFreq = 30.0; // Target the deep bull grunt (55Hz)
+      maxFreq = 150.0;
+    } else if (id.contains('fallow')) {
+      minFreq = 15.0; // Target the deep groan (20-55Hz)
+      maxFreq = 100.0;
+    } else if (id.contains('pronghorn')) {
+      minFreq = 1200.0; // Focus on the sharp alarm bark peak
+      maxFreq = 1800.0;
+    } else if (id.contains('turkey_gobble')) {
+      minFreq = 400.0; 
+    } else if (id.contains('pheasant')) {
+      minFreq = 700.0; 
+      maxFreq = 1200.0; // Cap to avoid high harmonics
+    }
+
+    final minBin = ((minFreq * chunkSize) / sampleRate).ceil();
+    final maxBin = ((maxFreq * chunkSize) / sampleRate).floor().clamp(0, magnitudes.length ~/ 2);
     
     double maxMag = -1.0;
     int peakIndex = -1;

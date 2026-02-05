@@ -275,44 +275,64 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       iconColor = Colors.redAccent;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor.withValues(alpha: 0.5), width: 2),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.bolt, color: iconColor, size: 16),
-              const SizedBox(width: 8),
-              Text(
-                "REALITY CHECK", 
-                style: GoogleFonts.oswald(
-                  fontSize: 11, 
-                  letterSpacing: 1.5, 
-                  color: iconColor, 
-                  fontWeight: FontWeight.bold
-                )
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.elasticOut,
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, scale, child) {
+        return Transform.scale(
+          scale: 0.8 + (0.2 * scale),
+          child: Opacity(
+            opacity: scale.clamp(0.0, 1.0),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor.withValues(alpha: 0.5), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: borderColor.withValues(alpha: 0.2 * scale),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                  )
+                ],
               ),
-            ],
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.bolt, color: iconColor, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        "REALITY CHECK", 
+                        style: GoogleFonts.oswald(
+                          fontSize: 11, 
+                          letterSpacing: 1.5, 
+                          color: iconColor, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    personalityMessage, 
+                    textAlign: TextAlign.center, 
+                    style: GoogleFonts.lato(
+                      fontSize: 14, 
+                      color: Colors.white.withValues(alpha: 0.95), 
+                      height: 1.5,
+                      fontWeight: FontWeight.w500,
+                    )
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            personalityMessage, 
-            textAlign: TextAlign.center, 
-            style: GoogleFonts.lato(
-              fontSize: 14, 
-              color: Colors.white.withValues(alpha: 0.95), 
-              height: 1.5,
-              fontWeight: FontWeight.w500,
-            )
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
