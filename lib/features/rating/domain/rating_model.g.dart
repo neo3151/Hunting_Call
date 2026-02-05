@@ -19,6 +19,8 @@ RatingResult _$RatingResultFromJson(Map<String, dynamic> json) => RatingResult(
       referenceWaveform: (json['referenceWaveform'] as List<dynamic>?)
           ?.map((e) => (e as num).toDouble())
           .toList(),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$RatingResultToJson(RatingResult instance) =>
@@ -29,4 +31,6 @@ Map<String, dynamic> _$RatingResultToJson(RatingResult instance) =>
       'metrics': instance.metrics,
       'userWaveform': instance.userWaveform,
       'referenceWaveform': instance.referenceWaveform,
+      'latitude': instance.latitude,
+      'longitude': instance.longitude,
     };

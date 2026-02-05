@@ -5,6 +5,7 @@ import '../../../providers/providers.dart';
 import '../domain/rating_model.dart';
 import '../../library/data/reference_database.dart';
 import './widgets/waveform_overlay.dart';
+import '../domain/personality_feedback_service.dart';
 
 class RatingScreen extends ConsumerStatefulWidget {
   final String audioPath;
@@ -164,6 +165,8 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                             _tryRender(() => _buildOverallProficiency(result.score), "Proficiency"),
                             const SizedBox(height: 40),
                             _tryRender(() => _buildAIFeedback(result.feedback), "Feedback"),
+                            const SizedBox(height: 16),
+                            _tryRender(() => _buildPersonalityFeedback(result.score), "Personality"),
                             const SizedBox(height: 32),
                             _tryRender(() => _buildPitchComparison(result), "Pitch Comparison"),
                             const SizedBox(height: 24),
@@ -178,7 +181,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                             _tryRender(() => _buildComprehensiveAnalytics(result), "Analytics"),
                             const SizedBox(height: 40),
                             _tryRender(() => _buildTipSection(), "Tip"),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
                             _buildBackButton(),
                           ],
                         ),
@@ -246,6 +249,68 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           ),
           const SizedBox(height: 16),
           Text(feedback, textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 14, color: Colors.white.withValues(alpha: 0.9), height: 1.5)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalityFeedback(dynamic score) {
+    final double s = _toSafe(score).clamp(0, 100);
+    final String personalityMessage = PersonalityFeedbackService.getFeedback(s);
+    
+    // Color varies by score
+    Color borderColor;
+    Color iconColor;
+    if (s >= 85) {
+      borderColor = const Color(0xFFFFD700); // Gold
+      iconColor = const Color(0xFFFFD700);
+    } else if (s >= 65) {
+      borderColor = const Color(0xFF5FF7B6); // Green
+      iconColor = const Color(0xFF5FF7B6);
+    } else if (s >= 50) {
+      borderColor = Colors.orangeAccent;
+      iconColor = Colors.orangeAccent;
+    } else {
+      borderColor = Colors.redAccent;
+      iconColor = Colors.redAccent;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor.withValues(alpha: 0.5), width: 2),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.bolt, color: iconColor, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                "REALITY CHECK", 
+                style: GoogleFonts.oswald(
+                  fontSize: 11, 
+                  letterSpacing: 1.5, 
+                  color: iconColor, 
+                  fontWeight: FontWeight.bold
+                )
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            personalityMessage, 
+            textAlign: TextAlign.center, 
+            style: GoogleFonts.lato(
+              fontSize: 14, 
+              color: Colors.white.withValues(alpha: 0.95), 
+              height: 1.5,
+              fontWeight: FontWeight.w500,
+            )
+          ),
         ],
       ),
     );

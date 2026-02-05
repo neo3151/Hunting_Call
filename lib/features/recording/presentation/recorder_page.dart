@@ -5,30 +5,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../providers/providers.dart';
+import '../../../core/widgets/background_wrapper.dart';
 import '../../rating/presentation/rating_screen.dart';
 import '../../library/data/reference_database.dart';
+import '../../library/domain/reference_call_model.dart';
 import 'widgets/live_visualizer.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
   final String userId;
-  const RecorderPage({super.key, required this.userId});
+  final String? preselectedAnimalId;
+  
+  const RecorderPage({super.key, required this.userId, this.preselectedAnimalId});
 
   @override
   ConsumerState<RecorderPage> createState() => _RecorderPageState();
 }
 
 class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerProviderStateMixin {
-  String selectedCallId = ReferenceDatabase.calls.first.id;
+  late String selectedCallId;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool isPlayingReference = false;
   StreamSubscription? _playerCompleteSubscription;
-  int? _countdownValue; // null = no countdown, 3/2/1 = counting down
+  int? _countdownValue;
 
   @override
   void initState() {
     super.initState();
+    selectedCallId = widget.preselectedAnimalId ?? ReferenceDatabase.calls.first.id;
+    
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -71,7 +77,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
            );
         } else {
            ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text("Recording Failed: Could not save audio file.")),
+              const SnackBar(content: Text("Recording Failed: Could not save audio file.")),
            );
         }
       }
@@ -137,22 +143,16 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       });
     });
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text('RECORD CALL', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/forest_background.png'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
-          ),
+    return BackgroundWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // Important for BackgroundWrapper
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: Text('RECORD CALL', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
         ),
-        child: SafeArea(
+        body: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -178,64 +178,13 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
                           hint: Text("Select Call to Practice", style: GoogleFonts.lato(color: Colors.white70)),
                           onChanged: (isRecording || isCountingDown) ? null : (String? newValue) {
-                            setState(() {
-                              selectedCallId = newValue!;
-                            });
+                            if (newValue != null && !newValue.startsWith('header_')) {
+                              setState(() {
+                                selectedCallId = newValue;
+                              });
+                            }
                           },
-                          items: ReferenceDatabase.calls.map((call) {
-                            final parts = _parseCallName(call.animalName);
-                            return DropdownMenuItem<String>(
-                              value: call.id,
-                              child: Row(
-                                children: [
-                                  Text(
-                                    _getAnimalEmoji(call.animalName),
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          parts['animal']!,
-                                          style: GoogleFonts.oswald(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        if (parts['callType']!.isNotEmpty)
-                                          Text(
-                                            parts['callType']!,
-                                            style: GoogleFonts.lato(
-                                              color: Colors.white70,
-                                              fontSize: 11,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      "${call.idealPitchHz.toInt()} Hz",
-                                      style: GoogleFonts.lato(
-                                        color: Colors.white70,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
+                          items: _buildDropdownItems(isRecording || isCountingDown),
                         ),
                       ),
                     ),
@@ -365,36 +314,151 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     );
   }
 
-  Map<String, String> _parseCallName(String fullName) {
-    if (fullName.contains('(') && fullName.contains(')')) {
-      final parts = fullName.split('(');
-      return {
-        'animal': parts[0].trim(),
-        'callType': parts[1].replaceAll(')', '').trim(),
-      };
-    } else if (fullName.contains('-')) {
-      final parts = fullName.split('-');
-      return {
-        'animal': parts[0].trim(),
-        'callType': parts.length > 1 ? parts[1].trim() : '',
-      };
+  List<DropdownMenuItem<String>> _buildDropdownItems(bool isDisabled) {
+    final items = <DropdownMenuItem<String>>[];
+    final groups = <String, List<ReferenceCall>>{};
+    
+    // Group calls by category (only if not locked)
+    for (final call in ReferenceDatabase.calls) {
+      if (!call.isLocked) {
+        groups.putIfAbsent(call.category, () => []).add(call);
+      }
     }
-    return {
-      'animal': fullName,
-      'callType': '',
-    };
+    
+    // Sort categories (Waterfowl first, etc)
+    final sortedCategories = groups.keys.toList()..sort();
+    
+    for (final category in sortedCategories) {
+      // Category Header (Divider)
+      items.add(
+        DropdownMenuItem<String>(
+          enabled: false,
+          value: 'header_$category',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (items.isNotEmpty)
+                const Divider(color: Colors.white10, height: 1),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: [
+                    Icon(_getCategoryIcon(category), color: const Color(0xFF81C784), size: 14),
+                    const SizedBox(width: 8),
+                    Text(
+                      category.toUpperCase(),
+                      style: GoogleFonts.oswald(
+                        color: const Color(0xFF81C784),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      
+      // Calls in this category
+      for (final call in groups[category]!) {
+        items.add(
+          DropdownMenuItem<String>(
+            value: call.id,
+            child: Row(
+              children: [
+                Text(
+                  _getAnimalEmoji(call.animalName),
+                  style: const TextStyle(fontSize: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        call.animalName,
+                        style: GoogleFonts.oswald(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        call.callType,
+                        style: GoogleFonts.lato(
+                          color: Colors.white70,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _buildDifficultyBadge(call.difficulty),
+              ],
+            ),
+          ),
+        );
+      }
+    }
+    return items;
+  }
+
+  Widget _buildDifficultyBadge(String difficulty) {
+    Color color;
+    switch (difficulty.toLowerCase()) {
+      case 'easy': color = const Color(0xFF81C784); break;
+      case 'intermediate': color = const Color(0xFFFFB74D); break;
+      case 'pro': color = const Color(0xFFE57373); break;
+      default: color = Colors.white54;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        difficulty.substring(0, 1).toUpperCase(),
+        style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'waterfowl': return Icons.water;
+      case 'big game': return Icons.landscape;
+      case 'predators': return Icons.security;
+      case 'land birds': return Icons.forest;
+      default: return Icons.category;
+    }
   }
 
   String _getAnimalEmoji(String animalName) {
     final lower = animalName.toLowerCase();
-    if (lower.contains('duck') || lower.contains('mallard')) return '🦆';
+    if (lower.contains('duck') || lower.contains('mallard') || lower.contains('teal') || lower.contains('pintail') || lower.contains('canvasback')) return '🦆';
     if (lower.contains('elk')) return '🦌';
-    if (lower.contains('deer') || lower.contains('whitetail')) return '🦌';
+    if (lower.contains('deer') || lower.contains('whitetail') || lower.contains('mule') || lower.contains('fallow') || lower.contains('caribou') || lower.contains('pronghorn') || lower.contains('red stag')) return '🦌';
     if (lower.contains('turkey')) return '🦃';
-    if (lower.contains('coyote')) return '🐺';
-    if (lower.contains('goose')) return '🪿';
+    if (lower.contains('coyote') || lower.contains('wolf')) return '🐺';
+    if (lower.contains('goose')) return '🦆'; 
     if (lower.contains('owl')) return '🦉';
-    if (lower.contains('moose')) return '🫎';
+    if (lower.contains('moose')) return '🦌';
+    if (lower.contains('bear')) return '🐻';
+    if (lower.contains('fox')) return '🦊';
+    if (lower.contains('bobcat') || lower.contains('cougar') || lower.contains('mountain lion')) return '🐆';
+    if (lower.contains('rabbit')) return '🐰';
+    if (lower.contains('raccoon')) return '🦝';
+    if (lower.contains('crow')) return '🐦‍⬛';
+    if (lower.contains('quail') || lower.contains('pheasant') || lower.contains('woodcock') || lower.contains('dove') || lower.contains('grouse')) return '🐦';
+    if (lower.contains('hog')) return '🐗';
+    if (lower.contains('badger')) return '🦡';
     return '🦌';
   }
 }

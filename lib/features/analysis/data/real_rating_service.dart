@@ -10,43 +10,79 @@ import '../../library/data/reference_database.dart';
 
 import '../../profile/data/profile_repository.dart';
 
+import '../../daily_challenge/data/daily_challenge_service.dart';
+
+import 'package:geolocator/geolocator.dart';
+
 class RealRatingService implements RatingService {
   final FrequencyAnalyzer analyzer;
   final ProfileRepository profileRepository;
+  
+  Position? _currentPosition;
 
-  RealRatingService({required this.analyzer, required this.profileRepository});
+  RealRatingService({
+    required this.analyzer, 
+    required this.profileRepository,
+  });
+
+  static final Map<String, AudioAnalysis> _refCache = {};
 
   @override
   Future<RatingResult> rateCall(String userId, String audioPath, String animalType) async {
     debugPrint("RealRatingService: rateCall started for $animalType at $audioPath");
+    
+    // Try to get location (fire and forget or await briefly?)
+    // Await briefly so we have it for the result
+    try {
+      final hasPermission = await Geolocator.checkPermission();
+      if (hasPermission == LocationPermission.always || hasPermission == LocationPermission.whileInUse) {
+        // High accuracy might take time, use medium
+        _currentPosition = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error getting location: $e");
+    }
+
     // 1. Get the ideal metrics
-    // We now pass the ID directly from the dropdown
     final reference = ReferenceDatabase.getById(animalType);
 
-    // 2. Analyze the user's audio and the reference audio
+    // 2. Analyze the user's audio
     final userAnalysis = await analyzer.analyzeAudio(audioPath);
+    if (userAnalysis.dominantFrequencyHz == 0 && userAnalysis.totalDurationSec == 0) {
+      return RatingResult(
+        score: 0,
+        feedback: "Could not analyze your recording. Please try again in a quiet place.",
+        pitchHz: 0,
+        metrics: {},
+      );
+    }
     
-    // For comparison, we also need the reference audio characteristics
-    AudioAnalysis? refAnalysis;
-    try {
-      final assetPath = reference.audioAssetPath;
-      
-      // Since assetPath is a Flutter asset, we can't use File(assetPath) directly in a running app
-      // We need to load it via rootBundle and save to a temp file for the analyzer
-      final ByteData data = await rootBundle.load(assetPath);
-      final List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      
-      final tempDir = Directory.systemTemp;
-      final tempFile = File('${tempDir.path}/ref_${reference.id}.wav');
-      await tempFile.writeAsBytes(bytes);
-      
-      refAnalysis = await analyzer.analyzeAudio(tempFile.path);
-      debugPrint("RealRatingService: Reference analysis complete. Waveform: ${refAnalysis.waveform.length} pts");
-      
-      // Clean up temp file (optional, but good practice)
-      // await tempFile.delete(); 
-    } catch (e) {
-      debugPrint("Reference Analysis Error: $e");
+    // 3. Get or Analyze the reference audio
+    AudioAnalysis? refAnalysis = _refCache[animalType];
+    
+    if (refAnalysis == null) {
+      try {
+        debugPrint("RealRatingService: Analyzing reference for $animalType (not cached)");
+        final assetPath = reference.audioAssetPath;
+        final ByteData data = await rootBundle.load(assetPath);
+        final List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+        
+        final tempDir = Directory.systemTemp;
+        final tempFile = File('${tempDir.path}/ref_${reference.id}.wav');
+        await tempFile.writeAsBytes(bytes);
+        
+        refAnalysis = await analyzer.analyzeAudio(tempFile.path);
+        _refCache[animalType] = refAnalysis;
+        
+        try { await tempFile.delete(); } catch (_) {}
+      } catch (e) {
+        debugPrint("Reference Analysis Error: $e");
+      }
+    } else {
+      debugPrint("RealRatingService: Using cached reference for $animalType");
     }
 
     final detectedPitch = userAnalysis.dominantFrequencyHz;
@@ -120,10 +156,26 @@ class RealRatingService implements RatingService {
       },
       userWaveform: userAnalysis.waveform,
       referenceWaveform: refAnalysis?.waveform,
+      latitude: _currentPosition?.latitude,
+      longitude: _currentPosition?.longitude,
     );
 
     // Save to history
     await profileRepository.saveResultForUser(userId, result, animalType);
+    
+    // Submit to Leaderboard (Removed per user request) -> Now Daily Challenge Log
+    // Check if this call matches the Daily Challenge
+    try {
+      if (userId != 'guest') {
+        final dailyCall = DailyChallengeService.getDailyChallenge();
+        if (dailyCall.id == animalType && totalScore >= 70) {
+          debugPrint("Daily Challenge ($animalType) Completed by $userId with score $totalScore");
+          await profileRepository.updateDailyChallengeStats(userId);
+        }
+      }
+    } catch (e) {
+      debugPrint("Daily Challenge update failed: $e");
+    }
     
     return result;
   }

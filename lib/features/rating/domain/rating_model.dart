@@ -10,6 +10,8 @@ class RatingResult {
   final Map<String, double> metrics; // e.g. pitch: 80, duration: 90
   final List<double>? userWaveform;
   final List<double>? referenceWaveform;
+  final double? latitude;
+  final double? longitude;
 
   RatingResult({
     required this.score,
@@ -18,6 +20,8 @@ class RatingResult {
     required this.metrics,
     this.userWaveform,
     this.referenceWaveform,
+    this.latitude,
+    this.longitude,
   });
 
   factory RatingResult.fromJson(Map<String, dynamic> json) => _$RatingResultFromJson(json);

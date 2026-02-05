@@ -5,6 +5,7 @@ import '../features/profile/data/profile_repository.dart';
 import '../features/profile/data/local_profile_data_source.dart';
 import '../features/profile/domain/profile_model.dart';
 import '../features/rating/domain/rating_model.dart';
+import '../features/profile/domain/achievement_service.dart';
 
 /// Provides the ProfileDataSource instance
 final profileDataSourceProvider = Provider<LocalProfileDataSource>((ref) {
@@ -13,8 +14,7 @@ final profileDataSourceProvider = Provider<LocalProfileDataSource>((ref) {
 
 /// Provides the ProfileRepository instance
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
-  final dataSource = ref.watch(profileDataSourceProvider);
-  return LocalProfileRepository(dataSource: dataSource);
+  return GetIt.I<ProfileRepository>();
 });
 
 /// State for user profile operations
@@ -95,12 +95,27 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
+
   /// Save a rating result to the user's history
   Future<void> saveResult(String userId, RatingResult result, String animalId) async {
     try {
       await _repo.saveResultForUser(userId, result, animalId);
       // Reload profile to get updated history
       await loadProfile(userId);
+      
+      final currentProfile = state.profile;
+      if (currentProfile != null && userId != 'guest') {
+        final newAchievements = AchievementService.getNewAchievementIds(
+          currentProfile, 
+          currentProfile.achievements
+        );
+        
+        if (newAchievements.isNotEmpty) {
+          await _repo.saveAchievements(userId, newAchievements);
+          // Reload again to get badges
+          await loadProfile(userId);
+        }
+      }
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }

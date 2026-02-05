@@ -16,6 +16,17 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
               ?.map((e) => HistoryItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      achievements: (json['achievements'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      dailyChallengesCompleted:
+          (json['dailyChallengesCompleted'] as num?)?.toInt() ?? 0,
+      lastDailyChallengeDate: json['lastDailyChallengeDate'] == null
+          ? null
+          : DateTime.parse(json['lastDailyChallengeDate'] as String),
+      currentStreak: (json['currentStreak'] as num?)?.toInt() ?? 0,
+      longestStreak: (json['longestStreak'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
@@ -26,6 +37,12 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'totalCalls': instance.totalCalls,
       'averageScore': instance.averageScore,
       'history': instance.history,
+      'achievements': instance.achievements,
+      'dailyChallengesCompleted': instance.dailyChallengesCompleted,
+      'lastDailyChallengeDate':
+          instance.lastDailyChallengeDate?.toIso8601String(),
+      'currentStreak': instance.currentStreak,
+      'longestStreak': instance.longestStreak,
     };
 
 HistoryItem _$HistoryItemFromJson(Map<String, dynamic> json) => HistoryItem(

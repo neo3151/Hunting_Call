@@ -25,6 +25,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Performs comprehensive audio analysis
+  @override
   Future<AudioAnalysis> analyzeAudio(String audioPath) async {
     try {
       final file = File(audioPath);
@@ -132,7 +133,9 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       
       // Calculate chunk energy - skip if too quiet
       double energy = 0.0;
-      for (var s in chunk) energy += s * s;
+      for (var s in chunk) {
+        energy += s * s;
+      }
       energy = sqrt(energy / chunkSize);
       if (energy < 0.01) continue; // Skip near-silent chunks
       
@@ -361,8 +364,9 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         magnitudeSum += magnitudes[j];
         
         // Energy by frequency bands
-        if (frequency < 500) totalLowEnergy += magnitudes[j];
-        else if (frequency < 2000) totalMidEnergy += magnitudes[j];
+        if (frequency < 500) {
+          totalLowEnergy += magnitudes[j];
+        } else if (frequency < 2000) totalMidEnergy += magnitudes[j];
         else totalHighEnergy += magnitudes[j];
         
         // Nasal frequencies (typically 1000-2500 Hz)

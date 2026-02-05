@@ -11,6 +11,11 @@ class UserProfile {
   final int totalCalls;
   final double averageScore;
   final List<HistoryItem> history;
+  final List<String> achievements;
+  final int dailyChallengesCompleted;
+  final DateTime? lastDailyChallengeDate;
+  final int currentStreak;
+  final int longestStreak;
 
   UserProfile({
     required this.id,
@@ -19,6 +24,11 @@ class UserProfile {
     this.totalCalls = 0,
     this.averageScore = 0.0,
     this.history = const [],
+    this.achievements = const [],
+    this.dailyChallengesCompleted = 0,
+    this.lastDailyChallengeDate,
+    this.currentStreak = 0,
+    this.longestStreak = 0,
   });
 
   factory UserProfile.guest() {
@@ -33,6 +43,11 @@ class UserProfile {
     int? totalCalls,
     double? averageScore,
     List<HistoryItem>? history,
+    List<String>? achievements,
+    int? dailyChallengesCompleted,
+    DateTime? lastDailyChallengeDate,
+    int? currentStreak,
+    int? longestStreak,
   }) {
     return UserProfile(
       id: id,
@@ -41,6 +56,11 @@ class UserProfile {
       totalCalls: totalCalls ?? this.totalCalls,
       averageScore: averageScore ?? this.averageScore,
       history: history ?? this.history,
+      achievements: achievements ?? this.achievements,
+      dailyChallengesCompleted: dailyChallengesCompleted ?? this.dailyChallengesCompleted,
+      lastDailyChallengeDate: lastDailyChallengeDate ?? this.lastDailyChallengeDate,
+      currentStreak: currentStreak ?? this.currentStreak,
+      longestStreak: longestStreak ?? this.longestStreak,
     );
   }
 

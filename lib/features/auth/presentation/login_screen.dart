@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/widgets/background_wrapper.dart';
 import '../../../providers/providers.dart';
 import '../../profile/domain/profile_model.dart';
 
@@ -43,14 +44,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isLoading = profileState.isLoading;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/forest_background.png'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
-          ),
-        ),
+      body: BackgroundWrapper(
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
