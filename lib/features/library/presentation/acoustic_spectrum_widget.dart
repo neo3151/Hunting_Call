@@ -109,23 +109,25 @@ class AcousticSpectrumWidget extends StatelessWidget {
           curve: Curves.easeOutQuart,
           tween: Tween(begin: 0.0, end: percentage),
           builder: (context, animValue, child) {
-            return Stack(
-              children: [
-                // Background Track
-                Container(
-                  height: 12,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white10,
-                    borderRadius: BorderRadius.circular(6),
+            return SizedBox(
+              height: 12,
+              width: double.infinity,
+              child: Stack(
+                children: [
+                  // Background Track
+                  Container(
+                    height: 12,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                   ),
-                ),
-                // Gradient Fill
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Container(
+                  // Gradient Fill
+                  FractionallySizedBox(
+                    widthFactor: animValue,
+                    child: Container(
                       height: 12,
-                      width: constraints.maxWidth * animValue,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(colors: [color.withValues(alpha: 0.3), color]),
                         borderRadius: BorderRadius.circular(6),
@@ -137,26 +139,22 @@ class AcousticSpectrumWidget extends StatelessWidget {
                             )
                         ]
                       ),
-                    );
-                  },
-                ),
-                // Marker
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Padding(
-                      padding: EdgeInsets.only(left: (constraints.maxWidth * animValue).clamp(0.0, constraints.maxWidth - 4) - 2),
-                      child: Container(
-                        height: 12,
-                        width: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+                    ),
+                  ),
+                  // Marker
+                  Align(
+                    alignment: Alignment(animValue * 2 - 1, 0),
+                    child: Container(
+                      height: 12,
+                      width: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                    );
-                  },
-                ),
-              ],
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         ),

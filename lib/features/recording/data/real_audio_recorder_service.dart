@@ -194,6 +194,35 @@ class RealAudioRecorderService implements AudioRecorderService {
     _cleanup();
     _amplitudeController.close();
   }
+
+  @override
+  Future<void> cleanupOldFiles() async {
+    try {
+      debugPrint("RealAudioRecorder: Running storage cleanup...");
+      final tempDir = await getTemporaryDirectory();
+      final dir = Directory(tempDir.path);
+      
+      if (await dir.exists()) {
+        final List<FileSystemEntity> files = await dir.list().toList();
+        final now = DateTime.now();
+        int deletedCount = 0;
+
+        for (final file in files) {
+          if (file is File && p.extension(file.path) == '.wav' && p.basename(file.path).startsWith('hunting_call_')) {
+            final stat = await file.stat();
+            // Delete files older than 1 hour to be safe
+            if (now.difference(stat.modified).inHours >= 1) {
+              await file.delete();
+              deletedCount++;
+            }
+          }
+        }
+        debugPrint("RealAudioRecorder: Cleanup complete. Deleted $deletedCount old recordings.");
+      }
+    } catch (e) {
+      debugPrint("RealAudioRecorder: Cleanup ERROR - $e");
+    }
+  }
 }
 
 

@@ -5,6 +5,7 @@ import '../domain/reference_call_model.dart';
 import 'acoustic_spectrum_widget.dart';
 
 import '../../recording/presentation/recorder_page.dart';
+import '../../leaderboard/presentation/leaderboard_screen.dart';
 
 class CallDetailScreen extends StatefulWidget {
   final ReferenceCall call;
@@ -64,43 +65,61 @@ class _CallDetailScreenState extends State<CallDetailScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Hero Header
-          SliverAppBar(
-            expandedHeight: 350,
-            pinned: true,
-            stretch: true,
-            backgroundColor: const Color(0xFF1B5E20),
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                widget.call.callType.toUpperCase(),
-                style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 2),
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset(
+      body: Container(
+        color: const Color(0xFF121212),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          physics: const BouncingScrollPhysics(),
+          children: [
+            // Header Image
+            Stack(
+              children: [
+                Hero(
+                  tag: 'animal_${widget.call.id}',
+                  child: Image.asset(
                     widget.call.imageUrl,
+                    width: double.infinity,
+                    height: 350,
                     fit: BoxFit.cover,
                   ),
-                  const DecoratedBox(
+                ),
+                Positioned.fill(
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Color(0xFF121212)],
+                        colors: [Colors.transparent, const Color(0xFF121212).withOpacity(0.8)],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 10,
+                  left: 10,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                Positioned(
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                  child: Text(
+                    widget.call.callType.toUpperCase(),
+                    style: GoogleFonts.oswald(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                      color: Colors.white
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          
-          SliverToBoxAdapter(
-            child: Padding(
+            
+            Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,6 +187,34 @@ class _CallDetailScreenState extends State<CallDetailScreen> with SingleTickerPr
                     ],
                   ),
                   
+                  const SizedBox(height: 12),
+                  
+                  // Leaderboard Action
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => LeaderboardScreen(
+                              animalId: widget.call.id,
+                              animalName: widget.call.animalName,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.emoji_events_outlined, color: Colors.orangeAccent),
+                      label: const Text("VIEW GLOBAL EXPERT RANKINGS"),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.3)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  
                   const SizedBox(height: 40),
                   
                   // Bioacoustic Data Section
@@ -205,8 +252,8 @@ class _CallDetailScreenState extends State<CallDetailScreen> with SingleTickerPr
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -51,6 +51,11 @@ class RatingNotifier extends Notifier<RatingState> {
 
   /// Analyze a recorded call
   Future<RatingResult?> analyzeCall(String userId, String audioPath, String animalId) async {
+    if (state.isAnalyzing) {
+      debugPrint("RatingNotifier: Analysis already in progress, ignoring request.");
+      return null;
+    }
+    
     debugPrint("RatingNotifier: Starting analysis for $animalId at $audioPath");
     state = state.copyWith(isAnalyzing: true, error: null);
     try {

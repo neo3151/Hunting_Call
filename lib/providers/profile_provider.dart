@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
@@ -57,6 +58,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   /// Load all profiles for login screen
   Future<void> loadAllProfiles() async {
+    debugPrint("ProfileNotifier: Loading all profiles...");
     state = state.copyWith(isLoading: true, error: null);
     try {
       final profiles = await _repo.getAllProfiles();
@@ -78,10 +80,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   /// Create a new profile
-  Future<UserProfile> createProfile(String name) async {
+  Future<UserProfile> createProfile(String name, {String? id}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final profile = await _repo.createProfile(name);
+      final profile = await _repo.createProfile(name, id: id);
       final updatedProfiles = [...state.allProfiles, profile];
       state = state.copyWith(
         profile: profile,

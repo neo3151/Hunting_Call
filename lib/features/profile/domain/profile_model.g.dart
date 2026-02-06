@@ -36,7 +36,7 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'joinedDate': instance.joinedDate.toIso8601String(),
       'totalCalls': instance.totalCalls,
       'averageScore': instance.averageScore,
-      'history': instance.history,
+      'history': instance.history.map((e) => e.toJson()).toList(),
       'achievements': instance.achievements,
       'dailyChallengesCompleted': instance.dailyChallengesCompleted,
       'lastDailyChallengeDate':
@@ -53,7 +53,7 @@ HistoryItem _$HistoryItemFromJson(Map<String, dynamic> json) => HistoryItem(
 
 Map<String, dynamic> _$HistoryItemToJson(HistoryItem instance) =>
     <String, dynamic>{
-      'result': instance.result,
+      'result': instance.result.toJson(),
       'timestamp': instance.timestamp.toIso8601String(),
       'animalId': instance.animalId,
     };

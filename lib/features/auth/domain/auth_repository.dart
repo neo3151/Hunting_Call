@@ -4,4 +4,5 @@ abstract class AuthRepository {
   Future<void> signIn(String userId);
   Future<void> signOut();
   Stream<String?> get onAuthStateChanged;
+  String? get currentUserId;
 }

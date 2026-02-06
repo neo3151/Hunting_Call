@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/profile_model.dart';
 import '../../rating/domain/rating_model.dart';
@@ -13,49 +14,125 @@ class FirestoreProfileRepository implements ProfileRepository {
       return UserProfile.guest();
     }
 
-    final doc = await _firestore.collection(_collectionPath).doc(userId).get();
-    if (doc.exists) {
-      return UserProfile.fromJson(doc.data()!);
-    } else {
-      // If doc doesn't exist, we might want to return guest or throw
+    try {
+      final doc = await _firestore.collection(_collectionPath).doc(userId).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        _sanitizeProfileData(data, doc.id);
+        return UserProfile.fromJson(data);
+      } else {
+        return UserProfile.guest();
+      }
+    } catch (e) {
+      debugPrint("FirestoreProfileRepository: getProfile ERROR: $e");
       return UserProfile.guest();
     }
   }
 
   @override
   Future<List<UserProfile>> getAllProfiles() async {
-    final snapshot = await _firestore.collection(_collectionPath).get();
-    return snapshot.docs.map((doc) => UserProfile.fromJson(doc.data())).toList();
+    try {
+      debugPrint("FirestoreProfileRepository: Fetching all profiles...");
+      final snapshot = await _firestore.collection(_collectionPath).get();
+      debugPrint("FirestoreProfileRepository: Found ${snapshot.docs.length} profiles.");
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        _sanitizeProfileData(data, doc.id);
+        try {
+          return UserProfile.fromJson(data);
+        } catch (e) {
+          debugPrint("Error parsing profile ${doc.id}: $e");
+          // Return a fallback profile if parsing fails to avoid breaking the whole list
+          return UserProfile(
+            id: doc.id,
+            name: data['name'] ?? 'Error Profile',
+            joinedDate: DateTime.now(),
+          );
+        }
+      }).toList();
+    } catch (e) {
+      debugPrint("FirestoreProfileRepository: getAllProfiles ERROR: $e");
+      rethrow;
+    }
+  }
+
+  /// Ensures profile data matches what the model expects (handles Timestamps and missing fields)
+  void _sanitizeProfileData(Map<String, dynamic> data, String docId) {
+    data['id'] = data['id'] ?? docId;
+    data['name'] = data['name'] ?? 'Hunter';
+    
+    // Handle joinedDate (Timestamp vs String)
+    if (data['joinedDate'] is Timestamp) {
+      data['joinedDate'] = (data['joinedDate'] as Timestamp).toDate().toIso8601String();
+    } else if (data['joinedDate'] == null) {
+      data['joinedDate'] = DateTime.now().toIso8601String();
+    }
+
+    // Ensure lastDailyChallengeDate is also safe if it becomes a Timestamp
+    if (data['lastDailyChallengeDate'] is Timestamp) {
+      data['lastDailyChallengeDate'] = (data['lastDailyChallengeDate'] as Timestamp).toDate().toIso8601String();
+    }
   }
 
   @override
-  Future<UserProfile> createProfile(String name) async {
-    // We use the document ID as the profile ID
-    final docRef = _firestore.collection(_collectionPath).doc();
-    final newProfile = UserProfile(
-      id: docRef.id,
-      name: name,
-      joinedDate: DateTime.now(),
-    );
-    
-    await docRef.set(newProfile.toJson());
-    return newProfile;
+  Future<UserProfile> createProfile(String name, {String? id}) async {
+    try {
+      debugPrint("FirestoreProfileRepository: Creating profile for '$name' (id: $id)...");
+      final docRef = id != null 
+          ? _firestore.collection(_collectionPath).doc(id)
+          : _firestore.collection(_collectionPath).doc();
+          
+      final newProfile = UserProfile(
+        id: docRef.id,
+        name: name,
+        joinedDate: DateTime.now(),
+      );
+      
+      await docRef.set(newProfile.toJson());
+      debugPrint("FirestoreProfileRepository: Profile created successfully.");
+      return newProfile;
+    } catch (e) {
+      debugPrint("FirestoreProfileRepository: createProfile ERROR: $e");
+      rethrow;
+    }
   }
 
   @override
   Future<void> saveResultForUser(String userId, RatingResult result, String animalId) async {
     if (userId == 'guest') return;
 
-    final newItem = HistoryItem(
-      result: result,
-      timestamp: DateTime.now(),
-      animalId: animalId,
-    );
+    try {
+      debugPrint("FirestoreProfileRepository: Saving result for user $userId (animal: $animalId)...");
+      
+      final newItem = HistoryItem(
+        result: result,
+        timestamp: DateTime.now(),
+        animalId: animalId,
+      );
 
-    await _firestore.collection(_collectionPath).doc(userId).update({
-      'history': FieldValue.arrayUnion([newItem.toJson()]),
-      'totalCalls': FieldValue.increment(1),
-    });
+      // Explicitly convert to JSON to avoid codec issues with nested objects
+      final data = newItem.toJson();
+      debugPrint("FirestoreProfileRepository: Data serialized successfully.");
+
+      // Use set with merge: true so it creates the document if it doesn't exist
+      await _firestore.collection(_collectionPath).doc(userId).set({
+        'history': FieldValue.arrayUnion([data]),
+        'totalCalls': FieldValue.increment(1),
+        // If document is new, we should at least have these basic fields
+        'id': userId,
+        'joinedDate': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true)).timeout(const Duration(seconds: 10), onTimeout: () {
+        debugPrint("FirestoreProfileRepository: saveResultForUser TIMEOUT after 10s");
+        throw Exception("Firestore write timeout - check your connection.");
+      });
+      
+      debugPrint("FirestoreProfileRepository: Result saved successfully.");
+    } catch (e) {
+      debugPrint("FirestoreProfileRepository: saveResultForUser ERROR: $e");
+      // We rethrow so the UI knows analysis of the save part failed
+      rethrow;
+    }
   }
 
   @override

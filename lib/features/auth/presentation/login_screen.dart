@@ -32,8 +32,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
 
     if (name != null && name.isNotEmpty) {
-      final profile = await ref.read(profileNotifierProvider.notifier).createProfile(name);
-      await ref.read(authRepositoryProvider).signIn(profile.id);
+      final authRepo = ref.read(authRepositoryProvider);
+      
+      try {
+        // 1. Sign in anonymously first
+        await authRepo.signInAnonymously();
+        
+        // 2. Get the UID
+        final uid = authRepo.currentUserId;
+        
+        if (uid != null) {
+          // 3. Create the profile with that UID
+          await ref.read(profileNotifierProvider.notifier).createProfile(name, id: uid);
+        } else {
+          throw Exception("Could not retrieve user ID after sign-in.");
+        }
+      } catch (e) {
+        if (mounted) {
+          debugPrint("Profile creation failed: $e");
+          String message = "Authentication failed. Please check your internet connection.";
+          if (e.toString().contains('unknown-error')) {
+            message = "Anonymous sign-in failed. Please ensure 'Anonymous' auth is enabled in your Firebase Console.";
+          }
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(
+               content: Text(message),
+               backgroundColor: Colors.redAccent,
+               behavior: SnackBarBehavior.floating,
+             )
+           );
+        }
+      }
     }
   }
 
@@ -86,6 +115,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 16),
                     if (isLoading)
                       const Center(child: CircularProgressIndicator(color: Colors.white))
+                    else if (profileState.error != null)
+                      _buildErrorDisplay(profileState.error!)
                     else if (profiles.isEmpty)
                        _buildEmptyState()
                     else
@@ -120,6 +151,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildErrorDisplay(String error) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.redAccent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent),
+          const SizedBox(height: 8),
+          Text(
+            "Failed to load profiles: $error",
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () => ref.read(profileNotifierProvider.notifier).loadAllProfiles(),
+            child: const Text("RETRY", style: TextStyle(color: Colors.greenAccent)),
+          ),
+        ],
       ),
     );
   }

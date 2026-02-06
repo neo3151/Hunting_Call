@@ -18,7 +18,6 @@ class ProgressMapScreen extends StatefulWidget {
 }
 
 class _ProgressMapScreenState extends State<ProgressMapScreen> {
-  UserProfile? _profile;
   List<HistoryItem> _mappedResults = [];
   bool _isLoading = true;
   LatLng _initialCenter = const LatLng(37.0902, -95.7129); // Default US center
@@ -35,7 +34,9 @@ class _ProgressMapScreenState extends State<ProgressMapScreen> {
       
       // Get current location for map center
       try {
-        final pos = await Geolocator.getCurrentPosition(timeLimit: const Duration(seconds: 2));
+        final pos = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(timeLimit: Duration(seconds: 2)),
+        );
         _initialCenter = LatLng(pos.latitude, pos.longitude);
       } catch (_) {}
 
@@ -47,7 +48,6 @@ class _ProgressMapScreenState extends State<ProgressMapScreen> {
 
       if (mounted) {
         setState(() {
-          _profile = profile;
           _mappedResults = mapped;
           _isLoading = false;
         });

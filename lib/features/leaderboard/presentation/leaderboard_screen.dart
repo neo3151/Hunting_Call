@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import '../../leaderboard/data/leaderboard_service.dart';
+import '../../../providers/providers.dart';
 import '../../leaderboard/domain/leaderboard_entry.dart';
 
-class LeaderboardScreen extends StatelessWidget {
+class LeaderboardScreen extends ConsumerWidget {
   final String animalId;
   final String animalName;
 
@@ -16,7 +16,9 @@ class LeaderboardScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scoresAsync = ref.watch(leaderboardScoresProvider(animalId));
+
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
@@ -26,19 +28,10 @@ class LeaderboardScreen extends StatelessWidget {
           style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5),
         ),
       ),
-      body: StreamBuilder<List<LeaderboardEntry>>(
-        stream: GetIt.I<LeaderboardService>().getTopScores(animalId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFF81C784)));
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.white70)));
-          }
-
-          final scores = snapshot.data ?? [];
-
+      body: scoresAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF81C784))),
+        error: (error, stack) => Center(child: Text("Error: $error", style: const TextStyle(color: Colors.white70))),
+        data: (scores) {
           if (scores.isEmpty) {
             return Center(
               child: Column(

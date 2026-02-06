@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:provider/provider.dart' as legacy_provider;
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'injection_container.dart' as di;
 import 'core/theme/theme_notifier.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'features/library/data/reference_database.dart';
-import 'theme/app_theme.dart';
+import 'features/recording/domain/audio_recorder_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,8 +17,11 @@ void main() async {
   // Initialize Firebase
   try {
     debugPrint("Firebase: Attempting initialization...");
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     debugPrint("Firebase: Initialized successfully.");
+
   } catch (e) {
     debugPrint("Firebase: Initialization failed. Entering 'Off-Grid' mode.");
     debugPrint("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
@@ -32,27 +35,30 @@ void main() async {
   };
 
   await di.init();
+  
+  // Background cleanup of old recordings
+  try {
+    final recorderService = di.sl<AudioRecorderService>();
+    recorderService.cleanupOldFiles();
+  } catch (e) {
+    debugPrint("Startup: Cleanup failed: $e");
+  }
+
   runApp(const ProviderScope(child: HuntingCallsApp()));
 }
 
-class HuntingCallsApp extends StatelessWidget {
+class HuntingCallsApp extends ConsumerWidget {
   const HuntingCallsApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Keep legacy Provider for ThemeNotifier during migration
-    return legacy_provider.ChangeNotifierProvider(
-      create: (_) => ThemeNotifier(),
-      child: legacy_provider.Consumer<ThemeNotifier>(
-        builder: (context, themeNotifier, child) {
-          return MaterialApp(
-            title: 'Hunting Calls Perfection',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.darkTheme,
-            home: const SplashScreen(),
-          );
-        },
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeNotifier = ref.read(themeNotifierProvider.notifier);
+    
+    return MaterialApp(
+      title: 'Hunting Calls Perfection',
+      debugShowCheckedModeBanner: false,
+      theme: themeNotifier.currentTheme,
+      home: const SplashScreen(),
     );
   }
 }

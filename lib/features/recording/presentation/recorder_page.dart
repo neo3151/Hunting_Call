@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -22,18 +23,25 @@ class RecorderPage extends ConsumerStatefulWidget {
 }
 
 class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerProviderStateMixin {
-  late String selectedCallId;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool isPlayingReference = false;
   StreamSubscription? _playerCompleteSubscription;
-  int? _countdownValue;
 
   @override
   void initState() {
     super.initState();
-    selectedCallId = widget.preselectedAnimalId ?? ReferenceDatabase.calls.first.id;
+    
+    // Initialize selected call
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.preselectedAnimalId != null) {
+        ref.read(selectedCallIdProvider.notifier).state = widget.preselectedAnimalId!;
+      } else {
+        ref.read(selectedCallIdProvider.notifier).state = ReferenceDatabase.calls.first.id;
+      }
+      ref.read(recordingNotifierProvider.notifier).initialize();
+    });
     
     _pulseController = AnimationController(
       vsync: this,
@@ -41,11 +49,6 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     )..repeat(reverse: true);
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(_pulseController);
 
-    // Initialize recorder via provider
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(recordingNotifierProvider.notifier).initialize();
-    });
-    
     _playerCompleteSubscription = _audioPlayer.onPlayerComplete.listen((_) {
       if (mounted) setState(() => isPlayingReference = false);
     });
@@ -59,50 +62,62 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     super.dispose();
   }
 
-  void _toggleRecording() async {
-    final notifier = ref.read(recordingNotifierProvider.notifier);
-    final status = ref.read(recordingNotifierProvider).status;
+  String _formatDuration(int seconds) {
+    final int minutes = seconds ~/ 60;
+    final int remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
 
-    if (status == RecordingStatus.recording) {
-      final path = await notifier.stopRecording();
+  bool isProcessing = false;
+
+  void _resetRecording() async {
+    if (isProcessing) return;
+    await HapticFeedback.selectionClick();
+    ref.read(recordingNotifierProvider.notifier).reset();
+  }
+
+  void _toggleRecording() async {
+    if (isProcessing) return;
+    
+    final notifier = ref.read(recordingNotifierProvider.notifier);
+    final recordingState = ref.read(recordingNotifierProvider);
+    final selectedCallId = ref.read(selectedCallIdProvider);
+
+    if (recordingState.isRecording) {
+      setState(() => isProcessing = true);
+      await HapticFeedback.mediumImpact();
       
-      if (mounted) {
-        if (path != null && path.isNotEmpty && !path.contains("not open")) {
-           Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => RatingScreen(
-                audioPath: path, 
-                animalId: selectedCallId,
-                userId: widget.userId,
-              ))
-           );
-        } else {
-           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Recording Failed: Could not save audio file.")),
-           );
+      try {
+        final path = await notifier.stopRecording();
+        
+        if (mounted) {
+          if (path != null && path.isNotEmpty && !path.contains("not open")) {
+              Navigator.of(context).push(
+                 MaterialPageRoute(builder: (_) => RatingScreen(
+                   audioPath: path, 
+                   animalId: selectedCallId,
+                   userId: widget.userId,
+                 ))
+              );
+          } else {
+             ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Recording Failed: Could not save audio file.")),
+             );
+          }
         }
+      } finally {
+        if (mounted) setState(() => isProcessing = false);
       }
     } else {
-      // Start countdown
-      setState(() => _countdownValue = 3);
+      await HapticFeedback.heavyImpact();
+      await notifier.startRecordingWithCountdown();
       
-      // Countdown: 3, 2, 1
-      for (int i = 3; i > 0; i--) {
-        if (!mounted) return;
-        setState(() => _countdownValue = i);
-        await Future.delayed(const Duration(seconds: 1));
-      }
-      
-      // Clear countdown and start recording
-      if (!mounted) return;
-      setState(() => _countdownValue = null);
-      
-      final success = await notifier.startRecording();
-      if (!success) {
-         final error = ref.read(recordingNotifierProvider).error ?? "Unknown Error";
+      final finalState = ref.read(recordingNotifierProvider);
+      if (finalState.status == RecordingStatus.error) {
          if (!mounted) return;
          ScaffoldMessenger.of(context).showSnackBar(
              SnackBar(
-               content: Text("Recording Failed: $error"),
+               content: Text("Recording Failed: ${finalState.error}"),
                backgroundColor: Colors.red,
                duration: const Duration(seconds: 5),
              ),
@@ -111,11 +126,13 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     }
   }
 
+
   Future<void> _playReferenceSound() async {
     if (isPlayingReference) {
       await _audioPlayer.stop();
       setState(() => isPlayingReference = false);
     } else {
+      final selectedCallId = ref.read(selectedCallIdProvider);
       final call = ReferenceDatabase.getById(selectedCallId);
       final assetPath = call.audioAssetPath.replaceFirst('assets/', '');
       
@@ -130,11 +147,13 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final recordingState = ref.watch(recordingNotifierProvider);
-    final isRecording = recordingState.status == RecordingStatus.recording;
-    final isCountingDown = _countdownValue != null;
+    final selectedCallId = ref.watch(selectedCallIdProvider);
+    final isRecording = recordingState.isRecording;
+    final isCountingDown = recordingState.isCountingDown;
     
     // Listen to amplitude changes to update the visualizer via the notifier
     ref.listen(amplitudeStreamProvider, (previous, next) {
@@ -179,9 +198,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                           hint: Text("Select Call to Practice", style: GoogleFonts.lato(color: Colors.white70)),
                           onChanged: (isRecording || isCountingDown) ? null : (String? newValue) {
                             if (newValue != null && !newValue.startsWith('header_')) {
-                              setState(() {
-                                selectedCallId = newValue;
-                              });
+                              ref.read(selectedCallIdProvider.notifier).state = newValue;
                             }
                           },
                           items: _buildDropdownItems(isRecording || isCountingDown),
@@ -194,7 +211,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               const SizedBox(height: 24),
               
               _buildGlassButton(
-                onPressed: (isRecording || isCountingDown) ? null : _playReferenceSound,
+                onPressed: (isRecording || isCountingDown || isProcessing) ? null : _playReferenceSound,
                 icon: isPlayingReference ? Icons.stop_circle_outlined : Icons.volume_up_rounded,
                 label: isPlayingReference ? "STOP REFERENCE" : "HEAR SAMPLE",
               ),
@@ -209,76 +226,126 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               const Spacer(),
               
               GestureDetector(
-                onTap: isCountingDown ? null : _toggleRecording,
-                child: Stack(
-                  alignment: Alignment.center,
+                onTap: (isCountingDown || isProcessing) ? null : _toggleRecording,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (isRecording)
-                      ScaleTransition(
-                        scale: _pulseAnimation,
-                        child: Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.red.withValues(alpha: 0.3), width: 4),
-                          ),
+                    // Retry Button
+                    if (isRecording || isCountingDown || recordingState.amplitudes.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 24.0),
+                        child: _buildSmallIconButton(
+                          onPressed: _resetRecording,
+                          icon: Icons.refresh_rounded,
+                          label: "RESET",
                         ),
-                      ),
-                    if (isCountingDown)
-                      Container(
-                        width: 150,
-                        height: 150,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 3),
-                        ),
-                      ),
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        color: isRecording 
-                            ? Colors.red.withValues(alpha: 0.8) 
-                            : isCountingDown 
-                                ? Colors.orange.withValues(alpha: 0.8)
-                                : Colors.green.withValues(alpha: 0.8),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: (isRecording ? Colors.red : isCountingDown ? Colors.orange : Colors.green).withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          )
-                        ],
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
-                      ),
-                      child: isCountingDown
-                          ? Center(
-                              child: Text(
-                                '$_countdownValue',
-                                style: GoogleFonts.oswald(
-                                  fontSize: 48,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                      )
+                    else
+                      const SizedBox(width: 80), // Placeholder to keep main button centered
+
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (isRecording)
+                          ScaleTransition(
+                            scale: _pulseAnimation,
+                            child: Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.red.withValues(alpha: 0.3), width: 4),
                               ),
-                            )
-                          : Icon(
-                              isRecording ? Icons.stop : Icons.mic,
-                              color: Colors.white,
-                              size: 36,
                             ),
+                          ),
+                        if (isCountingDown)
+                          Container(
+                            width: 150,
+                            height: 150,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 3),
+                            ),
+                          ),
+                        Container(
+                          width: 90,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            color: isProcessing
+                                ? Colors.grey.withValues(alpha: 0.8)
+                                : isRecording 
+                                    ? Colors.red.withValues(alpha: 0.8) 
+                                    : isCountingDown 
+                                        ? Colors.orange.withValues(alpha: 0.8)
+                                        : Colors.green.withValues(alpha: 0.8),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: (isProcessing ? Colors.grey : isRecording ? Colors.red : isCountingDown ? Colors.orange : Colors.green).withValues(alpha: 0.4),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              )
+                            ],
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                          ),
+                          child: isProcessing
+                              ? const Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                              : isCountingDown
+                                  ? Center(
+                                      child: Text(
+                                        '${recordingState.countdownValue}',
+                                        style: GoogleFonts.oswald(
+                                          fontSize: 48,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : Icon(
+                                      isRecording ? Icons.stop : Icons.mic,
+                                      color: Colors.white,
+                                      size: 36,
+                                    ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(width: 80), // Balancing placeholder
                   ],
                 ),
               ),
               const SizedBox(height: 24),
+              if (isRecording)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.circle, color: Colors.red, size: 12),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatDuration(recordingState.recordDuration),
+                        style: GoogleFonts.oswald(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 8),
               Text(
                 isCountingDown 
                     ? 'GET READY...' 
                     : isRecording 
-                        ? 'RECORDING IN PROGRESS...' 
+                        ? 'RECORDING IN PROGRESS' 
                         : 'READY TO RECORD',
                 style: GoogleFonts.oswald(
                   fontSize: 18,
@@ -460,5 +527,41 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     if (lower.contains('hog')) return '🐗';
     if (lower.contains('badger')) return '🦡';
     return '🦌';
+  }
+
+  Widget _buildSmallIconButton({required VoidCallback onPressed, required IconData icon, required String label}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+              child: IconButton(
+                onPressed: onPressed,
+                icon: Icon(icon, color: Colors.white70, size: 20),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: GoogleFonts.oswald(
+            color: Colors.white60,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+          ),
+        ),
+      ],
+    );
   }
 }

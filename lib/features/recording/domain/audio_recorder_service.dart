@@ -8,4 +8,7 @@ abstract class AudioRecorderService {
   bool get isRecording;
   String? get lastError;
   void dispose();
+
+  /// Cleans up old temporary recording files to prevent storage buildup.
+  Future<void> cleanupOldFiles();
 }

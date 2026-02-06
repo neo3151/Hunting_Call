@@ -3,7 +3,7 @@ import '../../rating/domain/rating_model.dart';
 
 part 'profile_model.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class UserProfile {
   final String id;
   final String name;
@@ -68,7 +68,7 @@ class UserProfile {
   Map<String, dynamic> toJson() => _$UserProfileToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class HistoryItem {
   final RatingResult result;
   final DateTime timestamp;

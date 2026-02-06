@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../../providers/providers.dart';
 import '../domain/rating_model.dart';
 import '../../library/data/reference_database.dart';
 import './widgets/waveform_overlay.dart';
 import '../domain/personality_feedback_service.dart';
+import '../../leaderboard/presentation/leaderboard_screen.dart';
 
 class RatingScreen extends ConsumerStatefulWidget {
   final String audioPath;
@@ -19,23 +22,113 @@ class RatingScreen extends ConsumerStatefulWidget {
 
 class _RatingScreenState extends ConsumerState<RatingScreen> {
   final ScrollController _scrollController = ScrollController();
+  final AudioPlayer _userPlayer = AudioPlayer();
+  final AudioPlayer _refPlayer = AudioPlayer();
+  
+  bool _isUserPlaying = false;
+  bool _isRefPlaying = false;
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _userPlayer.dispose();
+    _refPlayer.dispose();
     super.dispose();
   }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(ratingNotifierProvider.notifier).reset();
-      ref.read(ratingNotifierProvider.notifier).analyzeCall(widget.userId, widget.audioPath, widget.animalId);
+    
+    // Set up player listeners
+    _userPlayer.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => _isUserPlaying = false);
     });
+    
+    _refPlayer.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => _isRefPlaying = false);
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Clear any previous results and start analysis
+      ref.read(ratingNotifierProvider.notifier).reset();
+      ref.read(ratingNotifierProvider.notifier).analyzeCall(
+        widget.userId, 
+        widget.audioPath, 
+        widget.animalId,
+      );
+    });
+  }
+
+  Future<void> _toggleUserPlayback() async {
+    if (_isUserPlaying) {
+      await _userPlayer.stop();
+      if (mounted) setState(() => _isUserPlaying = false);
+    } else {
+      // Ensure other player is stopped
+      if (_isRefPlaying) {
+        await _refPlayer.stop();
+        if (mounted) setState(() => _isRefPlaying = false);
+      }
+      
+      try {
+        await _userPlayer.play(DeviceFileSource(widget.audioPath));
+        if (mounted) setState(() => _isUserPlaying = true);
+      } catch (e) {
+        debugPrint("Error playing user audio: $e");
+      }
+    }
+  }
+
+  Future<void> _toggleReferencePlayback() async {
+    if (_isRefPlaying) {
+      await _refPlayer.stop();
+      if (mounted) setState(() => _isRefPlaying = false);
+    } else {
+      // Ensure other player is stopped
+      if (_isUserPlaying) {
+        await _userPlayer.stop();
+        if (mounted) setState(() => _isUserPlaying = false);
+      }
+      
+      final reference = ReferenceDatabase.getById(widget.animalId);
+      final assetPath = reference.audioAssetPath.replaceFirst('assets/', '');
+      
+      try {
+        await _refPlayer.play(AssetSource(assetPath));
+        if (mounted) setState(() => _isRefPlaying = true);
+      } catch (e) {
+        debugPrint("Error playing reference audio: $e");
+      }
+    }
+  }
+
+  void _triggerResultHaptics(RatingResult? result) {
+    if (result == null) return;
+    
+    // Different haptics based on score
+    if (result.score >= 85) {
+      HapticFeedback.mediumImpact();
+    } else if (result.score >= 60) {
+      HapticFeedback.mediumImpact();
+    } else {
+      HapticFeedback.heavyImpact();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Listen for completion to trigger haptics
+    ref.listen<RatingState>(ratingNotifierProvider, (previous, next) {
+      if (previous?.isAnalyzing == true && next.isAnalyzing == false) {
+        if (next.result != null) {
+          _triggerResultHaptics(next.result);
+        } else if (next.error != null) {
+          HapticFeedback.vibrate();
+        }
+      }
+    });
+
     final ratingState = ref.watch(ratingNotifierProvider);
     final result = ratingState.result;
     final isLoading = ratingState.isAnalyzing;
@@ -54,6 +147,25 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          if (!ref.watch(firebaseEnabledProvider))
+            const Padding(
+              padding: EdgeInsets.only(right: 16.0),
+              child: Center(
+                child: Tooltip(
+                  message: "Off-Grid Mode: Cloud Sync Disabled",
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.cloud_off, color: Colors.orangeAccent, size: 16),
+                      SizedBox(width: 4),
+                      Text("OFF-GRID", style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
           onPressed: () => Navigator.of(context).pop(),
@@ -105,50 +217,71 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
               )
             : error != null
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.redAccent, size: 64),
-                        const SizedBox(height: 24),
-                        Text(
-                          "Analysis Failed",
-                          style: GoogleFonts.oswald(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.mic_off_rounded, color: Colors.redAccent, size: 64),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 40),
-                          child: Text(
-                            error,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.lato(
-                              fontSize: 14,
-                              color: Colors.white70,
+                          const SizedBox(height: 32),
+                          Text(
+                            "ANALYSIS FAILED",
+                            style: GoogleFonts.oswald(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 2,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            ref.read(ratingNotifierProvider.notifier).reset();
-                            ref.read(ratingNotifierProvider.notifier).analyzeCall(
-                              widget.userId,
-                              widget.audioPath,
-                              widget.animalId,
-                            );
-                          },
-                          icon: const Icon(Icons.refresh),
-                          label: Text('RETRY ANALYSIS', style: GoogleFonts.oswald(letterSpacing: 1.5)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF5FF7B6),
-                            foregroundColor: Colors.black87,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          const SizedBox(height: 16),
+                          Text(
+                            error ?? "We couldn't process your recording clearly.",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.lato(fontSize: 16, color: Colors.white70),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 40),
+                          _buildGuidanceCard(
+                            icon: Icons.volume_mute,
+                            title: "QUIETER ENVIRONMENT",
+                            sub: "Move away from wind or loud machinery.",
+                          ),
+                          const SizedBox(height: 12),
+                          _buildGuidanceCard(
+                            icon: Icons.settings_voice,
+                            title: "CLOSER MIC",
+                            sub: "Hold the device closer to your mouth.",
+                          ),
+                          const SizedBox(height: 48),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                ref.read(ratingNotifierProvider.notifier).reset();
+                                ref.read(ratingNotifierProvider.notifier).analyzeCall(
+                                  widget.userId,
+                                  widget.audioPath,
+                                  widget.animalId,
+                                );
+                              },
+                              icon: const Icon(Icons.refresh_rounded),
+                              label: Text('TRY AGAIN', style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF5FF7B6),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(vertical: 20),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 : result == null
@@ -174,6 +307,10 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                               WaveformOverlay(
                                 userWaveform: result.userWaveform!,
                                 referenceWaveform: result.referenceWaveform,
+                                onPlayUser: _toggleUserPlayback,
+                                onPlayReference: _toggleReferencePlayback,
+                                isUserPlaying: _isUserPlaying,
+                                isReferencePlaying: _isRefPlaying,
                               ),
                             const SizedBox(height: 24),
                             _tryRender(() => _buildDetailedMetrics(result), "Metrics"),
@@ -181,8 +318,8 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                             _tryRender(() => _buildComprehensiveAnalytics(result), "Analytics"),
                             const SizedBox(height: 40),
                             _tryRender(() => _buildTipSection(), "Tip"),
-                            const SizedBox(height: 16),
-                            _buildBackButton(),
+                            const SizedBox(height: 32),
+                            _buildActionButtons(),
                           ],
                         ),
                       ),
@@ -399,7 +536,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
 
   Widget _buildPitchSlider(double user, double target, double tolerance) {
     return SizedBox(
-      height: 20, // Explicit height to prevent collapse/infinite expansion
+      height: 30,
       child: LayoutBuilder(
         builder: (context, constraints) {
           const minFreq = 100.0;
@@ -409,15 +546,11 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           
           final targetNorm = normalize(target);
           final userNorm = normalize(user);
-          final toleranceNorm = (tolerance / (maxFreq - minFreq)).clamp(0, 0.3);
+          final toleranceNorm = (tolerance / (maxFreq - minFreq)).clamp(0, 0.4);
           
           final maxWidth = constraints.maxWidth;
           final targetPos = targetNorm * maxWidth;
-          final userPos = userNorm * maxWidth;
           final toleranceWidth = toleranceNorm * maxWidth * 2;
-          
-          // Debugging values
-          // debugPrint("Slider: T=$targetPos, U=$userPos, TolW=$toleranceWidth, Max=$maxWidth");
           
           return Stack(
             clipBehavior: Clip.none,
@@ -425,46 +558,64 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
             children: [
               // 1. Background Track
               Container(
-                height: 8,
+                height: 6,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
               
               // 2. Tolerance Zone
               Positioned(
                 left: (targetPos - toleranceWidth / 2).clamp(0, maxWidth),
-                width: toleranceWidth.clamp(0, maxWidth), // Explicit width
-                height: 8,
+                width: (toleranceWidth).clamp(0, maxWidth - (targetPos - toleranceWidth / 2).clamp(0, maxWidth)),
+                height: 6,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF5FF7B6).withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(4),
+                    color: const Color(0xFF5FF7B6).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: const Color(0xFF5FF7B6).withValues(alpha: 0.1), width: 0.5),
                   ),
                 ),
               ),
               
-              // 3. User Indicator
+              // 3. Target Mark
               Positioned(
-                left: (userPos - 2).clamp(0, maxWidth - 4),
-                width: 4,
-                height: 12, // Slightly taller
-                top: -2, // Center vertically relative to 8px track
+                left: targetPos - 1,
+                width: 2,
+                height: 12,
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF5FF7B6),
-                    borderRadius: BorderRadius.circular(2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF5FF7B6).withValues(alpha: 0.5), 
-                        blurRadius: 4, 
-                        spreadRadius: 1
-                      )
-                    ],
-                  ),
+                  color: Colors.white.withValues(alpha: 0.4),
                 ),
+              ),
+
+              // 4. User Indicator (Animated)
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1000),
+                curve: Curves.elasticOut,
+                tween: Tween(begin: 0.0, end: userNorm),
+                builder: (context, animUserNorm, child) {
+                  final animatedUserPos = animUserNorm * maxWidth;
+                  return Positioned(
+                    left: (animatedUserPos - 4).clamp(0, maxWidth - 8),
+                    width: 8,
+                    height: 8,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF5FF7B6),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF5FF7B6).withValues(alpha: 0.5), 
+                            blurRadius: 8, 
+                            spreadRadius: 2
+                          )
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           );
@@ -667,19 +818,67 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     );
   }
 
-  Widget _buildBackButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => Navigator.of(context).pop(),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF8BB781),
-          foregroundColor: Colors.black87,
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  Widget _buildActionButtons() {
+    final animal = ReferenceDatabase.getById(widget.animalId);
+    
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.refresh_rounded),
+            label: Text("TRY AGAIN", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF5FF7B6),
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
         ),
-        child: Text("BACK TO DASHBOARD", style: GoogleFonts.oswald(fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-      ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => LeaderboardScreen(
+                    animalId: widget.animalId,
+                    animalName: animal.animalName,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.emoji_events_outlined, color: Color(0xFF81C784)),
+            label: Text("VIEW GLOBAL RANKINGS", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: BorderSide(color: const Color(0xFF81C784).withValues(alpha: 0.5)),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: TextButton(
+            onPressed: () {
+              // Return to home/previous screen (pop twice if needed or just pop to home)
+              Navigator.of(context).pop(); // Back to recorder
+              Navigator.of(context).pop(); // Back to home
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white70,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: Text("DONE & RETURN TO CAMP", style: GoogleFonts.oswald(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5)),
+          ),
+        ),
+      ],
     );
   }
 
@@ -687,5 +886,32 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     if (val == null) return 0.0;
     if (val is num) return val.isFinite ? val.toDouble() : 0.0;
     return double.tryParse(val.toString()) ?? 0.0;
+  }
+
+  Widget _buildGuidanceCard({required IconData icon, required String title, required String sub}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF5FF7B6), size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: GoogleFonts.oswald(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                const SizedBox(height: 2),
+                Text(sub, style: GoogleFonts.lato(fontSize: 12, color: Colors.white60)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

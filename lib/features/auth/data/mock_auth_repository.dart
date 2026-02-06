@@ -48,4 +48,7 @@ class MockAuthRepository implements AuthRepository {
     _controller.add(null);
     debugPrint("Mock Auth: Signed out");
   }
+
+  @override
+  String? get currentUserId => _currentUser;
 }

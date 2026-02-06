@@ -1,10 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:firebase_core/firebase_core.dart';
 import '../features/auth/domain/auth_repository.dart';
-
-/// Provides the AuthRepository instance
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return GetIt.I<AuthRepository>();
+});
+
+/// Tracks if Firebase is successfully initialized
+final firebaseEnabledProvider = Provider<bool>((ref) {
+  try {
+    return Firebase.apps.isNotEmpty;
+  } catch (_) {
+    return false;
+  }
 });
 
 /// Tracks the current authenticated user ID

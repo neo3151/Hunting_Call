@@ -1,3 +1,5 @@
 {
-    "cmake.sourceDirectory": "C:/Users/Neo/Downloads/Hunting_Calls_Perfection_v1.1.1_FIXED/Hunting_Call-main/windows"
+    "cmake.sourceDirectory": "C:/Users/Neo/Downloads/Hunting_Calls_Perfection_v1.1.1_FIXED/Hunting_Call-main/windows",
+    "dart.flutterSdkPath": "C:\\Users\\neo31\\.puro\\envs\\stable\\flutter",
+    "dart.sdkPath": "C:\\Users\\neo31\\.puro\\envs\\stable\\flutter\\bin\\cache\\dart-sdk"
 }
