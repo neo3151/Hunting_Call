@@ -78,75 +78,83 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 500),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Spacer(),
-                    const Icon(Icons.forest_rounded, size: 80, color: Color(0xFF81C784)),
-                    const SizedBox(height: 24),
-                    Text(
-                      'HUNTING\nCALLS',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.oswald(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        height: 1.0,
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'MASTER THE WILD',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.lato(
-                        fontSize: 16,
-                        color: Colors.white70,
-                        letterSpacing: 4.0,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                       "WHO IS HUNTING?",
-                       style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    if (isLoading)
-                      const Center(child: CircularProgressIndicator(color: Colors.white))
-                    else if (profileState.error != null)
-                      _buildErrorDisplay(profileState.error!)
-                    else if (profiles.isEmpty)
-                       _buildEmptyState()
-                    else
-                      Container(
-                        constraints: const BoxConstraints(maxHeight: 300),
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          itemCount: profiles.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final p = profiles[index];
-                            return _buildProfileCard(p);
-                          },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const Icon(Icons.forest_rounded, size: 80, color: Color(0xFF81C784)),
+                              const SizedBox(height: 24),
+                              Text(
+                                'HUNTING\nCALLS',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.oswald(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  height: 1.0,
+                                  letterSpacing: 2.0,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'MASTER THE WILD',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.lato(
+                                  fontSize: 16,
+                                  color: Colors.white70,
+                                  letterSpacing: 4.0,
+                                ),
+                              ),
+                              const SizedBox(height: 48),
+                              Text(
+                                 "WHO IS HUNTING?",
+                                 style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 16),
+                              if (isLoading)
+                                const Center(child: CircularProgressIndicator(color: Colors.white))
+                              else if (profileState.error != null)
+                                _buildErrorDisplay(profileState.error!)
+                              else if (profiles.isEmpty)
+                                 _buildEmptyState()
+                              else
+                                ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: profiles.length,
+                                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                  itemBuilder: (context, index) {
+                                    final p = profiles[index];
+                                    return _buildProfileCard(p);
+                                  },
+                                ),
+                              const SizedBox(height: 24),
+                              ElevatedButton(
+                                onPressed: _createNewProfile,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF81C784),
+                                  foregroundColor: const Color(0xFF0F1E12),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  elevation: 0,
+                                ),
+                                child: const Text('NEW HUNTER PROFILE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0)),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: _createNewProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF81C784),
-                        foregroundColor: const Color(0xFF0F1E12),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                      ),
-                      child: const Text('NEW HUNTER PROFILE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0)),
                     ),
-                    const Spacer(),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ),
@@ -204,7 +212,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: InkWell(
-          onTap: () => ref.read(authRepositoryProvider).signIn(p.id),
+            onTap: () {
+              // 1. Set the auth state (this triggers the transition)
+              ref.read(authRepositoryProvider).signIn(p.id);
+              // 2. Pre-emptively load the profile so HomeScreen has it immediately
+              ref.read(profileNotifierProvider.notifier).loadProfile(p.id);
+            },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(

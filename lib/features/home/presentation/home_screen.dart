@@ -23,9 +23,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Load profile on init
+    // Load profile on init only if not already set (e.g. from selection screen)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
+      final currentProfile = ref.read(profileNotifierProvider).profile;
+      if (currentProfile == null || currentProfile.id == 'guest') {
+        ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
+      }
     });
   }
 
@@ -36,6 +39,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isLoading = profileState.isLoading;
     final errorMessage = profileState.error;
     final userName = profile?.name ?? "Hunter";
+
+    final activeUserId = profile?.id ?? widget.userId;
 
     return Scaffold(
       body: BackgroundWrapper(
@@ -58,7 +63,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                    children: [
                       const SizedBox(height: 8),
                       // Daily Challenge Card
-                      _buildDailyChallengeCard(context),
+                      _buildDailyChallengeCard(context, activeUserId),
                       const SizedBox(height: 24),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,7 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 icon: Icons.mic_external_on,
                                 color: const Color(0xFFC5E1A5),
                                 onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => RecorderPage(userId: widget.userId)),
+                                  MaterialPageRoute(builder: (_) => RecorderPage(userId: activeUserId)),
                                 ),
                               ),
                             ),
@@ -91,7 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     icon: Icons.person_outline,
                                     color: const Color(0xFFD7CCC8),
                                     onTap: () => Navigator.of(context).push(
-                                      MaterialPageRoute(builder: (_) => ProfileScreen(userId: widget.userId)),
+                                      MaterialPageRoute(builder: (_) => ProfileScreen(userId: activeUserId)),
                                     ),
                                   ),
                                 ),
@@ -104,7 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     icon: Icons.library_music_outlined,
                                     color: const Color(0xFFCFD8DC),
                                     onTap: () => Navigator.of(context).push(
-                                      MaterialPageRoute(builder: (_) => LibraryScreen(userId: widget.userId)),
+                                      MaterialPageRoute(builder: (_) => LibraryScreen(userId: activeUserId)),
                                     ),
                                   ),
                                 ),
@@ -250,7 +255,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
   
-  Widget _buildDailyChallengeCard(BuildContext context) {
+  Widget _buildDailyChallengeCard(BuildContext context, String activeUserId) {
     final challengeCall = DailyChallengeService.getDailyChallenge();
     
     return ClipRRect(
@@ -285,7 +290,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: InkWell(
               onTap: () {
                  Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => DailyChallengeScreen(userId: widget.userId)),
+                  MaterialPageRoute(builder: (_) => DailyChallengeScreen(userId: activeUserId)),
                 );
               },
               child: Padding(

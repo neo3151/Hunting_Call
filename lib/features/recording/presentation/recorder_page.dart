@@ -74,6 +74,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     if (isProcessing) return;
     await HapticFeedback.selectionClick();
     ref.read(recordingNotifierProvider.notifier).reset();
+    ref.read(visualizerProvider.notifier).reset();
   }
 
   void _toggleRecording() async {
@@ -158,7 +159,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     // Listen to amplitude changes to update the visualizer via the notifier
     ref.listen(amplitudeStreamProvider, (previous, next) {
       next.whenData((amplitude) {
-        ref.read(recordingNotifierProvider.notifier).updateAmplitudes(amplitude);
+        ref.read(visualizerProvider.notifier).addAmplitude(amplitude);
       });
     });
 
@@ -218,9 +219,14 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               
               const Spacer(),
 
-              LiveVisualizer(
-                amplitudes: recordingState.amplitudes,
-                isRecording: isRecording,
+              Consumer(
+                builder: (context, ref, child) {
+                  final amplitudes = ref.watch(visualizerProvider).amplitudes;
+                  return LiveVisualizer(
+                    amplitudes: amplitudes,
+                    isRecording: isRecording,
+                  );
+                },
               ),
               
               const Spacer(),
@@ -231,7 +237,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Retry Button
-                    if (isRecording || isCountingDown || recordingState.amplitudes.isNotEmpty)
+                    if (isRecording || isCountingDown || ref.watch(visualizerProvider.select((s) => s.amplitudes.isNotEmpty)))
                       Padding(
                         padding: const EdgeInsets.only(right: 24.0),
                         child: _buildSmallIconButton(

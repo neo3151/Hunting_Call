@@ -15,7 +15,6 @@ class RecordingState {
   final RecordingStatus status;
   final String? audioPath;
   final String? error;
-  final List<double> amplitudes;
   final int recordDuration;
   final int? countdownValue;
 
@@ -23,7 +22,6 @@ class RecordingState {
     this.status = RecordingStatus.idle,
     this.audioPath,
     this.error,
-    this.amplitudes = const [],
     this.recordDuration = 0,
     this.countdownValue,
   });
@@ -35,7 +33,6 @@ class RecordingState {
     RecordingStatus? status,
     String? audioPath,
     String? error,
-    List<double>? amplitudes,
     int? recordDuration,
     int? countdownValue,
     bool clearError = false,
@@ -45,7 +42,6 @@ class RecordingState {
       status: status ?? this.status,
       audioPath: audioPath ?? this.audioPath,
       error: clearError ? null : (error ?? this.error),
-      amplitudes: amplitudes ?? this.amplitudes,
       recordDuration: recordDuration ?? this.recordDuration,
       countdownValue: clearCountdown ? null : (countdownValue ?? this.countdownValue),
     );
@@ -89,7 +85,7 @@ class RecordingNotifier extends Notifier<RecordingState> {
     state = state.copyWith(clearCountdown: true);
 
     // Start recording
-    state = state.copyWith(status: RecordingStatus.initializing, clearError: true, amplitudes: [], recordDuration: 0);
+    state = state.copyWith(status: RecordingStatus.initializing, clearError: true, recordDuration: 0);
     try {
       final success = await _recorder.startRecorder('temp_path');
       if (success) {
@@ -132,25 +128,10 @@ class RecordingNotifier extends Notifier<RecordingState> {
     }
   }
 
-  /// Update amplitudes for visualization
-  void updateAmplitudes(double amplitude) {
-    if (!state.isRecording) return;
-    final newAmplitudes = [...state.amplitudes, amplitude];
-    if (newAmplitudes.length > 50) {
-      newAmplitudes.removeAt(0);
-    }
-    state = state.copyWith(amplitudes: newAmplitudes);
-  }
-
   /// Reset state
   void reset() {
     _stopTimer();
     state = const RecordingState();
-  }
-
-  /// Reset amplitudes only
-  void resetAmplitudes() {
-    state = state.copyWith(amplitudes: []);
   }
 }
 

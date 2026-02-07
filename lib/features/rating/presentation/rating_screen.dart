@@ -242,7 +242,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            error ?? "We couldn't process your recording clearly.",
+                            error,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.lato(fontSize: 16, color: Colors.white70),
                           ),
@@ -313,6 +313,10 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                                 isReferencePlaying: _isRefPlaying,
                               ),
                             const SizedBox(height: 24),
+                            _tryRender(() => _buildProBreakdown(result), "Pro Breakdown"),
+                            const SizedBox(height: 16),
+                            _tryRender(() => _buildPrimaryFlaw(result), "Primary Flaw"),
+                            const SizedBox(height: 24),
                             _tryRender(() => _buildDetailedMetrics(result), "Metrics"),
                             const SizedBox(height: 40),
                             _tryRender(() => _buildComprehensiveAnalytics(result), "Analytics"),
@@ -334,7 +338,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       debugPrint("RENDER ERROR in $sectionName: $e\n$stack");
       return Container(
         padding: const EdgeInsets.all(8),
-        color: Colors.red.withOpacity(0.2),
+        color: Colors.red.withValues(alpha: 0.2),
         child: Text("Error in $sectionName: $e", style: const TextStyle(color: Colors.red, fontSize: 10)),
       );
     }
@@ -620,6 +624,115 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildProBreakdown(RatingResult result) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(width: 3, height: 14, decoration: const BoxDecoration(color: Color(0xFF5FF7B6), borderRadius: BorderRadius.all(Radius.circular(2)))),
+            const SizedBox(width: 8),
+            Text("PRO BREAKDOWN", style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildProMetricCard("PITCH", result.metrics['score_pitch'] ?? 0, Icons.music_note),
+            _buildProMetricCard("TIMBRE", result.metrics['score_timbre'] ?? 0, Icons.flare),
+            _buildProMetricCard("RHYTHM", result.metrics['score_rhythm'] ?? 0, Icons.speed),
+            _buildProMetricCard("AIR", result.metrics['score_duration'] ?? 0, Icons.air),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProMetricCard(String label, dynamic score, IconData icon) {
+    final double s = _toSafe(score).clamp(0, 100);
+    Color color = s >= 80 ? const Color(0xFF5FF7B6) : (s >= 50 ? Colors.orangeAccent : Colors.redAccent);
+    
+    return Container(
+      width: (MediaQuery.of(context).size.width - 60) / 4,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(height: 8),
+          Text(label, style: GoogleFonts.oswald(fontSize: 9, color: Colors.white60, letterSpacing: 1)),
+          const SizedBox(height: 4),
+          Text("${s.toInt()}%", style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrimaryFlaw(RatingResult result) {
+    final scores = {
+      'pitch': _toSafe(result.metrics['score_pitch']),
+      'timbre': _toSafe(result.metrics['score_timbre']),
+      'rhythm': _toSafe(result.metrics['score_rhythm']),
+      'duration': _toSafe(result.metrics['score_duration']),
+    };
+
+    final worst = scores.entries.reduce((a, b) => a.value < b.value ? a : b);
+    
+    if (worst.value >= 85) return const SizedBox.shrink();
+
+    String flawTitle = "";
+    String flawDesc = "";
+
+    switch (worst.key) {
+      case 'pitch':
+        flawTitle = "PITCH DEVIATION";
+        flawDesc = "You're missing the target frequency. Practice your vocal control.";
+        break;
+      case 'timbre':
+        flawTitle = "TONAL INACCURACY";
+        flawDesc = "The 'color' of your sound doesn't match the reference. Check your mouth position.";
+        break;
+      case 'rhythm':
+        flawTitle = "UNSTABLE RHYTHM";
+        flawDesc = "Your breathing or cadence is inconsistent. Focus on a steady flow.";
+        break;
+      case 'duration':
+        flawTitle = "AIR MANAGEMENT";
+        flawDesc = "Your calls are either too long or too short. Manage your breath better.";
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.redAccent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("PRIMARY FLAW: $flawTitle", style: GoogleFonts.oswald(fontSize: 12, color: Colors.redAccent, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                const SizedBox(height: 4),
+                Text(flawDesc, style: GoogleFonts.lato(fontSize: 11, color: Colors.white70)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

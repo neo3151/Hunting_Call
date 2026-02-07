@@ -148,4 +148,67 @@ class PersonalityFeedbackService {
     "I've seen decoys with more life and better tone than that.",
     "That sound is the reason bag limits exist—to protect us from you.",
   ];
+
+  /// Get specific technical critiques based on metric deviations
+  static String getSpecificCritique(Map<String, double> scores) {
+    if (scores.isEmpty) return "I'm speachless. And not in a good way.";
+
+    // Find the worst performing category
+    final worst = scores.entries.reduce((a, b) => a.value < b.value ? a : b);
+    
+    // If everything is great, return a high-praise message
+    if (worst.value >= 90) return "Your technique is so clean it's boring. Try making a mistake for once.";
+
+    final List<String> options;
+    switch (worst.key) {
+      case 'pitch':
+        options = _pitchCritiques;
+        break;
+      case 'timbre':
+        options = _timbreCritiques;
+        break;
+      case 'rhythm':
+        options = _rhythmCritiques;
+        break;
+      case 'duration':
+        options = _durationCritiques;
+        break;
+      default:
+        return "Everything is just... slightly off. Like a puzzle with one missing piece.";
+    }
+
+    return options[_random.nextInt(options.length)];
+  }
+
+  static final List<String> _pitchCritiques = [
+    "Your pitch is so far off that migrating birds are heading the wrong way.",
+    "Are you calling an elk or trying to communicate with a dial-up modem?",
+    "That pitch was so sharp it could cut through a steel-toe boot.",
+    "Flat. Like an old tire. Your pitch is just depressing.",
+    "The animals heard that frequency and thought it was a feedback loop.",
+  ];
+
+  static final List<String> _timbreCritiques = [
+    "Too much nasality. You sound like a goose with a severe sinus infection.",
+    "Lacking warmth. That call is colder than a December morning in North Dakota.",
+    "Your tone is too bright. You're scaring 'em off with that 'tin can' aesthetic.",
+    "Sounds like you're blowing through a garden hose. Wherre's the resonance?",
+    "That timbre is the audio equivalent of cardboard. Zero character.",
+  ];
+
+  static final List<String> _rhythmCritiques = [
+    "Your rhythm is so erratic I thought the recording was skipping.",
+    "You're rushing. An animal doesn't have a train to catch. Slow down.",
+    "Stability? Never heard of her. Your tone is wobblier than a three-legged table.",
+    "That's not a pulsed call, that's a series of unfortunate accidents.",
+    "The cadence is all wrong. You're giving the ducks a seizure, not a greeting.",
+  ];
+
+  static final List<String> _durationCritiques = [
+    "You're either too short-winded or you just don't have anything to say.",
+    "That call went on so long I actually aged while listening to it.",
+    "Give it a break. Let the animals breathe. Your duration is exhausting.",
+    "That was a 'quickie' call. Nobody is impressed by three seconds of noise.",
+    "You're dragging it out. It's a call, not an epic poem.",
+  ];
 }

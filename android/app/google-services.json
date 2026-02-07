@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "654995904748",
+    "project_id": "hunting-call-perfection",
+    "storage_bucket": "hunting-call-perfection.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654995904748:android:2e7e1da02e9b271482adc9",
+        "android_client_info": {
+          "package_name": "com.example.hunting_calls_perfection"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHJwRjQq0nUA7LRrQL80XJ-spZGWsOwLs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
