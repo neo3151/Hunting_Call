@@ -122,6 +122,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(error: e.toString());
     }
   }
+
+  /// Resets the profile state to its initial, unauthenticated state.
+  void reset() {
+    state = const ProfileState();
+  }
 }
 
 final profileNotifierProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {

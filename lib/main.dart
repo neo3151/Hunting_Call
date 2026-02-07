@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -32,6 +33,12 @@ void main() async {
     FlutterError.presentError(details);
     debugPrint("GLOBAL FLUTTER ERROR: ${details.exception}");
     // Here you could send errors to Sentry or Firebase Crashlytics
+  };
+
+  // Catch async errors that escape the widget tree
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint("GLOBAL ASYNC ERROR: $error\n$stack");
+    return true; // Prevent app crash
   };
 
   await di.init();

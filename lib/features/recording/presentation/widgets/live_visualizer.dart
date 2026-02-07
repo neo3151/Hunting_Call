@@ -37,7 +37,6 @@ class _VisualizerPainter extends CustomPainter {
 
   // Reuse paint objects to reduce garbage collection pressure
   final _barPaint = Paint()..style = PaintingStyle.fill;
-  final _shadowPaint = Paint()..style = PaintingStyle.fill;
   final _baselinePaint = Paint()..strokeWidth = 1..style = PaintingStyle.stroke;
 
   _VisualizerPainter({
@@ -51,48 +50,52 @@ class _VisualizerPainter extends CustomPainter {
     if (amplitudes.isEmpty) return;
 
     final double centerY = size.height / 2;
-    final double spacing = size.width / 50;
+    // Optimize spacing calculation
+    final double spacing = size.width / (amplitudes.length > 50 ? amplitudes.length : 50);
     final double barWidth = spacing * 0.7;
 
+    // Set baseline style once
     _baselinePaint.color = isRecording ? Colors.white24 : Colors.white10;
+    
+    // Create a path for all bars to draw in fewer calls
+    final Path barPath = Path();
+    
+    // Pre-calculate common values
+    final double maxBarHeight = size.height - 24;
 
     for (int i = 0; i < amplitudes.length; i++) {
-      final double x = i * spacing + (barWidth / 2);
-      final double amp = amplitudes[i].clamp(0.0, 1.0);
-      
-      final double barHeight = (amp * (size.height - 24)) + 4;
-      
-      // Dynamic color based on amplitude
-      final Color barColor = isRecording 
-          ? Color.lerp(const Color(0xFF81C784), const Color(0xFF64FFDA), amp) ?? color
-          : Colors.white10;
-
-      final barRect = Rect.fromCenter(
-        center: Offset(x, centerY),
-        width: barWidth,
-        height: barHeight,
-      );
-
-      // Add a subtle glow if recording and amplitude is significant
-      if (isRecording && amp > 0.1) {
-        _shadowPaint
-          ..color = barColor.withValues(alpha: 0.15 * amp)
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, amp * 8);
+        final double x = i * spacing + (barWidth / 2);
         
-        canvas.drawRect(barRect.inflate(1), _shadowPaint);
-      }
+        // Skip bars that are outside visible width
+        if (x > size.width) break;
 
-      // Draw the bar with a simpler gradient or solid color to save GPU cycles
-      _barPaint.color = barColor;
-      // Note: Full gradient per bar is expensive, we use barColor directly or a global shader
-      
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(barRect, const Radius.circular(2)),
-        _barPaint,
-      );
+        final double amp = amplitudes[i];
+        if (amp < 0.01) continue; // Skip near-silent bars
+        
+        final double barHeight = (amp.clamp(0.0, 1.0) * maxBarHeight) + 4;
+        
+        final rect = Rect.fromCenter(
+            center: Offset(x, centerY),
+            width: barWidth,
+            height: barHeight,
+        );
+        
+        barPath.addRRect(RRect.fromRectAndRadius(rect, const Radius.circular(2)));
     }
 
-    // Draw a subtle baseline across the center
+    // Use a single color or simple gradient instead of per-bar color
+    if (isRecording) {
+        _barPaint.color = color;
+        // Optional: specific shader could go here for gradient across the whole visualizer 
+        // but solid color is fastest and cleanest for "Pro" look
+    } else {
+        _barPaint.color = Colors.white10;
+    }
+
+    // One draw call for all bars
+    canvas.drawPath(barPath, _barPaint);
+
+    // Draw baseline
     canvas.drawLine(
       Offset(0, centerY),
       Offset(size.width, centerY),

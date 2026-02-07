@@ -42,8 +42,11 @@ class RatingState {
 
 /// Notifier for rating operations
 class RatingNotifier extends Notifier<RatingState> {
+  bool _mounted = true;
+
   @override
   RatingState build() {
+    ref.onDispose(() => _mounted = false);
     return const RatingState();
   }
 
@@ -60,12 +63,16 @@ class RatingNotifier extends Notifier<RatingState> {
     state = state.copyWith(isAnalyzing: true, error: null);
     try {
       final result = await _ratingService.rateCall(userId, audioPath, animalId);
+      if (!_mounted) return null; // Prevent setting state if disposed
+      
       debugPrint("RatingNotifier: Analysis complete. Success: ${result.score > 0}");
       state = state.copyWith(isAnalyzing: false, result: result);
       return result;
     } catch (e, stack) {
       debugPrint("RatingNotifier: Analysis error: $e\n$stack");
-      state = state.copyWith(isAnalyzing: false, error: e.toString());
+      if (_mounted) {
+        state = state.copyWith(isAnalyzing: false, error: e.toString());
+      }
       return null;
     }
   }

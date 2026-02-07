@@ -13,6 +13,7 @@ import '../../leaderboard/data/leaderboard_service.dart';
 import '../../leaderboard/domain/leaderboard_entry.dart';
 import '../../daily_challenge/data/daily_challenge_service.dart';
 
+import '../../rating/domain/personality_feedback_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 class RealRatingService implements RatingService {
@@ -93,12 +94,11 @@ class RealRatingService implements RatingService {
       final detectedDuration = userAnalysis.totalDurationSec;
 
       // 3. Compare (The Algorithm)
-      final pitchDiff = (detectedPitch - reference.idealPitchHz).abs();
-      final durationDiff = (detectedDuration - reference.idealDurationSec).abs();
-
-      // 4. Calculate Score
+      
+      // A. PITCH SCORE (40%)
       double pitchScore = 100.0;
       if (reference.idealPitchHz > 0) {
+        final pitchDiff = (detectedPitch - reference.idealPitchHz).abs();
         final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
         final tolerancePercent = (reference.tolerancePitch / reference.idealPitchHz) * 100;
         
@@ -107,7 +107,42 @@ class RealRatingService implements RatingService {
         }
       }
 
+      // B. TIMBRE SCORE (30%)
+      double timbreScore = 100.0;
+      if (refAnalysis != null) {
+        final brightnessDiff = (userAnalysis.brightness - refAnalysis.brightness).abs();
+        final warmthDiff = (userAnalysis.warmth - refAnalysis.warmth).abs();
+        final nasalityDiff = (userAnalysis.nasality - refAnalysis.nasality).abs();
+        
+        // Lower weight for small deviations, higher for large ones
+        final brightnessPenalty = brightnessDiff > 10 ? (brightnessDiff - 10) * 1.5 : 0.0;
+        final warmthPenalty = warmthDiff > 10 ? (warmthDiff - 10) * 1.5 : 0.0;
+        final nasalityPenalty = nasalityDiff > 10 ? (nasalityDiff - 10) * 2.5 : 0.0; // Nasality is distinct for predators/waterfowl
+        
+        timbreScore = max(0, 100 - (brightnessPenalty + warmthPenalty + nasalityPenalty));
+      } else {
+        // Fallback for missing ref analysis
+        timbreScore = (userAnalysis.toneClarity * 0.7) + (userAnalysis.harmonicRichness * 0.3);
+      }
+
+      // C. RHYTHM & STABILITY SCORE (20%)
+      double rhythmScore = 100.0;
+      double pitchStabilityScore = userAnalysis.pitchStability;
+      
+      if (reference.isPulsedCall && refAnalysis != null && refAnalysis.isPulsedCall) {
+        final tempoDiff = (userAnalysis.tempo - reference.idealTempo).abs();
+        final tempoPenalty = tempoDiff > 10 ? (tempoDiff - 10) * 2 : 0.0;
+        
+        final regularityScore = userAnalysis.rhythmRegularity;
+        rhythmScore = (pitchStabilityScore * 0.4) + (regularityScore * 0.4) + max(0, 20 - tempoPenalty);
+      } else {
+        // Non-pulsed calls value stability more
+        rhythmScore = (pitchStabilityScore * 0.8) + (userAnalysis.volumeConsistency * 0.2);
+      }
+
+      // D. DURATION & VOLUME SCORE (10%)
       double durationScore = 100.0;
+      final durationDiff = (detectedDuration - reference.idealDurationSec).abs();
       if (reference.idealDurationSec > 0) {
         final durationDeviationPercent = (durationDiff / reference.idealDurationSec) * 100;
         final toleranceDurationPercent = (reference.toleranceDuration / reference.idealDurationSec) * 100;
@@ -116,38 +151,56 @@ class RealRatingService implements RatingService {
           durationScore = max(0, 100 - ((durationDeviationPercent - toleranceDurationPercent) * 2));
         }
       }
+      
+      final volumeScore = min(100.0, userAnalysis.averageVolume * 500); // 0.2 RMS is "Ideal" (100)
+      final finalDurationVolumeScore = (durationScore * 0.7) + (volumeScore * 0.3);
 
-      double totalScore = (pitchScore * 0.6) + (durationScore * 0.4);
+      // TOTAL SCORE CALCULATION
+      double totalScore = (pitchScore * 0.40) + 
+                         (timbreScore * 0.30) + 
+                         (rhythmScore * 0.20) + 
+                         (finalDurationVolumeScore * 0.10);
+      
       totalScore = totalScore.clamp(0, 100);
 
       // 5. Generate Feedback
-      String feedback = "";
-      final bool pitchIsGood = pitchScore >= 85;
-      final bool durationIsGood = durationScore >= 85;
       
-      if (pitchIsGood && durationIsGood) {
-        feedback = "Outstanding! You sound just like a ${reference.animalName}.";
-      } else if (!pitchIsGood && !durationIsGood) {
-        if (pitchScore < durationScore) {
-          final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
-          feedback = "Pitch is off by ${pitchDeviationPercent.toStringAsFixed(0)}%. Duration also needs work.";
-        } else {
-          feedback = "Duration is off. Pitch also needs work.";
-        }
+      // Technical feedback (for the summary list)
+      String technicalFeedback = "";
+      final bool pitchIsGood = pitchScore >= 85;
+      final bool timbreIsGood = timbreScore >= 80;
+      final bool rhythmIsGood = rhythmScore >= 80;
+      
+      if (pitchIsGood && timbreIsGood && rhythmIsGood) {
+        technicalFeedback = "Outstanding! You sound just like a ${reference.animalName}.";
       } else if (!pitchIsGood) {
-        feedback = detectedPitch > reference.idealPitchHz ? "Too High! Lower your pitch." : "Too Low! Raise your pitch.";
+        technicalFeedback = detectedPitch > reference.idealPitchHz ? "Too High! Lower your pitch." : "Too Low! Raise your pitch.";
+      } else if (!timbreIsGood) {
+        technicalFeedback = userAnalysis.nasality > (refAnalysis?.nasality ?? 50) + 15 ? "Too much nasality!" : "Tone is muffled.";
       } else {
-        feedback = detectedDuration > reference.idealDurationSec ? "Too Long!" : "Too Short!";
+        technicalFeedback = "Watch your rhythm and stability.";
       }
+
+      // Personality roasting feedback
+      final String personalityCritique = PersonalityFeedbackService.getSpecificCritique({
+        'pitch': pitchScore,
+        'timbre': timbreScore,
+        'rhythm': rhythmScore,
+        'duration': durationScore,
+      });
 
       final result = RatingResult(
         score: totalScore,
-        feedback: feedback,
+        feedback: "$technicalFeedback $personalityCritique",
         pitchHz: detectedPitch,
         metrics: {
           "Pitch (Hz)": detectedPitch,
           "Target Pitch": reference.idealPitchHz,
           "Duration (s)": detectedDuration,
+          "score_pitch": pitchScore,
+          "score_timbre": timbreScore,
+          "score_rhythm": rhythmScore,
+          "score_duration": durationScore,
           "avg_volume": userAnalysis.averageVolume * 100,
           "peak_volume": userAnalysis.peakVolume * 100,
           "consistency": userAnalysis.volumeConsistency,
@@ -163,7 +216,7 @@ class RealRatingService implements RatingService {
         latitude: _currentPosition?.latitude,
         longitude: _currentPosition?.longitude,
       );
-      debugPrint("RealRatingService: Analysis successful. Score: ${result.score}, Pitch: ${result.pitchHz}Hz");
+      debugPrint("RealRatingService: Pro-Grade Analysis complete. Score: ${result.score}");
 
       // Save to history
       await profileRepository.saveResultForUser(userId, result, animalType);

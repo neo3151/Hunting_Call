@@ -9,10 +9,10 @@ void main() {
   testWidgets('App loads without crashing', (WidgetTester tester) async {
     // Setup Mock Dependencies
     SharedPreferences.setMockInitialValues({});
-    await di.init();
+    await di.init(useMocks: true);
 
     // Pump the app
-    await tester.pumpWidget(const HuntingCallsApp());
+    await tester.pumpWidget(const ProviderScope(child: HuntingCallsApp()));
     
     // Just verify the app builds without errors
     // The splash screen should appear first

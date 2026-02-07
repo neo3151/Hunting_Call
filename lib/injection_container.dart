@@ -10,6 +10,7 @@ import 'features/profile/data/local_profile_data_source.dart';
 import 'features/profile/data/profile_repository.dart';
 import 'features/profile/data/firestore_profile_repository.dart';
 import 'features/recording/data/real_audio_recorder_service.dart';
+import 'features/recording/data/mock_audio_recorder_service.dart';
 import 'features/recording/domain/audio_recorder_service.dart';
 import 'features/rating/domain/rating_service.dart';
 import 'features/analysis/data/real_rating_service.dart';
@@ -19,8 +20,11 @@ import 'features/leaderboard/data/leaderboard_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 final sl = GetIt.instance;
+bool _isInitializing = false;
 
-Future<void> init() async {
+Future<void> init({bool useMocks = false}) async {
+  if (_isInitializing) return;
+  _isInitializing = true;
   await sl.reset();
   
   // External
@@ -45,7 +49,11 @@ Future<void> init() async {
   }
 
   // Features - Recording
-  sl.registerLazySingleton<AudioRecorderService>(() => RealAudioRecorderService());
+  if (useMocks) {
+    sl.registerLazySingleton<AudioRecorderService>(() => MockAudioRecorderService());
+  } else {
+    sl.registerLazySingleton<AudioRecorderService>(() => RealAudioRecorderService());
+  }
 
   // Features - Profile
   sl.registerLazySingleton<ProfileDataSource>(() => LocalProfileDataSource(sharedPreferences: sl()));
@@ -67,4 +75,5 @@ Future<void> init() async {
 
   // Core
   // ... add core services here later (e.g. NavigationService)
+  _isInitializing = false;
 }

@@ -14,6 +14,8 @@ class ReferenceCall {
   final String imageUrl; // Custom high-res image
   final String scientificName; // Biological name
   final bool isLocked; // If true, the call is "Coming Soon" or requires unlock
+  final bool isPulsedCall; // Whether call has rhythmic pulses
+  final double idealTempo; // Calls per minute (if pulsed)
 
   const ReferenceCall({
     required this.id,
@@ -31,6 +33,8 @@ class ReferenceCall {
     this.imageUrl = '',
     this.scientificName = '',
     this.isLocked = false,
+    this.isPulsedCall = false,
+    this.idealTempo = 0.0,
   });
 
   factory ReferenceCall.fromJson(Map<String, dynamic> json) {
@@ -50,6 +54,8 @@ class ReferenceCall {
       imageUrl: json['imageUrl'] as String? ?? '',
       scientificName: json['scientificName'] as String? ?? '',
       isLocked: json['isLocked'] as bool? ?? false,
+      isPulsedCall: json['isPulsedCall'] as bool? ?? false,
+      idealTempo: (json['idealTempo'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -69,5 +75,7 @@ class ReferenceCall {
     'imageUrl': imageUrl,
     'scientificName': scientificName,
     'isLocked': isLocked,
+    'isPulsedCall': isPulsedCall,
+    'idealTempo': idealTempo,
   };
 }

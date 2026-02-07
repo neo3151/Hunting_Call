@@ -34,8 +34,31 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         return AudioAnalysis.simple(frequencyHz: 0.0, durationSec: 0.0);
       }
 
-      // Read WAV file
-      final bytes = await file.readAsBytes();
+      // Check cache first (on main thread)
+      // Note: We don't cache the full object yet, just waveform. 
+      // If we move to full caching, check here.
+
+      debugPrint("ComprehensiveAudioAnalyzer: Spawning isolate for analysis...");
+      final analysis = await compute(_runAnalysisInIsolate, audioPath);
+      debugPrint("ComprehensiveAudioAnalyzer: Analysis complete.");
+      
+      // Update waveform cache with the result if needed
+      if (analysis.waveform.isNotEmpty) {
+        await _cache.cacheWaveform(audioPath, analysis.waveform);
+      }
+      
+      return analysis;
+
+    } catch (e, stack) {
+      debugPrint("Comprehensive Analysis Error: $e\n$stack");
+      return AudioAnalysis.simple(frequencyHz: 0.0, durationSec: 0.0);
+    }
+  }
+
+  /// Static entry point for the isolate
+  static Future<AudioAnalysis> _runAnalysisInIsolate(String audioPath) async {
+    final file = File(audioPath);
+    final bytes = await file.readAsBytes();
       if (bytes.length < 44) {
         return AudioAnalysis.simple(frequencyHz: 0.0, durationSec: 0.0);
       }
@@ -59,7 +82,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         samples[i] = sample / 32768.0;
       }
 
-      // Perform analyses
+      // Perform analyses (using static helpers)
       final pitchAnalysis = _analyzePitch(samples, sampleRate);
       final volumeAnalysis = _analyzeVolume(samples);
       final toneAnalysis = _analyzeTone(samples, sampleRate);
@@ -67,6 +90,9 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       final durationAnalysis = _analyzeDuration(samples, sampleRate, totalDuration);
       final rhythmAnalysis = _analyzeRhythm(samples, sampleRate);
       final quality = _assessQuality(samples, sampleRate);
+      
+      // Generate waveform (expensive, do in isolate)
+      final waveform = _extractWaveform(samples, 100);
 
       return AudioAnalysis(
         // Pitch
@@ -107,17 +133,13 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         noiseLevel: quality['noise']!,
         
         // Visualization
-        waveform: await getWaveformFromSamples(samples, 100, audioPath),
+        waveform: waveform,
         pitchTrack: pitchAnalysis['pitchTrack'] as List<double>,
       );
-    } catch (e, stack) {
-      debugPrint("Comprehensive Analysis Error: $e\n$stack");
-      return AudioAnalysis.simple(frequencyHz: 0.0, durationSec: 0.0);
-    }
   }
 
   /// Analyze pitch characteristics
-  Map<String, dynamic> _analyzePitch(Float64List samples, int sampleRate) {
+  static Map<String, dynamic> _analyzePitch(Float64List samples, int sampleRate) {
     const chunkSize = 4096;
     final chunks = samples.length ~/ chunkSize;
     
@@ -226,7 +248,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Analyze volume characteristics
-  Map<String, double> _analyzeVolume(Float64List samples) {
+  static Map<String, double> _analyzeVolume(Float64List samples) {
     double sum = 0.0;
     double peak = 0.0;
     
@@ -267,7 +289,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Analyze tone characteristics
-  Map<String, dynamic> _analyzeTone(Float64List samples, int sampleRate) {
+  static Map<String, dynamic> _analyzeTone(Float64List samples, int sampleRate) {
     const chunkSize = 4096;
     final chunk = samples.sublist(0, min(chunkSize, samples.length));
     
@@ -330,7 +352,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Analyze timbre characteristics
-  Map<String, dynamic> _analyzeTimbre(Float64List samples, int sampleRate) {
+  static Map<String, dynamic> _analyzeTimbre(Float64List samples, int sampleRate) {
     const chunkSize = 4096;
     final chunks = samples.length ~/ chunkSize;
     
@@ -392,7 +414,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Analyze duration characteristics
-  Map<String, double> _analyzeDuration(Float64List samples, int sampleRate, double totalDuration) {
+  static Map<String, double> _analyzeDuration(Float64List samples, int sampleRate, double totalDuration) {
     // Calculate energy threshold for silence detection
     double threshold = 0.0;
     for (var sample in samples) {
@@ -415,7 +437,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Analyze rhythm characteristics
-  Map<String, dynamic> _analyzeRhythm(Float64List samples, int sampleRate) {
+  static Map<String, dynamic> _analyzeRhythm(Float64List samples, int sampleRate) {
     // Simple onset detection using energy spikes
     const windowSize = 2205; // ~0.05 sec
     List<double> energy = [];
@@ -472,7 +494,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Assess overall call quality
-  Map<String, double> _assessQuality(Float64List samples, int sampleRate) {
+  static Map<String, double> _assessQuality(Float64List samples, int sampleRate) {
     // Simple quality metrics
     double clipCount = 0.0;
     double totalEnergy = 0.0;
@@ -494,12 +516,12 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     };
   }
 
-  double _hanningWindow(int n, int N) {
+  static double _hanningWindow(int n, int N) {
     return 0.5 * (1 - cos(2 * pi * n / (N - 1)));
   }
 
   /// Extract a downsampled waveform for visualization
-  List<double> _extractWaveform(Float64List samples, int points) {
+  static List<double> _extractWaveform(Float64List samples, int points) {
     if (samples.isEmpty) return List.filled(points, 0.0);
     
     final result = List<double>.filled(points, 0.0);

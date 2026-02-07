@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../features/auth/domain/auth_repository.dart';
+import 'profile_provider.dart';
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return GetIt.I<AuthRepository>();
 });
@@ -41,6 +42,8 @@ class AuthNotifier extends Notifier<AsyncValue<String?>> {
     state = const AsyncValue.loading();
     try {
       await ref.read(authRepositoryProvider).signOut();
+      // Clear the current profile to avoid session bleed
+      ref.read(profileNotifierProvider.notifier).reset();
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }

@@ -46,6 +46,12 @@ class MockAudioRecorderService implements AudioRecorderService {
   }
 
   @override
+  Future<void> cleanupOldFiles() async {
+    debugPrint("Mock Recorder: Cleaning up old files");
+    // No-op for mock
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     _amplitudeController.close();

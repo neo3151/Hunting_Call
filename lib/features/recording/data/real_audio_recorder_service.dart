@@ -130,6 +130,7 @@ class RealAudioRecorderService implements AudioRecorderService {
       // Listen for amplitude changes for visualizer
       _amplitudeSubscription = _recorder!.onAmplitudeChanged(_amplitudeSampleInterval).listen(
         (amp) {
+          if (_amplitudeController.isClosed) return;
           // Normalize -160dB to 0dB range to 0.0 to 1.0
           double normalized = (amp.current - _amplitudeDbMin) / (-_amplitudeDbMin);
           normalized = normalized.clamp(0.0, 1.0);
