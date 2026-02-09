@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../auth/presentation/login_screen.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import '../../../providers/providers.dart';
 import '../../profile/domain/profile_model.dart';
@@ -10,6 +11,8 @@ import '../../profile/presentation/profile_screen.dart';
 import '../../library/presentation/library_screen.dart';
 import '../../daily_challenge/data/daily_challenge_service.dart';
 import '../../daily_challenge/presentation/daily_challenge_screen.dart';
+import '../../hunting_log/presentation/hunting_log_screen.dart';
+import '../../weather/presentation/weather_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -36,16 +39,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileNotifierProvider);
     final profile = profileState.profile;
-    final isLoading = profileState.isLoading;
+    final isProfileLoading = profileState.isProfileLoading;
     final errorMessage = profileState.error;
     final userName = profile?.name ?? "Hunter";
-
     final activeUserId = profile?.id ?? widget.userId;
+    
+    // Show loading if profile is not yet loaded to prevent missing data
+    if (profile == null && errorMessage == null && !isProfileLoading) {
+       return const Scaffold(
+         body: Center(
+           child: CircularProgressIndicator(color: Color(0xFF81C784)),
+         ),
+       );
+    }
 
     return Scaffold(
       body: BackgroundWrapper(
         child: SafeArea(
-        child: isLoading 
+        child: isProfileLoading 
           ? const Center(child: CircularProgressIndicator(color: Colors.white))
           : errorMessage != null
             ? _buildErrorState(errorMessage)
@@ -113,6 +124,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ),
                                   ),
                                 ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  height: 102,
+                                  child: _buildActionCard(
+                                    context,
+                                    title: "LOG",
+                                    icon: Icons.history_edu,
+                                    color: const Color(0xFFBCAAA4),
+                                    onTap: () => Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const HuntingLogScreen()),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  height: 102,
+                                  child: _buildActionCard(
+                                    context,
+                                    title: "WEATHER",
+                                    icon: Icons.wb_sunny_outlined,
+                                    color: const Color(0xFFFFF9C4),
+                                    onTap: () => Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const WeatherScreen()),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -137,22 +174,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildErrorState(String errorMessage) {
+    bool isProfileNotFound = errorMessage.contains("NOT_FOUND") || 
+                             errorMessage.contains("Document") && errorMessage.contains("not found");
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, color: Colors.redAccent, size: 64),
+          Icon(
+            isProfileNotFound ? Icons.person_off_outlined : Icons.error_outline, 
+            color: Colors.redAccent, 
+            size: 64
+          ),
           const SizedBox(height: 16),
-          Text(
-            errorMessage,
-            style: const TextStyle(color: Colors.white70),
-            textAlign: TextAlign.center,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Text(
+              isProfileNotFound 
+                  ? "Profile not found. Please create or select a hunter profile." 
+                  : errorMessage,
+              style: const TextStyle(color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () => ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId),
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
+            onPressed: () {
+              if (isProfileNotFound) {
+                // Navigate back to login screen to create/select profile
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+                // Also reset auth state so AuthWrapper doesn't immediately put us back here
+                ref.read(authNotifierProvider.notifier).signOut();
+              } else {
+                ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
+              }
+            },
+            icon: Icon(isProfileNotFound ? Icons.person_add : Icons.refresh),
+            label: Text(isProfileNotFound ? 'Create / Select Profile' : 'Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF81C784),
               foregroundColor: const Color(0xFF0F1E12),
@@ -203,7 +263,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  onPressed: () => ref.read(authRepositoryProvider).signOut(),
+                  onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
                   icon: const Icon(Icons.logout, color: Colors.white70),
                   tooltip: "Sign Out",
                 ),

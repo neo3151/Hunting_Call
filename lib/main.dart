@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'dart:io';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'injection_container.dart' as di;
 import 'core/theme/theme_notifier.dart';
 import 'features/splash/presentation/splash_screen.dart';
@@ -12,16 +15,25 @@ import 'features/recording/domain/audio_recorder_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+  
   // Initialize Reference Database
   await ReferenceDatabase.init();
   
   // Initialize Firebase
   try {
-    debugPrint("Firebase: Attempting initialization...");
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    debugPrint("Firebase: Initialized successfully.");
+    debugPrint("Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
+    if (!Platform.isLinux) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      debugPrint("Firebase: Initialized successfully.");
+    } else {
+      debugPrint("Firebase: Skipping official init on Linux (using Firedart).");
+    }
 
   } catch (e) {
     debugPrint("Firebase: Initialization failed. Entering 'Off-Grid' mode.");

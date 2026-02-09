@@ -22,13 +22,15 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 class ProfileState {
   final UserProfile? profile;
   final List<UserProfile> allProfiles;
-  final bool isLoading;
+  final bool isLoading; // For loading list of profiles
+  final bool isProfileLoading; // For loading specific profile
   final String? error;
 
   const ProfileState({
     this.profile,
     this.allProfiles = const [],
     this.isLoading = false,
+    this.isProfileLoading = false,
     this.error,
   });
 
@@ -36,12 +38,14 @@ class ProfileState {
     UserProfile? profile,
     List<UserProfile>? allProfiles,
     bool? isLoading,
+    bool? isProfileLoading,
     String? error,
   }) {
     return ProfileState(
       profile: profile ?? this.profile,
       allProfiles: allProfiles ?? this.allProfiles,
       isLoading: isLoading ?? this.isLoading,
+      isProfileLoading: isProfileLoading ?? this.isProfileLoading,
       error: error,
     );
   }
@@ -58,41 +62,47 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   /// Load all profiles for login screen
   Future<void> loadAllProfiles() async {
-    debugPrint("ProfileNotifier: Loading all profiles...");
+    print("ProfileNotifier: Loading all profiles...");
     state = state.copyWith(isLoading: true, error: null);
+    
     try {
       final profiles = await _repo.getAllProfiles();
       state = state.copyWith(allProfiles: profiles, isLoading: false);
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      final errorStr = e.toString();
+      print("ProfileNotifier: getAllProfiles failed: $errorStr");
+      state = state.copyWith(error: errorStr, isLoading: false);
     }
   }
 
   /// Load a specific user's profile
   Future<void> loadProfile(String userId) async {
-    state = state.copyWith(isLoading: true, error: null);
+    print("ProfileNotifier: loadProfile called for $userId");
+    state = state.copyWith(isProfileLoading: true, error: null);
     try {
       final profile = await _repo.getProfile(userId);
-      state = state.copyWith(profile: profile, isLoading: false);
+      print("ProfileNotifier: loadProfile success for $userId");
+      state = state.copyWith(profile: profile, isProfileLoading: false);
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      print("ProfileNotifier: loadProfile failed for $userId: $e");
+      state = state.copyWith(error: e.toString(), isProfileLoading: false);
     }
   }
 
   /// Create a new profile
   Future<UserProfile> createProfile(String name, {String? id}) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isProfileLoading: true, error: null);
     try {
       final profile = await _repo.createProfile(name, id: id);
       final updatedProfiles = [...state.allProfiles, profile];
       state = state.copyWith(
         profile: profile,
         allProfiles: updatedProfiles,
-        isLoading: false,
+        isProfileLoading: false,
       );
       return profile;
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      state = state.copyWith(error: e.toString(), isProfileLoading: false);
       rethrow;
     }
   }

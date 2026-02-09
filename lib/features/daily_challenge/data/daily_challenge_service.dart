@@ -14,15 +14,15 @@ class DailyChallengeService {
         callType: 'Basic Quack', 
         category: 'Waterfowl',
         scientificName: 'Anas platyrhynchos', 
-        description: 'Fallback', 
+        description: 'The mallard is a dabbling duck that breeds throughout the temperate and subtropical Americas, Eurasia, and North Africa.', 
         difficulty: 'Easy', 
         idealPitchHz: 400, 
         idealDurationSec: 1.0, 
-        audioAssetPath: 'assets/audio/duck_mallard.wav', 
-        imageUrl: 'assets/images/duck.jpg', 
+        audioAssetPath: 'assets/audio/duck_mallard_greeting.wav', 
+        imageUrl: 'assets/images/waterfowl_hero.png', 
         tolerancePitch: 50, 
         toleranceDuration: 0.2, 
-        proTips: ''
+        proTips: 'Keep it simple. The basic quack is the most versatile call.'
       );
     }
     
