@@ -41,9 +41,10 @@ class AuthNotifier extends Notifier<AsyncValue<String?>> {
   Future<void> signOut() async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(authRepositoryProvider).signOut();
-      // Clear the current profile to avoid session bleed
+      // Clear the current profile to avoid session bleed BEFORE signing out
       ref.read(profileNotifierProvider.notifier).reset();
+      
+      await ref.read(authRepositoryProvider).signOut();
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }

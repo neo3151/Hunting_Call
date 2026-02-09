@@ -1,10 +1,10 @@
 ---
 description: Build an Android APK for the project
 ---
-// turbo
+// turbo-all
 1. Run the build script to generate the APK:
 ```bash
-/home/neo/.gemini/antigravity/scratch/build_apk.sh
+./scripts/build_app.sh
 ```
 
 2. The APK will be available at:

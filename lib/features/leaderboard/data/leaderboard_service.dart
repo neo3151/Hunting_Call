@@ -1,12 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/leaderboard_entry.dart';
 
-class LeaderboardService {
+abstract class LeaderboardService {
+  Future<bool> submitScore({
+    required String animalId,
+    required LeaderboardEntry entry,
+  });
+
+  Stream<List<LeaderboardEntry>> getTopScores(String animalId);
+}
+
+class FirebaseLeaderboardService implements LeaderboardService {
   final FirebaseFirestore _firestore;
 
-  LeaderboardService(this._firestore);
+  FirebaseLeaderboardService(this._firestore);
 
-  /// Submits a high score. Returns true if the score made it to the leaderboard.
+  @override
   Future<bool> submitScore({
     required String animalId,
     required LeaderboardEntry entry,
@@ -59,6 +68,7 @@ class LeaderboardService {
     });
   }
 
+  @override
   Stream<List<LeaderboardEntry>> getTopScores(String animalId) {
     return _firestore.collection('leaderboards').doc(animalId).snapshots().map((snapshot) {
       if (!snapshot.exists || snapshot.data() == null || !snapshot.data()!.containsKey('scores')) {

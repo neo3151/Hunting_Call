@@ -51,4 +51,7 @@ class MockAuthRepository implements AuthRepository {
 
   @override
   String? get currentUserId => _currentUser;
+
+  @override
+  String? get authenticatedUserId => _currentUser;
 }

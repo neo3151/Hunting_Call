@@ -5,4 +5,5 @@ abstract class AuthRepository {
   Future<void> signOut();
   Stream<String?> get onAuthStateChanged;
   String? get currentUserId;
+  String? get authenticatedUserId;
 }

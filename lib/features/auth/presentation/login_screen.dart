@@ -38,8 +38,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         // 1. Sign in anonymously first
         await authRepo.signInAnonymously();
         
-        // 2. Get the UID
-        final uid = authRepo.currentUserId;
+        // 2. Get the technical UID
+        final uid = authRepo.authenticatedUserId;
         
         if (uid != null) {
           // 3. Create the profile with that UID
@@ -213,10 +213,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: InkWell(
             onTap: () {
-              // 1. Set the auth state (this triggers the transition)
-              ref.read(authRepositoryProvider).signIn(p.id);
-              // 2. Pre-emptively load the profile so HomeScreen has it immediately
-              ref.read(profileNotifierProvider.notifier).loadProfile(p.id);
+              print("LoginScreen: Tapped profile ${p.name} (${p.id})");
+              try {
+                // 1. Set the auth state (this triggers the transition)
+                ref.read(authRepositoryProvider).signIn(p.id);
+                print("LoginScreen: signIn called for ${p.id}");
+                
+                // 2. Pre-emptively load the profile so HomeScreen has it immediately
+                ref.read(profileNotifierProvider.notifier).loadProfile(p.id);
+                print("LoginScreen: loadProfile called for ${p.id}");
+              } catch (e, stack) {
+                print("LoginScreen: ERROR tapping profile: $e\n$stack");
+              }
             },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
