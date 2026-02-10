@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunting Calls - Audio Audit Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --danger: #f43f5e;
+            --success: #10b981;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+
+        .card.flagged {
+            border-color: var(--danger);
+            background: rgba(244, 63, 94, 0.05);
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .animal-name {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .call-type {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        audio {
+            width: 100%;
+            height: 35px;
+            border-radius: 8px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-flag {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-ok {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-dim);
+        }
+
+        .flagged .btn-ok {
+            background: var(--success);
+            color: white;
+            border: none;
+        }
+
+        /* Results pane */
+        .results-pane {
+            margin-top: 60px;
+            width: 100%;
+            max-width: 800px;
+            background: #020617;
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px dashed rgba(255,255,255,0.1);
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+
+        #flagged-list {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 100px;
+            color: var(--accent);
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+
+        .copy-btn {
+            background: var(--accent);
+            color: var(--bg);
+            padding: 12px 24px;
+            font-size: 1rem;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Audio Audit Dashboard</h1>
+    <p class="subtitle">Listen to each call. If it sounds incorrect or low quality, click "Flag for Replacement". When finished, copy the list below and send it to Antigravity.</p>
+
+    <div class="container" id="card-container">
+        <!-- Cards will be injected here -->
+    </div>
+
+    <div class="results-pane">
+        <h2>Replacement List</h2>
+        <p class="subtitle" style="margin-bottom: 15px; text-align: left;">Copy this list and paste it in the chat when you're done.</p>
+        <div id="flagged-list">No animals flagged yet...</div>
+        <button class="copy-btn" onclick="copyList()">Copy List to Clipboard</button>
+    </div>
+
+    <script>
+        const calls = [
+            { id: "duck_mallard_greeting", name: "Mallard Duck", type: "Greeting Call", path: "assets/audio/duck_mallard_greeting.wav" },
+            { id: "duck_mallard_feed", name: "Mallard Duck", type: "Feed Chatter", path: "assets/audio/duck_mallard_feed.wav" },
+            { id: "wood_duck", name: "Wood Duck", type: "Flying Whistle", path: "assets/audio/wood_duck.wav" },
+            { id: "goose_canadian_honk", name: "Canada Goose", type: "Honk", path: "assets/audio/goose_canadian_honk.wav" },
+            { id: "goose_cluck", name: "Canada Goose", type: "Cluck", path: "assets/audio/goose_cluck.wav" },
+            { id: "teal", name: "Blue-Winged Teal", type: "Hen Quack", path: "assets/audio/teal.wav" },
+            { id: "snow_goose", name: "Snow Goose", type: "Bark", path: "assets/audio/snow_goose.wav" },
+            { id: "specklebelly", name: "Specklebelly Goose", type: "Yodel", path: "assets/audio/specklebelly.wav" },
+            { id: "elk_bull_bugle", name: "Rocky Mountain Elk", type: "Bull Bugle", path: "assets/audio/elk_bull_bugle.wav" },
+            { id: "elk_cow_mew", name: "Rocky Mountain Elk", type: "Cow Mew", path: "assets/audio/elk_cow_mew.wav" },
+            { id: "deer_buck_grunt", name: "Whitetail Deer", type: "Buck Grunt", path: "assets/audio/deer_buck_grunt.wav" },
+            { id: "deer_doe_bleat", name: "Whitetail Deer", type: "Doe Bleat", path: "assets/audio/deer_doe_bleat.wav" },
+            { id: "deer_snort_wheeze", name: "Whitetail Deer", type: "Snort Wheeze", path: "assets/audio/deer_snort_wheeze.wav" },
+            { id: "moose_cow_call", name: "Moose", type: "Cow Call", path: "assets/audio/moose_cow_call.wav" },
+            { id: "moose_grunt", name: "Moose", type: "Bull Grunt", path: "assets/audio/moose_grunt.wav" },
+            { id: "black_bear_bawl", name: "Black Bear", type: "Bawl", path: "assets/audio/black_bear_bawl.wav" },
+            { id: "hog_grunt", name: "Wild Hog", type: "Feeding Grunt", path: "assets/audio/hog_grunt.wav" },
+            { id: "pronghorn", name: "Pronghorn", type: "Alarm Bark", path: "assets/audio/pronghorn.wav" },
+            { id: "coyote_howl", name: "Coyote", type: "Lone Howl", path: "assets/audio/coyote_howl.wav" },
+            { id: "coyote_challenge", name: "Coyote", type: "Challenge Bark", path: "assets/audio/coyote_challenge.wav" },
+            { id: "fox_scream", name: "Red Fox", type: "Scream", path: "assets/audio/fox_scream.wav" },
+            { id: "bobcat_growl", name: "Bobcat", type: "Aggressive Growl", path: "assets/audio/bobcat_growl.wav" },
+            { id: "rabbit_distress", name: "Rabbit", type: "Distress Call", path: "assets/audio/rabbit_distress.wav" },
+            { id: "wolf_howl", name: "Gray Wolf", type: "Pack Howl", path: "assets/audio/wolf_howl.wav" },
+            { id: "raccoon_squall", name: "Raccoon", type: "Squall", path: "assets/audio/raccoon_squall.wav" },
+            { id: "turkey_hen_yelp", name: "Wild Turkey", type: "Hen Yelp", path: "assets/audio/turkey_hen_yelp.wav" },
+            { id: "turkey_gobble", name: "Wild Turkey", type: "Gobble", path: "assets/audio/turkey_gobble.wav" },
+            { id: "turkey_purr", name: "Wild Turkey", type: "Cluck & Purr", path: "assets/audio/turkey_purr.wav" },
+            { id: "owl_barred_hoot", name: "Barred Owl", type: "Hoot", path: "assets/audio/owl_barred_hoot.wav" },
+            { id: "crow", name: "Crow", type: "Standard Caw", path: "assets/audio/crow.wav" },
+            { id: "quail", name: "Bobwhite Quail", type: "Whistle", path: "assets/audio/quail.wav" },
+            { id: "pheasant", name: "Ring-Necked Pheasant", type: "Rooster Crow", path: "assets/audio/pheasant.wav" },
+            { id: "cougar", name: "Mountain Lion", type: "Scream", path: "assets/audio/cougar.wav" },
+            { id: "wood_duck_sit", name: "Wood Duck", type: "Sitting Call", path: "assets/audio/wood_duck_sit.wav" },
+            { id: "gray_fox_bark", name: "Gray Fox", type: "Bark", path: "assets/audio/gray_fox_bark.wav" },
+            { id: "mallard_hen", name: "Mallard Duck", type: "Lonesome Hen", path: "assets/audio/mallard_hen.wav" },
+            { id: "red_stag_roar", name: "Red Stag", type: "Roar", path: "assets/audio/red_stag_roar.wav" },
+            { id: "crow_fight", name: "Crow", type: "Fighting Call", path: "assets/audio/crow_fight.wav" },
+            { id: "fallow", name: "Fallow Deer", type: "Groan", path: "assets/audio/fallow.wav" },
+            { id: "mule_deer", name: "Mule Deer", type: "Buck Grunt", path: "assets/audio/mule_deer.wav" },
+            { id: "pintail", name: "Pintail Duck", type: "Drake Whistle", path: "assets/audio/pintail.wav" },
+            { id: "woodcock", name: "American Woodcock", type: "Peent", path: "assets/audio/woodcock.wav" },
+            { id: "wolf_bark", name: "Gray Wolf", type: "Alarm Bark", path: "assets/audio/wolf_bark.wav" },
+            { id: "dove", name: "Mourning Dove", type: "Perch Coo", path: "assets/audio/dove.wav" },
+            { id: "canvasback", name: "Canvasback Duck", type: "Grunt", path: "assets/audio/canvasback.wav" },
+            { id: "badger", name: "American Badger", type: "Aggressive Growl", path: "assets/audio/badger.wav" },
+            { id: "caribou", name: "Caribou", type: "Bull Grunt", path: "assets/audio/caribou.wav" },
+            { id: "gho", name: "Great Horned Owl", type: "Hoot", path: "assets/audio/gho.wav" },
+            { id: "grouse", name: "Ruffed Grouse", type: "Drumming", path: "assets/audio/grouse.wav" },
+            { id: "turkey_tree", name: "Wild Turkey", type: "Tree Yelp", path: "assets/audio/turkey_tree.wav" }
+        ];
+
+        const flagged = new Set();
+        const container = document.getElementById('card-container');
+        const listDisplay = document.getElementById('flagged-list');
+
+        function render() {
+            container.innerHTML = '';
+            calls.forEach(call => {
+                const isFlagged = flagged.has(call.id);
+                const card = document.createElement('div');
+                card.className = `card ${isFlagged ? 'flagged' : ''}`;
+                card.innerHTML = `
+                    <div class="info">
+                        <div>
+                            <div class="animal-name">${call.name}</div>
+                            <div class="call-type">${call.type}</div>
+                        </div>
+                    </div>
+                    <audio controls src="${call.path}"></audio>
+                    <div class="actions">
+                        <button class="btn-flag" onclick="toggleFlag('${call.id}')">
+                            ${isFlagged ? 'Unflag' : 'Flag for Replacement'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            updateList();
+        }
+
+        function toggleFlag(id) {
+            if (flagged.has(id)) {
+                flagged.delete(id);
+            } else {
+                flagged.add(id);
+            }
+            render();
+        }
+
+        function updateList() {
+            if (flagged.size === 0) {
+                listDisplay.innerText = 'No animals flagged yet...';
+                return;
+            }
+            const names = Array.from(flagged).map(id => {
+                const call = calls.find(c => c.id === id);
+                return `- [REPLACE] ${call.name} (${call.type})`;
+            });
+            listDisplay.innerText = names.join('\n');
+        }
+
+        function copyList() {
+            const text = listDisplay.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('List copied to clipboard!');
+            });
+        }
+
+        render();
+    </script>
+</body>
+</html>
