@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import '../../../providers/providers.dart';
+import '../../../providers/google_user_info_provider.dart';
 import '../../profile/domain/profile_model.dart';
 import '../../settings/presentation/privacy_policy_screen.dart';
 import 'package:intl/intl.dart';
@@ -80,10 +81,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       debugPrint('🔐 Starting Google Sign-In...');
       
-      // Just call signInWithGoogle
-      // AuthWrapper will handle profile creation when auth state changes
-      await ref.read(authRepositoryProvider).signInWithGoogle();
-      debugPrint('✅ Google Sign-In completed - AuthWrapper will handle profile');
+      // Call signInWithGoogle and capture the user info
+      final userInfo = await ref.read(authRepositoryProvider).signInWithGoogle();
+      final email = userInfo['email'];
+      final displayName = userInfo['displayName'];
+      final userId = ref.read(authRepositoryProvider).currentUserId;
+      
+      debugPrint('✅ Google Sign-In completed');
+      debugPrint('📧 Email: $email');
+      debugPrint('👤 Display Name: $displayName');
+      debugPrint('🆔 User ID: $userId');
+      
+      if (userId == null) {
+        debugPrint('❌ No user ID after sign-in!');
+        return;
+      }
+      
+      // Create profile RIGHT HERE where we have the email
+      // This runs AFTER signInWithProvider returns, so AuthWrapper may have
+      // already fired. But we create the profile here with the correct data.
+      final profileRepo = ref.read(profileRepositoryProvider);
+      final existingProfile = await profileRepo.getProfile(userId);
+      
+      if (existingProfile.id != 'guest') {
+        debugPrint('✅ Profile already exists: ${existingProfile.name}');
+        await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
+        return;
+      }
+      
+      // Check by email
+      if (email != null) {
+        final allProfiles = await profileRepo.getAllProfiles();
+        final profileByEmail = allProfiles.where((p) => p.email == email).firstOrNull;
+        if (profileByEmail != null) {
+          debugPrint('✅ Found profile by email: ${profileByEmail.name}');
+          await ref.read(profileNotifierProvider.notifier).loadProfile(profileByEmail.id);
+          return;
+        }
+      }
+      
+      // No profile exists - create one with the Google data
+      final profileName = displayName ?? email?.split('@').first ?? 'Hunter';
+      debugPrint('🆕 Creating profile: $profileName with email: $email');
+      
+      await profileRepo.createProfile(profileName, id: userId, birthday: null, email: email);
+      await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
+      debugPrint('✅ Profile created and loaded!');
       
     } catch (e, stackTrace) {
       debugPrint("❌ Google Sign-In failed: $e");
@@ -123,17 +166,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // MASSIVE DEBUG BANNER
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                color: Colors.red,
-                                child: const Text(
-                                  "🔴 LOGIN SCREEN IS RENDERING 🔴",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.yellow, fontSize: 24, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
                               const Icon(Icons.forest_rounded, size: 80, color: Color(0xFF81C784)),
                               const SizedBox(height: 24),
                               Text(
@@ -271,14 +303,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.red,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.yellow, width: 3),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
       ),
       child: const Text(
-        "DEBUG: No profiles found!\nProfiles are NOT loading from Firestore.",
+        "No profiles yet.\nCreate one to get started!",
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.yellow, fontSize: 18, fontWeight: FontWeight.bold),
+        style: TextStyle(color: Colors.white54, fontSize: 14),
       ),
     );
   }
@@ -303,15 +335,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         constraints: const BoxConstraints(minHeight: 72),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.cyan,
+          color: const Color(0xFF2D5F3D),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.pink, width: 4),
+          border: Border.all(color: const Color(0xFF81C784).withValues(alpha: 0.3), width: 1),
         ),
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: Colors.yellow,
-              foregroundColor: Colors.black,
+              backgroundColor: const Color(0xFF81C784),
+              foregroundColor: const Color(0xFF0F1E12),
               child: Text(p.name[0].toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
             const SizedBox(width: 16),
@@ -319,15 +351,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p.name, style: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                   Text(
                     "${p.totalCalls} calls • ${p.averageScore.toStringAsFixed(0)}% avg",
-                    style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.black, size: 32),
+            const Icon(Icons.chevron_right, color: Colors.white54, size: 24),
           ],
         ),
       ),

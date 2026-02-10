@@ -79,7 +79,7 @@ class FiredartAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithGoogle() async {
+  Future<Map<String, String?>> signInWithGoogle() async {
     throw UnimplementedError("Google Sign-In is not supported on Linux via Firedart yet.");
   }
 

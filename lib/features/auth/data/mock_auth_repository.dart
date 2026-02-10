@@ -36,10 +36,11 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithGoogle() async {
+  Future<Map<String, String?>> signInWithGoogle() async {
     _currentUser = "google_user_456";
     _controller.add(_currentUser);
     debugPrint("Mock Auth: Signed in with Google as $_currentUser");
+    return {'email': 'mock@example.com', 'displayName': 'Mock User'};
   }
 
   @override

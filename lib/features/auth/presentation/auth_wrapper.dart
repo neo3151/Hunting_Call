@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../../providers/providers.dart';
 import 'login_screen.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
 import '../../home/presentation/home_screen.dart';
 
-/// Watches auth state and shows LoginScreen, OnboardingScreen, or HomeScreen accordingly.
-/// Also handles profile creation for Google Sign-In users.
+/// Watches auth state and shows LoginScreen, OnboardingScreen, or HomeScreen.
+/// Profile creation is handled by LoginScreen - this only loads existing profiles.
 class AuthWrapper extends ConsumerStatefulWidget {
   const AuthWrapper({super.key});
 
@@ -19,72 +18,70 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   bool _isLoadingProfile = false;
   String? _lastHandledUserId;
 
-  Future<void> _ensureProfileExists(String userId) async {
-    // Avoid re-running for the same user
+  Future<void> _loadProfile(String userId) async {
     if (_lastHandledUserId == userId) return;
     
     setState(() => _isLoadingProfile = true);
     
     try {
-      debugPrint("AuthWrapper: Ensuring profile exists for $userId");
+      debugPrint("AuthWrapper: Loading profile for $userId");
       
-      // Wait for Firebase user data to fully load (email might not be available immediately)
-      var firebaseUser = FirebaseAuth.instance.currentUser;
-      var userEmail = firebaseUser?.email;
+      final profileRepo = ref.read(profileRepositoryProvider);
       
-      // Retry up to 5 times with 200ms delay if email is null
-      for (int i = 0; i < 5 && userEmail == null; i++) {
-        debugPrint("🔍 Waiting for Firebase user email... attempt ${i + 1}");
-        await Future.delayed(const Duration(milliseconds: 200));
-        await firebaseUser?.reload();
-        firebaseUser = FirebaseAuth.instance.currentUser;
-        userEmail = firebaseUser?.email;
+      // Check 1: Profile notifier might already have a profile loaded
+      // (login screen calls loadProfile(p.id) when tapping a card)
+      final currentProfile = ref.read(profileNotifierProvider).profile;
+      if (currentProfile != null && currentProfile.id != 'guest') {
+        debugPrint("AuthWrapper: ✅ Profile already loaded: ${currentProfile.name}");
+        _lastHandledUserId = userId;
+        return;
       }
       
-      debugPrint("🔍 Firebase user info:");
-      debugPrint("🔍   UID: ${firebaseUser?.uid}");
-      debugPrint("🔍   Email: $userEmail");
-      debugPrint("🔍   Display name: ${firebaseUser?.displayName}");
-      
-      // Check if profile exists by user ID
-      final profileRepo = ref.read(profileRepositoryProvider);
-      final existingProfile = await profileRepo.getProfile(userId);
-      
-      if (existingProfile.id != 'guest') {
-        debugPrint("AuthWrapper: Profile exists by ID: ${existingProfile.name}");
+      // Check 2: Try to find profile by Firebase UID
+      final profile = await profileRepo.getProfile(userId);
+      if (profile.id != 'guest') {
+        debugPrint("AuthWrapper: ✅ Profile found by UID: ${profile.name}");
         await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
         _lastHandledUserId = userId;
         return;
       }
       
-      // Check if profile exists by email
-      if (userEmail != null) {
-        final allProfiles = await profileRepo.getAllProfiles();
-        final profileByEmail = allProfiles.where((p) => p.email == userEmail).firstOrNull;
-        
-        if (profileByEmail != null) {
-          debugPrint("AuthWrapper: Found existing profile by email: ${profileByEmail.name}");
-          await ref.read(profileNotifierProvider.notifier).loadProfile(profileByEmail.id);
+      // Check 3: Search all profiles (handles different Google UIDs and local profiles)
+      // Give login screen a moment to finish profile creation
+      await Future.delayed(const Duration(milliseconds: 1000));
+      
+      final allProfiles = await profileRepo.getAllProfiles();
+      if (allProfiles.isNotEmpty) {
+        final match = allProfiles.first;
+        debugPrint("AuthWrapper: ✅ Found profile in collection: ${match.name}");
+        await ref.read(profileNotifierProvider.notifier).loadProfile(match.id);
+        _lastHandledUserId = userId;
+        return;
+      }
+      
+      // Check 4: Wait a bit more and retry (for Google sign-in creating profile)
+      for (int i = 0; i < 5; i++) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        final retryProfile = await profileRepo.getProfile(userId);
+        if (retryProfile.id != 'guest') {
+          debugPrint("AuthWrapper: ✅ Profile found on retry: ${retryProfile.name}");
+          await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
+          _lastHandledUserId = userId;
+          return;
+        }
+        // Also re-check all profiles
+        final retryAll = await profileRepo.getAllProfiles();
+        if (retryAll.isNotEmpty) {
+          debugPrint("AuthWrapper: ✅ Profile found in collection on retry: ${retryAll.first.name}");
+          await ref.read(profileNotifierProvider.notifier).loadProfile(retryAll.first.id);
           _lastHandledUserId = userId;
           return;
         }
       }
       
-      // No existing profile - create new one
-      // Use email prefix as display name if displayName is null
-      String displayName = firebaseUser?.displayName ?? 
-                          userEmail?.split('@').first ?? 
-                          'Hunter';
-      
-      debugPrint("🔍 Final display name: $displayName");
-      debugPrint("AuthWrapper: Creating profile: $displayName ($userId) with email: $userEmail");
-      
-      await profileRepo.createProfile(displayName, id: userId, birthday: null, email: userEmail);
-      
-      await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
-      debugPrint("AuthWrapper: Profile created and loaded");
-      
+      debugPrint("AuthWrapper: ⚠️ No profile found after all checks");
       _lastHandledUserId = userId;
+      
     } catch (e, stack) {
       debugPrint("AuthWrapper: Error: $e");
       debugPrint("Stack: $stack");
@@ -109,12 +106,11 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
           return const LoginScreen();
         }
         
-        // Ensure profile exists before showing home screen
+        // Load profile before showing home screen
         if (_lastHandledUserId != userId || _isLoadingProfile) {
           if (!_isLoadingProfile) {
-            // Trigger profile loading
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _ensureProfileExists(userId);
+              _loadProfile(userId);
             });
           }
           return const Scaffold(
