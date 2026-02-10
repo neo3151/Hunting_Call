@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:654995904748:android:2e7e1da02e9b271482adc9",
         "android_client_info": {
-          "package_name": "com.example.hunting_calls_perfection"
+          "package_name": "com.neo3151.huntingcalls"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "654995904748-po26enttpuvabeuftm3tlsagof8o4ff2.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.hunting_calls_perfection",
+            "package_name": "com.neo3151.huntingcalls",
             "certificate_hash": "10e399e90e59095c7ac6626e1acbca412002fd41"
           }
         },
