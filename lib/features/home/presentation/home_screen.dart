@@ -26,9 +26,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Always reload profile to ensure we have the latest data from Firestore
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
+      // Check if profile is already loaded (AuthWrapper pre-loads it)
+      final currentProfile = ref.read(profileNotifierProvider).profile;
+      if (currentProfile != null && currentProfile.id != 'guest') {
+        debugPrint("HomeScreen: Profile already loaded: ${currentProfile.name}");
+        // Refresh using the actual profile ID, not the Firebase UID
+        ref.read(profileNotifierProvider.notifier).loadProfile(currentProfile.id);
+      } else {
+        // No profile loaded yet, try with widget.userId
+        debugPrint("HomeScreen: No profile loaded, trying widget.userId: ${widget.userId}");
+        ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
+      }
     });
   }
 
