@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firedart/firedart.dart';
 import 'dart:async';
 import '../domain/auth_repository.dart';
@@ -18,7 +19,7 @@ class FiredartAuthRepository implements AuthRepository {
 
   void _emitCurrentState() {
     final uid = currentUserId; // This is now the Logical User (Impersonated)
-    print("FiredartAuth: Emitting state - logicalUserId: $uid (technicalUserId: $authenticatedUserId)");
+    debugPrint("FiredartAuth: Emitting state - logicalUserId: $uid (technicalUserId: $authenticatedUserId)");
     _authStateController.add(uid);
   }
 
@@ -30,7 +31,7 @@ class FiredartAuthRepository implements AuthRepository {
     controller = StreamController<String?>(
       onListen: () {
         final initial = currentUserId;
-        print("FiredartAuth: onAuthStateChanged listened. Sending current logical: $initial");
+        debugPrint("FiredartAuth: onAuthStateChanged listened. Sending current logical: $initial");
         controller.add(initial);
         
         // Forward future events WITHOUT blocking
@@ -53,23 +54,23 @@ class FiredartAuthRepository implements AuthRepository {
 
   @override
   Future<void> signIn(String userId) async {
-    print("FiredartAuth: signIn (impersonate) requested for $userId");
+    debugPrint("FiredartAuth: signIn (impersonate) requested for $userId");
     
     if (!_auth.isSignedIn) {
-      print("FiredartAuth: No technical session. Signing in anonymously first.");
+      debugPrint("FiredartAuth: No technical session. Signing in anonymously first.");
       await signInAnonymously();
     }
 
     _impersonatedUserId = userId;
-    print("FiredartAuth: Now impersonating $userId");
+    debugPrint("FiredartAuth: Now impersonating $userId");
     _emitCurrentState();
   }
 
   @override
   Future<void> signInAnonymously() async {
-    print("FiredartAuth: Technical anonymous sign-in requested.");
+    debugPrint("FiredartAuth: Technical anonymous sign-in requested.");
     await _auth.signInAnonymously();
-    print("FiredartAuth: Technical anonymous sign-in complete. Waiting 500ms for session settlement.");
+    debugPrint("FiredartAuth: Technical anonymous sign-in complete. Waiting 500ms for session settlement.");
     await Future.delayed(const Duration(milliseconds: 500));
     // We DON'T automatically emit here because we haven't impersonated a profile yet.
     // Except if we ARE already impersonating something? 
@@ -84,7 +85,7 @@ class FiredartAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {
-    print("FiredartAuth: signOut (clear impersonation) requested.");
+    debugPrint("FiredartAuth: signOut (clear impersonation) requested.");
     _impersonatedUserId = null; 
     
     // We keep the technical session alive but clear the logical one
@@ -95,10 +96,10 @@ class FiredartAuthRepository implements AuthRepository {
     try {
       _auth.signOut();
     } catch (e) {
-      print("FiredartAuth: Error during technical signOut: $e");
+      debugPrint("FiredartAuth: Error during technical signOut: $e");
     }
     
-    print("FiredartAuth: Performing immediate technical anonymous re-auth for future use.");
+    debugPrint("FiredartAuth: Performing immediate technical anonymous re-auth for future use.");
     await signInAnonymously();
   }
 
@@ -119,11 +120,14 @@ class FiredartAuthRepository implements AuthRepository {
     }
   }
 
+  @override
+  bool get isMock => false;
+
   bool get isSignedIn {
     try {
       return _auth.isSignedIn;
     } catch (e) {
-      print("FiredartAuth: isSignedIn error: $e");
+      debugPrint("FiredartAuth: isSignedIn error: $e");
       return false;
     }
   }

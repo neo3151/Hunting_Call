@@ -1,10 +1,15 @@
 import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'package:flutter/foundation.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import '../../../providers/providers.dart';
 import '../../profile/domain/profile_model.dart';
+import '../../settings/presentation/privacy_policy_screen.dart';
+import 'package:intl/intl.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -24,14 +29,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _createNewProfile() async {
-    String? name = await showModalBottomSheet<String>(
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const _CreateProfileSheet(),
     );
 
-    if (name != null && name.isNotEmpty) {
+    if (result != null) {
+      final name = result['name'] as String;
+      final birthday = result['birthday'] as DateTime?;
+
+    if (name.isNotEmpty) {
       final authRepo = ref.read(authRepositoryProvider);
       
       try {
@@ -43,7 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         
         if (uid != null) {
           // 3. Create the profile with that UID
-          await ref.read(profileNotifierProvider.notifier).createProfile(name, id: uid);
+          await ref.read(profileNotifierProvider.notifier).createProfile(name, id: uid, birthday: birthday);
         } else {
           throw Exception("Could not retrieve user ID after sign-in.");
         }
@@ -65,12 +74,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     }
   }
+}
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      debugPrint('🔐 Starting Google Sign-In...');
+      
+      // Just call signInWithGoogle
+      // AuthWrapper will handle profile creation when auth state changes
+      await ref.read(authRepositoryProvider).signInWithGoogle();
+      debugPrint('✅ Google Sign-In completed - AuthWrapper will handle profile');
+      
+    } catch (e, stackTrace) {
+      debugPrint("❌ Google Sign-In failed: $e");
+      debugPrint("Stack trace: $stackTrace");
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Google Sign-In failed: $e"), backgroundColor: Colors.red)
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileNotifierProvider);
     final profiles = profileState.allProfiles;
     final isLoading = profileState.isLoading;
+
+    debugPrint("LoginScreen: Building. isLoading=$isLoading, profiles.length=${profiles.length}, error=${profileState.error}");
 
     return Scaffold(
       body: BackgroundWrapper(
@@ -90,6 +123,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              // MASSIVE DEBUG BANNER
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                color: Colors.red,
+                                child: const Text(
+                                  "🔴 LOGIN SCREEN IS RENDERING 🔴",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.yellow, fontSize: 24, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
                               const Icon(Icons.forest_rounded, size: 80, color: Color(0xFF81C784)),
                               const SizedBox(height: 24),
                               Text(
@@ -119,23 +163,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                  style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 16),
-                              if (isLoading)
-                                const Center(child: CircularProgressIndicator(color: Colors.white))
-                              else if (profileState.error != null)
-                                _buildErrorDisplay(profileState.error!)
-                              else if (profiles.isEmpty)
-                                 _buildEmptyState()
-                              else
-                                ListView.separated(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: profiles.length,
-                                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                                  itemBuilder: (context, index) {
-                                    final p = profiles[index];
-                                    return _buildProfileCard(p);
-                                  },
-                                ),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxHeight: 200),
+                                child: isLoading
+                                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                                  : profileState.error != null
+                                    ? _buildErrorDisplay(profileState.error!)
+                                    : profiles.isEmpty
+                                      ? _buildEmptyState()
+                                      : ListView.separated(
+                                          shrinkWrap: true,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          itemCount: profiles.length,
+                                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                          itemBuilder: (context, index) {
+                                            final p = profiles[index];
+                                            return _buildProfileCard(p);
+                                          },
+                                        ),
+                              ),
                               const SizedBox(height: 24),
                               ElevatedButton(
                                 onPressed: _createNewProfile,
@@ -147,6 +193,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   elevation: 0,
                                 ),
                                 child: const Text('NEW HUNTER PROFILE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0)),
+                              ),
+                              // Google Sign-In enabled - requires SHA-1 in Firebase Console for production
+                              // See docs/GOOGLE_SIGNIN_QUICK_SETUP.md for setup instructions
+                              if (!Platform.isWindows && !Platform.isLinux) ...[
+                                const SizedBox(height: 16),
+                                OutlinedButton.icon(
+                                  onPressed: _signInWithGoogle,
+                                  icon: const Icon(Icons.login, color: Colors.white), 
+                                  label: const Text("SIGN IN WITH GOOGLE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 32),
+                              Center(
+                                child: TextButton(
+                                  onPressed: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
+                                  },
+                                  child: Text(
+                                    "Privacy Policy", 
+                                    style: GoogleFonts.lato(
+                                      color: Colors.white38, 
+                                      decoration: TextDecoration.underline,
+                                      fontSize: 12
+                                    )
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -194,69 +271,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.red,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.yellow, width: 3),
       ),
       child: const Text(
-        "No profiles found.\nCreate your first hunter profile to begin.",
+        "DEBUG: No profiles found!\nProfiles are NOT loading from Firestore.",
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white60),
+        style: TextStyle(color: Colors.yellow, fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
 
   Widget _buildProfileCard(UserProfile p) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: InkWell(
-            onTap: () {
-              print("LoginScreen: Tapped profile ${p.name} (${p.id})");
-              try {
-                // 1. Set the auth state (this triggers the transition)
-                ref.read(authRepositoryProvider).signIn(p.id);
-                print("LoginScreen: signIn called for ${p.id}");
-                
-                // 2. Pre-emptively load the profile so HomeScreen has it immediately
-                ref.read(profileNotifierProvider.notifier).loadProfile(p.id);
-                print("LoginScreen: loadProfile called for ${p.id}");
-              } catch (e, stack) {
-                print("LoginScreen: ERROR tapping profile: $e\n$stack");
-              }
-            },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+    return InkWell(
+      onTap: () {
+        debugPrint("LoginScreen: Tapped profile ${p.name} (${p.id})");
+        try {
+          // 1. Set the auth state (this triggers the transition)
+          ref.read(authRepositoryProvider).signIn(p.id);
+          debugPrint("LoginScreen: signIn called for ${p.id}");
+          
+          // 2. Pre-emptively load the profile so HomeScreen has it immediately
+          ref.read(profileNotifierProvider.notifier).loadProfile(p.id);
+          debugPrint("LoginScreen: signIn called for ${p.id}");
+        } catch (e, stack) {
+          debugPrint("LoginScreen: ERROR tapping profile: $e\\n$stack");
+        }
+      },
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 72),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.cyan,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.pink, width: 4),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.yellow,
+              foregroundColor: Colors.black,
+              child: Text(p.name[0].toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: const Color(0xFF81C784).withValues(alpha: 0.2),
-                  foregroundColor: Colors.white,
-                  child: Text(p.name[0].toUpperCase()),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                      Text(
-                        "${p.totalCalls} calls • ${p.averageScore.toStringAsFixed(0)}% avg",
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(p.name, style: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text(
+                    "${p.totalCalls} calls • ${p.averageScore.toStringAsFixed(0)}% avg",
+                    style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
                   ),
-                ),
-                const Icon(Icons.chevron_right, color: Colors.white54),
-              ],
+                ],
+              ),
             ),
-          ),
+            const Icon(Icons.chevron_right, color: Colors.black, size: 32),
+          ],
         ),
       ),
     );
@@ -272,6 +344,7 @@ class _CreateProfileSheet extends StatefulWidget {
 
 class _CreateProfileSheetState extends State<_CreateProfileSheet> {
   final _controller = TextEditingController();
+  DateTime? _birthday;
   bool _isValid = false;
   
   /// Minimum characters required for a valid profile name
@@ -290,9 +363,38 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
   }
 
   void _validateInput() {
-    final isValid = _controller.text.trim().length >= _minNameLength;
+    final isValid = _controller.text.trim().length >= _minNameLength && _birthday != null;
     if (isValid != _isValid) {
       setState(() => _isValid = isValid);
+    }
+  }
+
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)), // Default to 18 years ago
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF81C784),
+              onPrimary: Colors.black,
+              surface: Color(0xFF1B3B24),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF0F1E12),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _birthday = picked;
+      });
+      _validateInput();
     }
   }
 
@@ -334,9 +436,35 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
                   : null,
             ),
           ),
+          const SizedBox(height: 16),
+          InkWell(
+            onTap: _selectDate,
+            borderRadius: BorderRadius.circular(4),
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: 'Birthday',
+                labelStyle: const TextStyle(color: Colors.white70),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+                errorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
+                border: const OutlineInputBorder(),
+                suffixIcon: const Icon(Icons.calendar_today, color: Colors.greenAccent),
+              ),
+              child: Text(
+                _birthday == null 
+                  ? 'Select Date' 
+                  : DateFormat('MMM d, yyyy').format(_birthday!),
+                style: TextStyle(
+                  color: _birthday == null ? Colors.white54 : Colors.white,
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: _isValid ? () => Navigator.pop(context, _controller.text.trim()) : null,
+            onPressed: _isValid ? () => Navigator.pop(context, {
+              'name': _controller.text.trim(),
+              'birthday': _birthday,
+            }) : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF81C784),
               foregroundColor: const Color(0xFF0F1E12),

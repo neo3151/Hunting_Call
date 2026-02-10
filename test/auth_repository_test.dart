@@ -13,6 +13,10 @@ void main() {
       expect(await authRepository.onAuthStateChanged.first, null);
     });
 
+    test('isMock should be true', () {
+      expect(authRepository.isMock, true);
+    });
+
     test('signIn should update state and emit userId', () async {
       await authRepository.signIn('test_user');
       expect(await authRepository.onAuthStateChanged.first, 'test_user');

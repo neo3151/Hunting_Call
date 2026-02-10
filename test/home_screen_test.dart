@@ -23,6 +23,9 @@ void main() {
     sl.allowReassignment = true;
     sl.registerSingleton<ProfileRepository>(mockProfileRepository);
     sl.registerSingleton<AuthRepository>(mockAuthRepository);
+    
+    // Default mock behavior
+    when(() => mockAuthRepository.isMock).thenReturn(true);
   });
 
   Widget createWidgetUnderTest() {
@@ -42,6 +45,7 @@ void main() {
 
     expect(find.text('WELCOME BACK,'), findsOneWidget);
     expect(find.text('JOHN DOE'), findsOneWidget);
+    expect(find.text('OFF-GRID'), findsOneWidget);
   });
 
   testWidgets('Should display action cards', (tester) async {

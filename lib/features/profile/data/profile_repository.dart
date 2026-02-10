@@ -6,7 +6,7 @@ import '../../rating/domain/rating_model.dart';
 abstract class ProfileRepository {
   Future<UserProfile> getProfile([String? userId]);
   Future<List<UserProfile>> getAllProfiles();
-  Future<UserProfile> createProfile(String name, {String? id});
+  Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday, String? email});
   Future<void> saveResultForUser(String userId, RatingResult result, String animalId);
   Future<void> saveAchievements(String userId, List<String> achievementIds);
   Future<void> updateDailyChallengeStats(String userId);
@@ -38,12 +38,14 @@ class LocalProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<UserProfile> createProfile(String name, {String? id}) async {
+  Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday, String? email}) async {
     final finalId = id ?? 'local_${DateTime.now().millisecondsSinceEpoch}';
     final newProfile = UserProfile(
       id: finalId,
       name: name,
       joinedDate: DateTime.now(),
+      birthday: birthday,
+      email: email,
     );
     await dataSource.saveProfile(newProfile);
     await dataSource.addProfileId(finalId);

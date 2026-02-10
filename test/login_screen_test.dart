@@ -62,6 +62,7 @@ void main() {
   testWidgets('Should trigger sign in when a profile is tapped', (tester) async {
     final profile = UserProfile(id: '1', name: 'John Doe', joinedDate: DateTime.now());
     when(() => mockProfileRepository.getAllProfiles()).thenAnswer((_) async => [profile]);
+    when(() => mockProfileRepository.getProfile('1')).thenAnswer((_) async => profile);
     when(() => mockAuthRepository.signIn(any())).thenAnswer((_) async => {});
 
     await tester.pumpWidget(createWidgetUnderTest());

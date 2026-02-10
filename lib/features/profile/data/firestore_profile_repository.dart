@@ -32,17 +32,37 @@ class FirestoreProfileRepository implements ProfileRepository {
   @override
   Future<List<UserProfile>> getAllProfiles() async {
     try {
-      debugPrint("FirestoreProfileRepository: Fetching all profiles...");
-      final snapshot = await _firestore.collection(_collectionPath).get();
-      debugPrint("FirestoreProfileRepository: Found ${snapshot.docs.length} profiles.");
+      debugPrint("🔍 FirestoreProfileRepository: Starting getAllProfiles()...");
+      debugPrint("🔍 Collection path: $_collectionPath");
       
-      return snapshot.docs.map((doc) {
+      final snapshot = await _firestore.collection(_collectionPath).get();
+      
+      debugPrint("🔍 Firestore query completed");
+      debugPrint("🔍 Number of documents found: ${snapshot.docs.length}");
+      
+      if (snapshot.docs.isEmpty) {
+        debugPrint("⚠️ NO PROFILES FOUND IN FIRESTORE!");
+        debugPrint("⚠️ This means either:");
+        debugPrint("   1. No profiles have been created yet");
+        debugPrint("   2. Firestore rules are blocking reads");
+        debugPrint("   3. Wrong collection path");
+        return [];
+      }
+      
+      debugPrint("🔍 Processing ${snapshot.docs.length} profile documents...");
+      
+      final profiles = snapshot.docs.map((doc) {
+        debugPrint("🔍 Processing profile: ${doc.id}");
         final data = doc.data();
+        debugPrint("🔍 Profile data keys: ${data.keys.toList()}");
+        
         _sanitizeProfileData(data, doc.id);
         try {
-          return UserProfile.fromJson(data);
+          final profile = UserProfile.fromJson(data);
+          debugPrint("✅ Successfully parsed profile: ${profile.name} (${profile.id})");
+          return profile;
         } catch (e) {
-          debugPrint("Error parsing profile ${doc.id}: $e");
+          debugPrint("❌ Error parsing profile ${doc.id}: $e");
           // Return a fallback profile if parsing fails to avoid breaking the whole list
           return UserProfile(
             id: doc.id,
@@ -51,8 +71,11 @@ class FirestoreProfileRepository implements ProfileRepository {
           );
         }
       }).toList();
+      
+      debugPrint("✅ getAllProfiles() returning ${profiles.length} profiles");
+      return profiles;
     } catch (e) {
-      debugPrint("FirestoreProfileRepository: getAllProfiles ERROR: $e");
+      debugPrint("❌ FirestoreProfileRepository: getAllProfiles ERROR: $e");
       rethrow;
     }
   }
@@ -76,9 +99,9 @@ class FirestoreProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<UserProfile> createProfile(String name, {String? id}) async {
+  Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday, String? email}) async {
     try {
-      debugPrint("FirestoreProfileRepository: Creating profile for '$name' (id: $id)...");
+      debugPrint("FirestoreProfileRepository: Creating profile for '$name' (id: $id, email: $email)...");
       final docRef = id != null 
           ? _firestore.collection(_collectionPath).doc(id)
           : _firestore.collection(_collectionPath).doc();
@@ -86,7 +109,9 @@ class FirestoreProfileRepository implements ProfileRepository {
       final newProfile = UserProfile(
         id: docRef.id,
         name: name,
+        email: email,
         joinedDate: DateTime.now(),
+        birthday: birthday,
       );
       
       await docRef.set(newProfile.toJson());

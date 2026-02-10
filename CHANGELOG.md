@@ -1,5 +1,47 @@
 # 📋 Changelog - Hunting Calls Perfection Updates
 
+## Version 1.1.0 - February 10, 2026
+
+### 🚀 Release Preparation
+
+#### Configuration Updates
+- **Changed**: Application ID from `com.example.hunting_calls_perfection` to `com.neo3151.huntingcalls`
+- **Changed**: Android namespace updated to match new application ID
+- **Added**: Comprehensive release signing configuration documentation in `build.gradle.kts`
+- **Added**: Google Sign-In configured with production Web Client ID
+
+#### Code Quality
+- **Improved**: Error handling for unconfigured authentication methods
+- **Added**: Clear instructions for production keystore setup
+- **Documented**: Step-by-step guide for enabling Google Sign-In when ready
+
+### 📦 What's Changed
+
+```
+android/app/build.gradle.kts              [UPDATED] ✨
+lib/features/auth/data/firebase_auth_repository.dart  [UPDATED] 🔒
+pubspec.yaml                              [UPDATED] 📦
+CHANGELOG.md                              [UPDATED] 📋
+```
+
+### ⚠️ Breaking Changes
+- Application ID changed - existing installations will be treated as a new app
+- Google Sign-In temporarily disabled until Web Client ID is configured
+
+### 🔧 For Developers
+
+**To enable Google Sign-In:**
+1. Get Web Client ID from Firebase Console
+2. Update `firebase_auth_repository.dart` line 41
+3. Uncomment the implementation code
+
+**To configure production signing:**
+1. Generate keystore: `keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`
+2. Create `android/key.properties` with credentials
+3. Uncomment signing configuration in `build.gradle.kts`
+
+---
+
 ## Version 1.0.1 - February 3, 2026
 
 ### 🐛 Bug Fixes

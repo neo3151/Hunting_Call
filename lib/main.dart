@@ -25,18 +25,20 @@ void main() async {
   
   // Initialize Firebase
   try {
-    debugPrint("Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
+    debugPrint("🔥 Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
     if (!Platform.isLinux) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-      debugPrint("Firebase: Initialized successfully.");
+      debugPrint("✅ Firebase: Initialized successfully. Apps count: ${Firebase.apps.length}");
     } else {
-      debugPrint("Firebase: Skipping official init on Linux (using Firedart).");
+      debugPrint("🐧 Firebase: Skipping official init on Linux (using Firedart).");
     }
 
-  } catch (e) {
-    debugPrint("Firebase: Initialization failed. Entering 'Off-Grid' mode.");
+  } catch (e, stackTrace) {
+    debugPrint("❌ Firebase: Initialization failed. Entering 'Off-Grid' mode.");
+    debugPrint("Error: $e");
+    debugPrint("Stack: $stackTrace");
     debugPrint("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
   }
   

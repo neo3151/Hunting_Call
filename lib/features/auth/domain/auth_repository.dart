@@ -6,4 +6,5 @@ abstract class AuthRepository {
   Stream<String?> get onAuthStateChanged;
   String? get currentUserId;
   String? get authenticatedUserId;
+  bool get isMock;
 }

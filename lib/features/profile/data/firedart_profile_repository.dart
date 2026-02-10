@@ -15,11 +15,11 @@ class FiredartProfileRepository implements ProfileRepository {
     }
 
     return _withRetry(() async {
-      print("FiredartProfileRepository: Fetching profile for $userId...");
+      debugPrint("FiredartProfileRepository: Fetching profile for $userId...");
       final doc = await _firestore.collection(_collectionPath).document(userId).get().timeout(const Duration(seconds: 10), onTimeout: () {
           throw Exception("Firestore get() timed out after 10 seconds");
       });
-      print("FiredartProfileRepository: Profile fetched for $userId. Exists: ${doc != null}");
+      debugPrint("FiredartProfileRepository: Profile fetched for $userId. Exists: ${doc != null}");
       if (doc != null) {
         final data = doc.map;
         _sanitizeProfileData(data, doc.id);
@@ -52,12 +52,12 @@ class FiredartProfileRepository implements ProfileRepository {
       } catch (e) {
         final errorStr = e.toString();
         if ((errorStr.contains('SignedOutException') || errorStr.contains('User signed out')) && retries > 1) {
-          print("FiredartProfileRepository: $label - Auth not ready, retries left: ${retries - 1}. Waiting 1s...");
+          debugPrint("FiredartProfileRepository: $label - Auth not ready, retries left: ${retries - 1}. Waiting 1s...");
           await Future.delayed(const Duration(seconds: 1));
           retries--;
           continue;
         }
-        print("FiredartProfileRepository: $label ERROR: $e");
+        debugPrint("FiredartProfileRepository: $label ERROR: $e");
         rethrow;
       }
     }
@@ -91,16 +91,19 @@ class FiredartProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<UserProfile> createProfile(String name, {String? id}) async {
+  Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday, String? email}) async {
     return _withRetry(() async {
       final docId = id ?? DateTime.now().millisecondsSinceEpoch.toString();
+      final docRef = _firestore.collection(_collectionPath).document(docId);
+          
       final newProfile = UserProfile(
         id: docId,
         name: name,
+        email: email,
         joinedDate: DateTime.now(),
+        birthday: birthday,
       );
-      
-      await _firestore.collection(_collectionPath).document(docId).set(newProfile.toJson());
+      await docRef.set(newProfile.toJson());
       return newProfile;
     }, "createProfile");
   }

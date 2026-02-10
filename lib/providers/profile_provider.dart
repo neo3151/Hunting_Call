@@ -60,9 +60,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   ProfileRepository get _repo => ref.read(profileRepositoryProvider);
 
+  Future<UserProfile> fetchProfile(String userId) => _repo.getProfile(userId);
+
   /// Load all profiles for login screen
   Future<void> loadAllProfiles() async {
-    print("ProfileNotifier: Loading all profiles...");
+    debugPrint("ProfileNotifier: Loading all profiles...");
     state = state.copyWith(isLoading: true, error: null);
     
     try {
@@ -70,30 +72,30 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(allProfiles: profiles, isLoading: false);
     } catch (e) {
       final errorStr = e.toString();
-      print("ProfileNotifier: getAllProfiles failed: $errorStr");
+      debugPrint("ProfileNotifier: getAllProfiles failed: $errorStr");
       state = state.copyWith(error: errorStr, isLoading: false);
     }
   }
 
   /// Load a specific user's profile
   Future<void> loadProfile(String userId) async {
-    print("ProfileNotifier: loadProfile called for $userId");
+    debugPrint("ProfileNotifier: loadProfile called for $userId");
     state = state.copyWith(isProfileLoading: true, error: null);
     try {
       final profile = await _repo.getProfile(userId);
-      print("ProfileNotifier: loadProfile success for $userId");
+      debugPrint("ProfileNotifier: loadProfile success for $userId");
       state = state.copyWith(profile: profile, isProfileLoading: false);
     } catch (e) {
-      print("ProfileNotifier: loadProfile failed for $userId: $e");
+      debugPrint("ProfileNotifier: loadProfile failed for $userId: $e");
       state = state.copyWith(error: e.toString(), isProfileLoading: false);
     }
   }
 
   /// Create a new profile
-  Future<UserProfile> createProfile(String name, {String? id}) async {
+  Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday}) async {
     state = state.copyWith(isProfileLoading: true, error: null);
     try {
-      final profile = await _repo.createProfile(name, id: id);
+      final profile = await _repo.createProfile(name, id: id, birthday: birthday);
       final updatedProfiles = [...state.allProfiles, profile];
       state = state.copyWith(
         profile: profile,
