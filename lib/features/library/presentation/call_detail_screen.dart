@@ -89,7 +89,7 @@ class _CallDetailScreenState extends State<CallDetailScreen> with SingleTickerPr
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, const Color(0xFF121212).withOpacity(0.8)],
+                        colors: [Colors.transparent, const Color(0xFF121212).withValues(alpha: 0.8)],
                       ),
                     ),
                   ),

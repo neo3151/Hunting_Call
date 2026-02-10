@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../features/auth/domain/auth_repository.dart';
+import '../providers/auth_provider.dart';
 
 class AuthService {
   final Ref ref;

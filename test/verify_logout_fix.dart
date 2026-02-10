@@ -1,5 +1,5 @@
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/features/auth/domain/auth_repository.dart';
@@ -36,13 +36,13 @@ void main() {
     await Future.delayed(Duration.zero); // Allow Stream.value to emit
 
     // Check pre-condition
-    print("Initial State: ${container.read(authNotifierProvider)}");
+    debugPrint("Initial State: ${container.read(authNotifierProvider)}");
 
     // Act
     try {
       await container.read(authNotifierProvider.notifier).signOut();
     } catch (e) {
-      print("Caught exception in test (unexpected): $e");
+      debugPrint("Caught exception in test (unexpected): $e");
     }
 
     // Assert
@@ -50,7 +50,7 @@ void main() {
     
     // Check that the state reflects the error
     final state = container.read(authNotifierProvider);
-    print("Final State: $state");
+    debugPrint("Final State: $state");
     
     expect(state.hasError, true);
     expect(state.error.toString(), contains("Simulated Logout Crash"));

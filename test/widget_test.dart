@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/main.dart';
 import 'package:hunting_calls_perfection/injection_container.dart' as di;
 import 'package:shared_preferences/shared_preferences.dart';
