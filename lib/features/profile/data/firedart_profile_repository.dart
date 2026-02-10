@@ -19,14 +19,10 @@ class FiredartProfileRepository implements ProfileRepository {
       final doc = await _firestore.collection(_collectionPath).document(userId).get().timeout(const Duration(seconds: 10), onTimeout: () {
           throw Exception("Firestore get() timed out after 10 seconds");
       });
-      debugPrint("FiredartProfileRepository: Profile fetched for $userId. Exists: ${doc != null}");
-      if (doc != null) {
-        final data = doc.map;
-        _sanitizeProfileData(data, doc.id);
-        return UserProfile.fromJson(data);
-      } else {
-        return UserProfile.guest();
-      }
+      debugPrint("FiredartProfileRepository: Profile fetched for $userId.");
+      final data = doc.map;
+      _sanitizeProfileData(data, doc.id);
+      return UserProfile.fromJson(data);
     }, "getProfile");
   }
 
@@ -122,7 +118,7 @@ class FiredartProfileRepository implements ProfileRepository {
       final data = newItem.toJson();
       
       final doc = await _firestore.collection(_collectionPath).document(userId).get();
-      Map<String, dynamic> existingData = doc?.map ?? {};
+      Map<String, dynamic> existingData = doc.map;
       
       List<dynamic> history = List.from(existingData['history'] ?? []);
       history.add(data);
@@ -143,7 +139,7 @@ class FiredartProfileRepository implements ProfileRepository {
 
     await _withRetry(() async {
       final doc = await _firestore.collection(_collectionPath).document(userId).get();
-      Map<String, dynamic> existingData = doc?.map ?? {};
+      Map<String, dynamic> existingData = doc.map;
       
       Set<String> achievements = Set.from(existingData['achievements'] ?? []);
       achievements.addAll(achievementIds);
@@ -163,7 +159,7 @@ class FiredartProfileRepository implements ProfileRepository {
       final today = DateTime(now.year, now.month, now.day);
       
       final doc = await _firestore.collection(_collectionPath).document(userId).get();
-      if (doc == null) return;
+      // doc is non-nullable in firedart
       
       final data = doc.map;
       final lastDateMillis = data['lastDailyChallengeDate'] as int?;

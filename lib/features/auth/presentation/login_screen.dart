@@ -1,13 +1,10 @@
-import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:flutter/foundation.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import '../../../providers/providers.dart';
-import '../../../providers/google_user_info_provider.dart';
 import '../../profile/domain/profile_model.dart';
 import '../../settings/presentation/privacy_policy_screen.dart';
 import 'package:intl/intl.dart';
@@ -189,56 +186,88 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   letterSpacing: 4.0,
                                 ),
                               ),
-                              const SizedBox(height: 48),
-                              Text(
-                                 "WHO IS HUNTING?",
-                                 style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 16),
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(maxHeight: 200),
-                                child: isLoading
-                                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                                  : profileState.error != null
-                                    ? _buildErrorDisplay(profileState.error!)
-                                    : profiles.isEmpty
-                                      ? _buildEmptyState()
-                                      : ListView.separated(
-                                          shrinkWrap: true,
-                                          physics: const NeverScrollableScrollPhysics(),
-                                          itemCount: profiles.length,
-                                          separatorBuilder: (_, __) => const SizedBox(height: 8),
-                                          itemBuilder: (context, index) {
-                                            final p = profiles[index];
-                                            return _buildProfileCard(p);
-                                          },
-                                        ),
-                              ),
-                              const SizedBox(height: 24),
-                              ElevatedButton(
-                                onPressed: _createNewProfile,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF81C784),
-                                  foregroundColor: const Color(0xFF0F1E12),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  elevation: 0,
-                                ),
-                                child: const Text('NEW HUNTER PROFILE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0)),
-                              ),
-                              // Google Sign-In enabled - requires SHA-1 in Firebase Console for production
-                              // See docs/GOOGLE_SIGNIN_QUICK_SETUP.md for setup instructions
+                            const SizedBox(height: 48),
+                              // === MOBILE: Google Sign-In primary, no shared profile list ===
                               if (!Platform.isWindows && !Platform.isLinux) ...[
-                                const SizedBox(height: 16),
                                 OutlinedButton.icon(
                                   onPressed: _signInWithGoogle,
-                                  icon: const Icon(Icons.login, color: Colors.white), 
-                                  label: const Text("SIGN IN WITH GOOGLE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  icon: const Icon(Icons.login, color: Colors.white, size: 24),
+                                  label: Text(
+                                    "SIGN IN WITH GOOGLE",
+                                    style: GoogleFonts.oswald(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      letterSpacing: 1.0,
+                                    ),
+                                  ),
                                   style: OutlinedButton.styleFrom(
                                     side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(vertical: 18),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.2))),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text("OR", style: GoogleFonts.lato(color: Colors.white38, fontSize: 12)),
+                                    ),
+                                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.2))),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: _createNewProfile,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF81C784),
+                                    foregroundColor: const Color(0xFF0F1E12),
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    elevation: 0,
+                                  ),
+                                  child: Text('PLAY AS GUEST', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.0, fontSize: 16)),
+                                ),
+                              ],
+                              // === DESKTOP: Keep profile list for development ===
+                              if (Platform.isWindows || Platform.isLinux) ...[
+                                Text(
+                                   "WHO IS HUNTING?",
+                                   style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 16),
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(maxHeight: 200),
+                                  child: isLoading
+                                    ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                                    : profileState.error != null
+                                      ? _buildErrorDisplay(profileState.error!)
+                                      : profiles.isEmpty
+                                        ? _buildEmptyState()
+                                        : ListView.separated(
+                                            shrinkWrap: true,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            itemCount: profiles.length,
+                                            separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                            itemBuilder: (context, index) {
+                                              final p = profiles[index];
+                                              return _buildProfileCard(p);
+                                            },
+                                          ),
+                                ),
+                                const SizedBox(height: 24),
+                                ElevatedButton(
+                                  onPressed: _createNewProfile,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF81C784),
+                                    foregroundColor: const Color(0xFF0F1E12),
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text('NEW HUNTER PROFILE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0)),
                                 ),
                               ],
                               const SizedBox(height: 32),

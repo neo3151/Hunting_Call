@@ -18,7 +18,7 @@ class FiredartLeaderboardService implements LeaderboardService {
     final doc = await docRef.get();
     
     List<LeaderboardEntry> currentScores = [];
-    Map<String, dynamic> data = doc?.map ?? {};
+    Map<String, dynamic> data = doc.map;
 
     if (data.containsKey('scores')) {
       final List<dynamic> rawList = data['scores'];
