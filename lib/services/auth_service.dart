@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/domain/auth_repository.dart';
 
@@ -12,7 +13,7 @@ class AuthService {
     // 2. Clear all Riverpod State to prevent stale data
     ref.invalidateSelf(); 
     
-    print('Sentinel: AuthService - Global Sign-out and context reset complete.');
+    debugPrint('AuthService: Global Sign-out and context reset complete.');
   }
 }
 

@@ -1,8 +1,7 @@
-// Sentinel Generated Scaffold
-// Target: lib/services/hunting_log_service.dart
+import 'package:flutter/foundation.dart';
 
 class HuntingLogService {
   void logCall(String callType) {
-    print('Logging $callType call');
+    debugPrint('Logging $callType call');
   }
 }

@@ -1,0 +1,44 @@
+# ✅ SHA-1 Certificate Fingerprint
+
+## Your SHA-1 Fingerprint:
+```
+10:E3:99:E9:0E:59:09:5C:7A:C6:62:6E:1A:CB:CA:41:20:02:FD:41
+```
+
+## Next Steps:
+
+### 1. Add SHA-1 to Firebase Console
+
+1. Go to: **https://console.firebase.google.com/**
+2. Select project: **hunting-call-perfection**
+3. Click the **gear icon ⚙️** > **Project settings**
+4. Scroll down to **Your apps** section
+5. Find your Android app: **Hunting Calls Perfection** (`com.example.hunting_calls_perfection`)
+6. Click **Add fingerprint** button
+7. Paste this SHA-1:
+   ```
+   10:E3:99:E9:0E:59:09:5C:7A:C6:62:6E:1A:CB:CA:41:20:02:FD:41
+   ```
+8. Click **Save**
+
+### 2. Download Updated google-services.json
+
+1. Still on the same page in Firebase Console
+2. Click the **Download google-services.json** button
+3. Save the file
+
+### 3. Send Me the File
+
+Send me the contents of the downloaded `google-services.json` file (you can open it in a text editor and paste the contents here).
+
+Once I have it, I'll:
+- Replace the current google-services.json
+- Rebuild the APK
+- Google Sign-In will work perfectly! 🎉
+
+---
+
+## SHA-256 (for reference):
+```
+78:A6:40:08:1E:E2:D5:DE:0D:6D:BF:13:52:1C:CC:56:F9:87:48:0D:CB:E2:AF:07:FB:5F:09:3D:44:82:E5:7B
+```

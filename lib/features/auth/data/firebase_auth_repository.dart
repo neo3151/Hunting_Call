@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../domain/auth_repository.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
@@ -26,10 +27,31 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signInWithGoogle() async {
-    // Note: Google Sign-In requires additional setup (google_sign_in package)
-    // and configuration in Firebase Console. 
-    // This is a placeholder for the logic.
-    throw UnimplementedError("Google Sign-In requires the 'google_sign_in' package and platform-specific setup.");
+    try {
+      debugPrint("🔐 FirebaseAuthRepository: Starting Google Sign-In via signInWithProvider...");
+      
+      // Use Firebase Auth's built-in Google Sign-In provider
+      // This bypasses the google_sign_in package entirely
+      final googleProvider = GoogleAuthProvider();
+      
+      // Add scopes if needed
+      googleProvider.addScope('email');
+      googleProvider.addScope('profile');
+      
+      debugPrint("🔐 Calling signInWithProvider...");
+      
+      // This will show the native Google Sign-In UI
+      final UserCredential userCredential = await _auth.signInWithProvider(googleProvider);
+      
+      debugPrint("✅ Firebase sign-in successful!");
+      debugPrint("👤 User: ${userCredential.user?.displayName} (${userCredential.user?.email})");
+      debugPrint("🆔 UID: ${userCredential.user?.uid}");
+      
+    } catch (e, stackTrace) {
+      debugPrint("❌ Google Sign-In Error: $e");
+      debugPrint("Stack trace: $stackTrace");
+      rethrow;
+    }
   }
 
   @override
@@ -42,4 +64,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   String? get authenticatedUserId => _auth.currentUser?.uid;
+
+  @override
+  bool get isMock => false;
 }

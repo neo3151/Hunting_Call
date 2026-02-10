@@ -7,6 +7,7 @@ part 'profile_model.g.dart';
 class UserProfile {
   final String id;
   final String name;
+  final String? email; // For matching Google accounts across sign-ins
   final DateTime joinedDate;
   final int totalCalls;
   final double averageScore;
@@ -16,10 +17,12 @@ class UserProfile {
   final DateTime? lastDailyChallengeDate;
   final int currentStreak;
   final int longestStreak;
+  final DateTime? birthday;
 
   UserProfile({
     required this.id,
     required this.name,
+    this.email,
     required this.joinedDate,
     this.totalCalls = 0,
     this.averageScore = 0.0,
@@ -29,6 +32,7 @@ class UserProfile {
     this.lastDailyChallengeDate,
     this.currentStreak = 0,
     this.longestStreak = 0,
+    this.birthday,
   });
 
   factory UserProfile.guest() {
@@ -40,6 +44,7 @@ class UserProfile {
   }
 
   UserProfile copyWith({
+    String? email,
     int? totalCalls,
     double? averageScore,
     List<HistoryItem>? history,
@@ -48,10 +53,12 @@ class UserProfile {
     DateTime? lastDailyChallengeDate,
     int? currentStreak,
     int? longestStreak,
+    DateTime? birthday,
   }) {
     return UserProfile(
       id: id,
       name: name,
+      email: email ?? this.email,
       joinedDate: joinedDate,
       totalCalls: totalCalls ?? this.totalCalls,
       averageScore: averageScore ?? this.averageScore,
@@ -61,6 +68,7 @@ class UserProfile {
       lastDailyChallengeDate: lastDailyChallengeDate ?? this.lastDailyChallengeDate,
       currentStreak: currentStreak ?? this.currentStreak,
       longestStreak: longestStreak ?? this.longestStreak,
+      birthday: birthday ?? this.birthday,
     );
   }
 

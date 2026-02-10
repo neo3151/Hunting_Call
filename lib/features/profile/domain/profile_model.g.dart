@@ -9,6 +9,7 @@ part of 'profile_model.dart';
 UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
       id: json['id'] as String,
       name: json['name'] as String,
+      email: json['email'] as String?,
       joinedDate: DateTime.parse(json['joinedDate'] as String),
       totalCalls: (json['totalCalls'] as num?)?.toInt() ?? 0,
       averageScore: (json['averageScore'] as num?)?.toDouble() ?? 0.0,
@@ -27,12 +28,16 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
           : DateTime.parse(json['lastDailyChallengeDate'] as String),
       currentStreak: (json['currentStreak'] as num?)?.toInt() ?? 0,
       longestStreak: (json['longestStreak'] as num?)?.toInt() ?? 0,
+      birthday: json['birthday'] == null
+          ? null
+          : DateTime.parse(json['birthday'] as String),
     );
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
+      'email': instance.email,
       'joinedDate': instance.joinedDate.toIso8601String(),
       'totalCalls': instance.totalCalls,
       'averageScore': instance.averageScore,
@@ -43,6 +48,7 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
           instance.lastDailyChallengeDate?.toIso8601String(),
       'currentStreak': instance.currentStreak,
       'longestStreak': instance.longestStreak,
+      'birthday': instance.birthday?.toIso8601String(),
     };
 
 HistoryItem _$HistoryItemFromJson(Map<String, dynamic> json) => HistoryItem(

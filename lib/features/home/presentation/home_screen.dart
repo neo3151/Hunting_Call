@@ -26,12 +26,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Load profile on init only if not already set (e.g. from selection screen)
+    // Always reload profile to ensure we have the latest data from Firestore
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final currentProfile = ref.read(profileNotifierProvider).profile;
-      if (currentProfile == null || currentProfile.id == 'guest') {
-        ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
-      }
+      ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
     });
   }
 
@@ -257,16 +254,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
-                  icon: const Icon(Icons.logout, color: Colors.white70),
-                  tooltip: "Sign Out",
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: ref.watch(authRepositoryProvider).isMock 
+                          ? Colors.amber.withValues(alpha: 0.2) 
+                          : Colors.green.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: ref.watch(authRepositoryProvider).isMock 
+                            ? Colors.amberAccent.withValues(alpha: 0.5) 
+                            : Colors.greenAccent.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          ref.watch(authRepositoryProvider).isMock ? Icons.wifi_off : Icons.cloud_done,
+                          size: 12,
+                          color: ref.watch(authRepositoryProvider).isMock ? Colors.amberAccent : Colors.greenAccent,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          ref.watch(authRepositoryProvider).isMock ? "OFF-GRID" : "CLOUD",
+                          style: GoogleFonts.lato(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: ref.watch(authRepositoryProvider).isMock ? Colors.amberAccent : Colors.greenAccent,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
+                      icon: const Icon(Icons.logout, color: Colors.white70),
+                      tooltip: "Sign Out",
+                    ),
+                  )
+                ],
               )
             ],
           ),
