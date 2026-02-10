@@ -32,7 +32,7 @@ import 'features/leaderboard/data/firedart_leaderboard_service.dart';
 import 'features/hunting_log/data/hunting_log_repository.dart';
 import 'features/hunting_log/data/local_hunting_log_repository.dart';
 import 'features/weather/data/weather_repository.dart';
-import 'features/weather/data/mock_weather_repository.dart';
+import 'features/weather/data/open_meteo_weather_repository.dart';
 
 final sl = GetIt.instance;
 bool _isInitializing = false;
@@ -149,7 +149,7 @@ Future<void> init({bool useMocks = false}) async {
   sl<HuntingLogRepository>().initialize();
 
   // Features - Weather
-  sl.registerLazySingleton<WeatherRepository>(() => MockWeatherRepository());
+  sl.registerLazySingleton<WeatherRepository>(() => OpenMeteoWeatherRepository());
 
   _isInitializing = false;
 }
