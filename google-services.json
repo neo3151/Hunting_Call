@@ -58,14 +58,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "654995904748-m21vmhrvvvmqbq9ec8a2fo1cgpsr3csq.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.neo3151.huntingcalls",
-            "certificate_hash": "b6fdcf75b80fff434037146fc655adb65cc34b41"
-          }
-        },
-        {
           "client_id": "654995904748-4ng8c4m5k870eo0qjkjb991v5u2igmo1.apps.googleusercontent.com",
           "client_type": 3
         }
