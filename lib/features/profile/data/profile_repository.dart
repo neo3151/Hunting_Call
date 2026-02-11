@@ -6,10 +6,12 @@ import '../../rating/domain/rating_model.dart';
 abstract class ProfileRepository {
   Future<UserProfile> getProfile([String? userId]);
   Future<List<UserProfile>> getAllProfiles();
+  Future<List<UserProfile>> getProfilesByEmail(String email);
   Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday, String? email});
   Future<void> saveResultForUser(String userId, RatingResult result, String animalId);
   Future<void> saveAchievements(String userId, List<String> achievementIds);
   Future<void> updateDailyChallengeStats(String userId);
+  Future<void> setPremiumStatus(String userId, bool isPremium);
 }
 
 class LocalProfileRepository implements ProfileRepository {
@@ -35,6 +37,12 @@ class LocalProfileRepository implements ProfileRepository {
       profiles.add(await dataSource.getProfile('guest'));
     }
     return profiles;
+  }
+  
+  @override
+  Future<List<UserProfile>> getProfilesByEmail(String email) async {
+    final allProfiles = await getAllProfiles();
+    return allProfiles.where((p) => p.email == email).toList();
   }
 
   @override
@@ -108,5 +116,12 @@ class LocalProfileRepository implements ProfileRepository {
       );
       await dataSource.saveProfile(updatedProfile);
     }
+  }
+
+  @override
+  Future<void> setPremiumStatus(String userId, bool isPremium) async {
+    final profile = await dataSource.getProfile(userId);
+    final updated = profile.copyWith(isPremium: isPremium);
+    await dataSource.saveProfile(updated);
   }
 }

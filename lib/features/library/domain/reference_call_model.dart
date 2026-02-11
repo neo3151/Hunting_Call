@@ -37,6 +37,46 @@ class ReferenceCall {
     this.idealTempo = 0.0,
   });
 
+  ReferenceCall copyWith({
+    String? id,
+    String? animalName,
+    String? callType,
+    String? category,
+    String? difficulty,
+    String? description,
+    String? proTips,
+    double? idealPitchHz,
+    double? idealDurationSec,
+    String? audioAssetPath,
+    double? tolerancePitch,
+    double? toleranceDuration,
+    String? imageUrl,
+    String? scientificName,
+    bool? isLocked,
+    bool? isPulsedCall,
+    double? idealTempo,
+  }) {
+    return ReferenceCall(
+      id: id ?? this.id,
+      animalName: animalName ?? this.animalName,
+      callType: callType ?? this.callType,
+      category: category ?? this.category,
+      difficulty: difficulty ?? this.difficulty,
+      description: description ?? this.description,
+      proTips: proTips ?? this.proTips,
+      idealPitchHz: idealPitchHz ?? this.idealPitchHz,
+      idealDurationSec: idealDurationSec ?? this.idealDurationSec,
+      audioAssetPath: audioAssetPath ?? this.audioAssetPath,
+      tolerancePitch: tolerancePitch ?? this.tolerancePitch,
+      toleranceDuration: toleranceDuration ?? this.toleranceDuration,
+      imageUrl: imageUrl ?? this.imageUrl,
+      scientificName: scientificName ?? this.scientificName,
+      isLocked: isLocked ?? this.isLocked,
+      isPulsedCall: isPulsedCall ?? this.isPulsedCall,
+      idealTempo: idealTempo ?? this.idealTempo,
+    );
+  }
+
   factory ReferenceCall.fromJson(Map<String, dynamic> json) {
     return ReferenceCall(
       id: json['id'] as String,

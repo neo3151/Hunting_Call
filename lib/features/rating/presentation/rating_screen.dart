@@ -6,6 +6,8 @@ import 'package:audioplayers/audioplayers.dart';
 import '../../../providers/providers.dart';
 import '../domain/rating_model.dart';
 import '../../library/data/reference_database.dart';
+import '../../../config/app_config.dart';
+import '../../../core/widgets/upgrade_prompter.dart';
 import './widgets/waveform_overlay.dart';
 import '../domain/personality_feedback_service.dart';
 import '../../leaderboard/presentation/leaderboard_screen.dart';
@@ -951,6 +953,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           ),
         ),
         const SizedBox(height: 12),
+        if (AppConfig.instance.allowLeaderboard || (ref.watch(profileNotifierProvider).profile?.isPremium ?? false))
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
@@ -974,7 +977,23 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
+        )
+        else
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => UpgradePrompter.show(context, featureName: "Global Leaderboards"),
+            icon: const Icon(Icons.lock_outline, color: Colors.white38),
+            label: Text("GLOBAL RANKINGS (LOCKED)", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white38,
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
         ),
+        
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,

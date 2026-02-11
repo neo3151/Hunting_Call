@@ -6,18 +6,22 @@ import 'acoustic_spectrum_widget.dart';
 
 import '../../recording/presentation/recorder_page.dart';
 import '../../leaderboard/presentation/leaderboard_screen.dart';
+import '../../../config/app_config.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/widgets/upgrade_prompter.dart';
+import '../../../providers/providers.dart';
 
-class CallDetailScreen extends StatefulWidget {
+class CallDetailScreen extends ConsumerStatefulWidget {
   final ReferenceCall call;
   final String userId;
 
   const CallDetailScreen({super.key, required this.call, required this.userId});
 
   @override
-  State<CallDetailScreen> createState() => _CallDetailScreenState();
+  ConsumerState<CallDetailScreen> createState() => _CallDetailScreenState();
 }
 
-class _CallDetailScreenState extends State<CallDetailScreen> with SingleTickerProviderStateMixin {
+class _CallDetailScreenState extends ConsumerState<CallDetailScreen> with SingleTickerProviderStateMixin {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   late AnimationController _pulseController;
@@ -63,6 +67,10 @@ class _CallDetailScreenState extends State<CallDetailScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    final profile = ref.watch(profileNotifierProvider).profile;
+    final isPremium = profile?.isPremium ?? false;
+    debugPrint("🔍 CallDetailScreen: Profile=${profile?.id}, Premium=$isPremium");
+
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       body: Container(
@@ -190,29 +198,63 @@ class _CallDetailScreenState extends State<CallDetailScreen> with SingleTickerPr
                   const SizedBox(height: 12),
                   
                   // Leaderboard Action
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => LeaderboardScreen(
-                              animalId: widget.call.id,
-                              animalName: widget.call.animalName,
+                  // Check premium status (need to get it first)
+                  // BuildContext is available, so we can use Consumer or ref if we convert to ConsumerWidget.
+                  // Current class is StatefulWidget. We should probably convert to ConsumerStatefulWidget to access ref easily,
+                  // OR use a Consumer widget wrapper in the build method.
+                  
+                  // Let's use Consumer since converting the whole class is more invasive.
+                  // Leaderboard Action
+                  // Leaderboard Action
+                  Builder(
+                    builder: (context) {
+                      final showLeaderboard = AppConfig.instance.allowLeaderboard || isPremium;
+
+                      if (showLeaderboard) {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => LeaderboardScreen(
+                                    animalId: widget.call.id,
+                                    animalName: widget.call.animalName,
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.emoji_events_outlined, color: Colors.orangeAccent),
+                            label: const Text("VIEW GLOBAL EXPERT RANKINGS"),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white70,
+                              side: BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.3)),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                           ),
                         );
-                      },
-                      icon: const Icon(Icons.emoji_events_outlined, color: Colors.orangeAccent),
-                      label: const Text("VIEW GLOBAL EXPERT RANKINGS"),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white70,
-                        side: BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.3)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
+                      } else {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              debugPrint("🔒 Locked Leaderboard clicked. Showing prompt...");
+                              UpgradePrompter.show(context, featureName: "Global Leaderboards");
+                            },
+                            icon: const Icon(Icons.lock_outline, color: Colors.white38),
+                            label: const Text("GLOBAL RANKINGS (LOCKED)"),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white38,
+                              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        );
+                      }
+                    }
                   ),
                   
                   const SizedBox(height: 40),

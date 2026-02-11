@@ -38,7 +38,14 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       if (widget.preselectedAnimalId != null) {
         ref.read(selectedCallIdProvider.notifier).state = widget.preselectedAnimalId!;
       } else {
-        ref.read(selectedCallIdProvider.notifier).state = ReferenceDatabase.calls.first.id;
+        // Fix: Ensure we select a valid, unlocked call if none is provided
+        final availableCalls = ReferenceDatabase.calls.where((c) => !c.isLocked).toList();
+        if (availableCalls.isNotEmpty) {
+           ref.read(selectedCallIdProvider.notifier).state = availableCalls.first.id;
+        } else {
+           // Fallback if somehow everything is locked (should not happen with starter pack)
+           ref.read(selectedCallIdProvider.notifier).state = ReferenceDatabase.calls.first.id;
+        }
       }
       ref.read(recordingNotifierProvider.notifier).initialize();
     });
