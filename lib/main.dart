@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'firebase_options.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -23,12 +24,14 @@ void main() async {
   await ReferenceDatabase.init();
   
   // Initialize Firebase
+  bool firebaseReady = false;
   try {
     debugPrint("🔥 Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
     if (!Platform.isLinux) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+      firebaseReady = true;
       debugPrint("✅ Firebase: Initialized successfully. Apps count: ${Firebase.apps.length}");
     } else {
       debugPrint("🐧 Firebase: Skipping official init on Linux (using Firedart).");
@@ -41,16 +44,21 @@ void main() async {
     debugPrint("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
   }
   
-  // Global Error Handling for better stability and debugging
+  // Global Error Handling — route to Crashlytics if available
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
     debugPrint("GLOBAL FLUTTER ERROR: ${details.exception}");
-    // Here you could send errors to Sentry or Firebase Crashlytics
+    if (firebaseReady) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    }
   };
 
   // Catch async errors that escape the widget tree
   PlatformDispatcher.instance.onError = (error, stack) {
     debugPrint("GLOBAL ASYNC ERROR: $error\n$stack");
+    if (firebaseReady) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    }
     return true; // Prevent app crash
   };
 
