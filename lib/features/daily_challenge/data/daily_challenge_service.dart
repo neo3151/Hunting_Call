@@ -5,8 +5,9 @@ import '../../library/domain/reference_call_model.dart';
 class DailyChallengeService {
   
   static ReferenceCall getDailyChallenge() {
-    // Filter out locked calls (handles Freemium logic automatically)
-    final eligibleCalls = ReferenceDatabase.calls.where((c) => !c.isLocked).toList();
+    // Filter out locked calls (ensure challenges are from Free Tier so everyone can play)
+    // We pass 'false' for isPremium to force the check against the Free Starter Pack.
+    final eligibleCalls = ReferenceDatabase.calls.where((c) => !ReferenceDatabase.isLocked(c.id, false)).toList();
     
     ReferenceCall challengeCall;
     if (eligibleCalls.isEmpty) {

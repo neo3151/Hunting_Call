@@ -38,8 +38,10 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       if (widget.preselectedAnimalId != null) {
         ref.read(selectedCallIdProvider.notifier).state = widget.preselectedAnimalId!;
       } else {
-        // Fix: Ensure we select a valid, unlocked call if none is provided
-        final availableCalls = ReferenceDatabase.calls.where((c) => !c.isLocked).toList();
+        final isPremium = ref.read(profileNotifierProvider).profile?.isPremium ?? false;
+        // Fix: Use dynamic lock check
+        final availableCalls = ReferenceDatabase.calls.where((c) => !ReferenceDatabase.isLocked(c.id, isPremium)).toList();
+        
         if (availableCalls.isNotEmpty) {
            ref.read(selectedCallIdProvider.notifier).state = availableCalls.first.id;
         } else {
@@ -398,9 +400,11 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     final items = <DropdownMenuItem<String>>[];
     final groups = <String, List<ReferenceCall>>{};
     
+    final isPremium = ref.read(profileNotifierProvider).profile?.isPremium ?? false;
+    
     // Group calls by category (only if not locked)
     for (final call in ReferenceDatabase.calls) {
-      if (!call.isLocked) {
+      if (!ReferenceDatabase.isLocked(call.id, isPremium)) {
         groups.putIfAbsent(call.category, () => []).add(call);
       }
     }

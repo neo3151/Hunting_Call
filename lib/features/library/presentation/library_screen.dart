@@ -32,7 +32,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Future<void> _togglePlayback(ReferenceCall call) async {
     final profile = ref.read(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
-    final isLocked = call.isLocked && !isPremium;
+    final isLocked = ReferenceDatabase.isLocked(call.id, isPremium);
 
     if (isLocked) {
       if (mounted) {
@@ -67,7 +67,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   void _navigateToDetail(ReferenceCall call) {
     final profile = ref.read(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
-    final isLocked = call.isLocked && !isPremium;
+    final isLocked = ReferenceDatabase.isLocked(call.id, isPremium);
 
     if (isLocked) {
       UpgradePrompter.show(context, featureName: "This Call");
@@ -166,7 +166,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   itemBuilder: (context, index) {
                     final call = filtered[index];
                     final isPlaying = _currentlyPlayingId == call.id;
-                    final isLocked = call.isLocked && !isPremium;
+                    final isLocked = ReferenceDatabase.isLocked(call.id, isPremium);
                     return _buildCallCard(call, isPlaying, isLocked);
                   },
                 );

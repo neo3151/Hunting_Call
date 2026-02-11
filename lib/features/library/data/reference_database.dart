@@ -33,26 +33,22 @@ class ReferenceDatabase {
       _calls = [];
     }
 
-    // Freemium Logic: Lock calls if Free Flavor
-    if (AppConfig.instance.isFree) {
-      _applyFreeVersionLocks();
-    }
+    // Freemium Logic: Locks are now calculated dynamically, not mutated on load.
   }
 
-  static void _applyFreeVersionLocks() {
-    // Calls to keep UNLOCKED in Free version
-    final starterPackIds = FreemiumConfig.freeCallIds;
+  /// Checks if a call is locked based on the current App Flavor and User Premium status.
+  static bool isLocked(String callId, bool isUserPremium) {
+    // 1. If User is Premium, EVERYTHING is unlocked.
+    if (isUserPremium) return false;
 
-    for (var call in _calls) {
-      if (!starterPackIds.contains(call.id)) {
-        // We need to modify the isLocked property. 
-        // Since ReferenceCall might be immutable (final), we might need to recreate it.
-        // Assuming ReferenceCall has a copyWith or we just replace the object in the list.
-        final int index = _calls.indexOf(call);
-        _calls[index] = call.copyWith(isLocked: true);
-      }
-    }
-    debugPrint("ReferenceDatabase: Applied Free Version Locks. Unlocked count: ${starterPackIds.length}");
+    // 2. If this is the "Full" version (paid app), EVERYTHING is unlocked.
+    if (AppConfig.instance.isFull) return false;
+
+    // 3. We are in the "Free" version and User is NOT Premium.
+    // Check if this call is part of the "Starter Pack" (Free entitlement).
+    // If it IS in the starter pack, it is NOT locked.
+    // If it is NOT in the starter pack, it IS locked.
+    return !FreemiumConfig.freeCallIds.contains(callId);
   }
 
   static ReferenceCall getById(String id) {
