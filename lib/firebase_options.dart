@@ -45,7 +45,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBHJwRjQq0nUA7LRrQL80XJ-spZGWsOwLs',
-    appId: '1:654995904748:android:2e7e1da02e9b271482adc9',
+    appId: '1:654995904748:android:97999200e4dd9deb82adc9',
     messagingSenderId: '654995904748',
     projectId: 'hunting-call-perfection',
     storageBucket: 'hunting-call-perfection.firebasestorage.app',
