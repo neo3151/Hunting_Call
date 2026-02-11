@@ -46,34 +46,13 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         return;
       }
       
-      // Check 3: Search all profiles (handles different Google UIDs and local profiles)
-      // Give login screen a moment to finish profile creation
-      await Future.delayed(const Duration(milliseconds: 1000));
-      
-      final allProfiles = await profileRepo.getAllProfiles();
-      if (allProfiles.isNotEmpty) {
-        final match = allProfiles.first;
-        debugPrint("AuthWrapper: ✅ Found profile in collection: ${match.name}");
-        await ref.read(profileNotifierProvider.notifier).loadProfile(match.id);
-        _lastHandledUserId = userId;
-        return;
-      }
-      
-      // Check 4: Wait a bit more and retry (for Google sign-in creating profile)
+      // Check 3: Wait a bit more and retry (for Google sign-in creating profile)
       for (int i = 0; i < 5; i++) {
         await Future.delayed(const Duration(milliseconds: 500));
         final retryProfile = await profileRepo.getProfile(userId);
         if (retryProfile.id != 'guest') {
           debugPrint("AuthWrapper: ✅ Profile found on retry: ${retryProfile.name}");
           await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
-          _lastHandledUserId = userId;
-          return;
-        }
-        // Also re-check all profiles
-        final retryAll = await profileRepo.getAllProfiles();
-        if (retryAll.isNotEmpty) {
-          debugPrint("AuthWrapper: ✅ Profile found in collection on retry: ${retryAll.first.name}");
-          await ref.read(profileNotifierProvider.notifier).loadProfile(retryAll.first.id);
           _lastHandledUserId = userId;
           return;
         }

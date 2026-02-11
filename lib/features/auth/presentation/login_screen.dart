@@ -21,9 +21,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void initState() {
     super.initState();
     // Load profiles on init
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(profileNotifierProvider.notifier).loadAllProfiles();
-    });
+    // Load profiles on init - REMOVED for Release (Privacy/Perf)
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   ref.read(profileNotifierProvider.notifier).loadAllProfiles();
+    // });
   }
 
   Future<void> _createNewProfile() async {
@@ -71,8 +72,122 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       }
     }
+    }
   }
-}
+
+  Future<void> _signInWithEmail() async {
+    final emailController = TextEditingController();
+    
+    final email = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1B3B24),
+        title: const Text("Log In", style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Enter the email address associated with your profile to sync progress.",
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              autofocus: true,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: "Email Address",
+                labelStyle: TextStyle(color: Colors.white54),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("CANCEL", style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, emailController.text.trim()),
+            child: const Text("LOG IN", style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (email != null && email.isNotEmpty) {
+      if (!mounted) return;
+      
+      try {
+        final profileRepo = ref.read(profileRepositoryProvider);
+        debugPrint("🔍 Searching for profiles by email: $email");
+        
+        final profiles = await profileRepo.getProfilesByEmail(email);
+        
+        if (profiles.isNotEmpty) {
+          UserProfile? selectedProfile;
+          
+          // Always ask user to confirm/pick, even if there's only one.
+          // This ensures they know WHICH profile they are logging into.
+          if (!mounted) return;
+          selectedProfile = await showDialog<UserProfile>(
+            context: context,
+            builder: (context) => SimpleDialog(
+              title: const Text("Select Profile", style: TextStyle(color: Colors.white)),
+              backgroundColor: const Color(0xFF1B3B24),
+              children: profiles.map((p) => SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, p),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white24),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(p.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text("Joined: ${DateFormat.yMMMd().format(p.joinedDate)}", style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text("Calls: ${p.totalCalls}", style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                    ],
+                  ),
+                ),
+              )).toList(),
+            ),
+          );
+          
+          if (selectedProfile != null) {
+            debugPrint("✅ Profile selected: ${selectedProfile.name} (${selectedProfile.id})");
+            
+            // Sign in technically (anonymous + impersonation)
+            await ref.read(authRepositoryProvider).signIn(selectedProfile.id);
+            
+            // Load profile to state
+            await ref.read(profileNotifierProvider.notifier).loadProfile(selectedProfile.id);
+          }
+          
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("No profile found with this email."),
+                backgroundColor: Colors.orange,
+              )
+            );
+          }
+        }
+      } catch (e) {
+        debugPrint("❌ Email login failed: $e");
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: Text("Login error: $e"), backgroundColor: Colors.red)
+           );
+        }
+      }
+    }
+  }
 
   Future<void> _signInWithGoogle() async {
     try {
@@ -187,7 +302,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ),
                             const SizedBox(height: 48),
-                              // === MOBILE: Google Sign-In primary, no shared profile list ===
+                              // === LOGIN OPTIONS ===
+                              // Google Sign-In (Mobile Only)
                               if (!Platform.isWindows && !Platform.isLinux) ...[
                                 OutlinedButton.icon(
                                   onPressed: _signInWithGoogle,
@@ -207,7 +323,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                              ],
+                              
+                              // Email Login (Desktop - Manual Sync)
+                              if (Platform.isWindows || Platform.isLinux) ...[
+                                OutlinedButton.icon(
+                                  onPressed: _signInWithEmail,
+                                  icon: const Icon(Icons.email_outlined, color: Colors.white, size: 24),
+                                  label: Text(
+                                    "LOG IN WITH EMAIL",
+                                    style: GoogleFonts.oswald(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      letterSpacing: 1.0,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                                    padding: const EdgeInsets.symmetric(vertical: 18),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ],
+
+                              const SizedBox(height: 16),
                                 Row(
                                   children: [
                                     Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.2))),
@@ -218,58 +358,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.2))),
                                   ],
                                 ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: _createNewProfile,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF81C784),
-                                    foregroundColor: const Color(0xFF0F1E12),
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    elevation: 0,
-                                  ),
-                                  child: Text('PLAY AS GUEST', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.0, fontSize: 16)),
+                              
+                              const SizedBox(height: 16),
+                              
+                              // Create New Profile / Play as Guest
+                              ElevatedButton(
+                                onPressed: _createNewProfile,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF81C784),
+                                  foregroundColor: const Color(0xFF0F1E12),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  elevation: 0,
                                 ),
-                              ],
-                              // === DESKTOP: Keep profile list for development ===
-                              if (Platform.isWindows || Platform.isLinux) ...[
-                                Text(
-                                   "WHO IS HUNTING?",
-                                   style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold),
+                                child: Text(
+                                  'NEW HUNTER PROFILE', 
+                                  style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.0, fontSize: 16)
                                 ),
-                                const SizedBox(height: 16),
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxHeight: 200),
-                                  child: isLoading
-                                    ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                                    : profileState.error != null
-                                      ? _buildErrorDisplay(profileState.error!)
-                                      : profiles.isEmpty
-                                        ? _buildEmptyState()
-                                        : ListView.separated(
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            itemCount: profiles.length,
-                                            separatorBuilder: (_, __) => const SizedBox(height: 8),
-                                            itemBuilder: (context, index) {
-                                              final p = profiles[index];
-                                              return _buildProfileCard(p);
-                                            },
-                                          ),
-                                ),
-                                const SizedBox(height: 24),
-                                ElevatedButton(
-                                  onPressed: _createNewProfile,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF81C784),
-                                    foregroundColor: const Color(0xFF0F1E12),
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    elevation: 0,
-                                  ),
-                                  child: const Text('NEW HUNTER PROFILE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0)),
-                                ),
-                              ],
+                              ),
                               const SizedBox(height: 32),
                               Center(
                                 child: TextButton(

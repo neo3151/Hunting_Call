@@ -38,6 +38,20 @@ class FiredartProfileRepository implements ProfileRepository {
     }, "getAllProfiles");
   }
 
+  @override
+  Future<List<UserProfile>> getProfilesByEmail(String email) async {
+    return _withRetry(() async {
+      final query = await _firestore.collection(_collectionPath).where('email', isEqualTo: email).get();
+      if (query.isEmpty) return [];
+      
+      return query.map((doc) {
+        final data = doc.map;
+        _sanitizeProfileData(data, doc.id);
+        return UserProfile.fromJson(data);
+      }).toList();
+    }, "getProfilesByEmail");
+  }
+
   /// Helper to retry Firestore operations on Linux when hit by transient SignedOutExceptions
   Future<T> _withRetry<T>(Future<T> Function() action, String label) async {
     // Retry up to 3 times to cover the re-auth window (1-3 seconds)
@@ -202,5 +216,15 @@ class FiredartProfileRepository implements ProfileRepository {
         });
       }
     }, "updateDailyChallengeStats");
+  }
+
+  @override
+  Future<void> setPremiumStatus(String userId, bool isPremium) async {
+    return _withRetry(() async {
+      await _firestore.collection(_collectionPath).document(userId).update({
+        'isPremium': isPremium,
+      });
+      debugPrint("✅ Firedart: Set isPremium=$isPremium for $userId");
+    }, "setPremiumStatus");
   }
 }

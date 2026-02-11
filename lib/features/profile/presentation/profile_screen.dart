@@ -9,6 +9,8 @@ import '../../library/data/reference_database.dart';
 import '../domain/achievement_service.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import '../../progress_map/presentation/progress_map_screen.dart';
+import '../../../config/app_config.dart';
+import '../../../core/widgets/upgrade_prompter.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -67,6 +69,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         const SizedBox(height: 16),
                         
                         // Map Button
+                        if (AppConfig.instance.allowMap || (profile?.isPremium ?? false))
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
@@ -81,6 +84,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        )
+                        else
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => UpgradePrompter.show(context, featureName: "Field Map"),
+                            icon: const Icon(Icons.lock_outline, color: Colors.white38),
+                            label: const Text("FIELD MAP (LOCKED)"),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white38,
+                              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                           ),

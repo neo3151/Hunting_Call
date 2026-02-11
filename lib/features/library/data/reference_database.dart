@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import '../domain/reference_call_model.dart';
+import '../../../config/app_config.dart';
+import '../../../config/freemium_config.dart';
 
 class ReferenceDatabase {
   static List<ReferenceCall> _calls = [];
@@ -28,9 +30,29 @@ class ReferenceDatabase {
       debugPrint("ReferenceDatabase: Loaded ${_calls.length} calls from JSON.");
     } catch (e) {
       debugPrint("ReferenceDatabase Error: Failed to load calls from JSON: $e");
-      // Fallback to empty list or hardcoded if necessary
       _calls = [];
     }
+
+    // Freemium Logic: Lock calls if Free Flavor
+    if (AppConfig.instance.isFree) {
+      _applyFreeVersionLocks();
+    }
+  }
+
+  static void _applyFreeVersionLocks() {
+    // Calls to keep UNLOCKED in Free version
+    final starterPackIds = FreemiumConfig.freeCallIds;
+
+    for (var call in _calls) {
+      if (!starterPackIds.contains(call.id)) {
+        // We need to modify the isLocked property. 
+        // Since ReferenceCall might be immutable (final), we might need to recreate it.
+        // Assuming ReferenceCall has a copyWith or we just replace the object in the list.
+        final int index = _calls.indexOf(call);
+        _calls[index] = call.copyWith(isLocked: true);
+      }
+    }
+    debugPrint("ReferenceDatabase: Applied Free Version Locks. Unlocked count: ${starterPackIds.length}");
   }
 
   static ReferenceCall getById(String id) {

@@ -100,3 +100,16 @@ obj/
 
 # Symbols
 *.pdb
+
+# Media Source Files (Large)
+*.zip
+*.webm
+*.mp4
+*.mkv
+*.avi
+video_info*.json
+bobcat_source.wav
+comments.txt
+
+# Executables
+*.exe

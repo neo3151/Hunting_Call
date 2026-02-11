@@ -3,26 +3,57 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/profile_model.dart';
 import '../../rating/domain/rating_model.dart';
 import 'profile_repository.dart';
+import 'local_profile_data_source.dart';
 
 class FirestoreProfileRepository implements ProfileRepository {
-  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
+  final FirebaseFirestore? _firestoreInstance;
+  final ProfileDataSource? _localDataSource; // To handle 'guest' persistence locally
+  
+  FirebaseFirestore get _firestore => _firestoreInstance ?? FirebaseFirestore.instance;
   final String _collectionPath = 'profiles';
+  
+  FirestoreProfileRepository({FirebaseFirestore? firestore, ProfileDataSource? localDataSource}) 
+      : _firestoreInstance = firestore, _localDataSource = localDataSource;
 
   @override
   Future<UserProfile> getProfile([String? userId]) async {
+    debugPrint("🔍 FirestoreProfileRepository.getProfile($userId)");
     if (userId == null || userId == 'guest') {
+      if (_localDataSource != null) {
+        debugPrint("🔍 Delegating 'guest' getProfile to local source.");
+        final localProf = await _localDataSource!.getProfile('guest');
+        debugPrint("🔍 Local 'guest' profile premium status: ${localProf.isPremium}");
+        return localProf;
+      }
       return UserProfile.guest();
     }
 
     try {
       final doc = await _firestore.collection(_collectionPath).doc(userId).get();
+      UserProfile? profile;
       if (doc.exists) {
         final data = doc.data()!;
         _sanitizeProfileData(data, doc.id);
-        return UserProfile.fromJson(data);
+        profile = UserProfile.fromJson(data);
       } else {
-        return UserProfile.guest();
+        profile = UserProfile.guest(); // Or return null/error if strictly strict
       }
+
+      // Hybrid Check: If not premium in Cloud, check Local Storage override
+      // This ensures that if we bought it on this device, we respect it even if cloud sync failed.
+      if (!profile.isPremium && _localDataSource != null) {
+        try {
+           final localProfile = await _localDataSource!.getProfile(userId);
+           if (localProfile.isPremium) {
+             debugPrint("✅ FirestoreProfileRepository: Local override applied! User is Premium locally.");
+             profile = profile.copyWith(isPremium: true);
+           }
+        } catch (e) {
+          // Ignore local read errors, trust cloud
+        }
+      }
+      
+      return profile!;
     } catch (e) {
       debugPrint("FirestoreProfileRepository: getProfile ERROR: $e");
       return UserProfile.guest();
@@ -52,15 +83,11 @@ class FirestoreProfileRepository implements ProfileRepository {
       debugPrint("🔍 Processing ${snapshot.docs.length} profile documents...");
       
       final profiles = snapshot.docs.map((doc) {
-        debugPrint("🔍 Processing profile: ${doc.id}");
+        // Reduced debug logging for performance
         final data = doc.data();
-        debugPrint("🔍 Profile data keys: ${data.keys.toList()}");
-        
         _sanitizeProfileData(data, doc.id);
         try {
-          final profile = UserProfile.fromJson(data);
-          debugPrint("✅ Successfully parsed profile: ${profile.name} (${profile.id})");
-          return profile;
+          return UserProfile.fromJson(data);
         } catch (e) {
           debugPrint("❌ Error parsing profile ${doc.id}: $e");
           // Return a fallback profile if parsing fails to avoid breaking the whole list
@@ -77,6 +104,35 @@ class FirestoreProfileRepository implements ProfileRepository {
     } catch (e) {
       debugPrint("❌ FirestoreProfileRepository: getAllProfiles ERROR: $e");
       rethrow;
+    }
+  }
+
+  @override
+  Future<List<UserProfile>> getProfilesByEmail(String email) async {
+    try {
+      debugPrint("🔍 Looking for profiles with email: $email");
+      final snapshot = await _firestore
+          .collection(_collectionPath)
+          .where('email', isEqualTo: email)
+          .get();
+          
+      if (snapshot.docs.isEmpty) {
+        debugPrint("❌ No profiles found with that email.");
+        return [];
+      }
+      
+      final profiles = snapshot.docs.map((doc) {
+        final data = doc.data();
+        _sanitizeProfileData(data, doc.id);
+        return UserProfile.fromJson(data);
+      }).toList();
+  
+      debugPrint("✅ Found ${profiles.length} profiles for email.");
+      return profiles;
+      
+    } catch(e) {
+       debugPrint("❌ Error getting profiles by email: $e");
+       return [];
     }
   }
 
@@ -238,5 +294,41 @@ class FirestoreProfileRepository implements ProfileRepository {
         });
       }
     }); 
+  }
+
+  @override
+  Future<void> setPremiumStatus(String userId, bool isPremium) async {
+    // 1. Always attempt local save (Hybrid Persistence)
+    if (_localDataSource != null) {
+      try {
+        debugPrint("✅ FirestoreProfileRepository: Saving Premium status locally as backup/override.");
+        final localProfile = await _localDataSource!.getProfile(userId);
+        final updated = localProfile.copyWith(isPremium: isPremium);
+        await _localDataSource!.saveProfile(updated);
+      } catch (e) {
+        debugPrint("⚠️ Failed to save local backup of premium status: $e");
+      }
+    }
+
+    if (userId == 'guest') {
+       // already handled by local save above, just return
+       return;
+    }
+
+    // 2. Attempt Cloud Save
+    try {
+      await _firestore.collection(_collectionPath).doc(userId).update({
+        'isPremium': isPremium,
+      });
+      debugPrint("✅ Firestore: Set isPremium=$isPremium for $userId");
+    } catch (e) {
+      debugPrint("❌ Firestore: Error setting premium status: $e");
+      // If we saved locally, we might NOT want to rethrow, because the user technically "has" the product on this device.
+      // But for now, let's allow the UI to know cloud failed, OR just suppress if local worked.
+      // Given the user experience "Success" is better if it works locally.
+      
+      // If localDataSource is null or failed, run rethrow.
+      if (_localDataSource == null) rethrow;
+    }
   }
 }

@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../library/data/reference_database.dart';
 import '../../library/domain/reference_call_model.dart';
+import '../../../core/widgets/upgrade_prompter.dart';
+import '../../../providers/providers.dart';
 import 'call_detail_screen.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
@@ -28,14 +30,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   Future<void> _togglePlayback(ReferenceCall call) async {
-    if (call.isLocked) {
+    final profile = ref.read(profileNotifierProvider).profile;
+    final isPremium = profile?.isPremium ?? false;
+    final isLocked = call.isLocked && !isPremium;
+
+    if (isLocked) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Coming Soon! This call will be available in the next update."),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        UpgradePrompter.show(context, featureName: "This Call");
       }
       return;
     }
@@ -64,10 +65,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   void _navigateToDetail(ReferenceCall call) {
-    if (call.isLocked) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Coming Soon! This call will be available in the next update.")),
-      );
+    final profile = ref.read(profileNotifierProvider).profile;
+    final isPremium = profile?.isPremium ?? false;
+    final isLocked = call.isLocked && !isPremium;
+
+    if (isLocked) {
+      UpgradePrompter.show(context, featureName: "This Call");
       return;
     }
     
@@ -93,6 +96,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final profileState = ref.watch(profileNotifierProvider);
+    final isPremium = profileState.profile?.isPremium ?? false;
+
     return DefaultTabController(
       length: _categories.length,
       child: Scaffold(
@@ -160,7 +166,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   itemBuilder: (context, index) {
                     final call = filtered[index];
                     final isPlaying = _currentlyPlayingId == call.id;
-                    return _buildCallCard(call, isPlaying);
+                    final isLocked = call.isLocked && !isPremium;
+                    return _buildCallCard(call, isPlaying, isLocked);
                   },
                 );
               }).toList(),
@@ -171,7 +178,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
-  Widget _buildCallCard(ReferenceCall call, bool isPlaying) {
+  Widget _buildCallCard(ReferenceCall call, bool isPlaying, bool isLocked) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -185,14 +192,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               duration: const Duration(milliseconds: 300),
               padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: call.isLocked
+                  color: isLocked
                       ? Colors.black.withValues(alpha: 0.3)
                       : isPlaying 
                           ? const Color(0xFF81C784).withValues(alpha: 0.2)
                           : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: call.isLocked
+                    color: isLocked
                         ? Colors.white.withValues(alpha: 0.05)
                         : isPlaying 
                             ? const Color(0xFF81C784).withValues(alpha: 0.5)
@@ -204,7 +211,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 children: [
                   Row(
                     children: [
-                        _buildPlayButton(call, isPlaying),
+                        _buildPlayButton(call, isPlaying, isLocked),
                       const SizedBox(width: 16),
                       // Names
                       Expanded(
@@ -222,7 +229,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                             Text(
                               call.animalName,
                               style: TextStyle(
-                                color: call.isLocked ? Colors.white38 : Colors.white70,
+                                color: isLocked ? Colors.white38 : Colors.white70,
                                 fontSize: 14,
                               ),
                             ),
@@ -302,14 +309,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ),
     );
   }
-  Widget _buildPlayButton(ReferenceCall call, bool isPlaying) {
+  Widget _buildPlayButton(ReferenceCall call, bool isPlaying, bool isLocked) {
     return InkWell(
       onTap: () => _togglePlayback(call),
       child: Icon(
-        call.isLocked 
+        isLocked 
             ? Icons.lock_outline 
             : isPlaying ? Icons.stop_circle_rounded : Icons.play_circle_filled_rounded,
-        color: call.isLocked
+        color: isLocked
             ? Colors.white24
             : isPlaying ? const Color(0xFF81C784) : Colors.white70,
         size: 40,

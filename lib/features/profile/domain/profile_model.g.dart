@@ -31,6 +31,7 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
       birthday: json['birthday'] == null
           ? null
           : DateTime.parse(json['birthday'] as String),
+      isPremium: json['isPremium'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
@@ -49,6 +50,7 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'currentStreak': instance.currentStreak,
       'longestStreak': instance.longestStreak,
       'birthday': instance.birthday?.toIso8601String(),
+      'isPremium': instance.isPremium,
     };
 
 HistoryItem _$HistoryItemFromJson(Map<String, dynamic> json) => HistoryItem(

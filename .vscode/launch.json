@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Hunting Call (Full)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main_full.dart"
+        },
+        {
+            "name": "Hunting Call (Free)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main_free.dart"
+        },
+        {
+            "name": "Hunting Call (Default)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart"
+        }
+    ]
+}

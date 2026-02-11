@@ -127,7 +127,7 @@ Future<void> init({bool useMocks = false}) async {
       sl.registerLazySingleton<LeaderboardService>(() => FiredartLeaderboardService(fd.Firestore.instance));
     } else {
       debugPrint("📦 DI: Registering FirestoreProfileRepository");
-      sl.registerLazySingleton<ProfileRepository>(() => FirestoreProfileRepository());
+      sl.registerLazySingleton<ProfileRepository>(() => FirestoreProfileRepository(localDataSource: sl<ProfileDataSource>()));
       sl.registerLazySingleton<LeaderboardService>(() => FirebaseLeaderboardService(FirebaseFirestore.instance));
     }
   } else {
