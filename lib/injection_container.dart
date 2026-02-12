@@ -23,7 +23,7 @@ import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'core/auth/firedart_file_store.dart';
+import 'features/auth/data/firedart_file_store.dart';
 import 'firebase_options.dart';
 import 'features/auth/data/firedart_auth_repository.dart';
 import 'features/profile/data/firedart_profile_repository.dart';
