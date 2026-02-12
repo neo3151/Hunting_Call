@@ -1,7 +1,7 @@
 /// Central export file for all providers
 library;
 
-export 'auth_provider.dart';
+
 export 'profile_provider.dart';
 export 'recording_provider.dart';
 export 'visualizer_provider.dart';

@@ -1,14 +1,25 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import '../domain/auth_repository.dart';
+import '../domain/repositories/auth_repository.dart';
+import '../domain/entities/auth_user.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuth get _auth => FirebaseAuth.instance;
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   @override
-  Stream<String?> get onAuthStateChanged => _auth.authStateChanges().map((user) => user?.uid);
+  Stream<AuthUser?> get authStateChanges => _auth.authStateChanges().map(_mapFirebaseUser);
+
+  AuthUser? _mapFirebaseUser(User? user) {
+      if (user == null) return null;
+      return AuthUser(
+          id: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          isAnonymous: user.isAnonymous,
+      );
+  }
 
   @override
   Future<void> signIn(String userId) async {
@@ -23,7 +34,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Map<String, String?>> signInWithGoogle() async {
+  Future<AuthUser> signInWithGoogle() async {
     try {
       debugPrint("🔐 FirebaseAuthRepository: Starting Google Sign-In...");
       
@@ -32,28 +43,20 @@ class FirebaseAuthRepository implements AuthRepository {
       googleProvider.addScope('profile');
       
       final UserCredential userCredential = await _auth.signInWithProvider(googleProvider);
-      
       final user = userCredential.user;
-      final email = user?.email;
-      final displayName = user?.displayName;
-      final uid = user?.uid;
+      
+      if (user == null) throw Exception("Google Sign-In returned null user");
+
+      final email = user.email;
+      final displayName = user.displayName;
+      final uid = user.uid;
       
       debugPrint("✅ Google Sign-In successful!");
       debugPrint("👤 Name: $displayName | Email: $email | UID: $uid");
       
-      // === CREATE/FIND PROFILE IMMEDIATELY ===
-      // We do this RIGHT HERE because:
-      // 1. We have the UserCredential with email & displayName
-      // 2. This code runs to completion (not a widget that can unmount)
-      // 3. onAuthStateChanged already fired, so AuthWrapper is waiting for this profile
-      if (uid != null) {
-        await _ensureProfileInFirestore(uid, email, displayName);
-      }
+      await _ensureProfileInFirestore(uid, email, displayName);
       
-      return {
-        'email': email,
-        'displayName': displayName,
-      };
+      return _mapFirebaseUser(user)!;
       
     } catch (e, stackTrace) {
       debugPrint("❌ Google Sign-In Error: $e");
@@ -63,7 +66,6 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   /// Creates or finds a profile in Firestore directly.
-  /// This is called from signInWithGoogle BEFORE returning.
   Future<void> _ensureProfileInFirestore(String uid, String? email, String? displayName) async {
     try {
       final profilesRef = _firestore.collection('profiles');
@@ -75,12 +77,11 @@ class FirebaseAuthRepository implements AuthRepository {
         return;
       }
       
-      // 2. Check if profile exists by email (handles different UIDs for same Google account)
+      // 2. Check if profile exists by email
       if (email != null) {
         final emailQuery = await profilesRef.where('email', isEqualTo: email).limit(1).get();
         if (emailQuery.docs.isNotEmpty) {
           debugPrint("🔍 Profile found by email: ${emailQuery.docs.first.data()['name']}");
-          // Profile exists with different UID - just return, AuthWrapper will find it
           return;
         }
       }
@@ -110,7 +111,6 @@ class FirebaseAuthRepository implements AuthRepository {
       
     } catch (e) {
       debugPrint("⚠️ Error in _ensureProfileInFirestore: $e");
-      // Don't rethrow - profile creation failure shouldn't block sign-in
     }
   }
 
@@ -120,10 +120,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  String? get currentUserId => _auth.currentUser?.uid;
-
-  @override
-  String? get authenticatedUserId => _auth.currentUser?.uid;
+  Future<AuthUser?> get currentUser async => _mapFirebaseUser(_auth.currentUser);
 
   @override
   bool get isMock => false;

@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/presentation/login_screen.dart';
 import '../../../core/widgets/background_wrapper.dart';
-import '../../../providers/providers.dart';
+import '../../auth/presentation/controllers/auth_controller.dart';
+import '../../../providers/providers.dart'; // Keep for profileNotifierProvider if it's still there
 import '../../profile/domain/profile_model.dart';
 import '../../recording/presentation/recorder_page.dart';
 import '../../profile/presentation/profile_screen.dart';
@@ -212,7 +213,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                 );
                 // Also reset auth state so AuthWrapper doesn't immediately put us back here
-                ref.read(authNotifierProvider.notifier).signOut();
+                ref.read(authControllerProvider.notifier).signOut();
               } else {
                 ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
               }
@@ -269,12 +270,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: ref.watch(authRepositoryProvider).isMock 
+                      color: ref.watch(authRepositoryImplProvider).isMock 
                           ? Colors.amber.withValues(alpha: 0.2) 
                           : Colors.green.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: ref.watch(authRepositoryProvider).isMock 
+                        color: ref.watch(authRepositoryImplProvider).isMock 
                             ? Colors.amberAccent.withValues(alpha: 0.5) 
                             : Colors.greenAccent.withValues(alpha: 0.5),
                       ),
@@ -283,17 +284,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          ref.watch(authRepositoryProvider).isMock ? Icons.wifi_off : Icons.cloud_done,
+                          ref.watch(authRepositoryImplProvider).isMock ? Icons.wifi_off : Icons.cloud_done,
                           size: 12,
-                          color: ref.watch(authRepositoryProvider).isMock ? Colors.amberAccent : Colors.greenAccent,
+                          color: ref.watch(authRepositoryImplProvider).isMock ? Colors.amberAccent : Colors.greenAccent,
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          ref.watch(authRepositoryProvider).isMock ? "OFF-GRID" : "CLOUD",
+                          ref.watch(authRepositoryImplProvider).isMock ? "OFF-GRID" : "CLOUD",
                           style: GoogleFonts.lato(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: ref.watch(authRepositoryProvider).isMock ? Colors.amberAccent : Colors.greenAccent,
+                            color: ref.watch(authRepositoryImplProvider).isMock ? Colors.amberAccent : Colors.greenAccent,
                             letterSpacing: 1.0,
                           ),
                         ),
@@ -307,7 +308,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
+                      onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
                       icon: const Icon(Icons.logout, color: Colors.white70),
                       tooltip: "Sign Out",
                     ),

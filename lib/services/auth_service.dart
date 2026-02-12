@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/auth_provider.dart';
+import '../features/auth/presentation/controllers/auth_controller.dart';
 
 class AuthService {
   final Ref ref;
@@ -17,4 +17,4 @@ class AuthService {
   }
 }
 
-final authServiceProvider = Provider((ref) => AuthService(ref));
+

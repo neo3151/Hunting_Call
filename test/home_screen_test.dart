@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:hunting_calls_perfection/injection_container.dart';
 import 'package:hunting_calls_perfection/features/home/presentation/home_screen.dart';
-import 'package:hunting_calls_perfection/features/auth/domain/auth_repository.dart';
-import 'package:hunting_calls_perfection/features/profile/data/profile_repository.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/entities/auth_user.dart';
+import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
 import 'package:hunting_calls_perfection/features/profile/domain/profile_model.dart';
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
@@ -19,18 +21,23 @@ void main() {
     mockProfileRepository = MockProfileRepository();
     mockAuthRepository = MockAuthRepository();
 
+    // Default mock behavior
+    when(() => mockAuthRepository.authStateChanges).thenAnswer((_) => Stream.value(null));
+    when(() => mockAuthRepository.currentUser).thenAnswer((_) async => null);
+    when(() => mockAuthRepository.isMock).thenReturn(true);
+
     sl.reset();
     sl.allowReassignment = true;
     sl.registerSingleton<ProfileRepository>(mockProfileRepository);
     sl.registerSingleton<AuthRepository>(mockAuthRepository);
-    
-    // Default mock behavior
-    when(() => mockAuthRepository.isMock).thenReturn(true);
   });
 
   Widget createWidgetUnderTest() {
-    return const ProviderScope(
-      child: MaterialApp(
+    return ProviderScope(
+      overrides: [
+        authRepositoryImplProvider.overrideWithValue(mockAuthRepository),
+      ],
+      child: const MaterialApp(
         home: HomeScreen(userId: 'test_user'),
       ),
     );
@@ -71,6 +78,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.logout));
     await tester.pump();
 
+    // HomeScreen now uses authControllerProvider.notifier.signOut()
+    // which calls the signOut use case, which calls mockAuthRepository.signOut()
     verify(() => mockAuthRepository.signOut()).called(1);
   });
 }

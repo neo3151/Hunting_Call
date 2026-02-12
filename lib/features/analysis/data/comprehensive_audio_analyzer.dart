@@ -388,8 +388,11 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         // Energy by frequency bands
         if (frequency < 500) {
           totalLowEnergy += magnitudes[j];
-        } else if (frequency < 2000) totalMidEnergy += magnitudes[j];
-        else totalHighEnergy += magnitudes[j];
+        } else if (frequency < 2000) {
+          totalMidEnergy += magnitudes[j];
+        } else {
+          totalHighEnergy += magnitudes[j];
+        }
         
         // Nasal frequencies (typically 1000-2500 Hz)
         if (frequency >= 1000 && frequency <= 2500) nasalEnergy += magnitudes[j];

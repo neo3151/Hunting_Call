@@ -1,7 +1,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../profile/data/profile_repository.dart';
+import '../../profile/domain/repositories/profile_repository.dart';
 import '../../../providers/profile_provider.dart';
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {

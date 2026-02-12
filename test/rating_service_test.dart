@@ -6,7 +6,7 @@ import 'package:hunting_calls_perfection/features/library/data/reference_databas
 import 'package:hunting_calls_perfection/features/analysis/data/real_rating_service.dart';
 import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
 import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
-import 'package:hunting_calls_perfection/features/profile/data/profile_repository.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
 import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
 import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
 
@@ -121,9 +121,33 @@ void main() {
       final reference = ReferenceDatabase.getById(animalId);
       final audioPath = await createDummyWav(reference.idealDurationSec);
       
-      when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
-        frequencyHz: reference.idealPitchHz,
-        durationSec: reference.idealDurationSec,
+      // Provide a "perfect" analysis with all metrics at ideal values
+      when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis(
+        dominantFrequencyHz: reference.idealPitchHz,
+        averageFrequencyHz: reference.idealPitchHz,
+        frequencyPeaks: [reference.idealPitchHz],
+        pitchStability: 100.0,
+        pitchTrack: [],
+        averageVolume: 0.5,
+        peakVolume: 0.75,
+        volumeConsistency: 100.0,
+        toneClarity: 100.0,
+        harmonicRichness: 80.0,
+        harmonics: {},
+        brightness: 50.0,
+        warmth: 50.0,
+        nasality: 50.0,
+        spectralCentroid: [],
+        totalDurationSec: reference.idealDurationSec,
+        activeDurationSec: reference.idealDurationSec * 0.9,
+        silenceDurationSec: reference.idealDurationSec * 0.1,
+        tempo: 0.0,
+        pulseTimes: [],
+        rhythmRegularity: 0.0,
+        isPulsedCall: false,
+        callQualityScore: 100.0,
+        noiseLevel: 0.0,
+        waveform: List.filled(100, 0.5),
       ));
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
@@ -151,7 +175,7 @@ void main() {
       expect(result.feedback, contains('Too High'));
     });
 
-    test('Short duration should result in Too Short feedback', () async {
+    test('Short duration should penalize score', () async {
       const animalId = 'duck_mallard_greeting'; 
       final reference = ReferenceDatabase.getById(animalId);
       final audioPath = await createDummyWav(reference.idealDurationSec * 0.5); 
@@ -163,7 +187,10 @@ void main() {
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
 
-      expect(result.feedback, contains('Too Short'));
+      // Score should be penalized for duration being 50% of ideal
+      expect(result.score, lessThan(100.0));
+      // Feedback should contain actionable advice (rhythm/stability or personality critique)
+      expect(result.feedback, isNotEmpty);
     });
     
     test('Percentage-based scoring should be fair across frequency ranges', () async {

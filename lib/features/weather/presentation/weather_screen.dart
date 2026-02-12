@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/background_wrapper.dart';
-import '../../../providers/weather_provider.dart';
-import '../domain/weather_models.dart';
+import '../../../../providers/temperature_unit_provider.dart';
+import '../domain/weather_entities.dart';
+import '../presentation/weather_controller.dart';
 import 'widgets/wind_compass.dart';
 
 class WeatherScreen extends ConsumerWidget {
@@ -12,8 +13,9 @@ class WeatherScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final weatherAsync = ref.watch(currentWeatherProvider);
-    final solunarAsync = ref.watch(solunarDataProvider);
+    final weatherState = ref.watch(weatherControllerProvider);
+    final weatherAsync = weatherState.weather;
+    final solunarAsync = weatherState.solunar;
     final unit = ref.watch(temperatureUnitProvider);
 
     return Scaffold(
