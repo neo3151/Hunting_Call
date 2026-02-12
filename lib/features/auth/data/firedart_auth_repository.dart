@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:firedart/firedart.dart';
 import 'dart:async';
-import '../domain/auth_repository.dart';
+import '../domain/repositories/auth_repository.dart';
+import '../domain/entities/auth_user.dart';
 
 class FiredartAuthRepository implements AuthRepository {
   FirebaseAuth get _auth => FirebaseAuth.instance;
@@ -9,7 +10,7 @@ class FiredartAuthRepository implements AuthRepository {
   /// Stores the ID of the user we are "impersonating" for this session.
   String? _impersonatedUserId;
 
-  final _authStateController = StreamController<String?>.broadcast();
+  final _authStateController = StreamController<AuthUser?>.broadcast();
 
   FiredartAuthRepository() {
     _auth.signInState.listen((isSignedIn) {
@@ -18,23 +19,38 @@ class FiredartAuthRepository implements AuthRepository {
   }
 
   void _emitCurrentState() {
-    final uid = currentUserId; // This is now the Logical User (Impersonated)
-    debugPrint("FiredartAuth: Emitting state - logicalUserId: $uid (technicalUserId: $authenticatedUserId)");
-    _authStateController.add(uid);
+     // This is tricky because we need to return AuthUser, but _impersonatedUserId is just a String.
+     // If we are impersonating, we assume we are that user.
+     // We return a basic AuthUser with the ID.
+    final user = _createCurrentAuthUser();
+    debugPrint("FiredartAuth: Emitting state - user: ${user?.id}");
+    _authStateController.add(user);
+  }
+
+  AuthUser? _createCurrentAuthUser() {
+     if (_impersonatedUserId != null) {
+         return AuthUser(id: _impersonatedUserId!);
+     }
+     
+     if (_auth.isSignedIn) {
+         // Return the technical user
+         return AuthUser(id: _auth.userId, isAnonymous: true);
+     }
+     
+     return null;
   }
 
   @override
-  Stream<String?> get onAuthStateChanged {
+  Stream<AuthUser?> get authStateChanges {
     // Return a stream that emits the current logical state first, then all subsequent updates
-    late StreamController<String?> controller;
+    late StreamController<AuthUser?> controller;
     
-    controller = StreamController<String?>(
+    controller = StreamController<AuthUser?>(
       onListen: () {
-        final initial = currentUserId;
-        debugPrint("FiredartAuth: onAuthStateChanged listened. Sending current logical: $initial");
+        final initial = _createCurrentAuthUser();
+        debugPrint("FiredartAuth: authStateChanges listened. Sending current: ${initial?.id}");
         controller.add(initial);
         
-        // Forward future events WITHOUT blocking
         final subscription = _authStateController.stream.listen(
           (data) {
             if (!controller.isClosed) {
@@ -72,14 +88,11 @@ class FiredartAuthRepository implements AuthRepository {
     await _auth.signInAnonymously();
     debugPrint("FiredartAuth: Technical anonymous sign-in complete. Waiting 500ms for session settlement.");
     await Future.delayed(const Duration(milliseconds: 500));
-    // We DON'T automatically emit here because we haven't impersonated a profile yet.
-    // Except if we ARE already impersonating something? 
-    // Usually signInAnonymously is called at startup or on logout.
     _emitCurrentState();
   }
 
   @override
-  Future<Map<String, String?>> signInWithGoogle() async {
+  Future<AuthUser> signInWithGoogle() async {
     throw UnimplementedError("Google Sign-In is not supported on Linux via Firedart yet.");
   }
 
@@ -88,11 +101,8 @@ class FiredartAuthRepository implements AuthRepository {
     debugPrint("FiredartAuth: signOut (clear impersonation) requested.");
     _impersonatedUserId = null; 
     
-    // We keep the technical session alive but clear the logical one
     _emitCurrentState();
     
-    // Optional: Actually sign out techically and re-init for a fresh start?
-    // The previous implementation did this. Let's keep it for cleanliness.
     try {
       _auth.signOut();
     } catch (e) {
@@ -104,31 +114,10 @@ class FiredartAuthRepository implements AuthRepository {
   }
 
   @override
-  String? get currentUserId {
-    // Return the impersonated ID only. 
-    // This makes AuthWrapper think we are logged out until a profile is picked.
-    return _impersonatedUserId;
-  }
-
-  @override
-  String? get authenticatedUserId {
-    try {
-      if (!isSignedIn) return null;
-      return _auth.userId;
-    } catch (e) {
-      return null;
-    }
+  Future<AuthUser?> get currentUser async {
+    return _createCurrentAuthUser();
   }
 
   @override
   bool get isMock => false;
-
-  bool get isSignedIn {
-    try {
-      return _auth.isSignedIn;
-    } catch (e) {
-      debugPrint("FiredartAuth: isSignedIn error: $e");
-      return false;
-    }
-  }
 }

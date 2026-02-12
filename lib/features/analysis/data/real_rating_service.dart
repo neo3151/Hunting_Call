@@ -8,7 +8,7 @@ import '../domain/audio_analysis_model.dart';
 import '../domain/frequency_analyzer.dart';
 import '../../library/data/reference_database.dart';
 
-import '../../profile/data/profile_repository.dart';
+import '../../profile/domain/repositories/profile_repository.dart';
 import '../../leaderboard/data/leaderboard_service.dart';
 import '../../leaderboard/domain/leaderboard_entry.dart';
 import '../../daily_challenge/data/daily_challenge_service.dart';
@@ -42,8 +42,10 @@ class RealRatingService implements RatingService {
       if (hasPermission == LocationPermission.always || hasPermission == LocationPermission.whileInUse) {
         // High accuracy might take time, use medium
         _currentPosition = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.medium,
-          timeLimit: const Duration(seconds: 2),
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            timeLimit: Duration(seconds: 2),
+          ),
         );
       }
     } catch (e) {

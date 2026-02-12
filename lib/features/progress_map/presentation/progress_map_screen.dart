@@ -3,7 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get_it/get_it.dart';
-import '../../profile/data/profile_repository.dart';
+import '../../profile/domain/repositories/profile_repository.dart';
 import '../../profile/domain/profile_model.dart';
 import 'package:geolocator/geolocator.dart';
 

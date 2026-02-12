@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'controllers/auth_controller.dart';
 
 import '../../../core/widgets/background_wrapper.dart';
 import '../../../providers/providers.dart';
@@ -40,18 +41,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final birthday = result['birthday'] as DateTime?;
 
     if (name.isNotEmpty) {
-      final authRepo = ref.read(authRepositoryProvider);
       
       try {
         // 1. Sign in anonymously first
-        await authRepo.signInAnonymously();
+        await ref.read(authControllerProvider.notifier).signInAnonymously();
         
-        // 2. Get the technical UID
-        final uid = authRepo.authenticatedUserId;
+        // 2. Get the user ID from the repository
+        // (Stream-based state may not have propagated yet, so query directly)
         
-        if (uid != null) {
+        final currentUser = await ref.read(authRepositoryImplProvider).currentUser;
+        final safeUid = currentUser?.id;
+        
+        if (safeUid != null) {
           // 3. Create the profile with that UID
-          await ref.read(profileNotifierProvider.notifier).createProfile(name, id: uid, birthday: birthday);
+          await ref.read(profileNotifierProvider.notifier).createProfile(name, id: safeUid, birthday: birthday);
         } else {
           throw Exception("Could not retrieve user ID after sign-in.");
         }
@@ -161,11 +164,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           if (selectedProfile != null) {
             debugPrint("✅ Profile selected: ${selectedProfile.name} (${selectedProfile.id})");
             
-            // Sign in technically (anonymous + impersonation)
-            await ref.read(authRepositoryProvider).signIn(selectedProfile.id);
-            
-            // Load profile to state
+            // Load profile to state FIRST, before signIn triggers AuthWrapper rebuild
             await ref.read(profileNotifierProvider.notifier).loadProfile(selectedProfile.id);
+            
+            // Now sign in (this fires the auth stream → AuthWrapper rebuilds,
+            // but the profile is already loaded so AuthWrapper finds it)
+            await ref.read(authControllerProvider.notifier).signIn(selectedProfile.id);
           }
           
         } else {
@@ -191,54 +195,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _signInWithGoogle() async {
     try {
-      debugPrint('🔐 Starting Google Sign-In...');
+      debugPrint('🔐 Starting Google Sign-In via AuthController...');
       
-      // Call signInWithGoogle and capture the user info
-      final userInfo = await ref.read(authRepositoryProvider).signInWithGoogle();
-      final email = userInfo['email'];
-      final displayName = userInfo['displayName'];
-      final userId = ref.read(authRepositoryProvider).currentUserId;
+      // AuthController now handles:
+      // 1. Sign in with Google
+      // 2. Ensure profile exists (Create if needed)
+      await ref.read(authControllerProvider.notifier).signInWithGoogle();
       
-      debugPrint('✅ Google Sign-In completed');
-      debugPrint('📧 Email: $email');
-      debugPrint('👤 Display Name: $displayName');
-      debugPrint('🆔 User ID: $userId');
-      
-      if (userId == null) {
-        debugPrint('❌ No user ID after sign-in!');
-        return;
-      }
-      
-      // Create profile RIGHT HERE where we have the email
-      // This runs AFTER signInWithProvider returns, so AuthWrapper may have
-      // already fired. But we create the profile here with the correct data.
-      final profileRepo = ref.read(profileRepositoryProvider);
-      final existingProfile = await profileRepo.getProfile(userId);
-      
-      if (existingProfile.id != 'guest') {
-        debugPrint('✅ Profile already exists: ${existingProfile.name}');
-        await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
-        return;
-      }
-      
-      // Check by email
-      if (email != null) {
-        final allProfiles = await profileRepo.getAllProfiles();
-        final profileByEmail = allProfiles.where((p) => p.email == email).firstOrNull;
-        if (profileByEmail != null) {
-          debugPrint('✅ Found profile by email: ${profileByEmail.name}');
-          await ref.read(profileNotifierProvider.notifier).loadProfile(profileByEmail.id);
-          return;
-        }
-      }
-      
-      // No profile exists - create one with the Google data
-      final profileName = displayName ?? email?.split('@').first ?? 'Hunter';
-      debugPrint('🆕 Creating profile: $profileName with email: $email');
-      
-      await profileRepo.createProfile(profileName, id: userId, birthday: null, email: email);
-      await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
-      debugPrint('✅ Profile created and loaded!');
+      // Success is handled by AuthWrapper watching the state change
+      debugPrint('✅ Google Sign-In triggered successfully');
       
     } catch (e, stackTrace) {
       debugPrint("❌ Google Sign-In failed: $e");
@@ -406,100 +371,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
-
-  Widget _buildErrorDisplay(String error) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.redAccent.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          const Icon(Icons.error_outline, color: Colors.redAccent),
-          const SizedBox(height: 8),
-          Text(
-            "Failed to load profiles: $error",
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
-          ),
-          const SizedBox(height: 12),
-          TextButton(
-            onPressed: () => ref.read(profileNotifierProvider.notifier).loadAllProfiles(),
-            child: const Text("RETRY", style: TextStyle(color: Colors.greenAccent)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
-      ),
-      child: const Text(
-        "No profiles yet.\nCreate one to get started!",
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white54, fontSize: 14),
-      ),
-    );
-  }
-
-  Widget _buildProfileCard(UserProfile p) {
-    return InkWell(
-      onTap: () {
-        debugPrint("LoginScreen: Tapped profile ${p.name} (${p.id})");
-        try {
-          // 1. Set the auth state (this triggers the transition)
-          ref.read(authRepositoryProvider).signIn(p.id);
-          debugPrint("LoginScreen: signIn called for ${p.id}");
-          
-          // 2. Pre-emptively load the profile so HomeScreen has it immediately
-          ref.read(profileNotifierProvider.notifier).loadProfile(p.id);
-          debugPrint("LoginScreen: signIn called for ${p.id}");
-        } catch (e, stack) {
-          debugPrint("LoginScreen: ERROR tapping profile: $e\\n$stack");
-        }
-      },
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 72),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2D5F3D),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF81C784).withValues(alpha: 0.3), width: 1),
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: const Color(0xFF81C784),
-              foregroundColor: const Color(0xFF0F1E12),
-              child: Text(p.name[0].toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text(
-                    "${p.totalCalls} calls • ${p.averageScore.toStringAsFixed(0)}% avg",
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right, color: Colors.white54, size: 24),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _CreateProfileSheet extends StatefulWidget {
@@ -551,7 +422,9 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
               surface: Color(0xFF1B3B24),
               onSurface: Colors.white,
             ),
-            dialogBackgroundColor: const Color(0xFF0F1E12),
+            dialogTheme: const DialogThemeData(
+              backgroundColor: Color(0xFF0F1E12),
+            ),
           ),
           child: child!,
         );

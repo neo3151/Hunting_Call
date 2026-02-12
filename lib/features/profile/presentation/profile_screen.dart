@@ -69,7 +69,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         const SizedBox(height: 16),
                         
                         // Map Button
-                        if (AppConfig.instance.allowMap || (profile?.isPremium ?? false))
+                        if (AppConfig.instance.allowMap || (profile.isPremium))
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(

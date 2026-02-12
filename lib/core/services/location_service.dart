@@ -1,13 +1,7 @@
-import 'dart:io';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
-import 'package:geolocator/geolocator.dart';
-import '../features/weather/domain/weather_models.dart';
-import '../features/weather/data/weather_repository.dart';
 
-final weatherRepositoryProvider = Provider<WeatherRepository>((ref) {
-  return GetIt.I<WeatherRepository>();
-});
+import 'dart:io';
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final locationProvider = FutureProvider<Position>((ref) async {
   // Linux fallback since geolocator doesn't support it well/at all in some environments
@@ -44,20 +38,4 @@ final locationProvider = FutureProvider<Position>((ref) async {
   }
 
   return await Geolocator.getCurrentPosition();
-});
-
-final currentWeatherProvider = FutureProvider<WeatherData>((ref) async {
-  final location = await ref.watch(locationProvider.future);
-  final repository = ref.watch(weatherRepositoryProvider);
-  return await repository.getCurrentWeather(location.latitude, location.longitude);
-});
-
-final solunarDataProvider = FutureProvider<SolunarData>((ref) async {
-  final location = await ref.watch(locationProvider.future);
-  final repository = ref.watch(weatherRepositoryProvider);
-  return await repository.getSolunarData(location.latitude, location.longitude, DateTime.now());
-});
-
-final temperatureUnitProvider = StateProvider<TemperatureUnit>((ref) {
-  return TemperatureUnit.celsius;
 });

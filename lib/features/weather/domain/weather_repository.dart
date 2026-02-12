@@ -1,4 +1,4 @@
-import '../domain/weather_models.dart';
+import 'package:hunting_calls_perfection/features/weather/domain/weather_entities.dart';
 
 abstract class WeatherRepository {
   Future<WeatherData> getCurrentWeather(double lat, double lon);

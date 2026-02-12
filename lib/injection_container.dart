@@ -5,9 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'features/auth/data/firebase_auth_repository.dart';
 import 'features/auth/data/mock_auth_repository.dart';
-import 'features/auth/domain/auth_repository.dart';
+import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/profile/data/local_profile_data_source.dart';
-import 'features/profile/data/profile_repository.dart';
+import 'features/profile/domain/repositories/profile_repository.dart';
+import 'features/profile/data/profile_repository.dart'; // For LocalProfileRepository implementation
 import 'features/profile/data/firestore_profile_repository.dart';
 import 'features/recording/data/real_audio_recorder_service.dart';
 import 'features/recording/data/mock_audio_recorder_service.dart';
@@ -30,8 +31,7 @@ import 'features/leaderboard/data/leaderboard_service.dart';
 import 'features/leaderboard/data/firedart_leaderboard_service.dart';
 import 'features/hunting_log/data/hunting_log_repository.dart';
 import 'features/hunting_log/data/local_hunting_log_repository.dart';
-import 'features/weather/data/weather_repository.dart';
-import 'features/weather/data/open_meteo_weather_repository.dart';
+
 
 final sl = GetIt.instance;
 bool _isInitializing = false;
@@ -150,8 +150,7 @@ Future<void> init({bool useMocks = false}) async {
   // Initialize the repository immediately to create tables
   sl<HuntingLogRepository>().initialize();
 
-  // Features - Weather
-  sl.registerLazySingleton<WeatherRepository>(() => OpenMeteoWeatherRepository());
+
 
   _isInitializing = false;
 }

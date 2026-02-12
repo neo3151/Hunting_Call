@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/profile_model.dart';
 import '../../rating/domain/rating_model.dart';
-import 'profile_repository.dart';
+import '../domain/repositories/profile_repository.dart';
 import 'local_profile_data_source.dart';
 
 class FirestoreProfileRepository implements ProfileRepository {

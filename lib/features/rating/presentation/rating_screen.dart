@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../providers/providers.dart';
+import '../../auth/presentation/controllers/auth_controller.dart';
 import '../domain/rating_model.dart';
 import '../../library/data/reference_database.dart';
 import '../../../config/app_config.dart';

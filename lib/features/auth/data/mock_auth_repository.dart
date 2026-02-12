@@ -1,46 +1,46 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../domain/auth_repository.dart';
+import '../domain/repositories/auth_repository.dart';
+import '../domain/entities/auth_user.dart';
 
 class MockAuthRepository implements AuthRepository {
-  late final StreamController<String?> _controller;
-  String? _currentUser;
+  final _controller = StreamController<AuthUser?>.broadcast();
+  AuthUser? _currentUser;
 
   MockAuthRepository() {
-    _controller = StreamController<String?>.broadcast(
-      onListen: () {
-        scheduleMicrotask(() {
-          if (!_controller.isClosed) {
-            _controller.add(_currentUser);
-          }
-        });
-      },
-    );
+      // Initialize with no user
   }
 
   @override
-  Stream<String?> get onAuthStateChanged => _controller.stream;
+  Stream<AuthUser?> get authStateChanges => _controller.stream;
+
+  @override
+  Future<AuthUser?> get currentUser async => _currentUser;
 
   @override
   Future<void> signIn(String userId) async {
-    _currentUser = userId;
+    _currentUser = AuthUser(id: userId);
     _controller.add(_currentUser);
-    debugPrint("Mock Auth: Signed in as $_currentUser");
+    debugPrint("Mock Auth: Signed in as ${_currentUser?.id}");
   }
 
   @override
   Future<void> signInAnonymously() async {
-    _currentUser = "anon_user_123";
+    _currentUser = const AuthUser(id: "anon_user_123", isAnonymous: true);
     _controller.add(_currentUser);
-    debugPrint("Mock Auth: Signed in as $_currentUser");
+    debugPrint("Mock Auth: Signed in as anon");
   }
 
   @override
-  Future<Map<String, String?>> signInWithGoogle() async {
-    _currentUser = "google_user_456";
+  Future<AuthUser> signInWithGoogle() async {
+    _currentUser = const AuthUser(
+        id: "google_user_456", 
+        email: 'mock@example.com', 
+        displayName: 'Mock User'
+    );
     _controller.add(_currentUser);
-    debugPrint("Mock Auth: Signed in with Google as $_currentUser");
-    return {'email': 'mock@example.com', 'displayName': 'Mock User'};
+    debugPrint("Mock Auth: Signed in with Google as ${_currentUser?.id}");
+    return _currentUser!;
   }
 
   @override
@@ -49,12 +49,6 @@ class MockAuthRepository implements AuthRepository {
     _controller.add(null);
     debugPrint("Mock Auth: Signed out");
   }
-
-  @override
-  String? get currentUserId => _currentUser;
-
-  @override
-  String? get authenticatedUserId => _currentUser;
 
   @override
   bool get isMock => true;
