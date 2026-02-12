@@ -1,21 +1,12 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../profile/domain/repositories/profile_repository.dart';
-import '../../../providers/profile_provider.dart';
+import '../../profile/presentation/controllers/profile_controller.dart';
+import '../domain/repositories/payment_repository.dart';
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
   return MockPaymentRepository(ref.read(profileRepositoryProvider));
 });
-
-abstract class PaymentRepository {
-  /// Initiates a purchase flow for the Premium entitlement.
-  /// Returns true if successful, false otherwise.
-  Future<bool> purchasePremium(String userId);
-
-  /// Restores purchases (checks store for existing entitlements).
-  Future<bool> restorePurchases(String userId);
-}
 
 class MockPaymentRepository implements PaymentRepository {
   final ProfileRepository _profileRepo;

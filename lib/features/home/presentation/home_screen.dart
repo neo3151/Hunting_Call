@@ -363,7 +363,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
   
   Widget _buildDailyChallengeCard(BuildContext context, String activeUserId) {
-    final challengeCall = DailyChallengeService.getDailyChallenge();
+    final challengeCall = DailyChallengeService.getDailyChallengeStatic();
     
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),

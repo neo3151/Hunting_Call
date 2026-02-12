@@ -9,7 +9,7 @@ import '../domain/frequency_analyzer.dart';
 import '../../library/data/reference_database.dart';
 
 import '../../profile/domain/repositories/profile_repository.dart';
-import '../../leaderboard/data/leaderboard_service.dart';
+import '../../leaderboard/domain/repositories/leaderboard_service.dart';
 import '../../leaderboard/domain/leaderboard_entry.dart';
 import '../../daily_challenge/data/daily_challenge_service.dart';
 
@@ -244,7 +244,7 @@ class RealRatingService implements RatingService {
       // Check if this call matches the Daily Challenge
       try {
         if (userId != 'guest') {
-          final dailyCall = DailyChallengeService.getDailyChallenge();
+          final dailyCall = DailyChallengeService.getDailyChallengeStatic();
           if (dailyCall.id == animalType && totalScore >= 70) {
             debugPrint("Daily Challenge ($animalType) Completed by $userId with score $totalScore");
             await profileRepository.updateDailyChallengeStats(userId);

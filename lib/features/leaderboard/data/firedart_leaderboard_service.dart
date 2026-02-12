@@ -1,6 +1,6 @@
 import 'package:firedart/firedart.dart';
 import '../domain/leaderboard_entry.dart';
-import 'leaderboard_service.dart';
+import '../domain/repositories/leaderboard_service.dart';
 
 class FiredartLeaderboardService implements LeaderboardService {
   final Firestore _firestore;

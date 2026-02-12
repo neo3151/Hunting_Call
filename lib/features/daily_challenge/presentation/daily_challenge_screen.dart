@@ -12,7 +12,7 @@ class DailyChallengeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final challengeCall = DailyChallengeService.getDailyChallenge();
+    final challengeCall = DailyChallengeService.getDailyChallengeStatic();
 
     return Scaffold(
       backgroundColor: Colors.black,
