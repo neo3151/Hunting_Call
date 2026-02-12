@@ -1,22 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:get_it/get_it.dart';
 import '../../domain/repositories/profile_repository.dart';
-import '../../data/local_profile_data_source.dart';
 import '../../domain/profile_model.dart';
 import '../../../rating/domain/rating_model.dart';
 import '../../domain/achievement_service.dart';
-
-/// Provides the ProfileDataSource instance
-final profileDataSourceProvider = Provider<LocalProfileDataSource>((ref) {
-  return LocalProfileDataSource(sharedPreferences: GetIt.I<SharedPreferences>());
-});
-
-/// Provides the ProfileRepository instance
-final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
-  return GetIt.I<ProfileRepository>();
-});
+import 'package:hunting_calls_perfection/di_providers.dart';
 
 /// State for user profile operations
 class ProfileState {

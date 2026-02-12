@@ -1,19 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
-import '../../../analysis/domain/frequency_analyzer.dart';
 import '../../domain/rating_service.dart';
 import '../../domain/rating_model.dart';
-
-/// Provides the FrequencyAnalyzer instance
-final frequencyAnalyzerProvider = Provider<FrequencyAnalyzer>((ref) {
-  return GetIt.I<FrequencyAnalyzer>();
-});
-
-/// Provides the RatingService instance
-final ratingServiceProvider = Provider<RatingService>((ref) {
-  return GetIt.I<RatingService>();
-});
+import 'package:hunting_calls_perfection/di_providers.dart';
 
 /// State for rating/analysis operations
 class RatingState {

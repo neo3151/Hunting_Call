@@ -118,3 +118,6 @@ comments.txt
 assets/audio/replacements/_raw_specklebelly.wav
 
 scripts/token.json
+
+scripts/gdrive_token.json
+releases/

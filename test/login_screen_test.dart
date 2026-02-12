@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:hunting_calls_perfection/injection_container.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:hunting_calls_perfection/features/auth/presentation/login_screen.dart';
 import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
 import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
@@ -14,8 +15,9 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 void main() {
   late MockProfileRepository mockProfileRepository;
   late MockAuthRepository mockAuthRepository;
+  late SharedPreferences mockPrefs;
 
-  setUp(() {
+  setUp(() async {
     mockProfileRepository = MockProfileRepository();
     mockAuthRepository = MockAuthRepository();
     
@@ -24,14 +26,20 @@ void main() {
     when(() => mockAuthRepository.currentUser).thenAnswer((_) async => null);
     when(() => mockAuthRepository.isMock).thenReturn(true);
 
-    sl.reset();
-    sl.allowReassignment = true;
-    sl.registerSingleton<ProfileRepository>(mockProfileRepository);
+    SharedPreferences.setMockInitialValues({});
+    mockPrefs = await SharedPreferences.getInstance();
   });
 
   Widget createWidgetUnderTest() {
     return ProviderScope(
       overrides: [
+        platformEnvironmentProvider.overrideWithValue(PlatformEnvironment(
+          isFirebaseEnabled: false,
+          isLinux: false,
+          useMocks: true,
+          sharedPreferences: mockPrefs,
+        )),
+        profileRepositoryProvider.overrideWithValue(mockProfileRepository),
         authRepositoryImplProvider.overrideWithValue(mockAuthRepository),
       ],
       child: const MaterialApp(

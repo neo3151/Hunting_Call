@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'injection_container.dart' as di;
+import 'di_providers.dart';
 import 'core/theme/theme_notifier.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'features/library/data/reference_database.dart';
-import 'features/recording/domain/audio_recorder_service.dart';
 import 'config/app_config.dart';
 
 void mainCommon() async {
@@ -64,17 +65,31 @@ void mainCommon() async {
     return true; // Prevent app crash
   };
 
+  // Initialize Firedart (Linux only) + HuntingLog DB via injection_container
   await di.init();
   
+  // Create the platform environment for Riverpod DI
+  final sharedPreferences = await SharedPreferences.getInstance();
+  final env = PlatformEnvironment(
+    isFirebaseEnabled: di.isFirebaseEnabled,
+    isLinux: Platform.isLinux,
+    useMocks: false,
+    sharedPreferences: sharedPreferences,
+  );
+
   // Background cleanup of old recordings
   try {
-    final recorderService = di.sl<AudioRecorderService>();
-    recorderService.cleanupOldFiles();
+    // Access cleanup after ProviderScope is available — defer to post-frame
   } catch (e) {
     debugPrint("Startup: Cleanup failed: $e");
   }
 
-  runApp(const ProviderScope(child: HuntingCallsApp()));
+  runApp(ProviderScope(
+    overrides: [
+      platformEnvironmentProvider.overrideWithValue(env),
+    ],
+    child: const HuntingCallsApp(),
+  ));
 }
 
 class HuntingCallsApp extends ConsumerWidget {
@@ -84,11 +99,23 @@ class HuntingCallsApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeNotifier = ref.read(themeNotifierProvider.notifier);
     
+    // Trigger cleanup on first build
+    _cleanupOldRecordings(ref);
+    
     return MaterialApp(
       title: AppConfig.instance.appName,
       debugShowCheckedModeBanner: false,
       theme: themeNotifier.currentTheme,
       home: const SplashScreen(),
     );
+  }
+  
+  void _cleanupOldRecordings(WidgetRef ref) {
+    try {
+      final recorderService = ref.read(audioRecorderServiceProvider);
+      recorderService.cleanupOldFiles();
+    } catch (e) {
+      debugPrint("Startup: Cleanup failed: $e");
+    }
   }
 }

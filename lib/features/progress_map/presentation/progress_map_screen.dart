@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:get_it/get_it.dart';
-import '../../profile/domain/repositories/profile_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hunting_calls_perfection/di_providers.dart';
 import '../../profile/domain/profile_model.dart';
 import 'package:geolocator/geolocator.dart';
 
-class ProgressMapScreen extends StatefulWidget {
+class ProgressMapScreen extends ConsumerStatefulWidget {
   final String userId;
   
   const ProgressMapScreen({super.key, required this.userId});
 
   @override
-  State<ProgressMapScreen> createState() => _ProgressMapScreenState();
+  ConsumerState<ProgressMapScreen> createState() => _ProgressMapScreenState();
 }
 
-class _ProgressMapScreenState extends State<ProgressMapScreen> {
+class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen> {
   List<HistoryItem> _mappedResults = [];
   bool _isLoading = true;
   LatLng _initialCenter = const LatLng(37.0902, -95.7129); // Default US center
@@ -29,7 +29,7 @@ class _ProgressMapScreenState extends State<ProgressMapScreen> {
 
   Future<void> _loadData() async {
     try {
-      final profile = await GetIt.I<ProfileRepository>().getProfile(widget.userId);
+      final profile = await ref.read(profileRepositoryProvider).getProfile(widget.userId);
       
       // Get current location for map center
       try {

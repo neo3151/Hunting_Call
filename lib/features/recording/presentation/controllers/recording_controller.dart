@@ -1,12 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import '../../domain/audio_recorder_service.dart';
-
-/// Provides the AudioRecorderService instance
-final audioRecorderServiceProvider = Provider<AudioRecorderService>((ref) {
-  return GetIt.I<AudioRecorderService>();
-});
+import 'package:hunting_calls_perfection/di_providers.dart';
 
 /// State for recording session
 enum RecordingStatus { idle, initializing, recording, stopping, error }
