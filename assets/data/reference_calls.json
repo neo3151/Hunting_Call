@@ -9,8 +9,8 @@
             "description": "A high-volume series used to attract passing ducks from a distance.",
             "proTips": "Keep the notes loud and rhythmic. Focus on a crisp 'quack' start.",
             "idealPitchHz": 331.1,
-            "idealDurationSec": 2.95,
-            "audioAssetPath": "assets/audio/duck_mallard_greeting.wav",
+            "idealDurationSec": 11.0,
+            "audioAssetPath": "assets/audio/duck_mallard_greeting.mp3",
             "isLocked": false,
             "scientificName": "Anas platyrhynchos",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -25,7 +25,7 @@
             "proTips": "Requires rapid tongue movement (tik-a-tik-a). Use low volume.",
             "idealPitchHz": 651.4,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/duck_mallard_feed.wav",
+            "audioAssetPath": "assets/audio/duck_mallard_feed.mp3",
             "isLocked": false,
             "scientificName": "Anas platyrhynchos",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -40,7 +40,7 @@
             "proTips": "A sharp 'oo-eeek' sound. Blow from your diaphragm for power.",
             "idealPitchHz": 1631.1,
             "idealDurationSec": 4.66,
-            "audioAssetPath": "assets/audio/wood_duck.wav",
+            "audioAssetPath": "assets/audio/wood_duck.mp3",
             "isLocked": false,
             "scientificName": "Aix sponsa",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -55,7 +55,7 @@
             "proTips": "Focus on the 'hink-honk' break. Use your hands to muffle the end.",
             "idealPitchHz": 468.3,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/goose_canadian_honk.wav",
+            "audioAssetPath": "assets/audio/goose_canadian_honk.mp3",
             "isLocked": false,
             "scientificName": "Branta canadensis",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -70,7 +70,7 @@
             "proTips": "A quick burst of air. Sound should be 'hic-up'.",
             "idealPitchHz": 414.5,
             "idealDurationSec": 10.01,
-            "audioAssetPath": "assets/audio/goose_cluck.wav",
+            "audioAssetPath": "assets/audio/goose_cluck.mp3",
             "isLocked": false,
             "scientificName": "Branta canadensis",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -85,7 +85,7 @@
             "proTips": "Higher and faster than a mallard. Think 'pip-pip-pip'.",
             "idealPitchHz": 629.8,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/teal.wav",
+            "audioAssetPath": "assets/audio/teal.mp3",
             "isLocked": false,
             "scientificName": "Spatula discors",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -100,7 +100,7 @@
             "proTips": "Short, sharp barks. Imagine a small dog yapping.",
             "idealPitchHz": 1911.1,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/snow_goose.wav",
+            "audioAssetPath": "assets/audio/snow_goose.mp3",
             "isLocked": false,
             "scientificName": "Anser caerulescens",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -115,7 +115,7 @@
             "proTips": "Two to three high notes in rapid succession. 'Ha-ha-ha'.",
             "idealPitchHz": 1211.2,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/specklebelly.wav",
+            "audioAssetPath": "assets/audio/specklebelly.mp3",
             "isLocked": false,
             "scientificName": "Anser albifrons",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -130,7 +130,7 @@
             "proTips": "Transition smoothly from the low growl to the high scream.",
             "idealPitchHz": 1394.3,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/elk_bull_bugle.wav",
+            "audioAssetPath": "assets/audio/elk_bull_bugle.mp3",
             "isLocked": false,
             "scientificName": "Cervus canadensis",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -145,7 +145,7 @@
             "proTips": "A soft, sliding whistle. Start high and drop slightly.",
             "idealPitchHz": 925.9,
             "idealDurationSec": 4.44,
-            "audioAssetPath": "assets/audio/elk_cow_mew.wav",
+            "audioAssetPath": "assets/audio/elk_cow_mew.mp3",
             "isLocked": false,
             "scientificName": "Cervus canadensis",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -160,7 +160,7 @@
             "proTips": "Focus on a deep, guttural vibration from the throat.",
             "idealPitchHz": 984.4,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/deer_buck_grunt.wav",
+            "audioAssetPath": "assets/audio/deer_buck_grunt.mp3",
             "isLocked": false,
             "scientificName": "Odocoileus virginianus",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -175,7 +175,7 @@
             "proTips": "Should sound like a long 'maaaa-aaaa'.",
             "idealPitchHz": 515.6,
             "idealDurationSec": 1.2,
-            "audioAssetPath": "assets/audio/deer_doe_bleat.wav",
+            "audioAssetPath": "assets/audio/deer_doe_bleat.mp3",
             "isLocked": false,
             "scientificName": "Odocoileus virginianus",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -189,8 +189,8 @@
             "description": "An aggressive challenge call given by a dominant buck.",
             "proTips": "Two short snorts followed by a long, trailing wheeze.",
             "idealPitchHz": 2029.5,
-            "idealDurationSec": 9.97,
-            "audioAssetPath": "assets/audio/deer_snort_wheeze.wav",
+            "idealDurationSec": 10.0,
+            "audioAssetPath": "assets/audio/deer_snort_wheeze.mp3",
             "isLocked": false,
             "scientificName": "Odocoileus virginianus",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -205,7 +205,7 @@
             "proTips": "Hold your nose to get the proper nasal tone. Aim for a 'mo-waaaaa'.",
             "idealPitchHz": 156.1,
             "idealDurationSec": 9.03,
-            "audioAssetPath": "assets/audio/moose_cow_call.wav",
+            "audioAssetPath": "assets/audio/moose_cow_call.mp3",
             "isLocked": false,
             "scientificName": "Alces alces",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -220,7 +220,7 @@
             "proTips": "Deep and hollow. A heavy 'uugh'.",
             "idealPitchHz": 150.7,
             "idealDurationSec": 0.5,
-            "audioAssetPath": "assets/audio/moose_grunt.wav",
+            "audioAssetPath": "assets/audio/moose_grunt.mp3",
             "isLocked": false,
             "scientificName": "Alces alces",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -235,7 +235,7 @@
             "proTips": "High-pitched, raspy, and urgent. Like a human infant crying.",
             "idealPitchHz": 113.0,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/black_bear_bawl.wav",
+            "audioAssetPath": "assets/audio/black_bear_bawl.mp3",
             "isLocked": false,
             "scientificName": "Ursus americanus",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -250,7 +250,7 @@
             "proTips": "Exhale sharply. The sound should be sudden and high-pitched.",
             "idealPitchHz": 1501.9,
             "idealDurationSec": 1.0,
-            "audioAssetPath": "assets/audio/pronghorn.wav",
+            "audioAssetPath": "assets/audio/pronghorn.mp3",
             "isLocked": false,
             "scientificName": "Antilocapra americana",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -265,7 +265,7 @@
             "proTips": "Start smooth, rise in pitch, and let it trail off naturally.",
             "idealPitchHz": 1442.7,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/coyote_howl.wav",
+            "audioAssetPath": "assets/audio/coyote_howl.mp3",
             "isLocked": false,
             "scientificName": "Canis latrans",
             "imageUrl": "assets/images/predator_hero.png"
@@ -280,7 +280,7 @@
             "proTips": "Must be sharp and abrupt. Think 'woof-yip'.",
             "idealPitchHz": 796.9,
             "idealDurationSec": 0.4,
-            "audioAssetPath": "assets/audio/coyote_challenge.wav",
+            "audioAssetPath": "assets/audio/coyote_challenge.mp3",
             "isLocked": false,
             "scientificName": "Canis latrans",
             "imageUrl": "assets/images/predator_hero.png"
@@ -295,7 +295,7 @@
             "proTips": "A long, raspy scream that ends abruptly.",
             "idealPitchHz": 1652.7,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/fox_scream.wav",
+            "audioAssetPath": "assets/audio/fox_scream.mp3",
             "isLocked": false,
             "scientificName": "Vulpes vulpes",
             "imageUrl": "assets/images/predator_hero.png"
@@ -310,7 +310,7 @@
             "proTips": "Focus on the low-end rattle. It should feel vibration-heavy.",
             "idealPitchHz": 1733.4,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/bobcat_growl.wav",
+            "audioAssetPath": "assets/audio/bobcat_growl.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -325,7 +325,7 @@
             "proTips": "Vary the volume and intensity. Make it sound desperate.",
             "idealPitchHz": 1345.8,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/rabbit_distress.wav",
+            "audioAssetPath": "assets/audio/rabbit_distress.mp3",
             "isLocked": false,
             "scientificName": "Sylvilagus floridanus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -340,7 +340,7 @@
             "proTips": "High energy and very raspy. Focus on a 'waaaaa' sound.",
             "idealPitchHz": 2783.2,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/raccoon_squall.wav",
+            "audioAssetPath": "assets/audio/raccoon_squall.mp3",
             "isLocked": false,
             "scientificName": "Procyon lotor",
             "imageUrl": "assets/images/predator_hero.png"
@@ -355,7 +355,7 @@
             "proTips": "Focus on the 'kee-yuck' two-note sound. Rhythm is everything.",
             "idealPitchHz": 3116.9,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/turkey_hen_yelp.wav",
+            "audioAssetPath": "assets/audio/turkey_hen_yelp.mp3",
             "isLocked": false,
             "scientificName": "Meleagris gallopavo",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -370,7 +370,7 @@
             "proTips": "Very difficult to mimic by hand. Focus on the rapid 'gubble-gubble'.",
             "idealPitchHz": 3036.2,
             "idealDurationSec": 10.01,
-            "audioAssetPath": "assets/audio/turkey_gobble.wav",
+            "audioAssetPath": "assets/audio/turkey_gobble.mp3",
             "isLocked": false,
             "scientificName": "Meleagris gallopavo",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -385,7 +385,7 @@
             "proTips": "The purr requires a soft rolling 'r' sound with your tongue.",
             "idealPitchHz": 4791.1,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/turkey_purr.wav",
+            "audioAssetPath": "assets/audio/turkey_purr.mp3",
             "isLocked": false,
             "scientificName": "Meleagris gallopavo",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -400,7 +400,7 @@
             "proTips": "Follow the rhythmic pattern exactly: 4 notes, small pause, 4 notes.",
             "idealPitchHz": 1200.5,
             "idealDurationSec": 9.44,
-            "audioAssetPath": "assets/audio/owl_barred_hoot.wav",
+            "audioAssetPath": "assets/audio/owl_barred_hoot.mp3",
             "isLocked": false,
             "scientificName": "Strix varia",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -415,7 +415,7 @@
             "proTips": "Harsh and raspy. 'Caw! Caw! Caw!'.",
             "idealPitchHz": 1281.2,
             "idealDurationSec": 9.99,
-            "audioAssetPath": "assets/audio/crow.wav",
+            "audioAssetPath": "assets/audio/crow.mp3",
             "isLocked": false,
             "scientificName": "Corvus brachyrhynchos",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -430,7 +430,7 @@
             "proTips": "A rising 'bob-WHITE'. The second note should be higher.",
             "idealPitchHz": 2250.2,
             "idealDurationSec": 10.01,
-            "audioAssetPath": "assets/audio/quail.wav",
+            "audioAssetPath": "assets/audio/quail.mp3",
             "isLocked": false,
             "scientificName": "Colinus virginianus",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -445,7 +445,7 @@
             "proTips": "A harsh 'KOCK-KOCK' followed by the sound of beating wings.",
             "idealPitchHz": 742.9,
             "idealDurationSec": 7.01,
-            "audioAssetPath": "assets/audio/pheasant.wav",
+            "audioAssetPath": "assets/audio/pheasant.mp3",
             "isLocked": false,
             "scientificName": "Phasianus colchicus",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -460,7 +460,7 @@
             "proTips": "Extremely high intensity. Starts low and rises to a frantic peak.",
             "idealPitchHz": 2562.5,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/cougar.wav",
+            "audioAssetPath": "assets/audio/cougar.mp3",
             "isLocked": false,
             "scientificName": "Puma concolor",
             "imageUrl": "assets/images/predator_hero.png"
@@ -475,7 +475,7 @@
             "proTips": "A soft 'twit-twit-twit' followed by a drawn-out 'ooo-weee'.",
             "idealPitchHz": 1238.2,
             "idealDurationSec": 10.01,
-            "audioAssetPath": "assets/audio/wood_duck_sit.wav",
+            "audioAssetPath": "assets/audio/wood_duck_sit.mp3",
             "isLocked": false,
             "scientificName": "Aix sponsa",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -490,7 +490,7 @@
             "proTips": "Sounds more like a 'yapp' than a dog bark.",
             "idealPitchHz": 1405.0,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/gray_fox_bark.wav",
+            "audioAssetPath": "assets/audio/gray_fox_bark.mp3",
             "isLocked": false,
             "scientificName": "Urocyon cinereoargenteus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -505,7 +505,7 @@
             "proTips": "Long, drawn-out quacks with a slightly raspy finish.",
             "idealPitchHz": 678.3,
             "idealDurationSec": 3.5,
-            "audioAssetPath": "assets/audio/mallard_hen.wav",
+            "audioAssetPath": "assets/audio/mallard_hen.mp3",
             "isLocked": false,
             "scientificName": "Anas platyrhynchos",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -520,7 +520,7 @@
             "proTips": "Deep and resonance-heavy. Sounds like a cross between a lion and an elk.",
             "idealPitchHz": 807.5,
             "idealDurationSec": 9.94,
-            "audioAssetPath": "assets/audio/red_stag_roar.wav",
+            "audioAssetPath": "assets/audio/red_stag_roar.mp3",
             "isLocked": false,
             "scientificName": "Cervus elaphus",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -535,7 +535,7 @@
             "proTips": "Fast, high-pitched, and frantic. 'Caw-caw-caw-caw!'.",
             "idealPitchHz": 3709.1,
             "idealDurationSec": 10.01,
-            "audioAssetPath": "assets/audio/crow_fight.wav",
+            "audioAssetPath": "assets/audio/crow_fight.mp3",
             "isLocked": false,
             "scientificName": "Corvus brachyrhynchos",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -550,7 +550,7 @@
             "proTips": "Extremely deep and rhythmic. Sounds like a series of fast belches.",
             "idealPitchHz": 91.5,
             "idealDurationSec": 2.5,
-            "audioAssetPath": "assets/audio/fallow.wav",
+            "audioAssetPath": "assets/audio/fallow.mp3",
             "isLocked": false,
             "scientificName": "Dama dama",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -565,7 +565,7 @@
             "proTips": "Slightly shorter and higher pitched than a Whitetail buck.",
             "idealPitchHz": 382.2,
             "idealDurationSec": 0.5,
-            "audioAssetPath": "assets/audio/mule_deer.wav",
+            "audioAssetPath": "assets/audio/mule_deer.mp3",
             "isLocked": false,
             "scientificName": "Odocoileus hemionus",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -580,7 +580,7 @@
             "proTips": "Two notes: a sharp whistle followed by a trill.",
             "idealPitchHz": 2051.0,
             "idealDurationSec": 2.28,
-            "audioAssetPath": "assets/audio/pintail.wav",
+            "audioAssetPath": "assets/audio/pintail.mp3",
             "isLocked": false,
             "scientificName": "Anas acuta",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -595,7 +595,7 @@
             "proTips": "A buzzy, nasal 'PEENT!'. Short and sharp.",
             "idealPitchHz": 4382.0,
             "idealDurationSec": 10.01,
-            "audioAssetPath": "assets/audio/woodcock.wav",
+            "audioAssetPath": "assets/audio/woodcock.mp3",
             "isLocked": false,
             "scientificName": "Scolopax minor",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -610,7 +610,7 @@
             "proTips": "Coo-OOO-oo-oo-oo. Very soft and melodic.",
             "idealPitchHz": 2750.9,
             "idealDurationSec": 9.96,
-            "audioAssetPath": "assets/audio/dove.wav",
+            "audioAssetPath": "assets/audio/dove.mp3",
             "isLocked": false,
             "scientificName": "Zenaida macroura",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -625,7 +625,7 @@
             "proTips": "Sounds like a raspy mallard quack. 'Kuk-Kuk'.",
             "idealPitchHz": 559.9,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/canvasback.wav",
+            "audioAssetPath": "assets/audio/canvasback.mp3",
             "isLocked": false,
             "scientificName": "Aythya valisineria",
             "imageUrl": "assets/images/waterfowl_hero.png"
@@ -640,7 +640,7 @@
             "proTips": "Extremely raspy and intense. Mix chest growls with hisses.",
             "idealPitchHz": 150.7,
             "idealDurationSec": 4.0,
-            "audioAssetPath": "assets/audio/badger.wav",
+            "audioAssetPath": "assets/audio/badger.mp3",
             "isLocked": false,
             "scientificName": "Taxidea taxus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -655,7 +655,7 @@
             "proTips": "Short and sharp. 'Gunt'.",
             "idealPitchHz": 140.0,
             "idealDurationSec": 0.5,
-            "audioAssetPath": "assets/audio/caribou.wav",
+            "audioAssetPath": "assets/audio/caribou.mp3",
             "isLocked": false,
             "scientificName": "Rangifer tarandus",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -670,7 +670,7 @@
             "proTips": "Hoo-hoo-hoo-hoo. Deeper and more boom-y than the Barred Owl.",
             "idealPitchHz": 301.5,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/gho.wav",
+            "audioAssetPath": "assets/audio/gho.mp3",
             "isLocked": false,
             "scientificName": "Bubo virginianus",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -685,7 +685,7 @@
             "proTips": "Not a vocalization! Hard to mimic. Use your chest to feel the rhythm.",
             "idealPitchHz": 107.7,
             "idealDurationSec": 10.0,
-            "audioAssetPath": "assets/audio/grouse.wav",
+            "audioAssetPath": "assets/audio/grouse.mp3",
             "isLocked": false,
             "scientificName": "Bonasa umbellus",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -700,7 +700,7 @@
             "proTips": "Very quiet. Only three or four soft notes.",
             "idealPitchHz": 656.8,
             "idealDurationSec": 10.01,
-            "audioAssetPath": "assets/audio/turkey_tree.wav",
+            "audioAssetPath": "assets/audio/turkey_tree.mp3",
             "isLocked": false,
             "scientificName": "Meleagris gallopavo",
             "imageUrl": "assets/images/land_bird_hero.png"
@@ -715,7 +715,7 @@
             "proTips": "A mix of short meows and long wails.",
             "idealPitchHz": 1733.4,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/bobcat_vocalization.wav",
+            "audioAssetPath": "assets/audio/bobcat_vocalization.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -730,7 +730,7 @@
             "proTips": "Short and sharp, like a pressurized air release.",
             "idealPitchHz": 1733.4,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/bobcat_hiss.wav",
+            "audioAssetPath": "assets/audio/bobcat_hiss.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -745,7 +745,7 @@
             "proTips": "Very loud and piercing. Start low and pitch up quickly.",
             "idealPitchHz": 2000.0,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/bobcat_scream.wav",
+            "audioAssetPath": "assets/audio/bobcat_scream.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -760,7 +760,7 @@
             "proTips": "Focus on the chest vibration. Long and rumbling.",
             "idealPitchHz": 1500.0,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/bobcat_growl_v2.wav",
+            "audioAssetPath": "assets/audio/bobcat_growl_v2.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -775,7 +775,7 @@
             "proTips": "Similar to a house cat but deeper and louder.",
             "idealPitchHz": 250.0,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/bobcat_purr.wav",
+            "audioAssetPath": "assets/audio/bobcat_purr.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -790,7 +790,7 @@
             "proTips": "Short, high-pitched tweets.",
             "idealPitchHz": 3000.0,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/bobcat_chirp.wav",
+            "audioAssetPath": "assets/audio/bobcat_chirp.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -805,7 +805,7 @@
             "proTips": "Mournful and eerie, often at night.",
             "idealPitchHz": 1200.0,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/bobcat_yowl.wav",
+            "audioAssetPath": "assets/audio/bobcat_yowl.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -820,7 +820,7 @@
             "proTips": "Used as a warning or alarm call.",
             "idealPitchHz": 800.0,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/bobcat_bark.wav",
+            "audioAssetPath": "assets/audio/bobcat_bark.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -835,7 +835,7 @@
             "proTips": "Used to communicate over long distances.",
             "idealPitchHz": 1000.0,
             "idealDurationSec": 5.0,
-            "audioAssetPath": "assets/audio/bobcat_howl.wav",
+            "audioAssetPath": "assets/audio/bobcat_howl.mp3",
             "isLocked": false,
             "scientificName": "Lynx rufus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -850,7 +850,7 @@
             "proTips": "Used during mating season. Very loud and distinct.",
             "idealPitchHz": 1200.0,
             "idealDurationSec": 7.0,
-            "audioAssetPath": "assets/audio/puma_scream.wav",
+            "audioAssetPath": "assets/audio/puma_scream.mp3",
             "isLocked": false,
             "scientificName": "Puma concolor",
             "imageUrl": "assets/images/predator_hero.png"
@@ -865,7 +865,7 @@
             "proTips": "Used for long-distance communication and gathering the pack.",
             "idealPitchHz": 400.0,
             "idealDurationSec": 7.0,
-            "audioAssetPath": "assets/audio/wolf_howl.wav",
+            "audioAssetPath": "assets/audio/wolf_howl.mp3",
             "isLocked": false,
             "scientificName": "Canis lupus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -880,7 +880,7 @@
             "proTips": "Used to warn the pack of danger or intruders.",
             "idealPitchHz": 800.0,
             "idealDurationSec": 7.0,
-            "audioAssetPath": "assets/audio/wolf_bark.wav",
+            "audioAssetPath": "assets/audio/wolf_bark.mp3",
             "isLocked": false,
             "scientificName": "Canis lupus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -895,7 +895,7 @@
             "proTips": "Often heard during play or submission.",
             "idealPitchHz": 1200.0,
             "idealDurationSec": 7.0,
-            "audioAssetPath": "assets/audio/wolf_yelp.wav",
+            "audioAssetPath": "assets/audio/wolf_yelp.mp3",
             "isLocked": false,
             "scientificName": "Canis lupus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -910,7 +910,7 @@
             "proTips": "Used to assert dominance or warn off rivals.",
             "idealPitchHz": 150.0,
             "idealDurationSec": 7.0,
-            "audioAssetPath": "assets/audio/wolf_growl.wav",
+            "audioAssetPath": "assets/audio/wolf_growl.mp3",
             "isLocked": false,
             "scientificName": "Canis lupus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -925,7 +925,7 @@
             "proTips": "Used by pups or subordinates to solicit food or attention.",
             "idealPitchHz": 2000.0,
             "idealDurationSec": 7.0,
-            "audioAssetPath": "assets/audio/wolf_whine.wav",
+            "audioAssetPath": "assets/audio/wolf_whine.mp3",
             "isLocked": false,
             "scientificName": "Canis lupus",
             "imageUrl": "assets/images/predator_hero.png"
@@ -940,7 +940,7 @@
             "proTips": "Use to calm hogs or simulate a feeding group.",
             "idealPitchHz": 100.0,
             "idealDurationSec": 7.0,
-            "audioAssetPath": "assets/audio/hog_grunt.wav",
+            "audioAssetPath": "assets/audio/hog_grunt.mp3",
             "isLocked": false,
             "scientificName": "Sus scrofa",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -955,7 +955,7 @@
             "proTips": "Used to warn the sounder of danger.",
             "idealPitchHz": 300.0,
             "idealDurationSec": 6.0,
-            "audioAssetPath": "assets/audio/hog_bark.wav",
+            "audioAssetPath": "assets/audio/hog_bark.mp3",
             "isLocked": false,
             "scientificName": "Sus scrofa",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -970,7 +970,7 @@
             "proTips": "Can trigger a feeding frenzy or dominance response.",
             "idealPitchHz": 1500.0,
             "idealDurationSec": 8.0,
-            "audioAssetPath": "assets/audio/hog_squeal_loud.wav",
+            "audioAssetPath": "assets/audio/hog_squeal_loud.mp3",
             "isLocked": false,
             "scientificName": "Sus scrofa",
             "imageUrl": "assets/images/big_game_hero.png"
@@ -985,9 +985,159 @@
             "proTips": "Common sound in a sounder.",
             "idealPitchHz": 1200.0,
             "idealDurationSec": 7.0,
-            "audioAssetPath": "assets/audio/hog_squeal.wav",
+            "audioAssetPath": "assets/audio/hog_squeal.mp3",
             "isLocked": false,
             "scientificName": "Sus scrofa",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "deer_dominant_grunt",
+            "animalName": "Whitetail Deer",
+            "callType": "Dominant Grunt",
+            "category": "Big Game",
+            "difficulty": "Intermediate",
+            "description": "A deep, authoritative grunt used by mature bucks to assert dominance.",
+            "proTips": "Deeper and more forceful than a standard grunt. Use sparingly to avoid spooking deer.",
+            "idealPitchHz": 280.0,
+            "idealDurationSec": 10.0,
+            "audioAssetPath": "assets/audio/deer_dominant_grunt.mp3",
+            "isLocked": false,
+            "scientificName": "Odocoileus virginianus",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "deer_social_grunt",
+            "animalName": "Whitetail Deer",
+            "callType": "Social Grunt",
+            "category": "Big Game",
+            "difficulty": "Easy",
+            "description": "A casual contact grunt bucks make when moving through an area.",
+            "proTips": "Short and soft. Used when deer are relaxed and moving naturally.",
+            "idealPitchHz": 250.0,
+            "idealDurationSec": 10.0,
+            "audioAssetPath": "assets/audio/deer_social_grunt.mp3",
+            "isLocked": false,
+            "scientificName": "Odocoileus virginianus",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "deer_tending_grunt",
+            "animalName": "Whitetail Deer",
+            "callType": "Tending Grunt",
+            "category": "Big Game",
+            "difficulty": "Intermediate",
+            "description": "Rapid, rhythmic grunts a buck makes while trailing a doe during the rut.",
+            "proTips": "Fast and repetitive. Sounds like 'urrp-urrp-urrp' in quick succession.",
+            "idealPitchHz": 300.0,
+            "idealDurationSec": 10.63,
+            "audioAssetPath": "assets/audio/deer_tending_grunt.mp3",
+            "isLocked": false,
+            "scientificName": "Odocoileus virginianus",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "deer_buck_challenge",
+            "animalName": "Whitetail Deer",
+            "callType": "Buck Challenge",
+            "category": "Big Game",
+            "difficulty": "Pro",
+            "description": "An aggressive snort-grunt combo used to challenge rival bucks.",
+            "proTips": "Very aggressive. Use only during peak rut to provoke a response from dominant bucks.",
+            "idealPitchHz": 350.0,
+            "idealDurationSec": 6.0,
+            "audioAssetPath": "assets/audio/deer_buck_challenge.mp3",
+            "isLocked": false,
+            "scientificName": "Odocoileus virginianus",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "deer_tending_grunt_v2",
+            "animalName": "Whitetail Deer",
+            "callType": "Tending Grunt (Alt)",
+            "category": "Big Game",
+            "difficulty": "Intermediate",
+            "description": "An alternative tending grunt with a slightly different cadence.",
+            "proTips": "Alternate between this and the standard tending grunt for variety.",
+            "idealPitchHz": 621.1,
+            "idealDurationSec": 6.0,
+            "audioAssetPath": "assets/audio/deer_tending_grunt_v2.mp3",
+            "isLocked": false,
+            "scientificName": "Odocoileus virginianus",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "deer_estrus_bleat",
+            "animalName": "Whitetail Deer",
+            "callType": "Estrus Bleat",
+            "category": "Big Game",
+            "difficulty": "Easy",
+            "description": "The drawn-out bleat of a doe in heat, irresistible to rutting bucks.",
+            "proTips": "A long, nasal 'maaaa' that rises slightly in pitch. Very effective during peak rut.",
+            "idealPitchHz": 515.0,
+            "idealDurationSec": 10.0,
+            "audioAssetPath": "assets/audio/deer_estrus_bleat.mp3",
+            "isLocked": false,
+            "scientificName": "Odocoileus virginianus",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "deer_fawn_distress",
+            "animalName": "Whitetail Deer",
+            "callType": "Fawn Distress",
+            "category": "Big Game",
+            "difficulty": "Easy",
+            "description": "High-pitched cries of a fawn in trouble. Draws does and sometimes bucks.",
+            "proTips": "Urgent and frantic. Use to attract does or predators during early season.",
+            "idealPitchHz": 390.3,
+            "idealDurationSec": 10.0,
+            "audioAssetPath": "assets/audio/deer_fawn_distress.mp3",
+            "isLocked": false,
+            "scientificName": "Odocoileus virginianus",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "deer_fawn_distress_v2",
+            "animalName": "Whitetail Deer",
+            "callType": "Fawn Distress (Alt)",
+            "category": "Big Game",
+            "difficulty": "Easy",
+            "description": "An alternative fawn distress call with different intensity.",
+            "proTips": "Slightly different tone. Good to alternate with the primary fawn distress.",
+            "idealPitchHz": 459.4,
+            "idealDurationSec": 10.0,
+            "audioAssetPath": "assets/audio/deer_fawn_distress_v2.mp3",
+            "isLocked": false,
+            "scientificName": "Odocoileus virginianus",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "deer_lost_fawn",
+            "animalName": "Whitetail Deer",
+            "callType": "Lost Fawn",
+            "category": "Big Game",
+            "difficulty": "Easy",
+            "description": "The plaintive bleating of a fawn searching for its mother.",
+            "proTips": "Softer and more drawn out than a distress call. Think helpless, not panicked.",
+            "idealPitchHz": 1160.5,
+            "idealDurationSec": 5.0,
+            "audioAssetPath": "assets/audio/deer_lost_fawn.mp3",
+            "isLocked": false,
+            "scientificName": "Odocoileus virginianus",
+            "imageUrl": "assets/images/big_game_hero.png"
+        },
+        {
+            "id": "black_bear_cub_distress",
+            "animalName": "Black Bear",
+            "callType": "Cub Distress",
+            "category": "Big Game",
+            "difficulty": "Pro",
+            "description": "The frantic cries of a bear cub separated from its mother.",
+            "proTips": "High-pitched and desperate. Use with extreme caution — may attract an aggressive sow.",
+            "idealPitchHz": 288.2,
+            "idealDurationSec": 6.0,
+            "audioAssetPath": "assets/audio/black_bear_cub_distress.mp3",
+            "isLocked": false,
+            "scientificName": "Ursus americanus",
             "imageUrl": "assets/images/big_game_hero.png"
         }
     ]
