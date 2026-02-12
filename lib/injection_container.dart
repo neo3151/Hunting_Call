@@ -27,9 +27,10 @@ import 'core/auth/firedart_file_store.dart';
 import 'firebase_options.dart';
 import 'features/auth/data/firedart_auth_repository.dart';
 import 'features/profile/data/firedart_profile_repository.dart';
-import 'features/leaderboard/data/leaderboard_service.dart';
+import 'features/leaderboard/domain/repositories/leaderboard_service.dart';
+import 'features/leaderboard/data/leaderboard_service.dart'; // FirebaseLeaderboardService
 import 'features/leaderboard/data/firedart_leaderboard_service.dart';
-import 'features/hunting_log/data/hunting_log_repository.dart';
+import 'features/hunting_log/domain/repositories/hunting_log_repository.dart';
 import 'features/hunting_log/data/local_hunting_log_repository.dart';
 
 

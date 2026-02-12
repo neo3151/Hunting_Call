@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bobcat Howl - Final Candidates</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; padding: 20px; }
+        h1 { text-align: center; color: #e94560; margin-bottom: 8px; font-size: 1.6em; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 24px; font-size: 0.9em; }
+        .section { margin-bottom: 28px; }
+        .section h2 { color: #e94560; border-bottom: 1px solid #333; padding-bottom: 6px; margin-bottom: 12px; }
+        .card { background: #16213e; border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+                display: flex; align-items: center; gap: 16px; border: 1px solid #0f3460; }
+        .card:hover { border-color: #e94560; }
+        .card .info { flex: 1; }
+        .card .name { font-weight: 600; font-size: 0.95em; }
+        .card .detail { color: #999; font-size: 0.8em; margin-top: 2px; }
+        .card .num { background: #e94560; color: #fff; font-weight: 700; font-size: 1.1em;
+                     width: 32px; height: 32px; border-radius: 50%; display: flex;
+                     align-items: center; justify-content: center; flex-shrink: 0; }
+        audio { height: 36px; min-width: 280px; }
+        audio::-webkit-media-controls-panel { background: #0f3460; }
+        .note { color: #7ec8e3; font-size: 0.85em; text-align: center; margin-bottom: 20px; padding: 10px;
+                background: #0f3460; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Bobcat Howl - Final Round</h1>
+    <p class="subtitle">Sources: Acoustic Atlas, other wildlife sound libraries, original backup</p>
+    <div class="note">If none of these work, we can keep the original and source this one manually later.</div>
+    <div class="section">
+        <h2>Candidates</h2>
+        <div class="card">
+            <div class="num">1</div>
+            <div class="info">
+                <div class="name">Option 1 - Original backup</div>
+                <div class="detail">reprocessed | 5.0s</div>
+            </div>
+            <audio controls preload="none" src="_candidates/original_reprocessed.mp3"></audio>
+        </div>
+    </div>
+</body>
+</html>

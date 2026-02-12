@@ -1,10 +1,26 @@
-import 'package:intl/intl.dart';
-import '../../library/data/reference_database.dart';
+import '../domain/daily_challenge_repository.dart';
 import '../../library/domain/reference_call_model.dart';
+import '../../library/data/reference_database.dart';
+import 'package:intl/intl.dart';
 
-class DailyChallengeService {
-  
-  static ReferenceCall getDailyChallenge() {
+/// Concrete implementation of [DailyChallengeRepository].
+/// Selects a daily challenge based on the day of the year from the
+/// pool of free (unlocked) reference calls.
+///
+/// Class name kept as DailyChallengeService for backwards compatibility —
+/// existing code calls DailyChallengeService.getDailyChallenge() statically.
+class DailyChallengeService implements DailyChallengeRepository {
+  @override
+  ReferenceCall getDailyChallenge() {
+    return _getDailyChallenge();
+  }
+
+  /// Static accessor for backwards compatibility.
+  static ReferenceCall getDailyChallengeStatic() {
+    return _getDailyChallenge();
+  }
+
+  static ReferenceCall _getDailyChallenge() {
     // Filter out locked calls (ensure challenges are from Free Tier so everyone can play)
     // We pass 'false' for isPremium to force the check against the Free Starter Pack.
     final eligibleCalls = ReferenceDatabase.calls.where((c) => !ReferenceDatabase.isLocked(c.id, false)).toList();
@@ -41,8 +57,6 @@ class DailyChallengeService {
     }
     
     // Safety check for image assets
-    // If the image path doesn't exist in our known list, fall back to a safe default
-    // Note: In a real app we'd check file existence, but here we know 'predator_hero.png' is missing
     if (challengeCall.imageUrl.contains("predator_hero") || challengeCall.imageUrl.contains("big_game_hero")) {
        return challengeCall.copyWith(imageUrl: "assets/images/forest_background.png");
     }

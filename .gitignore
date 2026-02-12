@@ -113,3 +113,6 @@ comments.txt
 
 # Executables
 *.exe
+
+# Large raw WAV files exceeding GitHub limit
+assets/audio/replacements/_raw_specklebelly.wav

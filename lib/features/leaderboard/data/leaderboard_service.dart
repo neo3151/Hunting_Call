@@ -1,14 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/leaderboard_entry.dart';
+import '../domain/repositories/leaderboard_service.dart';
 
-abstract class LeaderboardService {
-  Future<bool> submitScore({
-    required String animalId,
-    required LeaderboardEntry entry,
-  });
-
-  Stream<List<LeaderboardEntry>> getTopScores(String animalId);
-}
 
 class FirebaseLeaderboardService implements LeaderboardService {
   final FirebaseFirestore _firestore;
