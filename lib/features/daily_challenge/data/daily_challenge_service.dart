@@ -26,7 +26,7 @@ class DailyChallengeService {
             difficulty: 'Easy', 
             idealPitchHz: 400, 
             idealDurationSec: 1.0, 
-            audioAssetPath: 'assets/audio/duck_mallard_greeting.wav', 
+            audioAssetPath: 'assets/audio/duck_mallard_greeting.mp3', 
             imageUrl: 'assets/images/waterfowl_hero.png', 
             tolerancePitch: 50, 
             toleranceDuration: 0.2, 
