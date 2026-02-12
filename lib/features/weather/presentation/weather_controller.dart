@@ -7,7 +7,7 @@ import 'package:hunting_calls_perfection/features/weather/domain/usecases/get_so
 import 'package:hunting_calls_perfection/features/weather/data/repositories/weather_repository_impl.dart';
 import 'package:hunting_calls_perfection/features/weather/data/datasources/weather_remote_data_source.dart';
 import 'package:hunting_calls_perfection/features/weather/domain/weather_repository.dart';
-import 'package:hunting_calls_perfection/core/services/location_service.dart';
+import 'package:hunting_calls_perfection/features/weather/data/location_service.dart';
 
 // --- Dependency Injection ---
 
