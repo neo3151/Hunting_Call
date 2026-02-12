@@ -1,23 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'features/auth/data/firebase_auth_repository.dart';
-import 'features/auth/data/mock_auth_repository.dart';
-import 'features/auth/domain/repositories/auth_repository.dart';
-import 'features/profile/data/local_profile_data_source.dart';
-import 'features/profile/domain/repositories/profile_repository.dart';
-import 'features/profile/data/profile_repository.dart'; // For LocalProfileRepository implementation
-import 'features/profile/data/firestore_profile_repository.dart';
-import 'features/recording/data/real_audio_recorder_service.dart';
-import 'features/recording/data/mock_audio_recorder_service.dart';
-import 'features/recording/domain/audio_recorder_service.dart';
-import 'features/rating/domain/rating_service.dart';
-import 'features/analysis/data/real_rating_service.dart';
-import 'features/analysis/data/comprehensive_audio_analyzer.dart';
-import 'features/analysis/domain/frequency_analyzer.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firedart/firedart.dart' as fd;
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -25,26 +7,24 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'features/auth/data/firedart_file_store.dart';
 import 'firebase_options.dart';
-import 'features/auth/data/firedart_auth_repository.dart';
-import 'features/profile/data/firedart_profile_repository.dart';
-import 'features/leaderboard/domain/repositories/leaderboard_service.dart';
-import 'features/leaderboard/data/leaderboard_service.dart'; // FirebaseLeaderboardService
-import 'features/leaderboard/data/firedart_leaderboard_service.dart';
-import 'features/hunting_log/domain/repositories/hunting_log_repository.dart';
 import 'features/hunting_log/data/local_hunting_log_repository.dart';
 
+/// Whether Firebase (or Firedart on Linux) is available.
+/// Set during [init] and read by [main_common.dart] to build [PlatformEnvironment].
+bool isFirebaseEnabled = false;
 
-final sl = GetIt.instance;
 bool _isInitializing = false;
 
+/// Initializes platform-specific services that must run before the widget tree:
+///   - Firedart auth & Firestore on Linux
+///   - SQLite FFI on desktop
+///   - HuntingLog database tables
+///
+/// **Note:** DI registrations have been migrated to Riverpod providers in
+/// `di_providers.dart`. This file no longer uses GetIt.
 Future<void> init({bool useMocks = false}) async {
   if (_isInitializing) return;
   _isInitializing = true;
-  await sl.reset();
-  
-  // External
-  final sharedPreferences = await SharedPreferences.getInstance();
-  sl.registerLazySingleton(() => sharedPreferences);
 
   if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
     sqfliteFfiInit();
@@ -52,7 +32,7 @@ Future<void> init({bool useMocks = false}) async {
   }
   
   // Check if Firebase is actually initialized (has apps)
-  bool isFirebaseEnabled = false;
+  isFirebaseEnabled = false;
   
   if (Platform.isLinux) {
     try {
@@ -98,60 +78,15 @@ Future<void> init({bool useMocks = false}) async {
     }
   }
 
-  // Features - Auth
   debugPrint("DI Initializing: isFirebaseEnabled = $isFirebaseEnabled");
 
-  if (isFirebaseEnabled) {
-    if (Platform.isLinux) {
-      sl.registerLazySingleton<AuthRepository>(() => FiredartAuthRepository());
-    } else {
-      sl.registerLazySingleton<AuthRepository>(() => FirebaseAuthRepository());
-    }
-  } else {
-    sl.registerLazySingleton<AuthRepository>(() => MockAuthRepository());
+  // Initialize HuntingLog database tables eagerly
+  try {
+    final huntingLogRepo = LocalHuntingLogRepository();
+    await huntingLogRepo.initialize();
+  } catch (e) {
+    debugPrint("HuntingLog DB init failed: $e");
   }
-
-  // Features - Recording
-  if (useMocks) {
-    sl.registerLazySingleton<AudioRecorderService>(() => MockAudioRecorderService());
-  } else {
-    sl.registerLazySingleton<AudioRecorderService>(() => RealAudioRecorderService());
-  }
-
-  // Features - Profile
-  sl.registerLazySingleton<ProfileDataSource>(() => LocalProfileDataSource(sharedPreferences: sl()));
-  
-  if (isFirebaseEnabled) {
-    if (Platform.isLinux) {
-      debugPrint("📦 DI: Registering FiredartProfileRepository");
-      sl.registerLazySingleton<ProfileRepository>(() => FiredartProfileRepository());
-      sl.registerLazySingleton<LeaderboardService>(() => FiredartLeaderboardService(fd.Firestore.instance));
-    } else {
-      debugPrint("📦 DI: Registering FirestoreProfileRepository");
-      sl.registerLazySingleton<ProfileRepository>(() => FirestoreProfileRepository(localDataSource: sl<ProfileDataSource>()));
-      sl.registerLazySingleton<LeaderboardService>(() => FirebaseLeaderboardService(FirebaseFirestore.instance));
-    }
-  } else {
-    debugPrint("📦 DI: Registering LocalProfileRepository (Firebase disabled)");
-    sl.registerLazySingleton<ProfileRepository>(() => LocalProfileRepository(dataSource: sl()));
-  }
-
-  // Features - Rating
-  sl.registerLazySingleton<FrequencyAnalyzer>(() => ComprehensiveAudioAnalyzer());
-  sl.registerLazySingleton<RatingService>(() => RealRatingService(
-    analyzer: sl<FrequencyAnalyzer>(), 
-    profileRepository: sl<ProfileRepository>(),
-    leaderboardService: isFirebaseEnabled ? sl<LeaderboardService>() : null,
-  ));
-
-  // Core
-  // ... add core services here later (e.g. NavigationService)
-  // Features - Hunting Log
-  sl.registerLazySingleton<HuntingLogRepository>(() => LocalHuntingLogRepository());
-  // Initialize the repository immediately to create tables
-  sl<HuntingLogRepository>().initialize();
-
-
 
   _isInitializing = false;
 }

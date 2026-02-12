@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hunting_calls_perfection/di_providers.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
 import '../../onboarding/presentation/controllers/onboarding_controller.dart';
 import 'login_screen.dart';

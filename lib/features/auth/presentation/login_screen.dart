@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hunting_calls_perfection/di_providers.dart';
 import 'controllers/auth_controller.dart';
 
 import '../../../core/widgets/background_wrapper.dart';

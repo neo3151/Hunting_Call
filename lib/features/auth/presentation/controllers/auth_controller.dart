@@ -11,7 +11,7 @@ import '../../domain/usecases/get_auth_state_stream.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/datasources/firebase_auth_data_source.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
-import 'package:get_it/get_it.dart';
+import 'package:hunting_calls_perfection/di_providers.dart';
 
 // --- Dependency Injection via Riverpod ---
 
@@ -40,7 +40,7 @@ final signInAnonymouslyUseCaseProvider = Provider((ref) {
 final signInWithGoogleUseCaseProvider = Provider((ref) {
   return SignInWithGoogle(
     authRepository: ref.watch(authRepositoryImplProvider),
-    profileRepository: GetIt.I(),
+    profileRepository: ref.watch(profileRepositoryProvider),
   );
 });
 

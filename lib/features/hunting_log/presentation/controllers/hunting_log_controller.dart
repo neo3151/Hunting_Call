@@ -1,11 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import '../../domain/hunting_log_entry.dart';
-import '../../data/hunting_log_repository.dart';
-
-final huntingLogRepositoryProvider = Provider<HuntingLogRepository>((ref) {
-  return GetIt.I<HuntingLogRepository>();
-});
+import 'package:hunting_calls_perfection/di_providers.dart';
 
 class HuntingLogNotifier extends AsyncNotifier<List<HuntingLogEntry>> {
   @override
