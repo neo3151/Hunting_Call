@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'controllers/auth_controller.dart';
 
 import '../../../core/widgets/background_wrapper.dart';
-import '../../../providers/providers.dart';
+import '../../profile/presentation/controllers/profile_controller.dart';
 import '../../profile/domain/profile_model.dart';
 import '../../settings/presentation/privacy_policy_screen.dart';
 import 'package:intl/intl.dart';

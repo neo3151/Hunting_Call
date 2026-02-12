@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../providers/hunting_log_provider.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/presentation/controllers/hunting_log_controller.dart';
 import 'add_log_screen.dart';
 
 class HuntingLogScreen extends ConsumerWidget {

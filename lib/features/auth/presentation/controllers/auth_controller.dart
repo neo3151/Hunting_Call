@@ -10,7 +10,7 @@ import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/get_auth_state_stream.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/datasources/firebase_auth_data_source.dart';
-import '../../../../providers/profile_provider.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 import 'package:get_it/get_it.dart';
 
 // --- Dependency Injection via Riverpod ---

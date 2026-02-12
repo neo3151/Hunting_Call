@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/payment/data/payment_repository.dart';
-import '../../providers/providers.dart';
+import '../../features/profile/presentation/controllers/profile_controller.dart';
 
 class UpgradePrompter {
   static void show(BuildContext context, {String featureName = "This Feature"}) {

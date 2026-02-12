@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import '../../../providers/providers.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/presentation/controllers/leaderboard_controller.dart';
 
 class LeaderboardScreen extends ConsumerWidget {
   final String animalId;

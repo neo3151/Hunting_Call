@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/hunting_log_entry.dart';
-import '../../../providers/hunting_log_provider.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/presentation/controllers/hunting_log_controller.dart';
 
 class AddLogScreen extends ConsumerStatefulWidget {
   const AddLogScreen({super.key});

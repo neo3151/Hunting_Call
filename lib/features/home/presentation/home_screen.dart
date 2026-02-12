@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/presentation/login_screen.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
-import '../../../providers/providers.dart'; // Keep for profileNotifierProvider if it's still there
+import '../../profile/presentation/controllers/profile_controller.dart';
 import '../../profile/domain/profile_model.dart';
 import '../../recording/presentation/recorder_page.dart';
 import '../../profile/presentation/profile_screen.dart';

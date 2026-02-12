@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/background_wrapper.dart';
-import '../../../../providers/temperature_unit_provider.dart';
+import 'package:hunting_calls_perfection/features/weather/presentation/controllers/temperature_controller.dart';
 import '../domain/weather_entities.dart';
 import '../presentation/weather_controller.dart';
 import 'widgets/wind_compass.dart';
