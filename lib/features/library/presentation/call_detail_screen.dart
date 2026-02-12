@@ -9,7 +9,7 @@ import '../../leaderboard/presentation/leaderboard_screen.dart';
 import '../../../config/app_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/upgrade_prompter.dart';
-import '../../../providers/providers.dart';
+import '../../profile/presentation/controllers/profile_controller.dart';
 
 class CallDetailScreen extends ConsumerStatefulWidget {
   final ReferenceCall call;

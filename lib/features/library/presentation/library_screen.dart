@@ -6,7 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import '../../library/data/reference_database.dart';
 import '../../library/domain/reference_call_model.dart';
 import '../../../core/widgets/upgrade_prompter.dart';
-import '../../../providers/providers.dart';
+import '../../profile/presentation/controllers/profile_controller.dart';
 import 'call_detail_screen.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {

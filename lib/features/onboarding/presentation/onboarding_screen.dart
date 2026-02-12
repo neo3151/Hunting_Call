@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../providers/onboarding_provider.dart';
+import 'package:hunting_calls_perfection/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import '../../../core/widgets/background_wrapper.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {

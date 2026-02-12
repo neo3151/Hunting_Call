@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../providers/providers.dart';
+import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
 import '../../profile/domain/profile_model.dart';
 import '../../library/data/reference_database.dart';
 import '../domain/achievement_service.dart';
