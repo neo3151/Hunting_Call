@@ -10,6 +10,7 @@ class HuntingLogNotifier extends AsyncNotifier<List<HuntingLogEntry>> {
 
   Future<List<HuntingLogEntry>> _fetchLogs() async {
     final repository = ref.read(huntingLogRepositoryProvider);
+    await repository.initialize();
     return await repository.getLogs();
   }
 

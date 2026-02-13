@@ -174,7 +174,7 @@
             "description": "A long-range call to locate other coyotes or define territory.",
             "proTips": "Start smooth, rise in pitch, and let it trail off naturally.",
             "idealPitchHz": 1442.7,
-            "idealDurationSec": 10.0,
+            "idealDurationSec": 11.0,
             "audioAssetPath": "assets/audio/coyote_howl.mp3",
             "isLocked": false,
             "scientificName": "Canis latrans",
@@ -245,11 +245,11 @@
             "animalName": "Raccoon",
             "callType": "Squall",
             "category": "Predators",
-            "difficulty": "Intermediate",
+            "difficulty": "Pro",
             "description": "The loud, raspy scream of raccoons fighting or in distress.",
             "proTips": "High energy and very raspy. Focus on a 'waaaaa' sound.",
             "idealPitchHz": 2783.2,
-            "idealDurationSec": 10.0,
+            "idealDurationSec": 7.0,
             "audioAssetPath": "assets/audio/raccoon_squall.mp3",
             "isLocked": true,
             "scientificName": "Procyon lotor",
@@ -309,7 +309,7 @@
             "description": "The classic 'Who cooks for you?' hoot, often used to locate turkeys.",
             "proTips": "Follow the rhythmic pattern exactly: 4 notes, small pause, 4 notes.",
             "idealPitchHz": 1200.5,
-            "idealDurationSec": 9.44,
+            "idealDurationSec": 10.7,
             "audioAssetPath": "assets/audio/owl_barred_hoot.mp3",
             "isLocked": false,
             "scientificName": "Strix varia",
@@ -868,10 +868,7 @@
             "imageUrl": "assets/images/animals/crow.jpg",
             "difficulty": "Easy",
             "idealPitchHz": 1200,
-            "proTips": [
-                "Use a sharp, raspy tone",
-                "Quick burst of air for each caw"
-            ]
+            "proTips": "Use a sharp, raspy tone. Quick burst of air for each caw"
         },
         {
             "id": "coyote_yip",
@@ -886,10 +883,7 @@
             "isLocked": false,
             "difficulty": "Intermediate",
             "idealPitchHz": 800,
-            "proTips": [
-                "Short sharp yips in quick succession",
-                "Higher pitch than a howl"
-            ]
+            "proTips": "Short sharp yips in quick succession. Higher pitch than a howl"
         },
         {
             "id": "awebo_call",
@@ -904,10 +898,7 @@
             "isLocked": false,
             "difficulty": "Intermediate",
             "idealPitchHz": 600,
-            "proTips": [
-                "Listen for the distinctive go-back rhythm",
-                "Practice the two-note pattern"
-            ]
+            "proTips": "Listen for the distinctive go-back rhythm. Practice the two-note pattern"
         }
     ]
 }

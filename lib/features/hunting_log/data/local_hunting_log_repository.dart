@@ -8,6 +8,7 @@ class LocalHuntingLogRepository implements HuntingLogRepository {
 
   @override
   Future<void> initialize() async {
+    if (_database != null) return; // Already initialized
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, 'hunting_logs.db');
 
