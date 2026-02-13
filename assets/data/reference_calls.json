@@ -13,7 +13,7 @@
             "audioAssetPath": "assets/audio/duck_mallard_greeting.mp3",
             "isLocked": false,
             "scientificName": "Anas platyrhynchos",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/mallard.jpg"
         },
         {
             "id": "duck_mallard_feed",
@@ -26,9 +26,9 @@
             "idealPitchHz": 651.4,
             "idealDurationSec": 2.23,
             "audioAssetPath": "assets/audio/duck_mallard_feed.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Anas platyrhynchos",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/mallard.jpg"
         },
         {
             "id": "duck_wood_duck_whistle",
@@ -43,7 +43,7 @@
             "audioAssetPath": "assets/audio/wood_duck.mp3",
             "isLocked": false,
             "scientificName": "Aix sponsa",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/wood_duck.jpg"
         },
         {
             "id": "goose_canadian_honk",
@@ -58,7 +58,7 @@
             "audioAssetPath": "assets/audio/goose_canadian_honk.mp3",
             "isLocked": false,
             "scientificName": "Branta canadensis",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/canada_goose.jpg"
         },
         {
             "id": "goose_cluck",
@@ -71,9 +71,9 @@
             "idealPitchHz": 414.5,
             "idealDurationSec": 7.7,
             "audioAssetPath": "assets/audio/goose_cluck.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Branta canadensis",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/canada_goose.jpg"
         },
         {
             "id": "teal_blue_winged",
@@ -86,9 +86,9 @@
             "idealPitchHz": 629.8,
             "idealDurationSec": 9.76,
             "audioAssetPath": "assets/audio/teal.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Spatula discors",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/teal.jpg"
         },
         {
             "id": "specklebelly_yodel",
@@ -101,9 +101,9 @@
             "idealPitchHz": 1211.2,
             "idealDurationSec": 6.8,
             "audioAssetPath": "assets/audio/specklebelly.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Anser albifrons",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/specklebelly_goose.jpg"
         },
         {
             "id": "elk_bull_bugle",
@@ -116,9 +116,9 @@
             "idealPitchHz": 1394.3,
             "idealDurationSec": 6.67,
             "audioAssetPath": "assets/audio/elk_bull_bugle.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Cervus canadensis",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/elk.jpg"
         },
         {
             "id": "deer_buck_grunt",
@@ -133,7 +133,7 @@
             "audioAssetPath": "assets/audio/deer_buck_grunt.mp3",
             "isLocked": false,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_buck.jpg"
         },
         {
             "id": "deer_doe_bleat",
@@ -148,7 +148,7 @@
             "audioAssetPath": "assets/audio/deer_doe_bleat.mp3",
             "isLocked": false,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_doe.jpg"
         },
         {
             "id": "deer_snort_wheeze",
@@ -161,9 +161,9 @@
             "idealPitchHz": 2029.5,
             "idealDurationSec": 10.0,
             "audioAssetPath": "assets/audio/deer_snort_wheeze.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_buck.jpg"
         },
         {
             "id": "coyote_howl",
@@ -178,7 +178,7 @@
             "audioAssetPath": "assets/audio/coyote_howl.mp3",
             "isLocked": false,
             "scientificName": "Canis latrans",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/coyote.jpg"
         },
         {
             "id": "coyote_challenge",
@@ -191,9 +191,9 @@
             "idealPitchHz": 796.9,
             "idealDurationSec": 15.0,
             "audioAssetPath": "assets/audio/coyote_challenge.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Canis latrans",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/coyote.jpg"
         },
         {
             "id": "red_fox_scream",
@@ -208,7 +208,7 @@
             "audioAssetPath": "assets/audio/fox_scream.mp3",
             "isLocked": false,
             "scientificName": "Vulpes vulpes",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/red_fox.jpg"
         },
         {
             "id": "bobcat_growl",
@@ -221,9 +221,9 @@
             "idealPitchHz": 1733.4,
             "idealDurationSec": 13.0,
             "audioAssetPath": "assets/audio/bobcat_growl.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Lynx rufus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/bobcat.jpg"
         },
         {
             "id": "rabbit_distress",
@@ -238,7 +238,7 @@
             "audioAssetPath": "assets/audio/rabbit_distress.mp3",
             "isLocked": false,
             "scientificName": "Sylvilagus floridanus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/cottontail_rabbit.jpg"
         },
         {
             "id": "raccoon_squall",
@@ -251,9 +251,9 @@
             "idealPitchHz": 2783.2,
             "idealDurationSec": 10.0,
             "audioAssetPath": "assets/audio/raccoon_squall.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Procyon lotor",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/raccoon.jpg"
         },
         {
             "id": "turkey_hen_yelp",
@@ -266,9 +266,9 @@
             "idealPitchHz": 3116.9,
             "idealDurationSec": 16.0,
             "audioAssetPath": "assets/audio/turkey_hen_yelp.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Meleagris gallopavo",
-            "imageUrl": "assets/images/land_bird_hero.png"
+            "imageUrl": "assets/images/animals/turkey.jpg"
         },
         {
             "id": "turkey_gobble",
@@ -283,7 +283,7 @@
             "audioAssetPath": "assets/audio/turkey_gobble.mp3",
             "isLocked": false,
             "scientificName": "Meleagris gallopavo",
-            "imageUrl": "assets/images/land_bird_hero.png"
+            "imageUrl": "assets/images/animals/turkey.jpg"
         },
         {
             "id": "turkey_cluck_purr",
@@ -296,9 +296,9 @@
             "idealPitchHz": 4791.1,
             "idealDurationSec": 9.69,
             "audioAssetPath": "assets/audio/turkey_purr.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Meleagris gallopavo",
-            "imageUrl": "assets/images/land_bird_hero.png"
+            "imageUrl": "assets/images/animals/turkey.jpg"
         },
         {
             "id": "owl_barred_hoot",
@@ -313,7 +313,7 @@
             "audioAssetPath": "assets/audio/owl_barred_hoot.mp3",
             "isLocked": false,
             "scientificName": "Strix varia",
-            "imageUrl": "assets/images/land_bird_hero.png"
+            "imageUrl": "assets/images/animals/barred_owl.jpg"
         },
         {
             "id": "quail_bobwhite",
@@ -326,9 +326,9 @@
             "idealPitchHz": 2250.2,
             "idealDurationSec": 8.0,
             "audioAssetPath": "assets/audio/quail.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Colinus virginianus",
-            "imageUrl": "assets/images/land_bird_hero.png"
+            "imageUrl": "assets/images/animals/quail.jpg"
         },
         {
             "id": "pheasant_crow",
@@ -341,9 +341,9 @@
             "idealPitchHz": 742.9,
             "idealDurationSec": 17.8,
             "audioAssetPath": "assets/audio/pheasant.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Phasianus colchicus",
-            "imageUrl": "assets/images/land_bird_hero.png"
+            "imageUrl": "assets/images/animals/pheasant.jpg"
         },
         {
             "id": "cougar_scream",
@@ -358,7 +358,7 @@
             "audioAssetPath": "assets/audio/cougar.mp3",
             "isLocked": false,
             "scientificName": "Puma concolor",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/puma.jpg"
         },
         {
             "id": "wood_duck_sit",
@@ -371,9 +371,9 @@
             "idealPitchHz": 1238.2,
             "idealDurationSec": 4.7,
             "audioAssetPath": "assets/audio/wood_duck_sit.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Aix sponsa",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/wood_duck.jpg"
         },
         {
             "id": "mallard_lonesome",
@@ -386,9 +386,9 @@
             "idealPitchHz": 678.3,
             "idealDurationSec": 3.8,
             "audioAssetPath": "assets/audio/mallard_hen.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Anas platyrhynchos",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/mallard.jpg"
         },
         {
             "id": "fallow_deer_groan",
@@ -401,9 +401,9 @@
             "idealPitchHz": 91.5,
             "idealDurationSec": 2.5,
             "audioAssetPath": "assets/audio/fallow.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Dama dama",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/fallow_deer.jpg"
         },
         {
             "id": "mule_deer_grunt",
@@ -416,9 +416,9 @@
             "idealPitchHz": 382.2,
             "idealDurationSec": 5.0,
             "audioAssetPath": "assets/audio/mule_deer.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus hemionus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/mule_deer.jpg"
         },
         {
             "id": "pintail_whistle",
@@ -431,9 +431,9 @@
             "idealPitchHz": 2051.0,
             "idealDurationSec": 7.0,
             "audioAssetPath": "assets/audio/pintail.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Anas acuta",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/pintail.jpg"
         },
         {
             "id": "woodcock_peent",
@@ -446,9 +446,9 @@
             "idealPitchHz": 4382.0,
             "idealDurationSec": 10.72,
             "audioAssetPath": "assets/audio/woodcock.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Scolopax minor",
-            "imageUrl": "assets/images/land_bird_hero.png"
+            "imageUrl": "assets/images/animals/woodcock.jpg"
         },
         {
             "id": "dove_coo",
@@ -463,7 +463,7 @@
             "audioAssetPath": "assets/audio/dove.mp3",
             "isLocked": false,
             "scientificName": "Zenaida macroura",
-            "imageUrl": "assets/images/land_bird_hero.png"
+            "imageUrl": "assets/images/animals/mourning_dove.jpg"
         },
         {
             "id": "canvasback_grunt",
@@ -476,9 +476,9 @@
             "idealPitchHz": 559.9,
             "idealDurationSec": 9.8,
             "audioAssetPath": "assets/audio/canvasback.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Aythya valisineria",
-            "imageUrl": "assets/images/waterfowl_hero.png"
+            "imageUrl": "assets/images/animals/canvasback.jpg"
         },
         {
             "id": "badger_growl",
@@ -491,9 +491,9 @@
             "idealPitchHz": 150.7,
             "idealDurationSec": 6.4,
             "audioAssetPath": "assets/audio/badger.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Taxidea taxus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/badger.jpg"
         },
         {
             "id": "great_horned_owl",
@@ -506,9 +506,9 @@
             "idealPitchHz": 301.5,
             "idealDurationSec": 10.9,
             "audioAssetPath": "assets/audio/gho.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Bubo virginianus",
-            "imageUrl": "assets/images/land_bird_hero.png"
+            "imageUrl": "assets/images/animals/great_horned_owl.jpg"
         },
         {
             "id": "bobcat_vocalization",
@@ -521,9 +521,9 @@
             "idealPitchHz": 1733.4,
             "idealDurationSec": 5.0,
             "audioAssetPath": "assets/audio/bobcat_vocalization.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Lynx rufus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/bobcat.jpg"
         },
         {
             "id": "bobcat_hiss",
@@ -536,9 +536,9 @@
             "idealPitchHz": 1733.4,
             "idealDurationSec": 1.0,
             "audioAssetPath": "assets/audio/bobcat_hiss.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Lynx rufus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/bobcat.jpg"
         },
         {
             "id": "bobcat_growl_v2",
@@ -551,9 +551,9 @@
             "idealPitchHz": 1500.0,
             "idealDurationSec": 5.0,
             "audioAssetPath": "assets/audio/bobcat_growl_v2.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Lynx rufus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/bobcat.jpg"
         },
         {
             "id": "bobcat_purr",
@@ -566,9 +566,9 @@
             "idealPitchHz": 250.0,
             "idealDurationSec": 5.0,
             "audioAssetPath": "assets/audio/bobcat_purr.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Lynx rufus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/bobcat.jpg"
         },
         {
             "id": "bobcat_yowl",
@@ -581,9 +581,9 @@
             "idealPitchHz": 1200.0,
             "idealDurationSec": 5.0,
             "audioAssetPath": "assets/audio/bobcat_yowl.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Lynx rufus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/bobcat.jpg"
         },
         {
             "id": "wolf_howl",
@@ -596,9 +596,9 @@
             "idealPitchHz": 400.0,
             "idealDurationSec": 7.0,
             "audioAssetPath": "assets/audio/wolf_howl.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Canis lupus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/gray_wolf.jpg"
         },
         {
             "id": "wolf_yelp",
@@ -611,9 +611,9 @@
             "idealPitchHz": 1200.0,
             "idealDurationSec": 3.0,
             "audioAssetPath": "assets/audio/wolf_yelp.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Canis lupus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/gray_wolf.jpg"
         },
         {
             "id": "wolf_growl",
@@ -626,9 +626,9 @@
             "idealPitchHz": 150.0,
             "idealDurationSec": 4.0,
             "audioAssetPath": "assets/audio/wolf_growl.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Canis lupus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/gray_wolf.jpg"
         },
         {
             "id": "wolf_whine",
@@ -641,9 +641,9 @@
             "idealPitchHz": 2000.0,
             "idealDurationSec": 7.0,
             "audioAssetPath": "assets/audio/wolf_whine.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Canis lupus",
-            "imageUrl": "assets/images/predator_hero.png"
+            "imageUrl": "assets/images/animals/gray_wolf.jpg"
         },
         {
             "id": "hog_grunt",
@@ -656,9 +656,9 @@
             "idealPitchHz": 100.0,
             "idealDurationSec": 7.0,
             "audioAssetPath": "assets/audio/hog_grunt.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Sus scrofa",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/wild_hog.jpg"
         },
         {
             "id": "hog_bark",
@@ -671,9 +671,9 @@
             "idealPitchHz": 300.0,
             "idealDurationSec": 11.6,
             "audioAssetPath": "assets/audio/hog_bark.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Sus scrofa",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/wild_hog.jpg"
         },
         {
             "id": "hog_squeal_loud",
@@ -686,9 +686,9 @@
             "idealPitchHz": 1500.0,
             "idealDurationSec": 8.0,
             "audioAssetPath": "assets/audio/hog_squeal_loud.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Sus scrofa",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/wild_hog.jpg"
         },
         {
             "id": "hog_squeal",
@@ -701,9 +701,9 @@
             "idealPitchHz": 1200.0,
             "idealDurationSec": 7.0,
             "audioAssetPath": "assets/audio/hog_squeal.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Sus scrofa",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/wild_hog.jpg"
         },
         {
             "id": "deer_dominant_grunt",
@@ -716,9 +716,9 @@
             "idealPitchHz": 280.0,
             "idealDurationSec": 10.0,
             "audioAssetPath": "assets/audio/deer_dominant_grunt.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_buck.jpg"
         },
         {
             "id": "deer_social_grunt",
@@ -731,9 +731,9 @@
             "idealPitchHz": 250.0,
             "idealDurationSec": 10.0,
             "audioAssetPath": "assets/audio/deer_social_grunt.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_buck.jpg"
         },
         {
             "id": "deer_tending_grunt",
@@ -746,9 +746,9 @@
             "idealPitchHz": 300.0,
             "idealDurationSec": 10.63,
             "audioAssetPath": "assets/audio/deer_tending_grunt.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_buck.jpg"
         },
         {
             "id": "deer_buck_challenge",
@@ -761,9 +761,9 @@
             "idealPitchHz": 350.0,
             "idealDurationSec": 6.0,
             "audioAssetPath": "assets/audio/deer_buck_challenge.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_buck.jpg"
         },
         {
             "id": "deer_tending_grunt_v2",
@@ -776,9 +776,9 @@
             "idealPitchHz": 621.1,
             "idealDurationSec": 6.0,
             "audioAssetPath": "assets/audio/deer_tending_grunt_v2.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_buck.jpg"
         },
         {
             "id": "deer_estrus_bleat",
@@ -791,9 +791,9 @@
             "idealPitchHz": 515.0,
             "idealDurationSec": 10.0,
             "audioAssetPath": "assets/audio/deer_estrus_bleat.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_doe.jpg"
         },
         {
             "id": "deer_fawn_distress",
@@ -806,9 +806,9 @@
             "idealPitchHz": 390.3,
             "idealDurationSec": 10.0,
             "audioAssetPath": "assets/audio/deer_fawn_distress.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_doe.jpg"
         },
         {
             "id": "deer_fawn_distress_v2",
@@ -821,9 +821,9 @@
             "idealPitchHz": 459.4,
             "idealDurationSec": 10.0,
             "audioAssetPath": "assets/audio/deer_fawn_distress_v2.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_doe.jpg"
         },
         {
             "id": "deer_lost_fawn",
@@ -836,9 +836,9 @@
             "idealPitchHz": 1160.5,
             "idealDurationSec": 5.0,
             "audioAssetPath": "assets/audio/deer_lost_fawn.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Odocoileus virginianus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/whitetail_doe.jpg"
         },
         {
             "id": "black_bear_cub_distress",
@@ -851,9 +851,45 @@
             "idealPitchHz": 288.2,
             "idealDurationSec": 10.0,
             "audioAssetPath": "assets/audio/black_bear_cub_distress.mp3",
-            "isLocked": false,
+            "isLocked": true,
             "scientificName": "Ursus americanus",
-            "imageUrl": "assets/images/big_game_hero.png"
+            "imageUrl": "assets/images/animals/black_bear.jpg"
+        },
+        {
+            "id": "crow_caw",
+            "animalName": "American Crow",
+            "scientificName": "Corvus brachyrhynchos",
+            "callType": "Standard Caw",
+            "category": "Land Birds",
+            "audioAssetPath": "assets/audio/crow.mp3",
+            "idealDurationSec": 6.0,
+            "description": "The classic loud, harsh caw of the American Crow.",
+            "isLocked": false,
+            "imageUrl": "assets/images/animals/crow.jpg"
+        },
+        {
+            "id": "coyote_yip",
+            "animalName": "Coyote",
+            "scientificName": "Canis latrans",
+            "callType": "Yip",
+            "category": "Predators",
+            "audioAssetPath": "assets/audio/coyote_yip.mp3",
+            "idealDurationSec": 8.0,
+            "description": "Short, sharp yipping bark of a coyote.",
+            "imageUrl": "assets/images/animals/coyote.jpg",
+            "isLocked": false
+        },
+        {
+            "id": "awebo_call",
+            "animalName": "Awebo",
+            "scientificName": "Lagopus lagopus",
+            "callType": "Call",
+            "category": "Land Birds",
+            "audioAssetPath": "assets/audio/awebo.mp3",
+            "idealDurationSec": 6.0,
+            "description": "Distinctive go-back call of the Willow Ptarmigan, an arctic grouse.",
+            "imageUrl": "assets/images/animals/crow.jpg",
+            "isLocked": false
         }
     ]
 }

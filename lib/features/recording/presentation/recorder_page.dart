@@ -7,12 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
 import 'package:hunting_calls_perfection/features/recording/presentation/controllers/recording_controller.dart';
-import 'package:hunting_calls_perfection/features/recording/presentation/controllers/visualizer_controller.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import '../../rating/presentation/rating_screen.dart';
 import '../../library/data/reference_database.dart';
 import '../../library/domain/reference_call_model.dart';
-import 'widgets/live_visualizer.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
   final String userId;
@@ -30,6 +28,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool isPlayingReference = false;
   StreamSubscription? _playerCompleteSubscription;
+  Timer? _autoStopTimer;
 
   @override
   void initState() {
@@ -67,6 +66,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
 
   @override
   void dispose() {
+    _autoStopTimer?.cancel();
     _playerCompleteSubscription?.cancel();
     _audioPlayer.dispose();
     _pulseController.dispose();
@@ -83,9 +83,9 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
 
   void _resetRecording() async {
     if (isProcessing) return;
+    _autoStopTimer?.cancel();
     await HapticFeedback.selectionClick();
     ref.read(recordingNotifierProvider.notifier).reset();
-    ref.read(visualizerProvider.notifier).reset();
   }
 
   void _toggleRecording() async {
@@ -134,6 +134,16 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                duration: const Duration(seconds: 5),
              ),
          );
+      } else if (finalState.isRecording) {
+        // Auto-stop recording after call duration + 2 seconds
+        final call = ReferenceDatabase.getById(selectedCallId);
+        final autoStopSec = (call.idealDurationSec + 2).clamp(3, 60).toInt();
+        _autoStopTimer?.cancel();
+        _autoStopTimer = Timer(Duration(seconds: autoStopSec), () {
+          if (mounted && ref.read(recordingNotifierProvider).isRecording) {
+            _toggleRecording();
+          }
+        });
       }
     }
   }
@@ -167,12 +177,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     final isRecording = recordingState.isRecording;
     final isCountingDown = recordingState.isCountingDown;
     
-    // Listen to amplitude changes to update the visualizer via the notifier
-    ref.listen(amplitudeStreamProvider, (previous, next) {
-      next.whenData((amplitude) {
-        ref.read(visualizerProvider.notifier).addAmplitude(amplitude);
-      });
-    });
+
 
     return BackgroundWrapper(
       child: Scaffold(
@@ -229,18 +234,6 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               ),
               
               const Spacer(),
-
-              Consumer(
-                builder: (context, ref, child) {
-                  final amplitudes = ref.watch(visualizerProvider).amplitudes;
-                  return LiveVisualizer(
-                    amplitudes: amplitudes,
-                    isRecording: isRecording,
-                  );
-                },
-              ),
-              
-              const Spacer(),
               
               GestureDetector(
                 onTap: (isCountingDown || isProcessing) ? null : _toggleRecording,
@@ -248,7 +241,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Retry Button
-                    if (isRecording || isCountingDown || ref.watch(visualizerProvider.select((s) => s.amplitudes.isNotEmpty)))
+                    if (isRecording || isCountingDown)
                       Padding(
                         padding: const EdgeInsets.only(right: 24.0),
                         child: _buildSmallIconButton(
