@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
 import 'package:hunting_calls_perfection/features/recording/presentation/controllers/recording_controller.dart';
@@ -96,6 +97,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     final selectedCallId = ref.read(selectedCallIdProvider);
 
     if (recordingState.isRecording) {
+      // Stopping recording
       setState(() => isProcessing = true);
       await HapticFeedback.mediumImpact();
       
@@ -121,6 +123,23 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         if (mounted) setState(() => isProcessing = false);
       }
     } else {
+      // Starting recording - check permissions first
+      final permissionStatus = await Permission.microphone.status;
+      
+      if (permissionStatus.isDenied) {
+        // First denial - request permission
+        final granted = await Permission.microphone.request();
+        if (!granted.isGranted) {
+          if (mounted) _showPermissionDeniedDialog();
+          return;
+        }
+      } else if (permissionStatus.isPermanentlyDenied) {
+        // User selected "Don't ask again"
+        if (mounted) _showPermissionSettingsDialog();
+        return;
+      }
+      
+      // Permission granted, proceed with recording
       await HapticFeedback.heavyImpact();
       await notifier.startRecordingWithCountdown();
       
@@ -146,6 +165,85 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         });
       }
     }
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1B3B24),
+        title: Row(
+          children: [
+            const Icon(Icons.mic_off, color: Colors.orangeAccent),
+            const SizedBox(width: 12),
+            Text('Microphone Access', style: GoogleFonts.oswald(color: Colors.white)),
+          ],
+        ),
+        content: const Text(
+          'We need microphone access to record your hunting calls. This helps us analyze your technique and provide scoring.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Not Now', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final granted = await Permission.microphone.request();
+              if (granted.isGranted) {
+                _toggleRecording(); // Retry recording
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF81C784),
+              foregroundColor: const Color(0xFF0F1E12),
+            ),
+            child: const Text('Allow'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPermissionSettingsDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1B3B24),
+        title: Row(
+          children: [
+            const Icon(Icons.settings, color: Colors.orangeAccent),
+            const SizedBox(width: 12),
+            Text('Permission Required', style: GoogleFonts.oswald(color: Colors.white)),
+          ],
+        ),
+        content: const Text(
+          'Microphone access is disabled in system settings. Please enable it to record hunting calls.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await openAppSettings();
+              if (mounted) Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF81C784),
+              foregroundColor: const Color(0xFF0F1E12),
+            ),
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
   }
 
 
