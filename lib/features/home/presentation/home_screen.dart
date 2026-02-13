@@ -181,48 +181,64 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildErrorState(String errorMessage) {
-    bool isProfileNotFound = errorMessage.contains("NOT_FOUND") || 
-                             errorMessage.contains("Document") && errorMessage.contains("not found");
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            isProfileNotFound ? Icons.person_off_outlined : Icons.error_outline, 
-            color: Colors.redAccent, 
+          const Icon(
+            Icons.cloud_off_outlined, 
+            color: Colors.orangeAccent, 
             size: 64
           ),
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Text(
-              isProfileNotFound 
-                  ? "Profile not found. Please create or select a hunter profile." 
-                  : errorMessage,
-              style: const TextStyle(color: Colors.white70),
-              textAlign: TextAlign.center,
+            child: Column(
+              children: [
+                Text(
+                  "Couldn't load your profile",
+                  style: GoogleFonts.oswald(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  errorMessage,
+                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () {
-              if (isProfileNotFound) {
-                // Navigate back to login screen to create/select profile
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-                // Also reset auth state so AuthWrapper doesn't immediately put us back here
-                ref.read(authControllerProvider.notifier).signOut();
-              } else {
-                ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
-              }
+              ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
             },
-            icon: Icon(isProfileNotFound ? Icons.person_add : Icons.refresh),
-            label: Text(isProfileNotFound ? 'Create / Select Profile' : 'Retry'),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF81C784),
               foregroundColor: const Color(0xFF0F1E12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () {
+              // TODO: Add contact support link or dialog
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Contact support at: support@huntingcalls.app'),
+                  backgroundColor: Color(0xFF81C784),
+                ),
+              );
+            },
+            child: Text(
+              'Contact Support',
+              style: GoogleFonts.lato(color: Colors.white38, fontSize: 12),
             ),
           ),
         ],
@@ -256,6 +272,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             fontWeight: FontWeight.w300,
                             letterSpacing: 1.0)),
                     Text(userName.toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.oswald(
                             fontSize: 48,
                             fontWeight: FontWeight.bold,
@@ -308,7 +326,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: const Color(0xFF1B3B24),
+                            title: Text('Sign Out?', style: GoogleFonts.oswald(color: Colors.white)),
+                            content: const Text(
+                              'Are you sure you want to sign out?',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text('SIGN OUT', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true && mounted) {
+                          ref.read(authControllerProvider.notifier).signOut();
+                        }
+                      },
                       icon: const Icon(Icons.logout, color: Colors.white70),
                       tooltip: "Sign Out",
                     ),
