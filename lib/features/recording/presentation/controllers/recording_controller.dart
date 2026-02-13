@@ -1,49 +1,56 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/audio_recorder_service.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
+import '../../domain/providers.dart';
+import '../../domain/use_cases/start_recording_use_case.dart';
+import '../../domain/use_cases/stop_recording_use_case.dart';
+import '../../domain/failures/recording_failure.dart';
 
 /// State for recording session
-enum RecordingStatus { idle, initializing, recording, stopping, error }
+enum RecordingStatus { idle, countdown, recording, stopping, error }
 
 class RecordingState {
   final RecordingStatus status;
   final String? audioPath;
-  final String? error;
+  final RecordingFailure? failure; // Changed from String? error
   final int recordDuration;
   final int? countdownValue;
 
   const RecordingState({
     this.status = RecordingStatus.idle,
     this.audioPath,
-    this.error,
+    this.failure,
     this.recordDuration = 0,
     this.countdownValue,
   });
 
   bool get isRecording => status == RecordingStatus.recording;
-  bool get isCountingDown => countdownValue != null;
+  bool get isCountingDown => status == RecordingStatus.countdown;
+  bool get hasError => status == RecordingStatus.error;
+  
+  // Convenience getter for error message
+  String? get errorMessage => failure?.message;
 
   RecordingState copyWith({
     RecordingStatus? status,
     String? audioPath,
-    String? error,
+    RecordingFailure? failure,
     int? recordDuration,
     int? countdownValue,
-    bool clearError = false,
+    bool clearFailure = false,
     bool clearCountdown = false,
   }) {
     return RecordingState(
       status: status ?? this.status,
       audioPath: audioPath ?? this.audioPath,
-      error: clearError ? null : (error ?? this.error),
+      failure: clearFailure ? null : (failure ?? this.failure),
       recordDuration: recordDuration ?? this.recordDuration,
       countdownValue: clearCountdown ? null : (countdownValue ?? this.countdownValue),
     );
   }
 }
 
-/// Notifier for recording operations
+/// Thin controller that delegates to use cases
 class RecordingNotifier extends Notifier<RecordingState> {
   Timer? _timer;
 
@@ -55,46 +62,49 @@ class RecordingNotifier extends Notifier<RecordingState> {
     return const RecordingState();
   }
 
-  AudioRecorderService get _recorder => ref.read(audioRecorderServiceProvider);
+  // Use cases injected via providers
+  StartRecordingUseCase get _startUseCase => ref.read(startRecordingUseCaseProvider);
+  StopRecordingUseCase get _stopUseCase => ref.read(stopRecordingUseCaseProvider);
 
-  /// Initialize the recorder
-  Future<void> initialize() async {
-    state = state.copyWith(status: RecordingStatus.initializing, clearError: true);
-    try {
-      await _recorder.init();
-      state = state.copyWith(status: RecordingStatus.idle);
-    } catch (e) {
-      state = state.copyWith(status: RecordingStatus.error, error: e.toString());
-    }
-  }
-
-  /// Start recording (with optional countdown)
+  /// Start recording with countdown
   Future<void> startRecordingWithCountdown() async {
     if (state.isRecording || state.isCountingDown) return;
 
-    // Start countdown
-    for (int i = 3; i > 0; i--) {
-      state = state.copyWith(countdownValue: i);
-      await Future.delayed(const Duration(seconds: 1));
-    }
-    state = state.copyWith(clearCountdown: true);
+    state = state.copyWith(status: RecordingStatus.countdown, clearFailure: true);
 
-    // Start recording
-    state = state.copyWith(status: RecordingStatus.initializing, clearError: true, recordDuration: 0);
-    try {
-      final success = await _recorder.startRecorder('temp_path');
-      if (success) {
-        state = state.copyWith(status: RecordingStatus.recording);
-        _startTimer();
-      } else {
+    final result = await _startUseCase.execute(
+      outputPath: 'temp_path', // TODO: Generate proper path from file service
+      onCountdownTick: (value) {
+        if (value > 0) {
+          state = state.copyWith(
+            status: RecordingStatus.countdown,
+            countdownValue: value,
+          );
+        } else {
+          state = state.copyWith(clearCountdown: true);
+        }
+      },
+    );
+
+    result.fold(
+      // Error
+      (failure) {
         state = state.copyWith(
           status: RecordingStatus.error,
-          error: _recorder.lastError ?? 'Failed to start recording',
+          failure: failure,
+          clearCountdown: true,
         );
-      }
-    } catch (e) {
-      state = state.copyWith(status: RecordingStatus.error, error: e.toString());
-    }
+      },
+      // Success
+      (audioPath) {
+        state = state.copyWith(
+          status: RecordingStatus.recording,
+          clearCountdown: true,
+          recordDuration: 0,
+        );
+        _startTimer();
+      },
+    );
   }
 
   void _startTimer() {
@@ -113,14 +123,27 @@ class RecordingNotifier extends Notifier<RecordingState> {
   Future<String?> stopRecording() async {
     _stopTimer();
     state = state.copyWith(status: RecordingStatus.stopping);
-    try {
-      final path = await _recorder.stopRecorder();
-      state = state.copyWith(status: RecordingStatus.idle, audioPath: path);
-      return path;
-    } catch (e) {
-      state = state.copyWith(status: RecordingStatus.error, error: e.toString());
-      return null;
-    }
+
+    final result = await _stopUseCase.execute();
+
+    return result.fold(
+      // Error
+      (failure) {
+        state = state.copyWith(
+          status: RecordingStatus.error,
+          failure: failure,
+        );
+        return null;
+      },
+      // Success
+      (audioPath) {
+        state = state.copyWith(
+          status: RecordingStatus.idle,
+          audioPath: audioPath,
+        );
+        return audioPath;
+      },
+    );
   }
 
   /// Reset state
@@ -136,7 +159,6 @@ final recordingNotifierProvider = NotifierProvider<RecordingNotifier, RecordingS
 
 /// State for the selected call
 final selectedCallIdProvider = StateProvider<String>((ref) {
-  // We'll import ReferenceDatabase if needed, but for now just a string
   return "goose_long_distance_contact"; // Default or first call ID
 });
 

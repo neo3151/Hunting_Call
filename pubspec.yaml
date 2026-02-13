@@ -11,7 +11,10 @@ dependencies:
     sdk: flutter
   
   # State Management
-  flutter_riverpod: ^2.5.1
+  flutter_riverpod: ^2.6.1
+  
+  # Functional Programming (Either, Result types)
+  fpdart: ^1.1.0
   riverpod_annotation: ^2.3.5
   provider: ^6.0.0  # Keep during migration
   

@@ -49,9 +49,9 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         } else {
            // Fallback if somehow everything is locked (should not happen with starter pack)
            ref.read(selectedCallIdProvider.notifier).state = ReferenceDatabase.calls.first.id;
-        }
+         }
       }
-      ref.read(recordingNotifierProvider.notifier).initialize();
+      // Initialization is now handled by use cases, no need for explicit init()
     });
     
     _pulseController = AnimationController(
@@ -148,7 +148,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
          if (!mounted) return;
          ScaffoldMessenger.of(context).showSnackBar(
              SnackBar(
-               content: Text("Recording Failed: ${finalState.error}"),
+               content: Text("Recording Failed: ${finalState.errorMessage}"),
                backgroundColor: Colors.red,
                duration: const Duration(seconds: 5),
              ),
