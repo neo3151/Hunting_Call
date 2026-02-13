@@ -2,7 +2,7 @@
 Download and process replacement audio for 4 rejected files.
 
 Targets:
-  1. crow.mp3         — American Crow standard caw
+  1. crow.mp3         — American ndard caw
   2. red_stag_roar.mp3 — Red Deer stag roar/bellow
   3. bobcat_growl_v2.mp3 — Bobcat deep growl
   4. bobcat_howl.mp3   — Bobcat howl

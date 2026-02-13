@@ -1,21 +1,27 @@
 
 class FreemiumConfig {
   /// These IDs are UNLOCKED in the Free version.
-  /// All other calls will be locked.
+  /// All other calls will be locked behind Premium.
   static const Set<String> freeCallIds = {
-    // Predators/Big Game (Requested Specifics)
-    'wolf_howl',
-    'wolf_bark',
-    'wolf_yelp',
-    'wolf_growl',
-    'wolf_whine',
-    
-    'hog_grunt',
-    'hog_bark',
-    'hog_squeal_loud',
-    'hog_squeal',
-    
-    'coyote_howl',
-    'coyote_challenge',
+    // Waterfowl
+    'duck_mallard_greeting',    // Mallard Greeting
+    'goose_canadian_honk',      // Canada Goose Honk
+    'duck_wood_duck_whistle',   // Wood Duck Whistle
+
+    // Big Game
+    'deer_buck_grunt',          // Whitetail Buck Grunt
+    'deer_doe_bleat',           // Whitetail Doe Bleat
+
+    // Predators
+    'cougar_scream',            // Puma Scream
+    'coyote_howl',              // Coyote Lone Howl
+    'rabbit_distress',          // Rabbit Distress
+    'red_fox_scream',           // Red Fox Scream
+
+    // Land Birds
+    'turkey_gobble',            // Turkey Gobble
+    // TODO: Add 'crow_caw' once a Crow Standard Caw audio asset is sourced
+    'dove_coo',                 // Mourning Dove Coo
+    'owl_barred_hoot',          // Barred Owl Hoot
   };
 }
