@@ -1,133 +1,98 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/features/onboarding/presentation/controllers/onboarding_controller.dart';
-import '../../../core/widgets/background_wrapper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class OnboardingScreen extends ConsumerStatefulWidget {
+class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingData> _pages = [
-    OnboardingData(
-      title: "Master the Call",
-      description: "Learn to sound like a pro with real-time feedback and high-fidelity reference calls.",
-      imagePath: "assets/images/onboarding_mastery.png",
-    ),
-    OnboardingData(
-      title: "Scientific Precision",
-      description: "Our DSP engine analyzes your pitch, duration, and tone to give you accurate scores.",
-      imagePath: "assets/images/onboarding_analysis.png",
-    ),
-    OnboardingData(
-      title: "Vast Library",
-      description: "Choose from dozens of wild game calls, from Mallards to Bull Elks.",
-      imagePath: "assets/images/onboarding_library.png",
-    ),
-    OnboardingData(
-      title: "Ready to Hunt?",
-      description: "Join thousands of hunters perfecting their craft. Your journey starts now.",
-      imagePath: "assets/images/logo.png",
-      isLast: true,
-    ),
-  ];
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_complete', true);
+    if (mounted) {
+      Navigator.of(context).pushReplacementNamed('/');
+    }
+  }
+
+  void _nextPage() {
+    if (_currentPage < 2) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _completeOnboarding();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BackgroundWrapper(
-        child: Stack(
+      backgroundColor: const Color(0xFF0F1E12),
+      body: SafeArea(
+        child: Column(
           children: [
-            PageView.builder(
-              controller: _pageController,
-              itemCount: _pages.length,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                return _OnboardingSlide(data: _pages[index]);
-              },
-            ),
-            
             // Skip button
-            if (_currentPage < _pages.length - 1)
-              Positioned(
-                top: 40,
-                right: 20,
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Align(
+                alignment: Alignment.topRight,
                 child: TextButton(
-                  onPressed: () => ref.read(onboardingProvider.notifier).completeOnboarding(),
-                  child: Text(
-                    "Skip",
-                    style: GoogleFonts.outfit(color: Colors.white70),
-                  ),
+                  onPressed: _completeOnboarding,
+                  child: const Text('Skip', style: TextStyle(color: Colors.white70, fontSize: 16)),
                 ),
               ),
-
-            // Bottom controls
-            Positioned(
-              bottom: 50,
-              left: 0,
-              right: 0,
+            ),
+            // PageView
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (index) => setState(() => _currentPage = index),
+                children: [
+                  _buildWelcomePage(),
+                  _buildHowItWorksPage(),
+                  _buildExplorePage(),
+                ],
+              ),
+            ),
+            // Progress dots + Next button
+            Padding(
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 children: [
-                  // Indicators
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _pages.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        height: 8,
-                        width: _currentPage == index ? 24 : 8,
-                        decoration: BoxDecoration(
-                          color: _currentPage == index ? Colors.orange : Colors.grey.withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(4),
+                  _buildProgressDots(),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _nextPage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF81C784),
+                        foregroundColor: const Color(0xFF0F1E12),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  
-                  // Next / Get Started button
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_currentPage < _pages.length - 1) {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.easeInOut,
-                            );
-                          } else {
-                            ref.read(onboardingProvider.notifier).completeOnboarding();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(
-                          _currentPage == _pages.length - 1 ? "Get Started" : "Next",
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      child: Text(
+                        _currentPage == 2 ? 'GET STARTED' : 'NEXT',
+                        style: GoogleFonts.oswald(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
                         ),
                       ),
                     ),
@@ -140,81 +105,93 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
     );
   }
-}
 
-class _OnboardingSlide extends StatelessWidget {
-  final OnboardingData data;
+  Widget _buildProgressDots() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(3, (index) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: _currentPage == index ? 24 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: _currentPage == index
+                ? const Color(0xFF81C784)
+                : Colors.white24,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        );
+      }),
+    );
+  }
 
-  const _OnboardingSlide({required this.data});
+  Widget _buildWelcomePage() {
+    return _buildPage(
+      icon: Icons.multitrack_audio_rounded,
+      title: 'Master Your\nHunting Calls',
+      description: 'Record, analyze, and perfect your animal calls with expert feedback and real-time scoring',
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildHowItWorksPage() {
+    return _buildPage(
+      icon: Icons.graphic_eq,
+      title: 'Practice\nMakes Perfect',
+      description: '1. Choose an animal call\n2. Listen to the reference\n3. Record your attempt\n4. Get instant AI feedback',
+    );
+  }
+
+  Widget _buildExplorePage() {
+    return _buildPage(
+      icon: Icons.explore_rounded,
+      title: 'Your Hunt\nBegins',
+      description: 'Access 50+ calls, track progress, compete on leaderboards, and improve your technique',
+    );
+  }
+
+  Widget _buildPage({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
     return Padding(
-      padding: const EdgeInsets.all(40.0),
+      padding: const EdgeInsets.all(24.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Image with glassmorphism frame
           Container(
-            height: 300,
+            width: 120,
+            height: 120,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              color: const Color(0xFF81C784).withValues(alpha: 0.2),
+              shape: BoxShape.circle,
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Image.asset(
-                data.imagePath,
-                fit: BoxFit.cover,
-                width: double.infinity,
-              ),
-            ),
+            child: Icon(icon, size: 64, color: const Color(0xFF81C784)),
           ),
           const SizedBox(height: 48),
-          
-          // Text content
           Text(
-            data.title,
-            style: GoogleFonts.outfit(
-              fontSize: 32,
+            title,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.oswald(
+              fontSize: 36,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              height: 1.2,
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(
-            data.description,
-            style: GoogleFonts.outfit(
+            description,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.lato(
               fontSize: 16,
               color: Colors.white70,
-              height: 1.5,
+              height: 1.6,
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 100), // Space for bottom controls
         ],
       ),
     );
   }
-}
-
-class OnboardingData {
-  final String title;
-  final String description;
-  final String imagePath;
-  final bool isLast;
-
-  OnboardingData({
-    required this.title,
-    required this.description,
-    required this.imagePath,
-    this.isLast = false,
-  });
 }
