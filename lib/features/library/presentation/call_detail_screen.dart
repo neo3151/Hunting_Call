@@ -1,7 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:audioplayers/audioplayers.dart';
-import '../domain/reference_call_model.dart';
+import '../../library/domain/reference_call_model.dart';
 import 'acoustic_spectrum_widget.dart';
 
 import '../../recording/presentation/recorder_page.dart';
@@ -10,6 +10,10 @@ import '../../../config/app_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/upgrade_prompter.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
+import '../../../core/services/audio_service.dart';
+import '../../library/data/reference_database.dart';
+import '../../../core/widgets/background_wrapper.dart';
+
 
 class CallDetailScreen extends ConsumerStatefulWidget {
   final ReferenceCall call;
@@ -21,52 +25,37 @@ class CallDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<CallDetailScreen> createState() => _CallDetailScreenState();
 }
 
-class _CallDetailScreenState extends ConsumerState<CallDetailScreen> with SingleTickerProviderStateMixin {
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isPlaying = false;
-  late AnimationController _pulseController;
-
+class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
-    _pulseController.dispose();
     super.dispose();
   }
 
   Future<void> _togglePlayback() async {
-    if (_isPlaying) {
-      await _audioPlayer.stop();
-      if (mounted) setState(() => _isPlaying = false);
-    } else {
-      final assetPath = widget.call.audioAssetPath.replaceFirst('assets/', '');
-      try {
-        await _audioPlayer.play(AssetSource(assetPath));
-        if (mounted) setState(() => _isPlaying = true);
-        
-        _audioPlayer.onPlayerComplete.listen((_) {
-          if (mounted) setState(() => _isPlaying = false);
-        });
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error playing audio: $e"), backgroundColor: Colors.red),
-          );
-        }
+    final audioService = ref.read(audioServiceProvider);
+    final assetPath = widget.call.audioAssetPath.replaceFirst('assets/', '');
+    
+    try {
+      await audioService.playAsset(assetPath, widget.call.id);
+      if (mounted) setState(() {}); // Trigger rebuild
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Could not play audio: $e"), backgroundColor: Colors.red),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final audioService = ref.watch(audioServiceProvider);
+    final isPlaying = audioService.currentlyPlayingId == widget.call.id;
     final profile = ref.watch(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
     debugPrint("🔍 CallDetailScreen: Profile=${profile?.id}, Premium=$isPremium");
@@ -161,8 +150,8 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> with Single
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: _togglePlayback,
-                          icon: Icon(_isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
-                          label: Text(_isPlaying ? "STOP REFERENCE" : "LISTEN TO REFERENCE"),
+                          icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
+                          label: Text(isPlaying ? "STOP REFERENCE" : "LISTEN TO REFERENCE"),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF81C784),
                             foregroundColor: Colors.black,
