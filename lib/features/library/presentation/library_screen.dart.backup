@@ -2,10 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../library/data/reference_database.dart';
 import '../../library/domain/reference_call_model.dart';
 import '../../../core/widgets/upgrade_prompter.dart';
-import '../../../core/services/audio_service.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
 import 'call_detail_screen.dart';
 
@@ -18,8 +18,16 @@ class LibraryScreen extends ConsumerStatefulWidget {
 }
 
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  String? _currentlyPlayingId;
   String _searchQuery = "";
   final List<String> _categories = ["All", "Waterfowl", "Big Game", "Predators", "Land Birds"];
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
 
   Future<void> _togglePlayback(ReferenceCall call) async {
     final profile = ref.read(profileNotifierProvider).profile;
@@ -33,17 +41,25 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       return;
     }
     
-    final audioService = ref.read(audioServiceProvider);
-    final assetPath = call.audioAssetPath.replaceFirst('assets/', '');
-    
-    try {
-      await audioService.playAsset(assetPath, call.id);
-      if (mounted) setState(() {}); // Trigger rebuild
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Could not play audio: $e"), backgroundColor: Colors.red),
-        );
+    if (_currentlyPlayingId == call.id) {
+      await _audioPlayer.stop();
+      setState(() => _currentlyPlayingId = null);
+    } else {
+      final assetPath = call.audioAssetPath.replaceFirst('assets/', '');
+      try {
+        await _audioPlayer.stop();
+        await _audioPlayer.play(AssetSource(assetPath));
+        setState(() => _currentlyPlayingId = call.id);
+        
+        _audioPlayer.onPlayerComplete.listen((_) {
+          if (mounted) setState(() => _currentlyPlayingId = null);
+        });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Could not play audio: $e"), backgroundColor: Colors.red),
+          );
+        }
       }
     }
   }
@@ -81,8 +97,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final audioService = ref.watch(audioServiceProvider);
-    final currentlyPlayingId = audioService.currentlyPlayingId;
     final profileState = ref.watch(profileNotifierProvider);
     final isPremium = profileState.profile?.isPremium ?? false;
 
@@ -152,7 +166,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final call = filtered[index];
-                    final isPlaying = currentlyPlayingId == call.id;
+                    final isPlaying = _currentlyPlayingId == call.id;
                     final isLocked = ReferenceDatabase.isLocked(call.id, isPremium);
                     return _buildCallCard(call, isPlaying, isLocked);
                   },
