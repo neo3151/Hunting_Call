@@ -865,7 +865,13 @@
             "idealDurationSec": 6.0,
             "description": "The classic loud, harsh caw of the American Crow.",
             "isLocked": false,
-            "imageUrl": "assets/images/animals/crow.jpg"
+            "imageUrl": "assets/images/animals/crow.jpg",
+            "difficulty": "Easy",
+            "idealPitchHz": 1200,
+            "proTips": [
+                "Use a sharp, raspy tone",
+                "Quick burst of air for each caw"
+            ]
         },
         {
             "id": "coyote_yip",
@@ -877,7 +883,13 @@
             "idealDurationSec": 8.0,
             "description": "Short, sharp yipping bark of a coyote.",
             "imageUrl": "assets/images/animals/coyote.jpg",
-            "isLocked": false
+            "isLocked": false,
+            "difficulty": "Intermediate",
+            "idealPitchHz": 800,
+            "proTips": [
+                "Short sharp yips in quick succession",
+                "Higher pitch than a howl"
+            ]
         },
         {
             "id": "awebo_call",
@@ -889,7 +901,13 @@
             "idealDurationSec": 6.0,
             "description": "Distinctive go-back call of the Willow Ptarmigan, an arctic grouse.",
             "imageUrl": "assets/images/animals/crow.jpg",
-            "isLocked": false
+            "isLocked": false,
+            "difficulty": "Intermediate",
+            "idealPitchHz": 600,
+            "proTips": [
+                "Listen for the distinctive go-back rhythm",
+                "Practice the two-note pattern"
+            ]
         }
     ]
 }
