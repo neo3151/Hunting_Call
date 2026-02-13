@@ -91,7 +91,7 @@ def main():
             fields="id, name, webViewLink"
         ).execute()
 
-    print(f"\n✅ Upload complete!")
+    print(f"\nUpload complete!")
     print(f"   File ID: {file.get('id')}")
     print(f"   Link: {file.get('webViewLink', 'N/A')}")
 

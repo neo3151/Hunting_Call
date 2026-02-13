@@ -894,7 +894,7 @@
             "audioAssetPath": "assets/audio/awebo.mp3",
             "idealDurationSec": 6.0,
             "description": "Distinctive go-back call of the Willow Ptarmigan, an arctic grouse.",
-            "imageUrl": "assets/images/animals/crow.jpg",
+            "imageUrl": "assets/images/animals/willow_ptarmigan.jpg",
             "isLocked": false,
             "difficulty": "Intermediate",
             "idealPitchHz": 600,

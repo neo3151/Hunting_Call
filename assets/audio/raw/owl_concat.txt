@@ -1,3 +1,0 @@
-file c:/Users/neo31/Hunting_Call/assets/audio/raw/owl_hoot1.wav
-file c:/Users/neo31/Hunting_Call/assets/audio/raw/owl_gap.wav
-file c:/Users/neo31/Hunting_Call/assets/audio/raw/owl_hoot2.wav
