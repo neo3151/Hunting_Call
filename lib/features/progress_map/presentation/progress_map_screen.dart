@@ -286,28 +286,31 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
 
     return Scaffold(
       backgroundColor: world.bgColorBot,
-      body: Column(
-        children: [
-          _buildTopBar(world),
-          _buildWorldTabs(),
-          Expanded(
-            child: _isLoading
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const CircularProgressIndicator(color: Color(0xFF81C784)),
-                        const SizedBox(height: 16),
-                        Text('Loading world...', style: GoogleFonts.pressStart2p(color: Colors.white38, fontSize: 8)),
-                      ],
-                    ),
-                  )
-                : _worldNodes.isEmpty
-                    ? Center(child: Text('No calls found', style: GoogleFonts.oswald(color: Colors.white54)))
-                    : _buildWorldMap(),
-          ),
-          if (_selectedNode != null) _buildDetailCard(),
-        ],
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            _buildTopBar(world),
+            _buildWorldTabs(),
+            Expanded(
+              child: _isLoading
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(color: Color(0xFF81C784)),
+                          const SizedBox(height: 16),
+                          Text('Loading world...', style: GoogleFonts.pressStart2p(color: Colors.white38, fontSize: 8)),
+                        ],
+                      ),
+                    )
+                  : _worldNodes.isEmpty
+                      ? Center(child: Text('No calls found', style: GoogleFonts.oswald(color: Colors.white54)))
+                      : _buildWorldMap(),
+            ),
+            if (_selectedNode != null) _buildDetailCard(),
+          ],
+        ),
       ),
     );
   }
