@@ -117,6 +117,16 @@ comments.txt
 # Large raw WAV files exceeding GitHub limit
 assets/audio/replacements/_raw_specklebelly.wav
 
+# Audio processing/staging folders (~1.1GB, keep only production .mp3 in git)
+assets/audio/_backup/
+assets/audio/_cut/
+assets/audio/_candidates/
+assets/audio/_raw_downloads/
+assets/audio/youtube_extracts/
+assets/audio/gmail_imports/
+assets/audio/replacements/
+*.wav
+
 scripts/token.json
 
 scripts/gdrive_token.json
