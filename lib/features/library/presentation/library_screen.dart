@@ -91,7 +91,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           call.callType.toLowerCase().contains(_searchQuery.toLowerCase());
       final matchesCategory = category == "All" || call.category == category;
       return matchesSearch && matchesCategory;
-    }).toList();
+    }).toList()
+      ..sort((a, b) => a.animalName.compareTo(b.animalName));
   }
 
   @override
@@ -219,7 +220,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              call.callType,
+                              call.animalName,
                               style: GoogleFonts.oswald(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -227,7 +228,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               ),
                             ),
                             Text(
-                              call.animalName,
+                              call.callType,
                               style: TextStyle(
                                 color: isLocked ? Colors.white38 : Colors.white70,
                                 fontSize: 14,
