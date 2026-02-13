@@ -20,8 +20,10 @@ class FreemiumConfig {
 
     // Land Birds
     'turkey_gobble',            // Turkey Gobble
-    // TODO: Add 'crow_caw' once a Crow Standard Caw audio asset is sourced
+    'crow_caw',                 // American Crow Standard Caw
     'dove_coo',                 // Mourning Dove Coo
     'owl_barred_hoot',          // Barred Owl Hoot
+    'coyote_yip',               // Coyote Yip
+    'awebo_call',               // Awebo (Willow Ptarmigan)
   };
 }
