@@ -535,7 +535,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     if (lower.contains('rabbit')) return '🐰';
     if (lower.contains('raccoon')) return '🦝';
     if (lower.contains('crow')) return '🐦‍⬛';
-    if (lower.contains('quail') || lower.contains('pheasant') || lower.contains('woodcock') || lower.contains('dove') || lower.contains('grouse')) return '🐦';
+    if (lower.contains('quail') || lower.contains('pheasant') || lower.contains('woodcock') || lower.contains('dove') || lower.contains('grouse') || lower.contains('awebo') || lower.contains('ptarmigan')) return '🐦';
     if (lower.contains('hog')) return '🐗';
     if (lower.contains('badger')) return '🦡';
     return '🦌';
