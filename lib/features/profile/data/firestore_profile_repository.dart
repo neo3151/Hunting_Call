@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/profile_model.dart';
 import '../../rating/domain/rating_model.dart';
 import '../domain/repositories/profile_repository.dart';
+import '../domain/use_cases/update_daily_challenge_stats_use_case.dart';
+import '../domain/entities/daily_challenge_stats.dart';
 import 'local_profile_data_source.dart';
 
 class FirestoreProfileRepository implements ProfileRepository {
@@ -230,70 +232,46 @@ class FirestoreProfileRepository implements ProfileRepository {
     if (userId == 'guest') return;
 
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    
-    // Using transaction or checking document first would be safer to identify streaks,
-    // but for now we just want to log completion if it hasn't been done today.
-    // However, since we don't have atomic read-write here easily without transaction logic
-    // we will blindly write for now but check date in the logic layer if possible or just update.
-    
-    // Actually, let's just update the lastDailyChallengeDate and increment if it's a new day.
-    // For simplicity in this pivot: Just set the date and increment total. 
-    // The UI can determine if it was "today" for display purposes.
-    // Ideally we check if `lastDailyChallengeDate` < today.
-    
     final docRef = _firestore.collection(_collectionPath).doc(userId);
     
     await _firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
-      if (!snapshot.exists) return; // Should not happen if user exists
+      if (!snapshot.exists) return;
       
       final data = snapshot.data()!;
-      final lastDateMillis = data['lastDailyChallengeDate'] as int?;
-      final lastDate = lastDateMillis != null 
-          ? DateTime.fromMillisecondsSinceEpoch(lastDateMillis) 
-          : null;
-          
-      bool shouldIncrement = false;
-      if (lastDate == null) {
-        shouldIncrement = true;
-      } else {
-        final lastDateDay = DateTime(lastDate.year, lastDate.month, lastDate.day);
-        if (lastDateDay.isBefore(today)) {
-          shouldIncrement = true;
-        }
-      }
       
-      if (shouldIncrement) {
-        // Calculate Streak
-        int currentStreak = data['currentStreak'] as int? ?? 0;
-        int longestStreak = data['longestStreak'] as int? ?? 0;
-        
-        // Check for consecutive days
-        bool isConsecutive = false;
-        if (lastDate != null) {
-          final lastDateDay = DateTime(lastDate.year, lastDate.month, lastDate.day);
-          final diff = today.difference(lastDateDay).inDays;
-          if (diff == 1) {
-            isConsecutive = true;
+      // Extract current stats from Firestore
+      final lastDateMillis = data['lastDailyChallengeDate'] as int?;
+      final currentStats = DailyChallengeStats(
+        challengesCompleted: data['dailyChallengesCompleted'] as int? ?? 0,
+        lastChallengeDate: lastDateMillis != null 
+            ? DateTime.fromMillisecondsSinceEpoch(lastDateMillis)
+            : null,
+        currentStreak: data['currentStreak'] as int? ?? 0,
+        longestStreak: data['longestStreak'] as int? ?? 0,
+      );
+      
+      // Use domain use case for streak calculation (pure business logic)
+      final useCase = UpdateDailyChallengeStatsUseCase();
+      final result = useCase.execute(currentStats, now);
+      
+      result.fold(
+        (failure) {
+          debugPrint('Failed to calculate daily challenge stats: ${failure.message}');
+        },
+        (newStats) {
+          // Only update if stats changed
+          if (newStats != currentStats) {
+            transaction.update(docRef, {
+              'dailyChallengesCompleted': newStats.challengesCompleted,
+              'lastDailyChallengeDate': newStats.lastChallengeDate?.millisecondsSinceEpoch,
+              'currentStreak': newStats.currentStreak,
+              'longestStreak': newStats.longestStreak,
+            });
           }
-        } else {
-            // First time ever
-            isConsecutive = true; // Technically consecutive start
-            currentStreak = 0;
-        }
-        
-        int newStreak = isConsecutive ? currentStreak + 1 : 1;
-        int newLongest = newStreak > longestStreak ? newStreak : longestStreak;
-
-        transaction.update(docRef, {
-          'dailyChallengesCompleted': FieldValue.increment(1),
-          'lastDailyChallengeDate': now.millisecondsSinceEpoch,
-          'currentStreak': newStreak,
-          'longestStreak': newLongest,
-        });
-      }
-    }); 
+        },
+      );
+    });
   }
 
   @override
