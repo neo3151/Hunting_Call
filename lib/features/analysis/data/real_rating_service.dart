@@ -6,6 +6,8 @@ import '../../rating/domain/rating_model.dart';
 import '../../rating/domain/rating_service.dart';
 import '../domain/audio_analysis_model.dart';
 import '../domain/frequency_analyzer.dart';
+import '../domain/use_cases/analyze_audio_use_case.dart';
+import '../domain/use_cases/calculate_score_use_case.dart';
 import '../../library/data/reference_database.dart';
 
 import '../../profile/domain/repositories/profile_repository.dart';
@@ -17,17 +19,22 @@ import '../../rating/domain/personality_feedback_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 class RealRatingService implements RatingService {
-  final FrequencyAnalyzer analyzer;
+  final AnalyzeAudioUseCase _analyzeUseCase;
+  final CalculateScoreUseCase _calculateUseCase;
+  final FrequencyAnalyzer analyzer; // Still needed for reference audio analysis
   final ProfileRepository profileRepository;
   final LeaderboardService? leaderboardService;
   
   Position? _currentPosition;
 
   RealRatingService({
+    required AnalyzeAudioUseCase analyzeUseCase,
+    required CalculateScoreUseCase calculateUseCase,
     required this.analyzer, 
     required this.profileRepository,
     this.leaderboardService,
-  });
+  }) : _analyzeUseCase = analyzeUseCase,
+       _calculateUseCase = calculateUseCase;
 
   static final Map<String, AudioAnalysis> _refCache = {};
 
@@ -56,8 +63,14 @@ class RealRatingService implements RatingService {
       // 1. Get the ideal metrics
       final reference = ReferenceDatabase.getById(animalType);
 
-      // 2. Analyze the user's audio
-      final userAnalysis = await analyzer.analyzeAudio(audioPath);
+      // 2. Analyze the user's audio (via use case)
+      final userAnalysisResult = await _analyzeUseCase.execute(audioPath);
+      final userAnalysis = userAnalysisResult.fold(
+        (failure) => throw Exception(failure.message),
+        (analysis) => analysis,
+      );
+      
+      // Double-check signal quality
       if (userAnalysis.dominantFrequencyHz == 0 && userAnalysis.totalDurationSec == 0) {
         return RatingResult(
           score: 0,
@@ -92,82 +105,29 @@ class RealRatingService implements RatingService {
         debugPrint("RealRatingService: Using cached reference for $animalType");
       }
 
-      final detectedPitch = userAnalysis.dominantFrequencyHz;
-      final detectedDuration = userAnalysis.totalDurationSec;
-
-      // 3. Compare (The Algorithm)
+      // 3. Calculate score (via use case - extracts all scoring logic to domain layer)
+      final scoreResult = await _calculateUseCase.execute(
+        CalculateScoreParams(
+          userId: userId,
+          recordingId: DateTime.now().millisecondsSinceEpoch.toString(),
+          animalId: reference.id,
+          userAnalysis: userAnalysis,
+          referenceAnalysis: refAnalysis,
+        ),
+      );
       
-      // A. PITCH SCORE (40%)
-      double pitchScore = 100.0;
-      if (reference.idealPitchHz > 0) {
-        final pitchDiff = (detectedPitch - reference.idealPitchHz).abs();
-        final pitchDeviationPercent = (pitchDiff / reference.idealPitchHz) * 100;
-        final tolerancePercent = (reference.tolerancePitch / reference.idealPitchHz) * 100;
-        
-        if (pitchDeviationPercent > tolerancePercent) {
-          pitchScore = max(0, 100 - ((pitchDeviationPercent - tolerancePercent) * 3));
-        }
-      }
+      final analysisResult = scoreResult.fold(
+        (failure) => throw Exception(failure.message),
+        (result) => result,
+      );
 
-      // B. TIMBRE SCORE (30%)
-      double timbreScore = 100.0;
-      if (refAnalysis != null) {
-        final brightnessDiff = (userAnalysis.brightness - refAnalysis.brightness).abs();
-        final warmthDiff = (userAnalysis.warmth - refAnalysis.warmth).abs();
-        final nasalityDiff = (userAnalysis.nasality - refAnalysis.nasality).abs();
-        
-        // Lower weight for small deviations, higher for large ones
-        final brightnessPenalty = brightnessDiff > 10 ? (brightnessDiff - 10) * 1.5 : 0.0;
-        final warmthPenalty = warmthDiff > 10 ? (warmthDiff - 10) * 1.5 : 0.0;
-        final nasalityPenalty = nasalityDiff > 10 ? (nasalityDiff - 10) * 2.5 : 0.0; // Nasality is distinct for predators/waterfowl
-        
-        timbreScore = max(0, 100 - (brightnessPenalty + warmthPenalty + nasalityPenalty));
-      } else {
-        // Fallback for missing ref analysis
-        timbreScore = (userAnalysis.toneClarity * 0.7) + (userAnalysis.harmonicRichness * 0.3);
-      }
-
-      // C. RHYTHM & STABILITY SCORE (20%)
-      double rhythmScore = 100.0;
-      double pitchStabilityScore = userAnalysis.pitchStability;
+      // 4. Generate Feedback (presentation logic)
+      final pitchScore = analysisResult.pitchScore.score;
+      final timbreScore = analysisResult.toneScore.score;
+      final rhythmScore = analysisResult.rhythmScore.score;
+      final durationScore = analysisResult.durationScore.score;
+      final detectedPitch = analysisResult.pitchScore.actualHz;
       
-      if (reference.isPulsedCall && refAnalysis != null && refAnalysis.isPulsedCall) {
-        final tempoDiff = (userAnalysis.tempo - reference.idealTempo).abs();
-        final tempoPenalty = tempoDiff > 10 ? (tempoDiff - 10) * 2 : 0.0;
-        
-        final regularityScore = userAnalysis.rhythmRegularity;
-        rhythmScore = (pitchStabilityScore * 0.4) + (regularityScore * 0.4) + max(0, 20 - tempoPenalty);
-      } else {
-        // Non-pulsed calls value stability more
-        rhythmScore = (pitchStabilityScore * 0.8) + (userAnalysis.volumeConsistency * 0.2);
-      }
-
-      // D. DURATION & VOLUME SCORE (10%)
-      double durationScore = 100.0;
-      final durationDiff = (detectedDuration - reference.idealDurationSec).abs();
-      if (reference.idealDurationSec > 0) {
-        final durationDeviationPercent = (durationDiff / reference.idealDurationSec) * 100;
-        final toleranceDurationPercent = (reference.toleranceDuration / reference.idealDurationSec) * 100;
-        
-        if (durationDeviationPercent > toleranceDurationPercent) {
-          durationScore = max(0, 100 - ((durationDeviationPercent - toleranceDurationPercent) * 2));
-        }
-      }
-      
-      final volumeScore = min(100.0, userAnalysis.averageVolume * 500); // 0.2 RMS is "Ideal" (100)
-      final finalDurationVolumeScore = (durationScore * 0.7) + (volumeScore * 0.3);
-
-      // TOTAL SCORE CALCULATION
-      double totalScore = (pitchScore * 0.40) + 
-                         (timbreScore * 0.30) + 
-                         (rhythmScore * 0.20) + 
-                         (finalDurationVolumeScore * 0.10);
-      
-      totalScore = totalScore.clamp(0, 100);
-
-      // 5. Generate Feedback
-      
-      // Technical feedback (for the summary list)
       String technicalFeedback = "";
       final bool pitchIsGood = pitchScore >= 85;
       final bool timbreIsGood = timbreScore >= 80;
@@ -183,7 +143,6 @@ class RealRatingService implements RatingService {
         technicalFeedback = "Watch your rhythm and stability.";
       }
 
-      // Personality roasting feedback
       final String personalityCritique = PersonalityFeedbackService.getSpecificCritique({
         'pitch': pitchScore,
         'timbre': timbreScore,
@@ -192,13 +151,13 @@ class RealRatingService implements RatingService {
       });
 
       final result = RatingResult(
-        score: totalScore,
+        score: analysisResult.overallScore,
         feedback: "$technicalFeedback $personalityCritique",
-        pitchHz: detectedPitch,
+        pitchHz: analysisResult.pitchScore.actualHz,
         metrics: {
-          "Pitch (Hz)": detectedPitch,
-          "Target Pitch": reference.idealPitchHz,
-          "Duration (s)": detectedDuration,
+          "Pitch (Hz)": analysisResult.pitchScore.actualHz,
+          "Target Pitch": analysisResult.pitchScore.idealHz,
+          "Duration (s)": analysisResult.durationScore.actualSec,
           "score_pitch": pitchScore,
           "score_timbre": timbreScore,
           "score_rhythm": rhythmScore,
@@ -224,7 +183,7 @@ class RealRatingService implements RatingService {
       await profileRepository.saveResultForUser(userId, result, animalType);
       
       // Submit to Leaderboard if score is decent
-      if (totalScore >= 60 && userId != 'guest' && leaderboardService != null) {
+      if (analysisResult.overallScore >= 60 && userId != 'guest' && leaderboardService != null) {
         try {
           final profile = await profileRepository.getProfile(userId);
           await leaderboardService!.submitScore(
@@ -232,7 +191,7 @@ class RealRatingService implements RatingService {
             entry: LeaderboardEntry(
               userId: userId,
               userName: profile.name,
-              score: totalScore,
+              score: analysisResult.overallScore,
               timestamp: DateTime.now(),
             ),
           );
@@ -245,8 +204,8 @@ class RealRatingService implements RatingService {
       try {
         if (userId != 'guest') {
           final dailyCall = DailyChallengeService.getDailyChallengeStatic();
-          if (dailyCall.id == animalType && totalScore >= 70) {
-            debugPrint("Daily Challenge ($animalType) Completed by $userId with score $totalScore");
+          if (dailyCall.id == animalType && analysisResult.overallScore >= 70) {
+            debugPrint("Daily Challenge ($animalType) Completed by $userId with score ${analysisResult.overallScore}");
             await profileRepository.updateDailyChallengeStats(userId);
           }
         }
