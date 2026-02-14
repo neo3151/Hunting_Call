@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
-import '../../library/data/reference_database.dart';
+import '../../library/domain/providers.dart';
 import '../../library/domain/reference_call_model.dart';
 import '../../profile/domain/profile_model.dart';
 import '../../recording/presentation/recorder_page.dart';
@@ -187,65 +187,83 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
 
   Future<void> _loadData() async {
     try {
-      await ReferenceDatabase.init();
-      final profile = await ref
-          .read(profileRepositoryProvider)
-          .getProfile(widget.userId);
+      // Get all calls using Library use case
+      final getAllCallsUseCase = ref.read(getAllCallsUseCaseProvider);
+      final callsResult = getAllCallsUseCase.execute();
+      
+      callsResult.fold(
+        (failure) {
+          debugPrint('ProgressMap Error: ${failure.message}');
+          if (mounted) setState(() => _isLoading = false);
+          return;
+        },
+        (allCalls) async {
+          final profile = await ref
+              .read(profileRepositoryProvider)
+              .getProfile(widget.userId);
 
-      // Best scores from history
-      final Map<String, int> bestScores = {};
-      for (final h in profile.history) {
-        final score = h.result.score.toInt();
-        final prev = bestScores[h.animalId] ?? 0;
-        if (score > prev) bestScores[h.animalId] = score;
-      }
-
-      _worldNodes = [];
-      for (final world in _worlds) {
-        final calls = ReferenceDatabase.calls
-            .where((c) => c.category == world.category)
-            .toList();
-        final nodes = <MapNode>[];
-        for (int i = 0; i < calls.length; i++) {
-          final call = calls[i];
-          final score = bestScores[call.id];
-          NodeState state;
-          if (score != null && score >= 70) {
-            state = NodeState.mastered;
-          } else {
-            state = NodeState.available;
+          // Best scores from history
+          final Map<String, int> bestScores = {};
+          for (final h in profile.history) {
+            final score = h.result.score.toInt();
+            final prev = bestScores[h.animalId] ?? 0;
+            if (score > prev) bestScores[h.animalId] = score;
           }
-          nodes.add(MapNode(
-            call: call,
-            index: i + 1,
-            position: _getNodePosition(i, calls.length),
-            state: state,
-            bestScore: score,
-          ));
-        }
 
-        // Mark first non-mastered as current
-        bool foundCurrent = false;
-        for (final n in nodes) {
-          if (n.state == NodeState.available && !foundCurrent) {
-            n.state = NodeState.current;
-            foundCurrent = true;
-          }
-        }
-
-        // Lock premium calls
-        for (final n in nodes) {
-          if (ReferenceDatabase.isLocked(n.call.id, profile.isPremium)) {
-            if (n.state != NodeState.mastered) {
-              n.state = NodeState.locked;
+          _worldNodes = [];
+          final checkLockUseCase = ref.read(checkCallLockStatusUseCaseProvider);
+          
+          for (final world in _worlds) {
+            final calls = allCalls
+                .where((c) => c.category == world.category)
+                .toList();
+            final nodes = <MapNode>[];
+            for (int i = 0; i < calls.length; i++) {
+              final call = calls[i];
+              final score = bestScores[call.id];
+              NodeState state;
+              if (score != null && score >= 70) {
+                state = NodeState.mastered;
+              } else {
+                state = NodeState.available;
+              }
+              nodes.add(MapNode(
+                call: call,
+                index: i + 1,
+                position: _getNodePosition(i, calls.length),
+                state: state,
+                bestScore: score,
+              ));
             }
+
+            // Mark first non-mastered as current
+            bool foundCurrent = false;
+            for (final n in nodes) {
+              if (n.state == NodeState.available && !foundCurrent) {
+                n.state = NodeState.current;
+                foundCurrent = true;
+              }
+            }
+
+            // Lock premium calls using Library use case
+            for (final n in nodes) {
+              final lockResult = checkLockUseCase.execute(n.call.id, profile.isPremium);
+              lockResult.fold(
+                (failure) => debugPrint('Lock check error: ${failure.message}'),
+                (isLocked) {
+                  if (isLocked && n.state != NodeState.mastered) {
+                    n.state = NodeState.locked;
+                  }
+                },
+              );
+            }
+
+            _worldNodes.add(nodes);
           }
-        }
 
-        _worldNodes.add(nodes);
-      }
-
-      if (mounted) setState(() => _isLoading = false);
+          if (mounted) setState(() => _isLoading = false);
+        },
+      );
     } catch (e) {
       debugPrint('ProgressMap Error: $e');
       if (mounted) setState(() => _isLoading = false);
