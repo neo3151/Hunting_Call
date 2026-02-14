@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/leaderboard_entry.dart';
 import '../domain/repositories/leaderboard_service.dart';
+import '../domain/use_cases/submit_score_use_case.dart';
 
 
 class FirebaseLeaderboardService implements LeaderboardService {
@@ -19,8 +20,8 @@ class FirebaseLeaderboardService implements LeaderboardService {
     return _firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
       
+      // Parse current entries from Firestore
       List<LeaderboardEntry> currentScores = [];
-      
       if (snapshot.exists && snapshot.data() != null && snapshot.data()!.containsKey('scores')) {
         final List<dynamic> rawList = snapshot.data()!['scores'];
         currentScores = rawList
@@ -28,36 +29,27 @@ class FirebaseLeaderboardService implements LeaderboardService {
             .toList();
       }
 
-      // Check if user already has a better score? 
-      // Simplified: Just add and sort for now. Real world: check if user improved.
-      // We will allow multiple entries from same user for now if they are top 10, 
-      // but ideally we should filter unique users. Let's do unique user filter.
+      // Use domain use case for score management (pure business logic)
+      final useCase = SubmitScoreUseCase();
+      final result = useCase.execute(currentScores, entry);
       
-      int existingIndex = currentScores.indexWhere((e) => e.userId == entry.userId);
-      if (existingIndex != -1) {
-        if (currentScores[existingIndex].score >= entry.score) {
-          return false; // Existing score is better or equal
-        }
-        currentScores.removeAt(existingIndex); // Remove old lower score
-      }
-      
-      currentScores.add(entry);
-      
-      // Sort descending by score
-      currentScores.sort((a, b) => b.score.compareTo(a.score));
-      
-      // Keep top 20 (extra buffer)
-      if (currentScores.length > 20) {
-        currentScores = currentScores.sublist(0, 20);
-      }
-      
-      // Save back
-      transaction.set(docRef, {
-        'scores': currentScores.map((e) => e.toJson()).toList(),
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
-      
-      return true;
+      return result.fold(
+        (failure) {
+          // Score was rejected (user has better score or other failure)
+          return false;
+        },
+        (submitResult) {
+          if (submitResult.wasAccepted) {
+            // Save updated leaderboard to Firestore
+            transaction.set(docRef, {
+              'scores': submitResult.updatedEntries.map((e) => e.toJson()).toList(),
+              'lastUpdated': FieldValue.serverTimestamp(),
+            });
+            return true;
+          }
+          return false;
+        },
+      );
     });
   }
 
