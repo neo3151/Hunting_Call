@@ -546,9 +546,22 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
             value: call.id,
             child: Row(
               children: [
-                Text(
-                  _getAnimalEmoji(call.animalName),
-                  style: const TextStyle(fontSize: 20),
+                ClipOval(
+                  child: Image.asset(
+                    call.imageUrl,
+                    width: 32,
+                    height: 32,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.photo, size: 16, color: Colors.white38),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -617,27 +630,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     }
   }
 
-  String _getAnimalEmoji(String animalName) {
-    final lower = animalName.toLowerCase();
-    if (lower.contains('duck') || lower.contains('mallard') || lower.contains('teal') || lower.contains('pintail') || lower.contains('canvasback')) return '🦆';
-    if (lower.contains('elk')) return '🦌';
-    if (lower.contains('deer') || lower.contains('whitetail') || lower.contains('mule') || lower.contains('fallow') || lower.contains('caribou') || lower.contains('pronghorn') || lower.contains('red stag')) return '🦌';
-    if (lower.contains('turkey')) return '🦃';
-    if (lower.contains('coyote') || lower.contains('wolf')) return '🐺';
-    if (lower.contains('goose')) return '🦆'; 
-    if (lower.contains('owl')) return '🦉';
-    if (lower.contains('moose')) return '🦌';
-    if (lower.contains('bear')) return '🐻';
-    if (lower.contains('fox')) return '🦊';
-    if (lower.contains('bobcat') || lower.contains('cougar') || lower.contains('mountain lion')) return '🐆';
-    if (lower.contains('rabbit')) return '🐰';
-    if (lower.contains('raccoon')) return '🦝';
-    if (lower.contains('crow')) return '🐦‍⬛';
-    if (lower.contains('quail') || lower.contains('pheasant') || lower.contains('woodcock') || lower.contains('dove') || lower.contains('grouse') || lower.contains('awebo') || lower.contains('ptarmigan')) return '🐦';
-    if (lower.contains('hog')) return '🐗';
-    if (lower.contains('badger')) return '🦡';
-    return '🦌';
-  }
+
 
   Widget _buildSmallIconButton({required VoidCallback onPressed, required IconData icon, required String label}) {
     return Column(
