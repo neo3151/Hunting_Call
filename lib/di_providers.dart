@@ -22,6 +22,7 @@ import 'features/leaderboard/data/firedart_leaderboard_service.dart';
 
 import 'features/analysis/domain/frequency_analyzer.dart';
 import 'features/analysis/data/comprehensive_audio_analyzer.dart';
+import 'features/analysis/domain/providers.dart'; // Use case providers
 
 import 'features/rating/domain/rating_service.dart';
 import 'features/analysis/data/real_rating_service.dart';
@@ -131,6 +132,8 @@ final frequencyAnalyzerProvider = Provider<FrequencyAnalyzer>((ref) {
 /// Provides [RatingService] with all dependencies injected.
 final ratingServiceProvider = Provider<RatingService>((ref) {
   return RealRatingService(
+    analyzeUseCase: ref.watch(analyzeAudioUseCaseProvider),
+    calculateUseCase: ref.watch(calculateScoreUseCaseProvider),
     analyzer: ref.watch(frequencyAnalyzerProvider),
     profileRepository: ref.watch(profileRepositoryProvider),
     leaderboardService: ref.watch(leaderboardServiceProvider),
