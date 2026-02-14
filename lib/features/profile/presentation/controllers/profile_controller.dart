@@ -4,6 +4,7 @@ import '../../domain/repositories/profile_repository.dart';
 import '../../domain/profile_model.dart';
 import '../../../rating/domain/rating_model.dart';
 import '../../domain/achievement_service.dart';
+import '../../domain/providers.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 
 /// State for user profile operations
@@ -107,16 +108,25 @@ class ProfileNotifier extends Notifier<ProfileState> {
       
       final currentProfile = state.profile;
       if (currentProfile != null && userId != 'guest') {
-        final newAchievements = AchievementService.getNewAchievementIds(
-          currentProfile, 
-          currentProfile.achievements
+        // Use domain use case for achievement calculation
+        final achievementUseCase = ref.read(calculateNewAchievementsUseCaseProvider);
+        final achievementsResult = achievementUseCase.execute(
+          currentProfile,
+          currentProfile.achievements,
         );
         
-        if (newAchievements.isNotEmpty) {
-          await _repo.saveAchievements(userId, newAchievements);
-          // Reload again to get badges
-          await loadProfile(userId);
-        }
+        achievementsResult.fold(
+          (failure) {
+            debugPrint('Achievement calculation failed: ${failure.message}');
+          },
+          (newAchievements) async {
+            if (newAchievements.isNotEmpty) {
+              await _repo.saveAchievements(userId, newAchievements);
+              // Reload again to get badges
+              await loadProfile(userId);
+            }
+          },
+        );
       }
     } catch (e) {
       state = state.copyWith(error: e.toString());
