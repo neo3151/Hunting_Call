@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../library/data/reference_database.dart';
 import '../../library/domain/reference_call_model.dart';
+import '../../library/domain/providers.dart';
 import '../../../core/widgets/upgrade_prompter.dart';
 import '../../../core/services/audio_service.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
@@ -24,7 +24,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Future<void> _togglePlayback(ReferenceCall call) async {
     final profile = ref.read(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
-    final isLocked = ReferenceDatabase.isLocked(call.id, isPremium);
+    final checkLockUseCase = ref.read(checkCallLockStatusUseCaseProvider);
+    
+    final lockResult = checkLockUseCase.execute(
+      callId: call.id,
+      isUserPremium: isPremium,
+    );
+    
+    final isLocked = lockResult.fold(
+      (failure) => true, // Default to locked on error
+      (locked) => locked,
+    );
 
     if (isLocked) {
       if (mounted) {
@@ -51,7 +61,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   void _navigateToDetail(ReferenceCall call) {
     final profile = ref.read(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
-    final isLocked = ReferenceDatabase.isLocked(call.id, isPremium);
+    final checkLockUseCase = ref.read(checkCallLockStatusUseCaseProvider);
+    
+    final lockResult = checkLockUseCase.execute(
+      callId: call.id,
+      isUserPremium: isPremium,
+    );
+    
+    final isLocked = lockResult.fold(
+      (failure) => true, // Default to locked on error
+      (locked) => locked,
+    );
 
     if (isLocked) {
       UpgradePrompter.show(context, featureName: "This Call");
@@ -70,13 +90,21 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   List<ReferenceCall> _getFilteredCalls(String category) {
-    return ReferenceDatabase.calls.where((call) {
-      final matchesSearch = call.animalName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          call.callType.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesCategory = category == "All" || call.category == category;
-      return matchesSearch && matchesCategory;
-    }).toList()
-      ..sort((a, b) => a.animalName.compareTo(b.animalName));
+    final filterUseCase = ref.read(filterCallsUseCaseProvider);
+    
+    final result = filterUseCase.execute(
+      category: category,
+      searchQuery: _searchQuery,
+    );
+    
+    return result.fold(
+      (failure) {
+        // Log the error but return empty list to avoid breaking UI
+        debugPrint('Library filter error: ${failure.message}');
+        return <ReferenceCall>[];
+      },
+      (calls) => calls,
+    );
   }
 
   @override
@@ -153,7 +181,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   itemBuilder: (context, index) {
                     final call = filtered[index];
                     final isPlaying = currentlyPlayingId == call.id;
-                    final isLocked = ReferenceDatabase.isLocked(call.id, isPremium);
+                    
+                    final checkLockUseCase = ref.read(checkCallLockStatusUseCaseProvider);
+                    final lockResult = checkLockUseCase.execute(
+                      callId: call.id,
+                      isUserPremium: isPremium,
+                    );
+                    final isLocked = lockResult.getOrElse((l) => true);
                     return _buildCallCard(call, isPlaying, isLocked);
                   },
                 );

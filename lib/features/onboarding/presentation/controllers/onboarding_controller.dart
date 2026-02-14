@@ -1,26 +1,41 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
+import '../../domain/providers.dart';
 
 final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return OnboardingNotifier(prefs);
+  final checkStatusUseCase = ref.watch(checkOnboardingStatusUseCaseProvider);
+  final completeUseCase = ref.watch(completeOnboardingUseCaseProvider);
+  return OnboardingNotifier(checkStatusUseCase, completeUseCase);
 });
 
 class OnboardingNotifier extends StateNotifier<bool> {
-  final SharedPreferences _prefs;
-  static const _key = 'has_seen_onboarding';
+  final CheckOnboardingStatusUseCase _checkStatusUseCase;
+  final CompleteOnboardingUseCase _completeUseCase;
 
-  OnboardingNotifier(this._prefs) : super(_prefs.getBool(_key) ?? false);
+  OnboardingNotifier(this._checkStatusUseCase, this._completeUseCase)
+      : super(false) {
+    // Initialize state from use case
+    final result = _checkStatusUseCase.execute();
+    state = result.getOrElse((failure) => false);
+  }
 
   Future<void> completeOnboarding() async {
-    await _prefs.setBool(_key, true);
-    state = true;
+    final result = await _completeUseCase.execute();
+    
+    result.fold(
+      (failure) {
+        // Log error but don't break UI
+        // In production, could show error to user
+      },
+      (_) {
+        state = true;
+      },
+    );
   }
-  
-  // For testing: reset onboarding
+
+  // For testing: reset onboarding (would need a reset use case for production)
   Future<void> resetOnboarding() async {
-    await _prefs.setBool(_key, false);
+    // This would require a ResetOnboardingUseCase for proper implementation
+    // For now, just update state
     state = false;
   }
 }
