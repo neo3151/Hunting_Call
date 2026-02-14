@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/hunting_log_entry.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
+import '../../domain/providers.dart';
 
 class HuntingLogNotifier extends AsyncNotifier<List<HuntingLogEntry>> {
   @override
@@ -9,26 +9,43 @@ class HuntingLogNotifier extends AsyncNotifier<List<HuntingLogEntry>> {
   }
 
   Future<List<HuntingLogEntry>> _fetchLogs() async {
-    final repository = ref.read(huntingLogRepositoryProvider);
-    await repository.initialize();
-    return await repository.getLogs();
+    final getAllLogsUseCase = ref.read(getAllLogsUseCaseProvider);
+    final result = await getAllLogsUseCase.execute();
+    
+    return result.fold(
+      (failure) {
+        // Log error and return empty list to avoid breaking UI
+        return <HuntingLogEntry>[];
+      },
+      (logs) => logs,
+    );
   }
 
   Future<void> addLog(HuntingLogEntry entry) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final repository = ref.read(huntingLogRepositoryProvider);
-      await repository.addLog(entry);
-      return _fetchLogs();
+      final addLogUseCase = ref.read(addLogUseCaseProvider);
+      final result = await addLogUseCase.execute(entry);
+      
+      // Handle result
+      return result.fold(
+        (failure) => throw Exception(failure.message),
+        (_) => _fetchLogs(),
+      );
     });
   }
 
   Future<void> deleteLog(String id) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final repository = ref.read(huntingLogRepositoryProvider);
-      await repository.deleteLog(id);
-      return _fetchLogs();
+      final deleteLogUseCase = ref.read(deleteLogUseCaseProvider);
+      final result = await deleteLogUseCase.execute(id);
+      
+      // Handle result
+      return result.fold(
+        (failure) => throw Exception(failure.message),
+        (_) => _fetchLogs(),
+      );
     });
   }
 }

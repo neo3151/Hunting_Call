@@ -1,18 +1,61 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../data/daily_challenge_service.dart';
+import 'controllers/daily_challenge_controller.dart';
 import '../../recording/presentation/recorder_page.dart';
 import '../../leaderboard/data/mock_leaderboard_data.dart';
 import 'package:intl/intl.dart';
 
-class DailyChallengeScreen extends StatelessWidget {
+class DailyChallengeScreen extends ConsumerWidget {
   final String userId;
   const DailyChallengeScreen({super.key, required this.userId});
 
   @override
-  Widget build(BuildContext context) {
-    final challengeCall = DailyChallengeService.getDailyChallengeStatic();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final challengeCall = ref.watch(dailyChallengeProvider);
+
+    // Handle null challenge (error case)
+    if (challengeCall == null) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            "DAILY CHALLENGE",
+            style: GoogleFonts.oswald(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+              color: Colors.white,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                "Unable to load today's challenge",
+                style: GoogleFonts.lato(color: Colors.white70, fontSize: 16),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("GO BACK"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.black,

@@ -7,7 +7,7 @@ import 'package:hunting_calls_perfection/features/rating/presentation/controller
 import '../../profile/presentation/controllers/profile_controller.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 import '../domain/rating_model.dart';
-import '../../library/data/reference_database.dart';
+import '../../library/domain/providers.dart';
 import '../../../config/app_config.dart';
 import '../../../core/widgets/upgrade_prompter.dart';
 import './widgets/waveform_overlay.dart';
@@ -95,15 +95,22 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         if (mounted) setState(() => _isUserPlaying = false);
       }
       
-      final reference = ReferenceDatabase.getById(widget.animalId);
-      final assetPath = reference.audioAssetPath.replaceFirst('assets/', '');
+      final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
+      final result = getCallUseCase.execute(widget.animalId);
       
-      try {
-        await _refPlayer.play(AssetSource(assetPath));
-        if (mounted) setState(() => _isRefPlaying = true);
-      } catch (e) {
-        debugPrint("Error playing reference audio: $e");
-      }
+      result.fold(
+        (failure) => debugPrint("Error getting reference call: ${failure.message}"),
+        (reference) async {
+          final assetPath = reference.audioAssetPath.replaceFirst('assets/', '');
+          
+          try {
+            await _refPlayer.play(AssetSource(assetPath));
+            if (mounted) setState(() => _isRefPlaying = true);
+          } catch (e) {
+            debugPrint("Error playing reference audio: $e");
+          }
+        },
+      );
     }
   }
 
@@ -482,63 +489,74 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   }
 
   Widget _buildPitchComparison(RatingResult result) {
-    final reference = ReferenceDatabase.getById(widget.animalId);
-    final targetPitch = _toSafe(reference.idealPitchHz);
-    final userPitch = _toSafe(result.pitchHz);
-    final diff = userPitch - targetPitch;
-    final isTooHigh = diff > 0;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+    final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
+    final callResult = getCallUseCase.execute(widget.animalId);
+    
+    return callResult.fold(
+      (failure) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Text("Error loading reference: ${failure.message}", 
+          style: GoogleFonts.lato(color: Colors.redAccent)),
       ),
-      child: Column(
-        children: [
-          Text("PITCH COMPARISON", style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      (reference) {
+        final targetPitch = _toSafe(reference.idealPitchHz);
+        final userPitch = _toSafe(result.pitchHz);
+        final diff = userPitch - targetPitch;
+        final isTooHigh = diff > 0;
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+          ),
+          child: Column(
             children: [
-              Column(
+              Text("PITCH COMPARISON", style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("TARGET", style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
-                  const SizedBox(height: 4),
-                  Text("${targetPitch.toInt()} Hz", style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                  Column(
+                    children: [
+                      Text("TARGET", style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
+                      const SizedBox(height: 4),
+                      Text("${targetPitch.toInt()} Hz", style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Icon(isTooHigh ? Icons.arrow_upward : Icons.arrow_downward, color: const Color(0xFF5FF7B6), size: 20),
+                      const SizedBox(height: 2),
+                      Text(isTooHigh ? "TOO HIGH" : "TOO LOW", style: GoogleFonts.oswald(fontSize: 9, color: Colors.white70, fontWeight: FontWeight.bold)),
+                      Text("${diff.abs().toInt()} Hz", style: GoogleFonts.lato(fontSize: 9, color: Colors.white38)),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text("YOUR PITCH", style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
+                      const SizedBox(height: 4),
+                      Text("${userPitch.toInt()} Hz", style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ],
               ),
-              Column(
-                children: [
-                  Icon(isTooHigh ? Icons.arrow_upward : Icons.arrow_downward, color: const Color(0xFF5FF7B6), size: 20),
-                  const SizedBox(height: 2),
-                  Text(isTooHigh ? "TOO HIGH" : "TOO LOW", style: GoogleFonts.oswald(fontSize: 9, color: Colors.white70, fontWeight: FontWeight.bold)),
-                  Text("${diff.abs().toInt()} Hz", style: GoogleFonts.lato(fontSize: 9, color: Colors.white38)),
-                ],
-              ),
-              Column(
-                children: [
-                  Text("YOUR PITCH", style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
-                  const SizedBox(height: 4),
-                  Text("${userPitch.toInt()} Hz", style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
-                ],
+              const SizedBox(height: 24),
+              _buildPitchSlider(userPitch, targetPitch, reference.tolerancePitch),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5FF7B6).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text("Within tolerance ✓", style: GoogleFonts.lato(fontSize: 10, color: const Color(0xFF5FF7B6), fontWeight: FontWeight.w600)),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          _buildPitchSlider(userPitch, targetPitch, reference.tolerancePitch),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF5FF7B6).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text("Within tolerance ✓", style: GoogleFonts.lato(fontSize: 10, color: const Color(0xFF5FF7B6), fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -742,15 +760,20 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   }
 
   Widget _buildDetailedMetrics(RatingResult result) {
-    final reference = ReferenceDatabase.getById(widget.animalId);
-    return Column(
-      children: [
-        _buildMetricRow("PITCH (HZ)", "Your frequency", "${_toSafe(result.pitchHz).toStringAsFixed(1)} Hz"),
-        const SizedBox(height: 8),
-        _buildMetricRow("TARGET PITCH", "Ideal frequency", "${_toSafe(reference.idealPitchHz).toStringAsFixed(1)} Hz"),
-        const SizedBox(height: 8),
-        _buildMetricRow("DURATION (S)", "Call length", "${_toSafe(result.metrics['Duration (s)'] ?? 1.0).toStringAsFixed(2)} s"),
-      ],
+    final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
+    final callResult = getCallUseCase.execute(widget.animalId);
+    
+    return callResult.fold(
+      (failure) => Text("Error: ${failure.message}", style: GoogleFonts.lato(color: Colors.redAccent)),
+      (reference) => Column(
+        children: [
+          _buildMetricRow("PITCH (HZ)", "Your frequency", "${_toSafe(result.pitchHz).toStringAsFixed(1)} Hz"),
+          const SizedBox(height: 8),
+          _buildMetricRow("TARGET PITCH", "Ideal frequency", "${_toSafe(reference.idealPitchHz).toStringAsFixed(1)} Hz"),
+          const SizedBox(height: 8),
+          _buildMetricRow("DURATION (S)", "Call length", "${_toSafe(result.metrics['Duration (s)'] ?? 1.0).toStringAsFixed(2)} s"),
+        ],
+      ),
     );
   }
 
@@ -936,45 +959,51 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   }
 
   Widget _buildActionButtons() {
-    final animal = ReferenceDatabase.getById(widget.animalId);
+    final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
+    final callResult = getCallUseCase.execute(widget.animalId);
     
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.refresh_rounded),
-            label: Text("TRY AGAIN", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF5FF7B6),
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return callResult.fold(
+      (failure) => ElevatedButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: Text("GO BACK", style: GoogleFonts.oswald()),
+      ),
+      (animal) => Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text("TRY AGAIN", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5FF7B6),
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        if (AppConfig.instance.allowLeaderboard || (ref.watch(profileNotifierProvider).profile?.isPremium ?? false))
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => LeaderboardScreen(
-                    animalId: widget.animalId,
-                    animalName: animal.animalName,
+          const SizedBox(height: 12),
+          if (AppConfig.instance.allowLeaderboard || (ref.watch(profileNotifierProvider).profile?.isPremium ?? false))
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => LeaderboardScreen(
+                      animalId: widget.animalId,
+                      animalName: animal.animalName,
+                    ),
                   ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.emoji_events_outlined, color: Color(0xFF81C784)),
-            label: Text("VIEW GLOBAL RANKINGS", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white,
-              side: BorderSide(color: const Color(0xFF81C784).withValues(alpha: 0.5)),
+                );
+              },
+              icon: const Icon(Icons.emoji_events_outlined, color: Color(0xFF81C784)),
+              label: Text("VIEW GLOBAL RANKINGS", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: BorderSide(color: const Color(0xFF81C784).withValues(alpha: 0.5)),
               padding: const EdgeInsets.symmetric(vertical: 20),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
