@@ -27,6 +27,9 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     // Avoid double loading if already loading
     if (_isLoadingProfile) return;
 
+    // Set immediately to prevent concurrent calls from rebuilds during awaits
+    _lastHandledUserId = userId;
+
     if (mounted) setState(() => _isLoadingProfile = true);
     
     try {
@@ -35,14 +38,9 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       final profileRepo = ref.read(profileRepositoryProvider);
       
       // Check 1: Profile notifier might already have a profile loaded
-      // (LoginScreen calls loadProfile(p.id) when tapping a card or email login)
-      // Note: The profile ID may differ from the Firebase UID (e.g., email login
-      // uses profile ID while Firebase emits anonymous UID), so we trust any
-      // already-loaded profile rather than requiring an exact ID match.
       final currentProfile = ref.read(profileNotifierProvider).profile;
       if (currentProfile != null && currentProfile.id != 'guest') {
         debugPrint("AuthWrapper: ✅ Profile already loaded: ${currentProfile.name} (${currentProfile.id})");
-        _lastHandledUserId = userId;
         return;
       }
       
@@ -51,32 +49,16 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       if (profile.id != 'guest') {
         debugPrint("AuthWrapper: ✅ Profile found by UID: ${profile.name}");
         await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
-        _lastHandledUserId = userId;
         return;
       }
       
-      // Check 3: Wait a bit more and retry (for Google sign-in creating profile)
-      for (int i = 0; i < 5; i++) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        final retryProfile = await profileRepo.getProfile(userId);
-        if (retryProfile.id != 'guest') {
-          debugPrint("AuthWrapper: ✅ Profile found on retry: ${retryProfile.name}");
-          await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
-          _lastHandledUserId = userId;
-          return;
-        }
-      }
-      
-      debugPrint("AuthWrapper: ⚠️ No profile found after all checks");
-      // Don't set _lastHandledUserId so we might retry or show error/create screen?
-      // Actually if we fail to find a profile, we probably stay on Login or go to Create.
-      // But AuthWrapper sees "Authenticated". 
-      // Current behavior: It will just spin or show HomeScreen(userId) which might be empty.
-      _lastHandledUserId = userId;
+      debugPrint("AuthWrapper: ⚠️ No profile found for $userId — user needs to create one via login screen.");
       
     } catch (e, stack) {
       debugPrint("AuthWrapper: Error: $e");
       debugPrint("Stack: $stack");
+      // Reset on error so user can retry if needed
+      _lastHandledUserId = null;
     } finally {
       if (mounted) {
         setState(() => _isLoadingProfile = false);

@@ -37,10 +37,10 @@ class BackgroundWrapper extends StatelessWidget {
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('assets/images/logo.png'),
+                    image: AssetImage('assets/images/forest_pattern.png'),
                     repeat: ImageRepeat.repeat,
                     alignment: Alignment.topLeft,
-                    scale: 0.5,
+                    scale: 2.0, // Increased scale for a larger, more subtle pattern
                   ),
                 ),
               ),

@@ -151,7 +151,7 @@ class PersonalityFeedbackService {
 
   /// Get specific technical critiques based on metric deviations
   static String getSpecificCritique(Map<String, double> scores) {
-    if (scores.isEmpty) return "I'm speachless. And not in a good way.";
+    if (scores.isEmpty) return "I'm speechless. And not in a good way.";
 
     // Find the worst performing category
     final worst = scores.entries.reduce((a, b) => a.value < b.value ? a : b);
@@ -192,7 +192,7 @@ class PersonalityFeedbackService {
     "Too much nasality. You sound like a goose with a severe sinus infection.",
     "Lacking warmth. That call is colder than a December morning in North Dakota.",
     "Your tone is too bright. You're scaring 'em off with that 'tin can' aesthetic.",
-    "Sounds like you're blowing through a garden hose. Wherre's the resonance?",
+    "Sounds like you're blowing through a garden hose. Where's the resonance?",
     "That timbre is the audio equivalent of cardboard. Zero character.",
   ];
 

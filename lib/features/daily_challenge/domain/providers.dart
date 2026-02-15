@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../library/domain/providers.dart';
+import '../../library/domain/providers.dart';
 import 'usecases/get_daily_challenge_use_case.dart';
 
 /// Provider for GetDailyChallengeUseCase

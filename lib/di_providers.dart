@@ -43,12 +43,15 @@ class PlatformEnvironment {
   final bool isLinux;
   final bool useMocks;
   final SharedPreferences sharedPreferences;
+  /// Pre-initialized auth repository (e.g. FiredartAuthRepository on Linux)
+  final AuthRepository? preInitializedAuthRepo;
 
   const PlatformEnvironment({
     required this.isFirebaseEnabled,
     required this.isLinux,
     required this.useMocks,
     required this.sharedPreferences,
+    this.preInitializedAuthRepo,
   });
 }
 
@@ -71,8 +74,9 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 /// Provides the correct [AuthRepository] based on platform + Firebase state.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final env = ref.watch(platformEnvironmentProvider);
+  // Use pre-initialized repo if available (e.g. FiredartAuthRepository on Linux)
+  if (env.preInitializedAuthRepo != null) return env.preInitializedAuthRepo!;
   if (env.isFirebaseEnabled) {
-    if (env.isLinux) return FiredartAuthRepository();
     return FirebaseAuthRepository();
   }
   return MockAuthRepository();
