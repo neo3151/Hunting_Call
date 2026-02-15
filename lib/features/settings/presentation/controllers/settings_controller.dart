@@ -1,0 +1,63 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/settings_repository.dart';
+import '../../domain/settings_model.dart';
+
+// ─── Repository Provider ────────────────────────────────────────────────────
+
+final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
+  return SettingsRepository();
+});
+
+// ─── Controller ─────────────────────────────────────────────────────────────
+
+class SettingsNotifier extends AsyncNotifier<AppSettings> {
+  @override
+  Future<AppSettings> build() async {
+    final repo = ref.read(settingsRepositoryProvider);
+    return repo.loadSettings();
+  }
+
+  Future<void> updateSetting(AppSettings Function(AppSettings) updater) async {
+    final current = state.valueOrNull ?? const AppSettings();
+    final updated = updater(current);
+    state = AsyncValue.data(updated);
+
+    try {
+      await ref.read(settingsRepositoryProvider).saveSettings(updated);
+    } catch (e) {
+      debugPrint('Settings save error: $e');
+    }
+  }
+
+  Future<void> setDarkMode(bool value) async {
+    await updateSetting((s) => s.copyWith(darkMode: value));
+  }
+
+  Future<void> setDistanceUnit(String value) async {
+    await updateSetting((s) => s.copyWith(distanceUnit: value));
+  }
+
+  Future<void> setNotificationsEnabled(bool value) async {
+    await updateSetting((s) => s.copyWith(notificationsEnabled: value));
+  }
+
+  Future<void> setSoundEffects(bool value) async {
+    await updateSetting((s) => s.copyWith(soundEffects: value));
+  }
+
+  Future<void> setHapticFeedback(bool value) async {
+    await updateSetting((s) => s.copyWith(hapticFeedback: value));
+  }
+
+  Future<void> resetToDefaults() async {
+    const defaults = AppSettings();
+    state = const AsyncValue.data(defaults);
+    await ref.read(settingsRepositoryProvider).saveSettings(defaults);
+  }
+}
+
+final settingsNotifierProvider =
+    AsyncNotifierProvider<SettingsNotifier, AppSettings>(() {
+  return SettingsNotifier();
+});

@@ -14,16 +14,24 @@ class FiredartProfileRepository implements ProfileRepository {
       return UserProfile.guest();
     }
 
-    return _withRetry(() async {
-      debugPrint("FiredartProfileRepository: Fetching profile for $userId...");
-      final doc = await _firestore.collection(_collectionPath).document(userId).get().timeout(const Duration(seconds: 10), onTimeout: () {
-          throw Exception("Firestore get() timed out after 10 seconds");
-      });
-      debugPrint("FiredartProfileRepository: Profile fetched for $userId.");
-      final data = doc.map;
-      _sanitizeProfileData(data, doc.id);
-      return UserProfile.fromJson(data);
-    }, "getProfile");
+    try {
+      return await _withRetry(() async {
+        debugPrint("FiredartProfileRepository: Fetching profile for $userId...");
+        final doc = await _firestore.collection(_collectionPath).document(userId).get().timeout(const Duration(seconds: 10), onTimeout: () {
+            throw Exception("Firestore get() timed out after 10 seconds");
+        });
+        debugPrint("FiredartProfileRepository: Profile fetched for $userId.");
+        final data = doc.map;
+        _sanitizeProfileData(data, doc.id);
+        return UserProfile.fromJson(data);
+      }, "getProfile");
+    } catch (e) {
+      if (e.toString().contains('NOT_FOUND')) {
+        debugPrint("FiredartProfileRepository: Profile not found for $userId — returning guest profile.");
+        return UserProfile.guest();
+      }
+      rethrow;
+    }
   }
 
   @override

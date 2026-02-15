@@ -287,8 +287,9 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
           elevation: 0,
         ),
         body: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Animal Selection Card (Glassmorphism)
               Padding(
@@ -331,7 +332,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                 label: isPlayingReference ? "STOP REFERENCE" : "HEAR SAMPLE",
               ),
               
-              const Spacer(),
+              const SizedBox(height: 24),
               
               GestureDetector(
                 onTap: (isCountingDown || isProcessing) ? null : _toggleRecording,
@@ -467,6 +468,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
           ),
         ),
       ),
+     ),
     );
   }
 

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/providers.dart';
+import '../../domain/usecases/check_onboarding_status_use_case.dart';
+import '../../domain/usecases/complete_onboarding_use_case.dart';
 
 final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>((ref) {
   final checkStatusUseCase = ref.watch(checkOnboardingStatusUseCaseProvider);

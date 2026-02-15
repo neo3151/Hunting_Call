@@ -1,6 +1,7 @@
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -13,10 +14,20 @@ import 'di_providers.dart';
 import 'core/theme/theme_notifier.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'features/library/data/reference_database.dart';
+import 'features/auth/domain/repositories/auth_repository.dart';
+import 'features/auth/data/firedart_auth_repository.dart';
 import 'config/app_config.dart';
 
 void mainCommon() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Explicitly allow all orientations (important for tablets)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
   
   if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
     sqfliteFfiInit();
@@ -68,6 +79,15 @@ void mainCommon() async {
   // Initialize Firedart (Linux only) + HuntingLog DB via injection_container
   await di.init();
   
+  // Create and initialize the auth repository early (needs async init for session file)
+  AuthRepository? preInitAuthRepo;
+  if (Platform.isLinux && di.isFirebaseEnabled) {
+    final firedartAuth = FiredartAuthRepository();
+    await firedartAuth.initialize();
+    preInitAuthRepo = firedartAuth;
+    debugPrint("FiredartAuth: Repository created and initialized.");
+  }
+  
   // Create the platform environment for Riverpod DI
   final sharedPreferences = await SharedPreferences.getInstance();
   final env = PlatformEnvironment(
@@ -75,6 +95,7 @@ void mainCommon() async {
     isLinux: Platform.isLinux,
     useMocks: false,
     sharedPreferences: sharedPreferences,
+    preInitializedAuthRepo: preInitAuthRepo,
   );
 
   // Background cleanup of old recordings

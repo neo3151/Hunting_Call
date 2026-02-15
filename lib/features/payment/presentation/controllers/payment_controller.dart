@@ -1,79 +1,101 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
-import '../../data/payment_repository.dart';
-import '../../domain/repositories/payment_repository.dart';
+import '../../domain/providers.dart';
 
-/// State for payment operations
+// ──────────────────────────────────────────────────────────
+//  STATE
+// ──────────────────────────────────────────────────────────
+
+enum PurchaseStatus { idle, processing, success, failed }
+
 class PaymentState {
-  final bool isProcessing;
+  final PurchaseStatus status;
   final bool? purchaseResult;
   final String? error;
 
   const PaymentState({
-    this.isProcessing = false,
+    this.status = PurchaseStatus.idle,
     this.purchaseResult,
     this.error,
   });
 
+  bool get isProcessing => status == PurchaseStatus.processing;
+
   PaymentState copyWith({
-    bool? isProcessing,
+    PurchaseStatus? status,
     bool? purchaseResult,
     String? error,
     bool clearError = false,
   }) {
     return PaymentState(
-      isProcessing: isProcessing ?? this.isProcessing,
+      status: status ?? this.status,
       purchaseResult: purchaseResult ?? this.purchaseResult,
       error: clearError ? null : (error ?? this.error),
     );
   }
 }
 
-/// Notifier for payment operations
+// ──────────────────────────────────────────────────────────
+//  CONTROLLER
+// ──────────────────────────────────────────────────────────
+
 class PaymentNotifier extends Notifier<PaymentState> {
   @override
   PaymentState build() {
     return const PaymentState();
   }
 
-  PaymentRepository get _repo => ref.read(paymentRepositoryProvider);
-
-  /// Initiate a premium purchase
+  /// Initiate a premium purchase via the domain use case.
   Future<bool> purchasePremium(String userId) async {
     if (state.isProcessing) return false;
-    state = state.copyWith(isProcessing: true, clearError: true);
+    state = state.copyWith(status: PurchaseStatus.processing, clearError: true);
     try {
-      final result = await _repo.purchasePremium(userId);
-      state = state.copyWith(isProcessing: false, purchaseResult: result);
+      final useCase = ref.read(purchasePremiumUseCaseProvider);
+      final result = await useCase(userId);
+      state = state.copyWith(
+        status: result ? PurchaseStatus.success : PurchaseStatus.failed,
+        purchaseResult: result,
+      );
       return result;
     } catch (e) {
       debugPrint("PaymentNotifier: Purchase failed: $e");
-      state = state.copyWith(isProcessing: false, error: e.toString());
+      state = state.copyWith(
+        status: PurchaseStatus.failed,
+        error: e.toString(),
+      );
       return false;
     }
   }
 
-  /// Restore previous purchases
+  /// Restore previous purchases via the domain use case.
   Future<bool> restorePurchases(String userId) async {
     if (state.isProcessing) return false;
-    state = state.copyWith(isProcessing: true, clearError: true);
+    state = state.copyWith(status: PurchaseStatus.processing, clearError: true);
     try {
-      final result = await _repo.restorePurchases(userId);
-      state = state.copyWith(isProcessing: false, purchaseResult: result);
+      final useCase = ref.read(restorePurchasesUseCaseProvider);
+      final result = await useCase(userId);
+      state = state.copyWith(
+        status: result ? PurchaseStatus.success : PurchaseStatus.failed,
+        purchaseResult: result,
+      );
       return result;
     } catch (e) {
       debugPrint("PaymentNotifier: Restore failed: $e");
-      state = state.copyWith(isProcessing: false, error: e.toString());
+      state = state.copyWith(
+        status: PurchaseStatus.failed,
+        error: e.toString(),
+      );
       return false;
     }
   }
 
-  /// Reset state
+  /// Reset state back to idle.
   void reset() {
     state = const PaymentState();
   }
 }
 
-final paymentNotifierProvider = NotifierProvider<PaymentNotifier, PaymentState>(() {
+final paymentNotifierProvider =
+    NotifierProvider<PaymentNotifier, PaymentState>(() {
   return PaymentNotifier();
 });

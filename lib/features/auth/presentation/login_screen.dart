@@ -50,7 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         // 2. Get the user ID from the repository
         // (Stream-based state may not have propagated yet, so query directly)
         
-        final currentUser = await ref.read(authRepositoryImplProvider).currentUser;
+        final currentUser = await ref.read(authRepositoryProvider).currentUser;
         final safeUid = currentUser?.id;
         
         if (safeUid != null) {

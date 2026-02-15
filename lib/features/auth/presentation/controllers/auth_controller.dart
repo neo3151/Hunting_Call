@@ -8,52 +8,39 @@ import '../../domain/usecases/sign_in_anonymously.dart';
 import '../../domain/usecases/sign_in_with_google.dart';
 import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/get_auth_state_stream.dart';
-import '../../data/repositories/auth_repository_impl.dart';
-import '../../data/datasources/firebase_auth_data_source.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 
 // --- Dependency Injection via Riverpod ---
-
-// 1. Data Sources
-final authRemoteDataSourceProvider = Provider((ref) => FirebaseAuthDataSource());
-
-// 2. Repositories
-final authRepositoryImplProvider = Provider<AuthRepository>((ref) {
-  return AuthRepositoryImpl(remoteDataSource: ref.watch(authRemoteDataSourceProvider));
-});
+// Auth repository is provided by di_providers.dart (platform-aware: Firebase/Firedart/Mock)
 
 // Helper provider for UI to check if we are in cloud mode
 final firebaseEnabledProvider = Provider<bool>((ref) {
-  return !ref.watch(authRepositoryImplProvider).isMock;
-});
-
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return ref.watch(authRepositoryImplProvider);
+  return !ref.watch(authRepositoryProvider).isMock;
 });
 
 // 3. Use Cases
 final signInAnonymouslyUseCaseProvider = Provider((ref) {
-  return SignInAnonymously(ref.watch(authRepositoryImplProvider));
+  return SignInAnonymously(ref.watch(authRepositoryProvider));
 });
 
 final signInWithGoogleUseCaseProvider = Provider((ref) {
   return SignInWithGoogle(
-    authRepository: ref.watch(authRepositoryImplProvider),
+    authRepository: ref.watch(authRepositoryProvider),
     profileRepository: ref.watch(profileRepositoryProvider),
   );
 });
 
 final signInUseCaseProvider = Provider((ref) {
-  return SignIn(ref.watch(authRepositoryImplProvider));
+  return SignIn(ref.watch(authRepositoryProvider));
 });
 
 final signOutUseCaseProvider = Provider((ref) {
-  return SignOut(ref.watch(authRepositoryImplProvider));
+  return SignOut(ref.watch(authRepositoryProvider));
 });
 
 final getAuthStateStreamUseCaseProvider = Provider((ref) {
-  return GetAuthStateStream(ref.watch(authRepositoryImplProvider));
+  return GetAuthStateStream(ref.watch(authRepositoryProvider));
 });
 
 // --- Controller ---

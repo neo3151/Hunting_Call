@@ -967,25 +967,13 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         onPressed: () => Navigator.of(context).pop(),
         child: Text("GO BACK", style: GoogleFonts.oswald()),
       ),
-      (animal) => Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.refresh_rounded),
-              label: Text("TRY AGAIN", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5FF7B6),
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (AppConfig.instance.allowLeaderboard || (ref.watch(profileNotifierProvider).profile?.isPremium ?? false))
-          SizedBox(
+      (animal) {
+        final bool showLeaderboard = AppConfig.instance.allowLeaderboard ||
+            (ref.watch(profileNotifierProvider).profile?.isPremium ?? false);
+
+        final Widget leaderboardButton;
+        if (showLeaderboard) {
+          leaderboardButton = SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () {
@@ -1004,44 +992,64 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: BorderSide(color: const Color(0xFF81C784).withValues(alpha: 0.5)),
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
-          ),
-        )
-        else
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () => UpgradePrompter.show(context, featureName: "Global Leaderboards"),
-            icon: const Icon(Icons.lock_outline, color: Colors.white38),
-            label: Text("GLOBAL RANKINGS (LOCKED)", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white38,
-              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          );
+        } else {
+          leaderboardButton = SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => UpgradePrompter.show(context, featureName: "Global Leaderboards"),
+              icon: const Icon(Icons.lock_outline, color: Colors.white38),
+              label: Text("GLOBAL RANKINGS (LOCKED)", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white38,
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
-          ),
-        ),
-        
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: TextButton(
-            onPressed: () {
-              // Return to home/previous screen (pop twice if needed or just pop to home)
-              Navigator.of(context).pop(); // Back to recorder
-              Navigator.of(context).pop(); // Back to home
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white70,
-              padding: const EdgeInsets.symmetric(vertical: 12),
+          );
+        }
+
+        return Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.refresh_rounded),
+                label: Text("TRY AGAIN", style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF5FF7B6),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
             ),
-            child: Text("DONE & RETURN TO CAMP", style: GoogleFonts.oswald(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5)),
-          ),
-        ),
-      ],
+            const SizedBox(height: 12),
+            leaderboardButton,
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white70,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: Text("DONE & RETURN TO CAMP", style: GoogleFonts.oswald(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5)),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:firedart/firedart.dart';
 import 'dart:async';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import '../domain/repositories/auth_repository.dart';
 import '../domain/entities/auth_user.dart';
 
@@ -9,40 +12,84 @@ class FiredartAuthRepository implements AuthRepository {
   
   /// Stores the ID of the user we are "impersonating" for this session.
   String? _impersonatedUserId;
+  
+  /// Whether the user has an active session (explicitly logged in).
+  /// Persisted to disk so it survives app restarts.
+  bool _hasActiveSession = false;
+
+  /// Path to the session marker file.
+  String? _sessionFilePath;
 
   final _authStateController = StreamController<AuthUser?>.broadcast();
 
   FiredartAuthRepository() {
+    // Synchronous constructor — session state loaded lazily or via initialize()
     _auth.signInState.listen((isSignedIn) {
-      _emitCurrentState();
+      // Only emit if we have an active session — ignore technical session changes
+      if (_hasActiveSession) {
+        _emitCurrentState();
+      }
     });
+  }
+  
+  /// Call this after construction to load persisted session state.
+  /// If not called, defaults to no active session (shows LoginScreen).
+  Future<void> initialize() async {
+    try {
+      final appDir = await getApplicationSupportDirectory();
+      _sessionFilePath = p.join(appDir.path, 'session_active');
+      final sessionFile = File(_sessionFilePath!);
+      
+      if (sessionFile.existsSync() && _auth.isSignedIn) {
+        // User was previously logged in and session persists
+        _hasActiveSession = true;
+        _impersonatedUserId = _auth.userId;
+        debugPrint("FiredartAuth: Restored session for user $_impersonatedUserId");
+      } else {
+        _hasActiveSession = false;
+        _impersonatedUserId = null;
+        debugPrint("FiredartAuth: No active session found — will show login.");
+      }
+    } catch (e) {
+      debugPrint("FiredartAuth: Error loading session state: $e");
+      _hasActiveSession = false;
+    }
+  }
+  
+  void _setSessionActive(bool active) {
+    _hasActiveSession = active;
+    if (_sessionFilePath != null) {
+      try {
+        final file = File(_sessionFilePath!);
+        if (active) {
+          file.writeAsStringSync('active');
+        } else if (file.existsSync()) {
+          file.deleteSync();
+        }
+      } catch (e) {
+        debugPrint("FiredartAuth: Error persisting session state: $e");
+      }
+    }
   }
 
   void _emitCurrentState() {
-     // This is tricky because we need to return AuthUser, but _impersonatedUserId is just a String.
-     // If we are impersonating, we assume we are that user.
-     // We return a basic AuthUser with the ID.
     final user = _createCurrentAuthUser();
     debugPrint("FiredartAuth: Emitting state - user: ${user?.id}");
     _authStateController.add(user);
   }
 
   AuthUser? _createCurrentAuthUser() {
-     if (_impersonatedUserId != null) {
-         return AuthUser(id: _impersonatedUserId!);
-     }
-     
-     if (_auth.isSignedIn) {
-         // Return the technical user
-         return AuthUser(id: _auth.userId, isAnonymous: true);
-     }
-     
-     return null;
+    if (!_hasActiveSession) return null;
+    
+    if (_impersonatedUserId != null) {
+      return AuthUser(id: _impersonatedUserId!);
+    }
+    
+    return null;
   }
 
   @override
   Stream<AuthUser?> get authStateChanges {
-    // Return a stream that emits the current logical state first, then all subsequent updates
     late StreamController<AuthUser?> controller;
     
     controller = StreamController<AuthUser?>(
@@ -73,22 +120,34 @@ class FiredartAuthRepository implements AuthRepository {
     debugPrint("FiredartAuth: signIn (impersonate) requested for $userId");
     
     if (!_auth.isSignedIn) {
-      debugPrint("FiredartAuth: No technical session. Signing in anonymously first.");
-      await signInAnonymously();
+      debugPrint("FiredartAuth: No technical session. Creating one first.");
+      await _ensureTechnicalSession();
     }
 
     _impersonatedUserId = userId;
+    _setSessionActive(true);
     debugPrint("FiredartAuth: Now impersonating $userId");
     _emitCurrentState();
   }
 
   @override
   Future<void> signInAnonymously() async {
-    debugPrint("FiredartAuth: Technical anonymous sign-in requested.");
-    await _auth.signInAnonymously();
-    debugPrint("FiredartAuth: Technical anonymous sign-in complete. Waiting 500ms for session settlement.");
-    await Future.delayed(const Duration(milliseconds: 500));
+    debugPrint("FiredartAuth: Anonymous sign-in requested.");
+    await _ensureTechnicalSession();
+    _impersonatedUserId = _auth.userId;
+    _setSessionActive(true);
+    debugPrint("FiredartAuth: Signed in as anonymous user: $_impersonatedUserId");
     _emitCurrentState();
+  }
+  
+  /// Ensures a technical Firedart session exists (for Firestore access).
+  Future<void> _ensureTechnicalSession() async {
+    if (!_auth.isSignedIn) {
+      debugPrint("FiredartAuth: Creating technical anonymous session...");
+      await _auth.signInAnonymously();
+      debugPrint("FiredartAuth: Technical session created. Waiting 500ms for settlement.");
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
   }
 
   @override
@@ -98,19 +157,14 @@ class FiredartAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {
-    debugPrint("FiredartAuth: signOut (clear impersonation) requested.");
-    _impersonatedUserId = null; 
+    debugPrint("FiredartAuth: signOut requested.");
+    _impersonatedUserId = null;
+    _setSessionActive(false);
     
+    // Emit null immediately so AuthWrapper shows LoginScreen
     _emitCurrentState();
     
-    try {
-      _auth.signOut();
-    } catch (e) {
-      debugPrint("FiredartAuth: Error during technical signOut: $e");
-    }
-    
-    debugPrint("FiredartAuth: Performing immediate technical anonymous re-auth for future use.");
-    await signInAnonymously();
+    debugPrint("FiredartAuth: Sign-out complete.");
   }
 
   @override
