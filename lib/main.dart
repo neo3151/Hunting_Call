@@ -6,7 +6,7 @@ import 'main_common.dart';
 void main() {
   AppConfig.create(
     flavor: AppFlavor.free,
-    appName: "Hunting Calls Free",
+    appName: "Gobble Guru",
   );
   mainCommon();
 }

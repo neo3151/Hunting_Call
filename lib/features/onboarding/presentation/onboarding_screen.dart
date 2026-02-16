@@ -132,7 +132,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildWelcomePage() {
     return _buildPage(
       icon: Icons.multitrack_audio_rounded,
-      title: 'Master Your\nHunting Calls',
+      title: 'Master Your\nGobble Game',
       description: 'Record, analyze, and perfect your animal calls with expert feedback and real-time scoring',
     );
   }

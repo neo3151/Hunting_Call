@@ -1,7 +1,7 @@
-# Hunting Calls — Play Store Listing
+# Gobble Guru — Play Store Listing
 
 ## App Title
-Hunting Calls: Master the Wild
+Gobble Guru: Master Your Calls
 
 ## Short Description (80 chars max)
 Practice & perfect your hunting calls with real-time analysis and audio coaching.

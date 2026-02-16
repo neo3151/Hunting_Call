@@ -247,7 +247,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               const Icon(Icons.forest_rounded, size: 80, color: Color(0xFF81C784)),
                               const SizedBox(height: 24),
                               Text(
-                                'HUNTING\nCALLS',
+                                'GOBBLE\nGURU',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.oswald(
                                   fontSize: 48,
@@ -259,7 +259,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'MASTER THE WILD',
+                                'MASTER YOUR CALLS',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.lato(
                                   fontSize: 16,
