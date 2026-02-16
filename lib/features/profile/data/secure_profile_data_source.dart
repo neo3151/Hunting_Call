@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../domain/profile_model.dart';
 import 'local_profile_data_source.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// Secure implementation of [ProfileDataSource] backed by
 /// flutter_secure_storage (Android Keystore / iOS Keychain).
@@ -19,13 +19,13 @@ class SecureProfileDataSource implements ProfileDataSource {
   @override
   Future<UserProfile> getProfile(String userId) async {
     final jsonString = await _secureStorage.read(key: 'user_profile_$userId');
-    debugPrint(
+    AppLogger.d(
       '🔒 SecureProfileDataSource: Reading user_profile_$userId: '
       '${jsonString != null ? "found" : "null"}',
     );
     if (jsonString != null) {
       final p = UserProfile.fromJson(json.decode(jsonString));
-      debugPrint(
+      AppLogger.d(
         '🔒 SecureProfileDataSource: Parsed isPremium=${p.isPremium}',
       );
       return p;

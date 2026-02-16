@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../domain/reference_call_model.dart';
 import '../../../config/app_config.dart';
 import '../../../config/freemium_config.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class ReferenceDatabase {
   static List<ReferenceCall> _calls = [];
@@ -27,9 +28,9 @@ class ReferenceDatabase {
       
       _calls = callsJson.map((json) => ReferenceCall.fromJson(json)).toList();
       _isInitialized = true;
-      debugPrint('ReferenceDatabase: Loaded ${_calls.length} calls from JSON.');
+      AppLogger.d('ReferenceDatabase: Loaded ${_calls.length} calls from JSON.');
     } catch (e) {
-      debugPrint('ReferenceDatabase Error: Failed to load calls from JSON: $e');
+      AppLogger.d('ReferenceDatabase Error: Failed to load calls from JSON: $e');
       _calls = [];
     }
 
@@ -53,7 +54,7 @@ class ReferenceDatabase {
 
   static ReferenceCall getById(String id) {
     if (_calls.isEmpty) {
-      debugPrint('ReferenceDatabase Warning: Attempted to get call before initialization or with empty database.');
+      AppLogger.d('ReferenceDatabase Warning: Attempted to get call before initialization or with empty database.');
       // Return a dummy call to prevent crashes, but this should be avoided by calling init()
       return _calls.isNotEmpty ? _calls.first : const ReferenceCall(
         id: 'unknown',

@@ -7,7 +7,7 @@ Gobble Guru: Master Your Calls
 Practice & perfect your hunting calls with real-time analysis and audio coaching.
 
 ## Full Description (4000 chars max)
-🦌 **Hunting Calls: Master the Wild** is the ultimate training app for hunters who want to sharpen their calling skills before heading into the field.
+🦌 **Gobble Guru: Master Your Calls** is the ultimate training app for hunters who want to sharpen their calling skills before heading into the field.
 
 **PRACTICE WITH REAL CALLS**
 Browse a complete library of 50 professional-grade animal calls covering North American game — from Whitetail Deer grunts to Elk bugles, Turkey yelps to Predator calls. Each recording is sourced from real wildlife audio, giving you authentic sounds to study and replicate.

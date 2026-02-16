@@ -1,0 +1,124 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper Functions ───────────────────────────────────────────
+    
+    // Returns true if the requesting user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Returns true if the requesting user's UID matches the document ID
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Returns true if the incoming data has only the allowed fields
+    function hasOnlyAllowedFields(allowed) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowed);
+    }
+
+    // ─── Input Validation Helpers ───────────────────────────────────
+
+    // Validates profile data constraints
+    function isValidProfileData() {
+      let data = request.resource.data;
+      return data.name is string
+          && data.name.size() >= 1
+          && data.name.size() <= 50
+          && (data.get('totalCalls', 0) is int || data.get('totalCalls', 0) is float)
+          && data.get('totalCalls', 0) >= 0
+          && data.get('totalCalls', 0) <= 100000
+          && (data.get('averageScore', 0) is int || data.get('averageScore', 0) is float)
+          && data.get('averageScore', 0) >= 0
+          && data.get('averageScore', 0) <= 100
+          && (!data.keys().hasAny(['history']) || data.history.size() <= 500)
+          && (!data.keys().hasAny(['achievements']) || data.achievements.size() <= 100);
+    }
+
+    // ─── /profiles/{userId} ─────────────────────────────────────────
+    //
+    // Data: name, email, joinedDate, birthday, totalCalls, averageScore,
+    //       currentStreak, longestStreak, dailyChallengesCompleted,
+    //       lastDailyChallengeDate, achievements, history, isPremium, id
+    //
+    // Operations:
+    //   - CREATE: User creates their own profile on first sign-in
+    //   - READ  : User reads their own profile
+    //   - UPDATE: User updates their own stats, achievements, premium status
+    //   - DELETE: Not allowed from client (admin-only)
+    //   - LIST  : Restricted — getAllProfiles() should be moved to
+    //             a Cloud Function for admin use. Currently allowed
+    //             for authenticated users as a temporary measure.
+
+    match /profiles/{userId} {
+      // Anyone authenticated can read their OWN profile
+      allow read: if isOwner(userId);
+
+      // Allow creating your own profile document (doc ID must match your UID)
+      allow create: if isOwner(userId)
+                    && request.resource.data.keys().hasAll(['name', 'id'])
+                    && request.resource.data.id == request.auth.uid
+                    && isValidProfileData();
+
+      // Allow updating your own profile with specific safe fields
+      allow update: if isOwner(userId)
+                    && hasOnlyAllowedFields([
+                         'name', 'email', 'birthday',
+                         'totalCalls', 'averageScore',
+                         'currentStreak', 'longestStreak',
+                         'dailyChallengesCompleted', 'lastDailyChallengeDate',
+                         'achievements', 'history',
+                         'isPremium', 'id', 'joinedDate'
+                       ])
+                    && isValidProfileData();
+
+      // Never allow client-side deletes
+      allow delete: if false;
+    }
+
+    // ─── Temporary: Allow profile listing & email queries ───────────
+    // 
+    // WARNING: getAllProfiles() and getProfilesByEmail() require
+    // collection-level list access. This is acceptable during beta
+    // but should be migrated to a Cloud Function before public launch.
+    //
+    // To remove this rule later:
+    //   1. Create a Cloud Function for profile listing/search
+    //   2. Delete this match block
+    //   3. The per-document rules above will still protect individual reads
+
+    match /profiles/{userId} {
+      allow list: if isAuthenticated();
+    }
+
+    // ─── /leaderboards/{animalId} ───────────────────────────────────
+    //
+    // Data: scores (array of {userId, userName, score, date}), lastUpdated
+    //
+    // Operations:
+    //   - READ  : Any authenticated user can view leaderboards
+    //   - WRITE : Any authenticated user can submit scores
+    //             (validated via Firestore transaction in app code)
+    //   - DELETE: Not allowed from client
+
+    match /leaderboards/{animalId} {
+      allow read: if isAuthenticated();
+
+      // Allow writes but validate structure and size
+      allow write: if isAuthenticated()
+                   && request.resource.data.keys().hasOnly(['scores', 'lastUpdated'])
+                   && request.resource.data.scores is list
+                   && request.resource.data.scores.size() <= 10;
+
+      allow delete: if false;
+    }
+
+    // ─── Deny everything else ───────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../rating/domain/rating_model.dart';
 import '../../rating/domain/rating_service.dart';
@@ -16,6 +15,7 @@ import '../../daily_challenge/data/daily_challenge_service.dart';
 
 import '../../rating/domain/personality_feedback_service.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class RealRatingService implements RatingService {
   final AnalyzeAudioUseCase _analyzeUseCase;
@@ -39,7 +39,7 @@ class RealRatingService implements RatingService {
 
   @override
   Future<RatingResult> rateCall(String userId, String audioPath, String animalType) async {
-    debugPrint('RealRatingService: rateCall started for $animalType at $audioPath');
+    AppLogger.d('RealRatingService: rateCall started for $animalType at $audioPath');
     
     // Try to get location (fire and forget or await briefly?)
     // Await briefly so we have it for the result
@@ -55,7 +55,7 @@ class RealRatingService implements RatingService {
         );
       }
     } catch (e) {
-      debugPrint('Error getting location: $e');
+      AppLogger.d('Error getting location: $e');
     }
 
     try {
@@ -84,7 +84,7 @@ class RealRatingService implements RatingService {
       
       if (refAnalysis == null) {
         try {
-          debugPrint('RealRatingService: Analyzing reference for $animalType (not cached)');
+          AppLogger.d('RealRatingService: Analyzing reference for $animalType (not cached)');
           final assetPath = reference.audioAssetPath;
           final ByteData data = await rootBundle.load(assetPath);
           final List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
@@ -98,10 +98,10 @@ class RealRatingService implements RatingService {
           
           try { await tempFile.delete(); } catch (_) {}
         } catch (e) {
-          debugPrint('Reference Analysis Error: $e');
+          AppLogger.d('Reference Analysis Error: $e');
         }
       } else {
-        debugPrint('RealRatingService: Using cached reference for $animalType');
+        AppLogger.d('RealRatingService: Using cached reference for $animalType');
       }
 
       // 3. Calculate score (via use case - extracts all scoring logic to domain layer)
@@ -176,7 +176,7 @@ class RealRatingService implements RatingService {
         latitude: _currentPosition?.latitude,
         longitude: _currentPosition?.longitude,
       );
-      debugPrint('RealRatingService: Pro-Grade Analysis complete. Score: ${result.score}');
+      AppLogger.d('RealRatingService: Pro-Grade Analysis complete. Score: ${result.score}');
 
       // Save to history
       await profileRepository.saveResultForUser(userId, result, animalType);
@@ -195,7 +195,7 @@ class RealRatingService implements RatingService {
             ),
           );
         } catch (e) {
-          debugPrint('Leaderboard submission failed: $e');
+          AppLogger.d('Leaderboard submission failed: $e');
         }
       }
       
@@ -204,17 +204,17 @@ class RealRatingService implements RatingService {
         if (userId != 'guest') {
           final dailyCall = DailyChallengeService.getDailyChallengeStatic();
           if (dailyCall.id == animalType && analysisResult.overallScore >= 70) {
-            debugPrint('Daily Challenge ($animalType) Completed by $userId with score ${analysisResult.overallScore}');
+            AppLogger.d('Daily Challenge ($animalType) Completed by $userId with score ${analysisResult.overallScore}');
             await profileRepository.updateDailyChallengeStats(userId);
           }
         }
       } catch (e) {
-        debugPrint('Daily Challenge update failed: $e');
+        AppLogger.d('Daily Challenge update failed: $e');
       }
       
       return result;
     } catch (e) {
-      debugPrint('RealRatingService: Analysis failed: $e');
+      AppLogger.d('RealRatingService: Analysis failed: $e');
       rethrow;
     }
   }

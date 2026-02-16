@@ -8,6 +8,7 @@ import '../../../core/widgets/upgrade_prompter.dart';
 import '../../../core/services/audio_service.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
 import 'call_detail_screen.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final String? userId;
@@ -100,7 +101,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     return result.fold(
       (failure) {
         // Log the error but return empty list to avoid breaking UI
-        debugPrint('Library filter error: ${failure.message}');
+        AppLogger.d('Library filter error: ${failure.message}');
         return <ReferenceCall>[];
       },
       (calls) => calls,

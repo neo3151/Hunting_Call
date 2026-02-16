@@ -1,8 +1,8 @@
 import 'package:firedart/firedart.dart';
-import 'package:flutter/foundation.dart';
 import '../domain/profile_model.dart';
 import '../../rating/domain/rating_model.dart';
 import '../domain/repositories/profile_repository.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class FiredartProfileRepository implements ProfileRepository {
   Firestore get _firestore => Firestore.instance;
@@ -16,18 +16,18 @@ class FiredartProfileRepository implements ProfileRepository {
 
     try {
       return await _withRetry(() async {
-        debugPrint('FiredartProfileRepository: Fetching profile for $userId...');
+        AppLogger.d('FiredartProfileRepository: Fetching profile for $userId...');
         final doc = await _firestore.collection(_collectionPath).document(userId).get().timeout(const Duration(seconds: 10), onTimeout: () {
             throw Exception('Firestore get() timed out after 10 seconds');
         });
-        debugPrint('FiredartProfileRepository: Profile fetched for $userId.');
+        AppLogger.d('FiredartProfileRepository: Profile fetched for $userId.');
         final data = doc.map;
         _sanitizeProfileData(data, doc.id);
         return UserProfile.fromJson(data);
       }, 'getProfile');
     } catch (e) {
       if (e.toString().contains('NOT_FOUND')) {
-        debugPrint('FiredartProfileRepository: Profile not found for $userId — returning guest profile.');
+        AppLogger.d('FiredartProfileRepository: Profile not found for $userId — returning guest profile.');
         return UserProfile.guest();
       }
       rethrow;
@@ -70,12 +70,12 @@ class FiredartProfileRepository implements ProfileRepository {
       } catch (e) {
         final errorStr = e.toString();
         if ((errorStr.contains('SignedOutException') || errorStr.contains('User signed out')) && retries > 1) {
-          debugPrint('FiredartProfileRepository: $label - Auth not ready, retries left: ${retries - 1}. Waiting 1s...');
+          AppLogger.d('FiredartProfileRepository: $label - Auth not ready, retries left: ${retries - 1}. Waiting 1s...');
           await Future.delayed(const Duration(seconds: 1));
           retries--;
           continue;
         }
-        debugPrint('FiredartProfileRepository: $label ERROR: $e');
+        AppLogger.d('FiredartProfileRepository: $label ERROR: $e');
         rethrow;
       }
     }
@@ -236,7 +236,7 @@ class FiredartProfileRepository implements ProfileRepository {
       await _firestore.collection(_collectionPath).document(userId).update({
         'isPremium': isPremium,
       });
-      debugPrint('✅ Firedart: Set isPremium=$isPremium for $userId');
+      AppLogger.d('✅ Firedart: Set isPremium=$isPremium for $userId');
     }, 'setPremiumStatus');
   }
 }

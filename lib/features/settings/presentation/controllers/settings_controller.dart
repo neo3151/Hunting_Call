@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/settings_repository.dart';
 import '../../domain/settings_model.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 // ─── Repository Provider ────────────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     try {
       await ref.read(settingsRepositoryProvider).saveSettings(updated);
     } catch (e) {
-      debugPrint('Settings save error: $e');
+      AppLogger.d('Settings save error: $e');
     }
   }
 

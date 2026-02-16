@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firedart/firedart.dart' as fd;
 import 'dart:io';
@@ -8,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'features/auth/data/firedart_file_store.dart';
 import 'firebase_options.dart';
 import 'features/hunting_log/data/local_hunting_log_repository.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// Whether Firebase (or Firedart on Linux) is available.
 /// Set during [init] and read by [main_common.dart] to build [PlatformEnvironment].
@@ -42,7 +42,7 @@ Future<void> init({bool useMocks = false}) async {
         await appDir.create(recursive: true);
       }
       final tokenFile = File(p.join(appDir.path, 'auth_token.json'));
-      debugPrint('Firebase: Using token file at ${tokenFile.path}');
+      AppLogger.d('Firebase: Using token file at ${tokenFile.path}');
       
       fd.FirebaseAuth.initialize(options.apiKey, FiredartFileStore(tokenFile.path));
       fd.Firestore.initialize(options.projectId);
@@ -50,24 +50,24 @@ Future<void> init({bool useMocks = false}) async {
       // Auto-sign in anonymously on Linux if not already signed in 
       final auth = fd.FirebaseAuth.instance;
       if (!auth.isSignedIn) {
-        debugPrint('Firebase: Performing initial anonymous sign-in on Linux...');
+        AppLogger.d('Firebase: Performing initial anonymous sign-in on Linux...');
         await auth.signInAnonymously();
       }
       
       // Wait a bit to ensure Firestore/Auth state is synchronized
       int authRetries = 10;
       while (!auth.isSignedIn && authRetries > 0) {
-        debugPrint('Firebase: Waiting for auth synchronization... ($authRetries left)');
+        AppLogger.d('Firebase: Waiting for auth synchronization... ($authRetries left)');
         await Future.delayed(const Duration(milliseconds: 100));
         authRetries--;
       }
       
-      debugPrint('Firebase: Final startup sign-in check - isSignedIn: ${auth.isSignedIn}, userId: ${auth.userId}');
+      AppLogger.d('Firebase: Final startup sign-in check - isSignedIn: ${auth.isSignedIn}, userId: ${auth.userId}');
       
       isFirebaseEnabled = auth.isSignedIn;
-      debugPrint('Firebase: Firedart initialized with FileStore for Linux. isEnabled: $isFirebaseEnabled');
+      AppLogger.d('Firebase: Firedart initialized with FileStore for Linux. isEnabled: $isFirebaseEnabled');
     } catch (e) {
-      debugPrint('Firebase: Firedart initialization failed: $e');
+      AppLogger.d('Firebase: Firedart initialization failed: $e');
       isFirebaseEnabled = false;
     }
   } else {
@@ -78,14 +78,14 @@ Future<void> init({bool useMocks = false}) async {
     }
   }
 
-  debugPrint('DI Initializing: isFirebaseEnabled = $isFirebaseEnabled');
+  AppLogger.d('DI Initializing: isFirebaseEnabled = $isFirebaseEnabled');
 
   // Initialize HuntingLog database tables eagerly
   try {
     final huntingLogRepo = LocalHuntingLogRepository();
     await huntingLogRepo.initialize();
   } catch (e) {
-    debugPrint('HuntingLog DB init failed: $e');
+    AppLogger.d('HuntingLog DB init failed: $e');
   }
 
   _isInitializing = false;

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../di_providers.dart';
 import '../../../library/domain/providers.dart';
 import '../../domain/world_info.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 // ──────────────────────────────────────────────────────────
 //  STATE
@@ -73,7 +74,7 @@ class ProgressMapNotifier extends AutoDisposeNotifier<ProgressMapState> {
 
       callsResult.fold(
         (failure) {
-          debugPrint('ProgressMap Error: ${failure.message}');
+          AppLogger.d('ProgressMap Error: ${failure.message}');
           state = state.copyWith(isLoading: false);
         },
         (allCalls) async {
@@ -128,7 +129,7 @@ class ProgressMapNotifier extends AutoDisposeNotifier<ProgressMapState> {
             for (final n in nodes) {
               final lockResult = checkLockUseCase.execute(callId: n.call.id, isUserPremium: profile.isPremium);
               lockResult.fold(
-                (failure) => debugPrint('Lock check error: ${failure.message}'),
+                (failure) => AppLogger.d('Lock check error: ${failure.message}'),
                 (isLocked) {
                   if (isLocked && n.state != NodeState.mastered) {
                     n.state = NodeState.locked;
@@ -144,7 +145,7 @@ class ProgressMapNotifier extends AutoDisposeNotifier<ProgressMapState> {
         },
       );
     } catch (e) {
-      debugPrint('ProgressMap Error: $e');
+      AppLogger.d('ProgressMap Error: $e');
       state = state.copyWith(isLoading: false);
     }
   }

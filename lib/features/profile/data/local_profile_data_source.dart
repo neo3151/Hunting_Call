@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/profile_model.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 abstract class ProfileDataSource {
   Future<UserProfile> getProfile(String userId);
@@ -20,10 +20,10 @@ class LocalProfileDataSource implements ProfileDataSource {
   @override
   Future<UserProfile> getProfile(String userId) async {
     final jsonString = sharedPreferences.getString('user_profile_$userId');
-    debugPrint('🔍 LocalProfileDataSource: Reading user_profile_$userId: $jsonString');
+    AppLogger.d('🔍 LocalProfileDataSource: Reading user_profile_$userId: $jsonString');
     if (jsonString != null) {
       final p = UserProfile.fromJson(json.decode(jsonString));
-      debugPrint('🔍 LocalProfileDataSource: Parsed isPremium=${p.isPremium}');
+      AppLogger.d('🔍 LocalProfileDataSource: Parsed isPremium=${p.isPremium}');
       return p;
     } else {
       // Return default new profile

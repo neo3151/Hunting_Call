@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../domain/profile_model.dart';
 import '../../../rating/domain/rating_model.dart';
 import '../../domain/providers.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// State for user profile operations
 class ProfileState {
@@ -52,7 +52,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   /// Load all profiles for login screen
   Future<void> loadAllProfiles() async {
-    // debugPrint("ProfileNotifier: Loading all profiles...");
+    // AppLogger.d("ProfileNotifier: Loading all profiles...");
     state = state.copyWith(isLoading: true, error: null);
     
     try {
@@ -60,21 +60,21 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(allProfiles: profiles, isLoading: false);
     } catch (e) {
       final errorStr = e.toString();
-      debugPrint('ProfileNotifier: getAllProfiles failed: $errorStr');
+      AppLogger.d('ProfileNotifier: getAllProfiles failed: $errorStr');
       state = state.copyWith(error: errorStr, isLoading: false);
     }
   }
 
   /// Load a specific user's profile
   Future<void> loadProfile(String userId) async {
-    // debugPrint("ProfileNotifier: loadProfile called for $userId");
+    // AppLogger.d("ProfileNotifier: loadProfile called for $userId");
     state = state.copyWith(isProfileLoading: true, error: null);
     try {
       final profile = await _repo.getProfile(userId);
-      // debugPrint("ProfileNotifier: loadProfile success for $userId");
+      // AppLogger.d("ProfileNotifier: loadProfile success for $userId");
       state = state.copyWith(profile: profile, isProfileLoading: false);
     } catch (e) {
-      debugPrint('ProfileNotifier: loadProfile failed for $userId: $e');
+      AppLogger.d('ProfileNotifier: loadProfile failed for $userId: $e');
       state = state.copyWith(error: e.toString(), isProfileLoading: false);
     }
   }
@@ -116,7 +116,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
         
         achievementsResult.fold(
           (failure) {
-            debugPrint('Achievement calculation failed: ${failure.message}');
+            AppLogger.d('Achievement calculation failed: ${failure.message}');
           },
           (newAchievements) async {
             if (newAchievements.isNotEmpty) {

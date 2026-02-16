@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/upgrade_prompter.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
 import '../../../core/services/audio_service.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 
 class CallDetailScreen extends ConsumerStatefulWidget {
@@ -225,7 +226,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () async {
-                              debugPrint('🔒 Locked Leaderboard clicked. Showing prompt...');
+                              AppLogger.d('🔒 Locked Leaderboard clicked. Showing prompt...');
                               UpgradePrompter.show(context, featureName: 'Global Leaderboards');
                             },
                             icon: const Icon(Icons.lock_outline, color: Colors.white38),

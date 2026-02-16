@@ -17,6 +17,7 @@ import 'features/library/data/reference_database.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/data/firedart_auth_repository.dart';
 import 'config/app_config.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 void mainCommon() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,28 +41,28 @@ void mainCommon() async {
   // Initialize Firebase
   bool firebaseReady = false;
   try {
-    // debugPrint("🔥 Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
+    // AppLogger.d("🔥 Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
     if (!Platform.isLinux) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
       firebaseReady = true;
-      // debugPrint("✅ Firebase: Initialized successfully. Apps count: ${Firebase.apps.length}");
+      // AppLogger.d("✅ Firebase: Initialized successfully. Apps count: ${Firebase.apps.length}");
     } else {
-      // debugPrint("🐧 Firebase: Skipping official init on Linux (using Firedart).");
+      // AppLogger.d("🐧 Firebase: Skipping official init on Linux (using Firedart).");
     }
 
   } catch (e, stackTrace) {
-    debugPrint("❌ Firebase: Initialization failed. Entering 'Off-Grid' mode.");
-    debugPrint('Error: $e');
-    debugPrint('Stack: $stackTrace');
-    debugPrint("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
+    AppLogger.d("❌ Firebase: Initialization failed. Entering 'Off-Grid' mode.");
+    AppLogger.d('Error: $e');
+    AppLogger.d('Stack: $stackTrace');
+    AppLogger.d("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
   }
   
   // Global Error Handling — route to Crashlytics if available
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    debugPrint('GLOBAL FLUTTER ERROR: ${details.exception}');
+    AppLogger.d('GLOBAL FLUTTER ERROR: ${details.exception}');
     if (firebaseReady && (Platform.isAndroid || Platform.isIOS)) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(details);
     }
@@ -69,7 +70,7 @@ void mainCommon() async {
 
   // Catch async errors that escape the widget tree
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('GLOBAL ASYNC ERROR: $error\n$stack');
+    AppLogger.d('GLOBAL ASYNC ERROR: $error\n$stack');
     if (firebaseReady && (Platform.isAndroid || Platform.isIOS)) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     }
@@ -85,7 +86,7 @@ void mainCommon() async {
     final firedartAuth = FiredartAuthRepository();
     await firedartAuth.initialize();
     preInitAuthRepo = firedartAuth;
-    // debugPrint("FiredartAuth: Repository created and initialized.");
+    // AppLogger.d("FiredartAuth: Repository created and initialized.");
   }
   
   // Create the platform environment for Riverpod DI
@@ -102,7 +103,7 @@ void mainCommon() async {
   try {
     // Access cleanup after ProviderScope is available — defer to post-frame
   } catch (e) {
-    debugPrint('Startup: Cleanup failed: $e');
+    AppLogger.d('Startup: Cleanup failed: $e');
   }
 
   runApp(ProviderScope(
@@ -113,15 +114,40 @@ void mainCommon() async {
   ));
 }
 
-class HuntingCallsApp extends ConsumerWidget {
+class HuntingCallsApp extends ConsumerStatefulWidget {
   const HuntingCallsApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HuntingCallsApp> createState() => _HuntingCallsAppState();
+}
+
+class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
+  bool _cleanupDone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Defer cleanup to after the first frame renders
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_cleanupDone) {
+        _cleanupDone = true;
+        _cleanupOldRecordings();
+      }
+    });
+  }
+
+  void _cleanupOldRecordings() {
+    try {
+      final recorderService = ref.read(audioRecorderServiceProvider);
+      recorderService.cleanupOldFiles();
+    } catch (e) {
+      AppLogger.d('Startup: Cleanup failed: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeNotifier = ref.read(themeNotifierProvider.notifier);
-    
-    // Trigger cleanup on first build
-    _cleanupOldRecordings(ref);
     
     return MaterialApp(
       title: AppConfig.instance.appName,
@@ -130,13 +156,5 @@ class HuntingCallsApp extends ConsumerWidget {
       home: const SplashScreen(),
     );
   }
-  
-  void _cleanupOldRecordings(WidgetRef ref) {
-    try {
-      final recorderService = ref.read(audioRecorderServiceProvider);
-      recorderService.cleanupOldFiles();
-    } catch (e) {
-      debugPrint('Startup: Cleanup failed: $e');
-    }
-  }
 }
+
