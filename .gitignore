@@ -137,4 +137,5 @@ scripts/gmail_token.json
 # OAuth tokens and credentials (secrets — never commit)
 scripts/*token*.json
 scripts/credentials.json
+scripts/play-store-key.json
 releases/
