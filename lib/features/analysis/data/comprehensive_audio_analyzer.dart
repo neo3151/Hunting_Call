@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../domain/frequency_analyzer.dart';
 import '../domain/audio_analysis_model.dart';
 import 'waveform_cache_database.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   final _cache = WaveformCacheDatabase();
@@ -13,7 +14,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     // Auto-cleanup old cache entries on initialization
     _cache.clearOldCache(maxAge: const Duration(days: 7)).then((deleted) {
       if (deleted > 0) {
-        debugPrint('WaveformCache: Cleaned up $deleted old entries');
+        AppLogger.d('WaveformCache: Cleaned up $deleted old entries');
       }
     });
   }
@@ -30,7 +31,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     try {
       final file = File(audioPath);
       if (!await file.exists()) {
-        debugPrint('Analysis Error: File $audioPath not found');
+        AppLogger.d('Analysis Error: File $audioPath not found');
         return AudioAnalysis.simple(frequencyHz: 0.0, durationSec: 0.0);
       }
 
@@ -38,9 +39,9 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       // Note: We don't cache the full object yet, just waveform. 
       // If we move to full caching, check here.
 
-      debugPrint('ComprehensiveAudioAnalyzer: Spawning isolate for analysis...');
+      AppLogger.d('ComprehensiveAudioAnalyzer: Spawning isolate for analysis...');
       final analysis = await compute(_runAnalysisInIsolate, audioPath);
-      debugPrint('ComprehensiveAudioAnalyzer: Analysis complete.');
+      AppLogger.d('ComprehensiveAudioAnalyzer: Analysis complete.');
       
       // Update waveform cache with the result if needed
       if (analysis.waveform.isNotEmpty) {
@@ -50,7 +51,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       return analysis;
 
     } catch (e, stack) {
-      debugPrint('Comprehensive Analysis Error: $e\n$stack');
+      AppLogger.d('Comprehensive Analysis Error: $e\n$stack');
       return AudioAnalysis.simple(frequencyHz: 0.0, durationSec: 0.0);
     }
   }

@@ -7,6 +7,7 @@ import 'login_screen.dart';
 import 'controllers/auth_controller.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
 import '../../home/presentation/home_screen.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// Watches auth state and shows LoginScreen, OnboardingScreen, or HomeScreen.
 /// Profile creation is handled by LoginScreen - this only loads existing profiles.
@@ -33,30 +34,30 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     if (mounted) setState(() => _isLoadingProfile = true);
     
     try {
-      debugPrint('AuthWrapper: Loading profile for $userId');
+      AppLogger.d('AuthWrapper: Loading profile for $userId');
       
       final profileRepo = ref.read(profileRepositoryProvider);
       
       // Check 1: Profile notifier might already have a profile loaded
       final currentProfile = ref.read(profileNotifierProvider).profile;
       if (currentProfile != null && currentProfile.id != 'guest') {
-        debugPrint('AuthWrapper: ✅ Profile already loaded: ${currentProfile.name} (${currentProfile.id})');
+        AppLogger.d('AuthWrapper: ✅ Profile already loaded: ${currentProfile.name} (${currentProfile.id})');
         return;
       }
       
       // Check 2: Try to find profile by Firebase UID
       final profile = await profileRepo.getProfile(userId);
       if (profile.id != 'guest') {
-        debugPrint('AuthWrapper: ✅ Profile found by UID: ${profile.name}');
+        AppLogger.d('AuthWrapper: ✅ Profile found by UID: ${profile.name}');
         await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
         return;
       }
       
-      debugPrint('AuthWrapper: ⚠️ No profile found for $userId — user needs to create one via login screen.');
+      AppLogger.d('AuthWrapper: ⚠️ No profile found for $userId — user needs to create one via login screen.');
       
     } catch (e, stack) {
-      debugPrint('AuthWrapper: Error: $e');
-      debugPrint('Stack: $stack');
+      AppLogger.d('AuthWrapper: Error: $e');
+      AppLogger.d('Stack: $stack');
       // Reset on error so user can retry if needed
       _lastHandledUserId = null;
     } finally {
@@ -74,13 +75,13 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
 
     return authState.when(
       data: (user) {
-        debugPrint('AuthWrapper: data received. user: ${user?.id}');
+        AppLogger.d('AuthWrapper: data received. user: ${user?.id}');
         
         if (user == null) {
           _lastHandledUserId = null;
           // Reset profile state to prevent session bleed
           ref.read(profileNotifierProvider.notifier).reset();
-          debugPrint('AuthWrapper: user is null. Returning LoginScreen.');
+          AppLogger.d('AuthWrapper: user is null. Returning LoginScreen.');
           return const LoginScreen();
         }
 
@@ -111,11 +112,11 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         // Check onboarding (using ref.watch to rebuild if it changes)
         final onb = ref.watch(onboardingProvider);
         if (!onb) {
-          debugPrint('AuthWrapper: Onboarding not seen. Returning OnboardingScreen.');
+          AppLogger.d('AuthWrapper: Onboarding not seen. Returning OnboardingScreen.');
           return const OnboardingScreen();
         }
         
-        debugPrint('AuthWrapper: User authenticated and onboarding seen. Returning HomeScreen($userId).');
+        AppLogger.d('AuthWrapper: User authenticated and onboarding seen. Returning HomeScreen($userId).');
         return HomeScreen(userId: userId);
       },
       loading: () => const Scaffold(
@@ -126,7 +127,7 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       error: (error, stack) {
         final errorStr = error.toString();
         if (errorStr.contains('User signed out') || errorStr.contains('SignedOutException')) {
-          debugPrint('AuthWrapper: Detected signed out error ($errorStr). Invalidating provider to force retry.');
+          AppLogger.d('AuthWrapper: Detected signed out error ($errorStr). Invalidating provider to force retry.');
            // This might cause infinite loop with AsyncNotifier if not careful, 
            // but mapped stream should handle nulls as data(null).
            // Error usually means stream error.

@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/rating_service.dart';
 import '../../domain/rating_model.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// State for rating/analysis operations
 class RatingState {
@@ -44,21 +44,21 @@ class RatingNotifier extends Notifier<RatingState> {
   /// Analyze a recorded call
   Future<RatingResult?> analyzeCall(String userId, String audioPath, String animalId) async {
     if (state.isAnalyzing) {
-      debugPrint('RatingNotifier: Analysis already in progress, ignoring request.');
+      AppLogger.d('RatingNotifier: Analysis already in progress, ignoring request.');
       return null;
     }
     
-    debugPrint('RatingNotifier: Starting analysis for $animalId at $audioPath');
+    AppLogger.d('RatingNotifier: Starting analysis for $animalId at $audioPath');
     state = state.copyWith(isAnalyzing: true, error: null);
     try {
       final result = await _ratingService.rateCall(userId, audioPath, animalId);
       if (!_mounted) return null; // Prevent setting state if disposed
       
-      debugPrint('RatingNotifier: Analysis complete. Success: ${result.score > 0}');
+      AppLogger.d('RatingNotifier: Analysis complete. Success: ${result.score > 0}');
       state = state.copyWith(isAnalyzing: false, result: result);
       return result;
     } catch (e, stack) {
-      debugPrint('RatingNotifier: Analysis error: $e\n$stack');
+      AppLogger.d('RatingNotifier: Analysis error: $e\n$stack');
       if (_mounted) {
         state = state.copyWith(isAnalyzing: false, error: e.toString());
       }
@@ -68,13 +68,13 @@ class RatingNotifier extends Notifier<RatingState> {
 
   /// Reset state
   void reset() {
-    debugPrint('RatingNotifier: Resetting state');
+    AppLogger.d('RatingNotifier: Resetting state');
     state = const RatingState();
   }
 
   /// Force a success state for debugging
   void forceSuccess() {
-    debugPrint('RatingNotifier: Forcing success state');
+    AppLogger.d('RatingNotifier: Forcing success state');
     state = RatingState(
       isAnalyzing: false,
       result: RatingResult(

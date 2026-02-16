@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/entities/auth_user.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuth get _auth => FirebaseAuth.instance;
@@ -36,7 +36,7 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<AuthUser> signInWithGoogle() async {
     try {
-      debugPrint('🔐 FirebaseAuthRepository: Starting Google Sign-In...');
+      AppLogger.d('🔐 FirebaseAuthRepository: Starting Google Sign-In...');
       
       final googleProvider = GoogleAuthProvider();
       googleProvider.addScope('email');
@@ -51,16 +51,16 @@ class FirebaseAuthRepository implements AuthRepository {
       final displayName = user.displayName;
       final uid = user.uid;
       
-      debugPrint('✅ Google Sign-In successful!');
-      debugPrint('👤 Name: $displayName | Email: $email | UID: $uid');
+      AppLogger.d('✅ Google Sign-In successful!');
+      AppLogger.d('👤 Name: $displayName | Email: $email | UID: $uid');
       
       await _ensureProfileInFirestore(uid, email, displayName);
       
       return _mapFirebaseUser(user)!;
       
     } catch (e, stackTrace) {
-      debugPrint('❌ Google Sign-In Error: $e');
-      debugPrint('Stack trace: $stackTrace');
+      AppLogger.d('❌ Google Sign-In Error: $e');
+      AppLogger.d('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -73,7 +73,7 @@ class FirebaseAuthRepository implements AuthRepository {
       // 1. Check if profile exists by UID
       final docSnap = await profilesRef.doc(uid).get();
       if (docSnap.exists) {
-        debugPrint('🔍 Profile already exists for UID $uid');
+        AppLogger.d('🔍 Profile already exists for UID $uid');
         return;
       }
       
@@ -81,7 +81,7 @@ class FirebaseAuthRepository implements AuthRepository {
       if (email != null) {
         final emailQuery = await profilesRef.where('email', isEqualTo: email).limit(1).get();
         if (emailQuery.docs.isNotEmpty) {
-          debugPrint("🔍 Profile found by email: ${emailQuery.docs.first.data()['name']}");
+          AppLogger.d("🔍 Profile found by email: ${emailQuery.docs.first.data()['name']}");
           return;
         }
       }
@@ -89,7 +89,7 @@ class FirebaseAuthRepository implements AuthRepository {
       // 3. No profile exists - create one
       final profileName = displayName ?? email?.split('@').first ?? 'Hunter';
       
-      debugPrint('🆕 Creating profile: $profileName (email: $email, uid: $uid)');
+      AppLogger.d('🆕 Creating profile: $profileName (email: $email, uid: $uid)');
       
       await profilesRef.doc(uid).set({
         'id': uid,
@@ -107,10 +107,10 @@ class FirebaseAuthRepository implements AuthRepository {
         'history': [],
       });
       
-      debugPrint('✅ Profile created in Firestore!');
+      AppLogger.d('✅ Profile created in Firestore!');
       
     } catch (e) {
-      debugPrint('⚠️ Error in _ensureProfileInFirestore: $e');
+      AppLogger.d('⚠️ Error in _ensureProfileInFirestore: $e');
     }
   }
 

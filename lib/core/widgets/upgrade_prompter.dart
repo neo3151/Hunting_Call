@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/payment/data/payment_repository.dart';
 import '../../features/profile/presentation/controllers/profile_controller.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class UpgradePrompter {
   static void show(BuildContext context, {String featureName = 'This Feature'}) {
@@ -107,7 +108,7 @@ class UpgradePrompter {
                              }
                           }
                         } catch (e) {
-                           debugPrint('Purchase error: $e');
+                           AppLogger.d('Purchase error: $e');
                         }
                       },
                       style: ElevatedButton.styleFrom(

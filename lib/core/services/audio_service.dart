@@ -1,6 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// Global audio service for playing reference call audio across the app.
 /// Prevents memory leaks by centralizing AudioPlayer lifecycle management.
@@ -29,9 +29,9 @@ class AudioService {
       await _player.stop();
       await _player.play(AssetSource(assetPath));
       _currentlyPlayingId = id;
-      debugPrint('AudioService: Playing $id');
+      AppLogger.d('AudioService: Playing $id');
     } catch (e) {
-      debugPrint('AudioService: Error playing $id - $e');
+      AppLogger.d('AudioService: Error playing $id - $e');
       _currentlyPlayingId = null;
       rethrow;
     }
@@ -41,13 +41,13 @@ class AudioService {
   Future<void> stop() async {
     await _player.stop();
     _currentlyPlayingId = null;
-    debugPrint('AudioService: Stopped');
+    AppLogger.d('AudioService: Stopped');
   }
   
   /// Dispose the audio player
   void dispose() {
     _player.dispose();
-    debugPrint('AudioService: Disposed');
+    AppLogger.d('AudioService: Disposed');
   }
 }
 

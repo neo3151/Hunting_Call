@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
 import '../../domain/providers.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 // ──────────────────────────────────────────────────────────
 //  STATE
@@ -58,7 +58,7 @@ class PaymentNotifier extends Notifier<PaymentState> {
       );
       return result;
     } catch (e) {
-      debugPrint('PaymentNotifier: Purchase failed: $e');
+      AppLogger.d('PaymentNotifier: Purchase failed: $e');
       state = state.copyWith(
         status: PurchaseStatus.failed,
         error: e.toString(),
@@ -80,7 +80,7 @@ class PaymentNotifier extends Notifier<PaymentState> {
       );
       return result;
     } catch (e) {
-      debugPrint('PaymentNotifier: Restore failed: $e');
+      AppLogger.d('PaymentNotifier: Restore failed: $e');
       state = state.copyWith(
         status: PurchaseStatus.failed,
         error: e.toString(),

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/auth_user.dart';
 import '../../domain/usecases/sign_in.dart';
@@ -9,6 +8,7 @@ import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/get_auth_state_stream.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 // --- Dependency Injection via Riverpod ---
 // Auth repository is provided by di_providers.dart (platform-aware: Firebase/Firedart/Mock)
@@ -92,7 +92,7 @@ class AuthController extends StreamNotifier<AuthUser?> {
     state = const AsyncValue.loading();
     try {
       // Clear the current profile BEFORE signing out to prevent session bleed
-      debugPrint('AuthController: Resetting profile state before sign-out');
+      AppLogger.d('AuthController: Resetting profile state before sign-out');
       ref.read(profileNotifierProvider.notifier).reset();
       
       final useCase = ref.read(signOutUseCaseProvider);

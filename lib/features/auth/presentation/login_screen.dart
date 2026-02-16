@@ -10,6 +10,7 @@ import '../../profile/presentation/controllers/profile_controller.dart';
 import '../../profile/domain/profile_model.dart';
 import '../../settings/presentation/privacy_policy_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -61,7 +62,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       } catch (e) {
         if (mounted) {
-          debugPrint('Profile creation failed: $e');
+          AppLogger.d('Profile creation failed: $e');
           String message = 'Authentication failed. Please check your internet connection.';
           if (e.toString().contains('unknown-error')) {
             message = "Anonymous sign-in failed. Please ensure 'Anonymous' auth is enabled in your Firebase Console.";
@@ -126,7 +127,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       
       try {
         final profileRepo = ref.read(profileRepositoryProvider);
-        // debugPrint("🔍 Searching for profiles by email: $email");
+        // AppLogger.d("🔍 Searching for profiles by email: $email");
         
         final profiles = await profileRepo.getProfilesByEmail(email);
         
@@ -163,7 +164,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
           
           if (selectedProfile != null) {
-            // debugPrint("✅ Profile selected: ${selectedProfile.name} (${selectedProfile.id})");
+            // AppLogger.d("✅ Profile selected: ${selectedProfile.name} (${selectedProfile.id})");
             
             // Load profile to state FIRST, before signIn triggers AuthWrapper rebuild
             await ref.read(profileNotifierProvider.notifier).loadProfile(selectedProfile.id);
@@ -184,7 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           }
         }
       } catch (e) {
-        debugPrint('❌ Email login failed: $e');
+        AppLogger.d('❌ Email login failed: $e');
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
              SnackBar(content: Text('Login error: $e'), backgroundColor: Colors.red)
@@ -196,7 +197,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _signInWithGoogle() async {
     try {
-      // debugPrint('🔐 Starting Google Sign-In via AuthController...');
+      // AppLogger.d('🔐 Starting Google Sign-In via AuthController...');
       
       // AuthController now handles:
       // 1. Sign in with Google
@@ -204,11 +205,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authControllerProvider.notifier).signInWithGoogle();
       
       // Success is handled by AuthWrapper watching the state change
-      // debugPrint('✅ Google Sign-In triggered successfully');
+      // AppLogger.d('✅ Google Sign-In triggered successfully');
       
     } catch (e, stackTrace) {
-      debugPrint('❌ Google Sign-In failed: $e');
-      debugPrint('Stack trace: $stackTrace');
+      AppLogger.d('❌ Google Sign-In failed: $e');
+      AppLogger.d('Stack trace: $stackTrace');
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

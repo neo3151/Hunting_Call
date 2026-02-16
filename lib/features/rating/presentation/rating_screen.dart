@@ -13,6 +13,7 @@ import '../../../core/widgets/upgrade_prompter.dart';
 import './widgets/waveform_overlay.dart';
 import '../domain/personality_feedback_service.dart';
 import '../../leaderboard/presentation/leaderboard_screen.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class RatingScreen extends ConsumerStatefulWidget {
   final String audioPath;
@@ -79,7 +80,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         await _userPlayer.play(DeviceFileSource(widget.audioPath));
         if (mounted) setState(() => _isUserPlaying = true);
       } catch (e) {
-        debugPrint('Error playing user audio: $e');
+        AppLogger.d('Error playing user audio: $e');
       }
     }
   }
@@ -99,7 +100,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       final result = getCallUseCase.execute(widget.animalId);
       
       result.fold(
-        (failure) => debugPrint('Error getting reference call: ${failure.message}'),
+        (failure) => AppLogger.d('Error getting reference call: ${failure.message}'),
         (reference) async {
           final assetPath = reference.audioAssetPath.replaceFirst('assets/', '');
           
@@ -107,7 +108,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
             await _refPlayer.play(AssetSource(assetPath));
             if (mounted) setState(() => _isRefPlaying = true);
           } catch (e) {
-            debugPrint('Error playing reference audio: $e');
+            AppLogger.d('Error playing reference audio: $e');
           }
         },
       );
@@ -346,7 +347,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     try {
       return builder();
     } catch (e, stack) {
-      debugPrint('RENDER ERROR in $sectionName: $e\n$stack');
+      AppLogger.d('RENDER ERROR in $sectionName: $e\n$stack');
       return Container(
         padding: const EdgeInsets.all(8),
         color: Colors.red.withValues(alpha: 0.2),

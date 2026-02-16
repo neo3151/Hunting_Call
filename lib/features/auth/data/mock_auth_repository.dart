@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/entities/auth_user.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class MockAuthRepository implements AuthRepository {
   final _controller = StreamController<AuthUser?>.broadcast();
@@ -21,14 +21,14 @@ class MockAuthRepository implements AuthRepository {
   Future<void> signIn(String userId) async {
     _currentUser = AuthUser(id: userId);
     _controller.add(_currentUser);
-    debugPrint('Mock Auth: Signed in as ${_currentUser?.id}');
+    AppLogger.d('Mock Auth: Signed in as ${_currentUser?.id}');
   }
 
   @override
   Future<void> signInAnonymously() async {
     _currentUser = const AuthUser(id: 'anon_user_123', isAnonymous: true);
     _controller.add(_currentUser);
-    debugPrint('Mock Auth: Signed in as anon');
+    AppLogger.d('Mock Auth: Signed in as anon');
   }
 
   @override
@@ -39,7 +39,7 @@ class MockAuthRepository implements AuthRepository {
         displayName: 'Mock User'
     );
     _controller.add(_currentUser);
-    debugPrint('Mock Auth: Signed in with Google as ${_currentUser?.id}');
+    AppLogger.d('Mock Auth: Signed in with Google as ${_currentUser?.id}');
     return _currentUser!;
   }
 
@@ -47,7 +47,7 @@ class MockAuthRepository implements AuthRepository {
   Future<void> signOut() async {
     _currentUser = null;
     _controller.add(null);
-    debugPrint('Mock Auth: Signed out');
+    AppLogger.d('Mock Auth: Signed out');
   }
 
   @override

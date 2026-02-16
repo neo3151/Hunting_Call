@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter/foundation.dart';
 import '../models/auth_user_model.dart';
 import 'auth_remote_data_source.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class FirebaseAuthDataSource implements AuthRemoteDataSource {
   final FirebaseAuth _firebaseAuth;
@@ -61,7 +61,7 @@ class FirebaseAuthDataSource implements AuthRemoteDataSource {
         return await _signInWithGoogleDesktop();
       }
     } catch (e) {
-      debugPrint('Error signing in with Google: $e');
+      AppLogger.d('Error signing in with Google: $e');
       rethrow;
     }
   }
@@ -93,7 +93,7 @@ class FirebaseAuthDataSource implements AuthRemoteDataSource {
 
   /// Desktop Google Sign-In via Firebase's signInWithProvider (OAuth popup).
   Future<AuthUserModel> _signInWithGoogleDesktop() async {
-    debugPrint('🔐 Desktop: Using signInWithProvider for Google Sign-In...');
+    AppLogger.d('🔐 Desktop: Using signInWithProvider for Google Sign-In...');
     
     final googleProvider = GoogleAuthProvider();
     googleProvider.addScope('email');
@@ -106,7 +106,7 @@ class FirebaseAuthDataSource implements AuthRemoteDataSource {
       throw Exception('Google Sign-In via provider returned null user');
     }
 
-    debugPrint('✅ Desktop Google Sign-In successful: ${user.displayName} (${user.email})');
+    AppLogger.d('✅ Desktop Google Sign-In successful: ${user.displayName} (${user.email})');
     return AuthUserModel.fromFirebaseUser(user);
   }
 
@@ -117,7 +117,7 @@ class FirebaseAuthDataSource implements AuthRemoteDataSource {
       try {
         await _googleSignIn!.signOut();
       } catch (e) {
-        debugPrint('GoogleSignIn.signOut failed (non-critical): $e');
+        AppLogger.d('GoogleSignIn.signOut failed (non-critical): $e');
       }
     }
     await _firebaseAuth.signOut();

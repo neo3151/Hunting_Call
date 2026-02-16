@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:flutter/foundation.dart';
 import '../domain/audio_recorder_service.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class MockAudioRecorderService implements AudioRecorderService {
   Timer? _timer;
@@ -21,7 +21,7 @@ class MockAudioRecorderService implements AudioRecorderService {
   Future<void> init() async {
     // Simulate perm request
     // await Future.delayed(const Duration(milliseconds: 200));
-    debugPrint('Mock Recorder: Init');
+    AppLogger.d('Mock Recorder: Init');
   }
 
   @override
@@ -32,7 +32,7 @@ class MockAudioRecorderService implements AudioRecorderService {
        final double randomAmp = Random().nextDouble();
        _amplitudeController.add(randomAmp);
     });
-    debugPrint('Mock Recorder: Started recording to $path');
+    AppLogger.d('Mock Recorder: Started recording to $path');
     return true;
   }
 
@@ -41,13 +41,13 @@ class MockAudioRecorderService implements AudioRecorderService {
     _isRecording = false;
     _timer?.cancel();
     _amplitudeController.add(0.0); 
-    debugPrint('Mock Recorder: Stopped.');
+    AppLogger.d('Mock Recorder: Stopped.');
     return 'mock/path/to/audio.aac';
   }
 
   @override
   Future<void> cleanupOldFiles() async {
-    debugPrint('Mock Recorder: Cleaning up old files');
+    AppLogger.d('Mock Recorder: Cleaning up old files');
     // No-op for mock
   }
 
