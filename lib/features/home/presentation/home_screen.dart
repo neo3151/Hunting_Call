@@ -156,7 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content:
-                      Text('Contact support at: support@huntingcalls.app'),
+                      Text('Contact support at: BenchmarkAppsLLC@gmail.com'),
                   backgroundColor: Color(0xFF81C784),
                 ),
               );
