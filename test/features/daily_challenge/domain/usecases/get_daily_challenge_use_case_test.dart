@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hunting_calls_perfection/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/failures/daily_challenge_failure.dart';
 import 'package:hunting_calls_perfection/features/library/domain/use_cases/get_all_calls_use_case.dart';
 import 'package:hunting_calls_perfection/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
 import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';

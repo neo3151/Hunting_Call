@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/data/firebase_auth_repository.dart';
 import 'features/auth/data/mock_auth_repository.dart';
-import 'features/auth/data/firedart_auth_repository.dart';
 
 import 'features/recording/domain/audio_recorder_service.dart';
 import 'features/recording/data/real_audio_recorder_service.dart';
@@ -33,6 +32,7 @@ import 'features/hunting_log/data/local_hunting_log_repository.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firedart/firedart.dart' as fd;
+import 'core/services/file_service.dart';
 
 // ─── Platform Environment ───────────────────────────────────────────────────
 
@@ -67,6 +67,11 @@ final platformEnvironmentProvider = Provider<PlatformEnvironment>((ref) {
 /// SharedPreferences instance — sourced from the environment.
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   return ref.watch(platformEnvironmentProvider).sharedPreferences;
+});
+
+/// Provides [FileService] implementation.
+final fileServiceProvider = Provider<FileService>((ref) {
+  return FileServiceImpl();
 });
 
 // ─── Auth ───────────────────────────────────────────────────────────────────

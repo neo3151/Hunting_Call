@@ -14,10 +14,7 @@ class SecureProfileDataSource implements ProfileDataSource {
   final FlutterSecureStorage _secureStorage;
 
   SecureProfileDataSource({FlutterSecureStorage? secureStorage})
-      : _secureStorage = secureStorage ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(encryptedSharedPreferences: true),
-            );
+      : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   @override
   Future<UserProfile> getProfile(String userId) async {

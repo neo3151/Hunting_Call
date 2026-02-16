@@ -84,7 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 _buildActionGrid(context, activeUserId),
                                 const SizedBox(height: 32),
                                 if (homeState.mostRecentActivity != null) ...[
-                                  Text("RECENT HUNTS",
+                                  Text('RECENT HUNTS',
                                       style: GoogleFonts.oswald(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -192,7 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: SizedBox(
             height: 220,
             child: ActionCard(
-              title: "PRACTICE\nCALL",
+              title: 'PRACTICE\nCALL',
               icon: Icons.mic_external_on,
               color: const Color(0xFFC5E1A5),
               onTap: () => Navigator.of(context).push(
@@ -210,7 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SizedBox(
                 height: 102,
                 child: ActionCard(
-                  title: "PROFILE",
+                  title: 'PROFILE',
                   icon: Icons.person_outline,
                   color: const Color(0xFFD7CCC8),
                   onTap: () => Navigator.of(context).push(
@@ -224,7 +224,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SizedBox(
                 height: 102,
                 child: ActionCard(
-                  title: "LIBRARY",
+                  title: 'LIBRARY',
                   icon: Icons.library_music_outlined,
                   color: const Color(0xFFCFD8DC),
                   onTap: () => Navigator.of(context).push(
@@ -238,7 +238,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SizedBox(
                 height: 102,
                 child: ActionCard(
-                  title: "LOG",
+                  title: 'LOG',
                   icon: Icons.history_edu,
                   color: const Color(0xFFBCAAA4),
                   onTap: () => Navigator.of(context).push(
@@ -251,7 +251,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SizedBox(
                 height: 102,
                 child: ActionCard(
-                  title: "WEATHER",
+                  title: 'WEATHER',
                   icon: Icons.wb_sunny_outlined,
                   color: const Color(0xFFFFF9C4),
                   onTap: () => Navigator.of(context).push(

@@ -40,28 +40,28 @@ void mainCommon() async {
   // Initialize Firebase
   bool firebaseReady = false;
   try {
-    debugPrint("🔥 Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
+    // debugPrint("🔥 Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
     if (!Platform.isLinux) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
       firebaseReady = true;
-      debugPrint("✅ Firebase: Initialized successfully. Apps count: ${Firebase.apps.length}");
+      // debugPrint("✅ Firebase: Initialized successfully. Apps count: ${Firebase.apps.length}");
     } else {
-      debugPrint("🐧 Firebase: Skipping official init on Linux (using Firedart).");
+      // debugPrint("🐧 Firebase: Skipping official init on Linux (using Firedart).");
     }
 
   } catch (e, stackTrace) {
     debugPrint("❌ Firebase: Initialization failed. Entering 'Off-Grid' mode.");
-    debugPrint("Error: $e");
-    debugPrint("Stack: $stackTrace");
+    debugPrint('Error: $e');
+    debugPrint('Stack: $stackTrace');
     debugPrint("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
   }
   
   // Global Error Handling — route to Crashlytics if available
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    debugPrint("GLOBAL FLUTTER ERROR: ${details.exception}");
+    debugPrint('GLOBAL FLUTTER ERROR: ${details.exception}');
     if (firebaseReady && (Platform.isAndroid || Platform.isIOS)) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(details);
     }
@@ -69,7 +69,7 @@ void mainCommon() async {
 
   // Catch async errors that escape the widget tree
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint("GLOBAL ASYNC ERROR: $error\n$stack");
+    debugPrint('GLOBAL ASYNC ERROR: $error\n$stack');
     if (firebaseReady && (Platform.isAndroid || Platform.isIOS)) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     }
@@ -85,7 +85,7 @@ void mainCommon() async {
     final firedartAuth = FiredartAuthRepository();
     await firedartAuth.initialize();
     preInitAuthRepo = firedartAuth;
-    debugPrint("FiredartAuth: Repository created and initialized.");
+    // debugPrint("FiredartAuth: Repository created and initialized.");
   }
   
   // Create the platform environment for Riverpod DI
@@ -102,7 +102,7 @@ void mainCommon() async {
   try {
     // Access cleanup after ProviderScope is available — defer to post-frame
   } catch (e) {
-    debugPrint("Startup: Cleanup failed: $e");
+    debugPrint('Startup: Cleanup failed: $e');
   }
 
   runApp(ProviderScope(
@@ -136,7 +136,7 @@ class HuntingCallsApp extends ConsumerWidget {
       final recorderService = ref.read(audioRecorderServiceProvider);
       recorderService.cleanupOldFiles();
     } catch (e) {
-      debugPrint("Startup: Cleanup failed: $e");
+      debugPrint('Startup: Cleanup failed: $e');
     }
   }
 }

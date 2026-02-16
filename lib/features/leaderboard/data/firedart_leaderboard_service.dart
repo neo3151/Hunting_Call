@@ -18,7 +18,7 @@ class FiredartLeaderboardService implements LeaderboardService {
     final doc = await docRef.get();
     
     List<LeaderboardEntry> currentScores = [];
-    Map<String, dynamic> data = doc.map;
+    final Map<String, dynamic> data = doc.map;
 
     if (data.containsKey('scores')) {
       final List<dynamic> rawList = data['scores'];
@@ -27,7 +27,7 @@ class FiredartLeaderboardService implements LeaderboardService {
           .toList();
     }
 
-    int existingIndex = currentScores.indexWhere((e) => e.userId == entry.userId);
+    final int existingIndex = currentScores.indexWhere((e) => e.userId == entry.userId);
     if (existingIndex != -1) {
       if (currentScores[existingIndex].score >= entry.score) {
         return false;

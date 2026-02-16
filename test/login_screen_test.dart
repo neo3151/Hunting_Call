@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:hunting_calls_perfection/features/auth/presentation/login_screen.dart';
 import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
-import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
@@ -40,7 +39,7 @@ void main() {
           sharedPreferences: mockPrefs,
         )),
         profileRepositoryProvider.overrideWithValue(mockProfileRepository),
-        authRepositoryImplProvider.overrideWithValue(mockAuthRepository),
+        authRepositoryProvider.overrideWithValue(mockAuthRepository),
       ],
       child: const MaterialApp(
         home: LoginScreen(),

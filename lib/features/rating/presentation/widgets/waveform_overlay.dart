@@ -48,7 +48,7 @@ class WaveformOverlay extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("SPECTRAL SYNC", 
+                  Text('SPECTRAL SYNC', 
                     style: GoogleFonts.oswald(
                       fontSize: 14, 
                       letterSpacing: 1.5, 
@@ -56,7 +56,7 @@ class WaveformOverlay extends StatelessWidget {
                       fontWeight: FontWeight.bold
                     )
                   ),
-                  Text("WAVEFORM COMPARISON",
+                  Text('WAVEFORM COMPARISON',
                     style: GoogleFonts.oswald(
                       fontSize: 8,
                       letterSpacing: 1.0,
@@ -73,9 +73,9 @@ class WaveformOverlay extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    _buildLegendItem("REF", Colors.white.withValues(alpha: 0.3)),
+                    _buildLegendItem('REF', Colors.white.withValues(alpha: 0.3)),
                     const SizedBox(width: 8),
-                    _buildLegendItem("YOU", const Color(0xFF5FF7B6)),
+                    _buildLegendItem('YOU', const Color(0xFF5FF7B6)),
                   ],
                 ),
               ),
@@ -91,7 +91,7 @@ class WaveformOverlay extends StatelessWidget {
             children: [
               Expanded(
                 child: _buildPlaybackButton(
-                  label: "PLAY YOURS",
+                  label: 'PLAY YOURS',
                   icon: isUserPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
                   color: const Color(0xFF5FF7B6),
                   onPressed: onPlayUser,
@@ -101,7 +101,7 @@ class WaveformOverlay extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildPlaybackButton(
-                  label: "PLAY REF",
+                  label: 'PLAY REF',
                   icon: isReferencePlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
                   color: Colors.white.withValues(alpha: 0.8),
                   onPressed: onPlayReference,

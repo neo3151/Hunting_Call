@@ -34,9 +34,6 @@ class CalculateScoreUseCase {
   ) async {
     // Get reference data
     final reference = ReferenceDatabase.getById(params.animalId);
-    if (reference == null) {
-      return left(ReferenceDataNotFound(params.animalId));
-    }
     
     // Check if user analysis is valid
     if (params.userAnalysis.dominantFrequencyHz == 0 && 
@@ -157,7 +154,7 @@ class CalculateScoreUseCase {
     double consistency,
   ) {
     // 0.2 RMS is considered "ideal" (mapped to 100 score)
-    double score = min(100.0, averageVolume * 500);
+    final double score = min(100.0, averageVolume * 500);
     
     return VolumeScore(
       score: score,

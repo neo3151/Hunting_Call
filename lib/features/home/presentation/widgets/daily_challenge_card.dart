@@ -61,7 +61,7 @@ class DailyChallengeCard extends StatelessWidget {
                               color: Colors.orangeAccent,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text("DAILY CHALLENGE",
+                            child: Text('DAILY CHALLENGE',
                                 style: GoogleFonts.oswald(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -69,7 +69,7 @@ class DailyChallengeCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            "MASTER THE\n${challengeCall.animalName.toUpperCase()}",
+                            'MASTER THE\n${challengeCall.animalName.toUpperCase()}',
                             style: GoogleFonts.oswald(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -83,7 +83,7 @@ class DailyChallengeCard extends StatelessWidget {
                               const Icon(Icons.bolt,
                                   color: Colors.yellowAccent, size: 16),
                               const SizedBox(width: 4),
-                              Text("+500 XP Bonus",
+                              Text('+500 XP Bonus',
                                   style: GoogleFonts.lato(
                                       color: Colors.yellowAccent,
                                       fontWeight: FontWeight.bold)),

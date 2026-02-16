@@ -30,7 +30,7 @@ class FilterCallsUseCase {
             call.animalName.toLowerCase().contains(searchQuery.toLowerCase()) ||
             call.callType.toLowerCase().contains(searchQuery.toLowerCase());
         
-        final matchesCategory = category == "All" || call.category == category;
+        final matchesCategory = category == 'All' || call.category == category;
         
         return matchesSearch && matchesCategory;
       }).toList();

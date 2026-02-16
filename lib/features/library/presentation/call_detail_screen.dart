@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../library/domain/reference_call_model.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/upgrade_prompter.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
 import '../../../core/services/audio_service.dart';
-import '../../../core/widgets/background_wrapper.dart';
 
 
 class CallDetailScreen extends ConsumerStatefulWidget {
@@ -45,7 +43,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Could not play audio: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text('Could not play audio: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -57,7 +55,6 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     final isPlaying = audioService.currentlyPlayingId == widget.call.id;
     final profile = ref.watch(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
-    debugPrint("🔍 CallDetailScreen: Profile=${profile?.id}, Premium=$isPremium");
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
@@ -150,7 +147,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _togglePlayback,
                           icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
-                          label: Text(isPlaying ? "STOP REFERENCE" : "LISTEN TO REFERENCE"),
+                          label: Text(isPlaying ? 'STOP REFERENCE' : 'LISTEN TO REFERENCE'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF81C784),
                             foregroundColor: Colors.black,
@@ -177,7 +174,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                             );
                           },
                           icon: const Icon(Icons.mic, color: Colors.white70),
-                          tooltip: "Start Practice",
+                          tooltip: 'Start Practice',
                         ),
                       ),
                     ],
@@ -214,7 +211,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                               );
                             },
                             icon: const Icon(Icons.emoji_events_outlined, color: Colors.orangeAccent),
-                            label: const Text("VIEW GLOBAL EXPERT RANKINGS"),
+                            label: const Text('VIEW GLOBAL EXPERT RANKINGS'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white70,
                               side: BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.3)),
@@ -228,11 +225,11 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () async {
-                              debugPrint("🔒 Locked Leaderboard clicked. Showing prompt...");
-                              UpgradePrompter.show(context, featureName: "Global Leaderboards");
+                              debugPrint('🔒 Locked Leaderboard clicked. Showing prompt...');
+                              UpgradePrompter.show(context, featureName: 'Global Leaderboards');
                             },
                             icon: const Icon(Icons.lock_outline, color: Colors.white38),
-                            label: const Text("GLOBAL RANKINGS (LOCKED)"),
+                            label: const Text('GLOBAL RANKINGS (LOCKED)'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white38,
                               side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
@@ -248,13 +245,13 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                   const SizedBox(height: 40),
                   
                   // Bioacoustic Data Section
-                  _sectionHeader("ACOUSTIC SIGNATURE"),
+                  _sectionHeader('ACOUSTIC SIGNATURE'),
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      _metricCard("DOMINANT PITCH", "${widget.call.idealPitchHz.toInt()} Hz", Icons.graphic_eq),
+                      _metricCard('DOMINANT PITCH', '${widget.call.idealPitchHz.toInt()} Hz', Icons.graphic_eq),
                       const SizedBox(width: 12),
-                      _metricCard("DURATION", "${widget.call.idealDurationSec} Sec", Icons.timer_outlined),
+                      _metricCard('DURATION', '${widget.call.idealDurationSec} Sec', Icons.timer_outlined),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -266,7 +263,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                   const SizedBox(height: 30),
                   
                   // Description
-                  _sectionHeader("NATURAL HISTORY"),
+                  _sectionHeader('NATURAL HISTORY'),
                   const SizedBox(height: 12),
                   Text(
                     widget.call.description,
@@ -333,7 +330,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
               const Icon(Icons.tips_and_updates_rounded, color: Color(0xFF81C784)),
               const SizedBox(width: 12),
               Text(
-                "FIELD PRO TIPS",
+                'FIELD PRO TIPS',
                 style: GoogleFonts.oswald(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ],

@@ -25,7 +25,7 @@ class HarmonicsDisplay extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Detected Harmonics",
+                'Detected Harmonics',
                 style: GoogleFonts.lato(
                   color: Colors.white70,
                   fontSize: 11,
@@ -48,7 +48,7 @@ class HarmonicsDisplay extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      "${e.key}: ${e.value.toStringAsFixed(0)} Hz",
+                      '${e.key}: ${e.value.toStringAsFixed(0)} Hz',
                       style: GoogleFonts.lato(
                         color: Colors.greenAccent,
                         fontSize: 10,

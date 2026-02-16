@@ -149,7 +149,7 @@ void main() {
       );
 
       // Act & Assert - Complete onboarding
-      var completeResult = await completeUseCase.execute();
+      final completeResult = await completeUseCase.execute();
       expect(completeResult.isRight(), true);
 
       // Act & Assert - Check again (should be completed)

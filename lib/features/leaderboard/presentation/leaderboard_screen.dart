@@ -23,13 +23,13 @@ class LeaderboardScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1B5E20),
         title: Text(
-          "$animalName EXPERTS",
+          '$animalName EXPERTS',
           style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5),
         ),
       ),
       body: scoresAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF81C784))),
-        error: (error, stack) => Center(child: Text("Error: $error", style: const TextStyle(color: Colors.white70))),
+        error: (error, stack) => Center(child: Text('Error: $error', style: const TextStyle(color: Colors.white70))),
         data: (scores) {
           if (scores.isEmpty) {
             return Center(
@@ -39,12 +39,12 @@ class LeaderboardScreen extends ConsumerWidget {
                   const Icon(Icons.emoji_events_outlined, color: Colors.white24, size: 64),
                   const SizedBox(height: 16),
                   Text(
-                    "No experts yet.",
+                    'No experts yet.',
                     style: GoogleFonts.oswald(fontSize: 20, color: Colors.white54),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    "Be the first to score high!",
+                    'Be the first to score high!',
                     style: TextStyle(color: Colors.white38),
                   ),
                 ],
@@ -82,7 +82,7 @@ class LeaderboardScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Text("%", style: TextStyle(color: Colors.white30, fontSize: 12)),
+                    const Text('%', style: TextStyle(color: Colors.white30, fontSize: 12)),
                   ],
                 ),
               );
@@ -122,7 +122,7 @@ class LeaderboardScreen extends ConsumerWidget {
         shape: BoxShape.circle,
       ),
       child: Text(
-        "#$rank",
+        '#$rank',
         style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
       ),
     );

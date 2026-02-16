@@ -72,8 +72,11 @@ class RecordingNotifier extends Notifier<RecordingState> {
 
     state = state.copyWith(status: RecordingStatus.countdown, clearFailure: true);
 
+    final fileName = 'hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
+    final outputPath = await ref.read(fileServiceProvider).getTemporaryPath(fileName);
+
     final result = await _startUseCase.execute(
-      outputPath: 'temp_path', // TODO: Generate proper path from file service
+      outputPath: outputPath,
       onCountdownTick: (value) {
         if (value > 0) {
           state = state.copyWith(
@@ -159,7 +162,7 @@ final recordingNotifierProvider = NotifierProvider<RecordingNotifier, RecordingS
 
 /// State for the selected call
 final selectedCallIdProvider = StateProvider<String>((ref) {
-  return "goose_long_distance_contact"; // Default or first call ID
+  return 'goose_long_distance_contact'; // Default or first call ID
 });
 
 /// Stream of amplitude changes for visualization

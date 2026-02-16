@@ -37,10 +37,10 @@ void main() {
     bytes.add(_int32(dataSize));
     
     for (int i = 0; i < numSamples; i++) {
-        double time = i / sampleRate;
+        final double time = i / sampleRate;
         // Vary frequency slightly to test pitch tracking
-        double currentFreq = frequency + (i > numSamples / 2 ? 100 : 0);
-        double sampleValue = 0.5 * math.sin(2 * math.pi * currentFreq * time);
+        final double currentFreq = frequency + (i > numSamples / 2 ? 100 : 0);
+        final double sampleValue = 0.5 * math.sin(2 * math.pi * currentFreq * time);
         bytes.add(_int16((sampleValue * 32767).round()));
     }
     
@@ -86,13 +86,13 @@ void main() {
 }
 
 List<int> _int32(int value) {
-  var b = Uint8List(4);
+  final b = Uint8List(4);
   b.buffer.asByteData().setInt32(0, value, Endian.little);
   return b;
 }
 
 List<int> _int16(int value) {
-  var b = Uint8List(2);
+  final b = Uint8List(2);
   b.buffer.asByteData().setInt16(0, value, Endian.little);
   return b;
 }

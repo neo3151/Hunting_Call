@@ -11,11 +11,11 @@ class MockRatingService implements RatingService {
 
     String feedback;
     if (score > 90) {
-      feedback = "Excellent! Perfect pitch and rhythm.";
+      feedback = 'Excellent! Perfect pitch and rhythm.';
     } else if (score > 75) {
-      feedback = "Good job. Try to hold the end note a bit longer.";
+      feedback = 'Good job. Try to hold the end note a bit longer.';
     } else {
-      feedback = "Decent start. Your pitch is a bit high for a $animalType.";
+      feedback = 'Decent start. Your pitch is a bit high for a $animalType.';
     }
 
     return RatingResult(
@@ -23,9 +23,9 @@ class MockRatingService implements RatingService {
       feedback: feedback,
       pitchHz: 150.0,
       metrics: {
-        "Pitch": 70 + random.nextInt(30).toDouble(),
-        "Duration": 60 + random.nextInt(40).toDouble(),
-        "Realism": score - 5,
+        'Pitch': 70 + random.nextInt(30).toDouble(),
+        'Duration': 60 + random.nextInt(40).toDouble(),
+        'Realism': score - 5,
       },
     );
   }

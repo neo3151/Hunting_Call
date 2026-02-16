@@ -27,7 +27,7 @@ class DailyChallengeScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
-            "DAILY CHALLENGE",
+            'DAILY CHALLENGE',
             style: GoogleFonts.oswald(
               fontWeight: FontWeight.bold,
               letterSpacing: 2,
@@ -49,7 +49,7 @@ class DailyChallengeScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("GO BACK"),
+                child: const Text('GO BACK'),
               ),
             ],
           ),
@@ -68,7 +68,7 @@ class DailyChallengeScreen extends ConsumerWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "DAILY CHALLENGE",
+          'DAILY CHALLENGE',
           style: GoogleFonts.oswald(
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
@@ -123,7 +123,7 @@ class DailyChallengeScreen extends ConsumerWidget {
 
   Widget _buildHeader() {
     final dateStr =
-        DateFormat("MMMM d, yyyy").format(DateTime.now()).toUpperCase();
+        DateFormat('MMMM d, yyyy').format(DateTime.now()).toUpperCase();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -138,7 +138,7 @@ class DailyChallengeScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          "CALL OF THE DAY",
+          'CALL OF THE DAY',
           style: GoogleFonts.oswald(
             color: Colors.white,
             fontWeight: FontWeight.bold,

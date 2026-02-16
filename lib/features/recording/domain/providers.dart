@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 import 'use_cases/start_recording_use_case.dart';
 import 'use_cases/stop_recording_use_case.dart';
-import 'use_cases/save_recording_use_case.dart';
 
 /// Provider for StartRecordingUseCase
 final startRecordingUseCaseProvider = Provider<StartRecordingUseCase>((ref) {

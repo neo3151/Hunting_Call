@@ -145,6 +145,51 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           const Divider(color: Colors.white12),
 
+                          _sectionTitle('PERFORMANCE & STORAGE'),
+                          _settingsTile(
+                            icon: Icons.high_quality,
+                            title: 'Image Quality',
+                            subtitle: 'Lower quality saves memory',
+                            trailing: SegmentedButton<String>(
+                              segments: const [
+                                ButtonSegment(value: 'low', label: Text('LOW', style: TextStyle(fontSize: 10))),
+                                ButtonSegment(value: 'medium', label: Text('MED', style: TextStyle(fontSize: 10))),
+                                ButtonSegment(value: 'high', label: Text('HIGH', style: TextStyle(fontSize: 10))),
+                              ],
+                              selected: {settings.imageQuality},
+                              onSelectionChanged: (v) => notifier.setImageQuality(v.first),
+                              style: ButtonStyle(
+                                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                                  if (states.contains(WidgetState.selected)) {
+                                    return const Color(0xFF81C784).withValues(alpha: 0.3);
+                                  }
+                                  return Colors.white.withValues(alpha: 0.05);
+                                }),
+                                foregroundColor: WidgetStateProperty.all(Colors.white),
+                                side: WidgetStateProperty.all(const BorderSide(color: Colors.white24)),
+                              ),
+                            ),
+                          ),
+                          const Divider(color: Colors.white12),
+                          _settingsTile(
+                            icon: Icons.cleaning_services,
+                            title: 'Audio Cleanup',
+                            subtitle: 'Auto-delete old recordings',
+                            trailing: DropdownButton<int>(
+                              value: settings.autoCleanupHours,
+                              dropdownColor: const Color(0xFF1B3B24),
+                              underline: const SizedBox.shrink(),
+                              items: const [
+                                DropdownMenuItem(value: 1, child: Text('1h', style: TextStyle(color: Colors.white, fontSize: 13))),
+                                DropdownMenuItem(value: 6, child: Text('6h', style: TextStyle(color: Colors.white, fontSize: 13))),
+                                DropdownMenuItem(value: 24, child: Text('24h', style: TextStyle(color: Colors.white, fontSize: 13))),
+                                DropdownMenuItem(value: 168, child: Text('7d', style: TextStyle(color: Colors.white, fontSize: 13))),
+                              ],
+                              onChanged: (v) => v != null ? notifier.setAutoCleanupHours(v) : null,
+                            ),
+                          ),
+                          const Divider(color: Colors.white12),
+
                           _sectionTitle('ABOUT'),
                           _settingsTile(
                             icon: Icons.shield_outlined,

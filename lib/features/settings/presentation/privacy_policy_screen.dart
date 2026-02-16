@@ -22,36 +22,36 @@ class PrivacyPolicyScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSection(
-              title: "1. Information Collection",
-              content: "We collect basic profile information (name, birthday) to personalize your experience. "
-                  "When you sign in with Google, we authenticate using your Google account but do not store your password. "
-                  "Audio recordings are processed locally on your device for analysis, unless you explicitly choose to save or share them.",
+              title: '1. Information Collection',
+              content: 'We collect basic profile information (name, birthday) to personalize your experience. '
+                  'When you sign in with Google, we authenticate using your Google account but do not store your password. '
+                  'Audio recordings are processed locally on your device for analysis, unless you explicitly choose to save or share them.',
             ),
             const SizedBox(height: 24),
             _buildSection(
-              title: "2. Data Usage",
-              content: "Your data is used to:\\n"
-                  "• Track your progress and achievements\\n"
-                  "• Provide personalized hunting call feedback\\n"
-                  "• Calculate leaderboards (if participating)\\n"
-                  "We do not sell your personal data to third parties.",
+              title: '2. Data Usage',
+              content: 'Your data is used to:\\n'
+                  '• Track your progress and achievements\\n'
+                  '• Provide personalized hunting call feedback\\n'
+                  '• Calculate leaderboards (if participating)\\n'
+                  'We do not sell your personal data to third parties.',
             ),
             const SizedBox(height: 24),
             _buildSection(
-              title: "3. Audio Privacy",
-              content: "Your hunting call recordings belong to you. Our advanced frequency analysis happens on-device. "
-                  "Recordings are only uploaded if you use cloud sync features, and they are stored securely associated with your account.",
+              title: '3. Audio Privacy',
+              content: 'Your hunting call recordings belong to you. Our advanced frequency analysis happens on-device. '
+                  'Recordings are only uploaded if you use cloud sync features, and they are stored securely associated with your account.',
             ),
             const SizedBox(height: 24),
             _buildSection(
-              title: "4. Account Deletion",
-              content: "You can request full account deletion at any time from the settings menu. "
-                  "This will permanently remove your profile, history, and any stored recordings.",
+              title: '4. Account Deletion',
+              content: 'You can request full account deletion at any time from the settings menu. '
+                  'This will permanently remove your profile, history, and any stored recordings.',
             ),
             const SizedBox(height: 48),
             Center(
               child: Text(
-                "Last Updated: February 2026",
+                'Last Updated: February 2026',
                 style: GoogleFonts.lato(color: Colors.white38, fontSize: 12),
               ),
             ),

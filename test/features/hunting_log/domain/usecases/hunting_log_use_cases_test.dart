@@ -243,10 +243,10 @@ void main() {
       );
 
       // Act & Assert - Add
-      var addResult1 = await addUseCase.execute(entry1);
+      final addResult1 = await addUseCase.execute(entry1);
       expect(addResult1.isRight(), true);
       
-      var addResult2 = await addUseCase.execute(entry2);
+      final addResult2 = await addUseCase.execute(entry2);
       expect(addResult2.isRight(), true);
 
       // Act & Assert - Get All
@@ -258,7 +258,7 @@ void main() {
       );
 
       // Act & Assert - Delete
-      var deleteResult = await deleteUseCase.execute('1');
+      final deleteResult = await deleteUseCase.execute('1');
       expect(deleteResult.isRight(), true);
 
       // Act & Assert - Get All (after delete)

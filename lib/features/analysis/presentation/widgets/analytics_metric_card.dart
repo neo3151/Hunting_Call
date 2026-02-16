@@ -87,7 +87,7 @@ class AnalyticsMetricCard extends StatelessWidget {
   }
 
   static Color _getColorForValue(double value, String unit) {
-    if (unit == "%") {
+    if (unit == '%') {
       if (value >= 80) return Colors.greenAccent;
       if (value >= 60) return Colors.lightGreenAccent;
       if (value >= 40) return Colors.orangeAccent;
@@ -97,10 +97,10 @@ class AnalyticsMetricCard extends StatelessWidget {
   }
 
   static double _normalizeForProgress(double value, String unit) {
-    if (unit == "%") return value / 100;
-    if (unit == "Hz") return (value / 2000).clamp(0.0, 1.0);
-    if (unit == "s") return (value / 5).clamp(0.0, 1.0);
-    if (unit == "BPM") return (value / 120).clamp(0.0, 1.0);
+    if (unit == '%') return value / 100;
+    if (unit == 'Hz') return (value / 2000).clamp(0.0, 1.0);
+    if (unit == 's') return (value / 5).clamp(0.0, 1.0);
+    if (unit == 'BPM') return (value / 120).clamp(0.0, 1.0);
     return 0.5;
   }
 

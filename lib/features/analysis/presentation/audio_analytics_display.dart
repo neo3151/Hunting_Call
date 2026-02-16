@@ -20,16 +20,16 @@ class AudioAnalyticsDisplay extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionHeader("PITCH ANALYSIS"),
+        _sectionHeader('PITCH ANALYSIS'),
         _metricGrid([
-          AnalyticsMetricCard(label: "Dominant Frequency", value: analysis.dominantFrequencyHz, unit: "Hz"),
-          AnalyticsMetricCard(label: "Average Frequency", value: analysis.averageFrequencyHz, unit: "Hz"),
-          AnalyticsMetricCard(label: "Pitch Stability", value: analysis.pitchStability, unit: "%"),
+          AnalyticsMetricCard(label: 'Dominant Frequency', value: analysis.dominantFrequencyHz, unit: 'Hz'),
+          AnalyticsMetricCard(label: 'Average Frequency', value: analysis.averageFrequencyHz, unit: 'Hz'),
+          AnalyticsMetricCard(label: 'Pitch Stability', value: analysis.pitchStability, unit: '%'),
         ]),
 
         if (analysis.pitchTrack.isNotEmpty) ...[
           const SizedBox(height: 12),
-          Text("Pitch Development",
+          Text('Pitch Development',
               style: GoogleFonts.lato(color: Colors.white70, fontSize: 12)),
           const SizedBox(height: 8),
           PitchTrackGraph(pitchTrack: analysis.pitchTrack),
@@ -37,20 +37,20 @@ class AudioAnalyticsDisplay extends StatelessWidget {
 
         const SizedBox(height: 24),
 
-        _sectionHeader("VOLUME ANALYSIS"),
+        _sectionHeader('VOLUME ANALYSIS'),
         _metricGrid([
-          AnalyticsMetricCard(label: "Average Volume", value: analysis.averageVolume * 100, unit: "%"),
-          AnalyticsMetricCard(label: "Peak Volume", value: analysis.peakVolume * 100, unit: "%"),
-          AnalyticsMetricCard(label: "Consistency", value: analysis.volumeConsistency, unit: "%"),
+          AnalyticsMetricCard(label: 'Average Volume', value: analysis.averageVolume * 100, unit: '%'),
+          AnalyticsMetricCard(label: 'Peak Volume', value: analysis.peakVolume * 100, unit: '%'),
+          AnalyticsMetricCard(label: 'Consistency', value: analysis.volumeConsistency, unit: '%'),
         ]),
 
         const SizedBox(height: 24),
 
-        _sectionHeader("TONE ANALYSIS"),
+        _sectionHeader('TONE ANALYSIS'),
         _metricGrid([
-          AnalyticsMetricCard(label: "Tone Clarity", value: analysis.toneClarity, unit: "%"),
-          AnalyticsMetricCard(label: "Harmonic Richness", value: analysis.harmonicRichness, unit: "%"),
-          AnalyticsMetricCard(label: "Call Quality", value: analysis.callQualityScore, unit: "%"),
+          AnalyticsMetricCard(label: 'Tone Clarity', value: analysis.toneClarity, unit: '%'),
+          AnalyticsMetricCard(label: 'Harmonic Richness', value: analysis.harmonicRichness, unit: '%'),
+          AnalyticsMetricCard(label: 'Call Quality', value: analysis.callQualityScore, unit: '%'),
         ]),
 
         if (analysis.harmonics.isNotEmpty) ...[
@@ -60,16 +60,16 @@ class AudioAnalyticsDisplay extends StatelessWidget {
 
         const SizedBox(height: 24),
 
-        _sectionHeader("TIMBRE ANALYSIS"),
+        _sectionHeader('TIMBRE ANALYSIS'),
         _metricGrid([
-          AnalyticsMetricCard(label: "Brightness", value: analysis.brightness, unit: "%"),
-          AnalyticsMetricCard(label: "Warmth", value: analysis.warmth, unit: "%"),
-          AnalyticsMetricCard(label: "Nasality", value: analysis.nasality, unit: "%"),
+          AnalyticsMetricCard(label: 'Brightness', value: analysis.brightness, unit: '%'),
+          AnalyticsMetricCard(label: 'Warmth', value: analysis.warmth, unit: '%'),
+          AnalyticsMetricCard(label: 'Nasality', value: analysis.nasality, unit: '%'),
         ]),
 
         if (analysis.spectralCentroid.isNotEmpty) ...[
           const SizedBox(height: 12),
-          Text("Timbre Dynamics (Spectral Centroid)",
+          Text('Timbre Dynamics (Spectral Centroid)',
               style: GoogleFonts.lato(color: Colors.white70, fontSize: 12)),
           const SizedBox(height: 8),
           SpectralCentroidGraph(centroids: analysis.spectralCentroid),
@@ -77,20 +77,20 @@ class AudioAnalyticsDisplay extends StatelessWidget {
 
         const SizedBox(height: 24),
 
-        _sectionHeader("DURATION ANALYSIS"),
+        _sectionHeader('DURATION ANALYSIS'),
         _metricGrid([
-          AnalyticsMetricCard(label: "Total Duration", value: analysis.totalDurationSec, unit: "s"),
-          AnalyticsMetricCard(label: "Active Duration", value: analysis.activeDurationSec, unit: "s"),
-          AnalyticsMetricCard(label: "Silence Duration", value: analysis.silenceDurationSec, unit: "s"),
+          AnalyticsMetricCard(label: 'Total Duration', value: analysis.totalDurationSec, unit: 's'),
+          AnalyticsMetricCard(label: 'Active Duration', value: analysis.activeDurationSec, unit: 's'),
+          AnalyticsMetricCard(label: 'Silence Duration', value: analysis.silenceDurationSec, unit: 's'),
         ]),
 
         if (analysis.isPulsedCall) ...[
           const SizedBox(height: 24),
-          _sectionHeader("RHYTHM ANALYSIS"),
+          _sectionHeader('RHYTHM ANALYSIS'),
           _metricGrid([
-            AnalyticsMetricCard(label: "Tempo", value: analysis.tempo, unit: "BPM"),
-            AnalyticsMetricCard(label: "Pulses Detected", value: analysis.pulseTimes.length.toDouble(), unit: ""),
-            AnalyticsMetricCard(label: "Rhythm Regularity", value: analysis.rhythmRegularity, unit: "%"),
+            AnalyticsMetricCard(label: 'Tempo', value: analysis.tempo, unit: 'BPM'),
+            AnalyticsMetricCard(label: 'Pulses Detected', value: analysis.pulseTimes.length.toDouble(), unit: ''),
+            AnalyticsMetricCard(label: 'Rhythm Regularity', value: analysis.rhythmRegularity, unit: '%'),
           ]),
         ],
       ],

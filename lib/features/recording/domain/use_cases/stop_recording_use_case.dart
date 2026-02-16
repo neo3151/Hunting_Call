@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:fpdart/fpdart.dart';
 import '../audio_recorder_service.dart';
 import '../failures/recording_failure.dart';
@@ -21,8 +22,12 @@ class StopRecordingUseCase {
         return left(const RecordingServiceError('No audio path returned'));
       }
       
-      // TODO: Could validate duration here if we have access to file metadata
-      // For now, just return the path
+      final file = File(audioPath);
+      final stat = await file.stat();
+      // Basic check: if file is too small, it's likely an empty or failed recording
+      if (stat.size < 1024) { // Less than 1KB
+        return left(const RecordingServiceError('Recording too short or empty'));
+      }
       
       return right(audioPath);
     } catch (e) {

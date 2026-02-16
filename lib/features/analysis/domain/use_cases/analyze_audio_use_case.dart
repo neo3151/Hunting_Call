@@ -31,7 +31,7 @@ class AnalyzeAudioUseCase {
       
       return right(analysis);
     } on FileSystemException catch (e) {
-      return left(AudioFileNotFound('${audioPath}: ${e.message}'));
+      return left(AudioFileNotFound('$audioPath: ${e.message}'));
     } on FormatException catch (e) {
       return left(InvalidAudioFormat(e.message));
     } catch (e) {

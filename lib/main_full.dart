@@ -5,7 +5,7 @@ import 'main_common.dart';
 void main() {
   AppConfig.create(
     flavor: AppFlavor.full,
-    appName: "Gobble Guru Pro",
+    appName: 'Gobble Guru Pro',
   );
   mainCommon();
 }

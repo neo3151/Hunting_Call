@@ -20,10 +20,10 @@ class LocalProfileDataSource implements ProfileDataSource {
   @override
   Future<UserProfile> getProfile(String userId) async {
     final jsonString = sharedPreferences.getString('user_profile_$userId');
-    debugPrint("🔍 LocalProfileDataSource: Reading user_profile_$userId: $jsonString");
+    debugPrint('🔍 LocalProfileDataSource: Reading user_profile_$userId: $jsonString');
     if (jsonString != null) {
       final p = UserProfile.fromJson(json.decode(jsonString));
-      debugPrint("🔍 LocalProfileDataSource: Parsed isPremium=${p.isPremium}");
+      debugPrint('🔍 LocalProfileDataSource: Parsed isPremium=${p.isPremium}');
       return p;
     } else {
       // Return default new profile
@@ -70,7 +70,7 @@ class LocalProfileDataSource implements ProfileDataSource {
     for (var h in updatedHistory) {
       totalScore += h.result.score;
     }
-    double newAvg = updatedHistory.isEmpty ? 0 : totalScore / updatedHistory.length;
+    final double newAvg = updatedHistory.isEmpty ? 0 : totalScore / updatedHistory.length;
     
     final updatedProfile = profile.copyWith(
       history: updatedHistory,

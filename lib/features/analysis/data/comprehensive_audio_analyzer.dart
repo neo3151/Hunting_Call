@@ -30,7 +30,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     try {
       final file = File(audioPath);
       if (!await file.exists()) {
-        debugPrint("Analysis Error: File $audioPath not found");
+        debugPrint('Analysis Error: File $audioPath not found');
         return AudioAnalysis.simple(frequencyHz: 0.0, durationSec: 0.0);
       }
 
@@ -38,9 +38,9 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       // Note: We don't cache the full object yet, just waveform. 
       // If we move to full caching, check here.
 
-      debugPrint("ComprehensiveAudioAnalyzer: Spawning isolate for analysis...");
+      debugPrint('ComprehensiveAudioAnalyzer: Spawning isolate for analysis...');
       final analysis = await compute(_runAnalysisInIsolate, audioPath);
-      debugPrint("ComprehensiveAudioAnalyzer: Analysis complete.");
+      debugPrint('ComprehensiveAudioAnalyzer: Analysis complete.');
       
       // Update waveform cache with the result if needed
       if (analysis.waveform.isNotEmpty) {
@@ -50,7 +50,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       return analysis;
 
     } catch (e, stack) {
-      debugPrint("Comprehensive Analysis Error: $e\n$stack");
+      debugPrint('Comprehensive Analysis Error: $e\n$stack');
       return AudioAnalysis.simple(frequencyHz: 0.0, durationSec: 0.0);
     }
   }
@@ -78,7 +78,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       // Convert to float samples
       final samples = Float64List(numSamples);
       for (var i = 0; i < numSamples; i++) {
-        int sample = view.getInt16(44 + (i * 2), Endian.little);
+        final int sample = view.getInt16(44 + (i * 2), Endian.little);
         samples[i] = sample / 32768.0;
       }
 
@@ -143,8 +143,8 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     const chunkSize = 4096;
     final chunks = samples.length ~/ chunkSize;
     
-    List<double> dominantFreqs = [];
-    List<List<double>> allPeaks = [];
+    final List<double> dominantFreqs = [];
+    final List<List<double>> allPeaks = [];
     
     for (int i = 0; i < chunks; i++) {
       final start = i * chunkSize;
@@ -173,7 +173,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       final magnitudes = freq.magnitudes();
       
       // Find peaks
-      List<MapEntry<int, double>> peaks = [];
+      final List<MapEntry<int, double>> peaks = [];
       double maxMag = 0.0;
       for (int j = 2; j < magnitudes.length ~/ 2 - 2; j++) {
         if (magnitudes[j] > magnitudes[j - 1] &&
@@ -211,7 +211,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     }
     
     // Calculate statistics
-    double avgFreq = dominantFreqs.isEmpty ? 0.0 : 
+    final double avgFreq = dominantFreqs.isEmpty ? 0.0 : 
       dominantFreqs.reduce((a, b) => a + b) / dominantFreqs.length;
     
     double stability = 100.0;
@@ -221,20 +221,20 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         variance += pow(f - avgFreq, 2);
       }
       variance /= dominantFreqs.length;
-      double stdDev = sqrt(variance);
+      final double stdDev = sqrt(variance);
       stability = max(0, 100 - (stdDev / avgFreq * 100));
     }
     
     // Get most common peaks
-    Map<double, int> peakCounts = {};
+    final Map<double, int> peakCounts = {};
     for (var peakList in allPeaks) {
       for (var peak in peakList) {
-        double rounded = (peak / 10).round() * 10.0;
+        final double rounded = (peak / 10).round() * 10.0;
         peakCounts[rounded] = (peakCounts[rounded] ?? 0) + 1;
       }
     }
     
-    var topPeaks = peakCounts.entries.toList()
+    final topPeaks = peakCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     
     return {
@@ -253,15 +253,15 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     double peak = 0.0;
     
     for (var sample in samples) {
-      double abs = sample.abs();
+      final double abs = sample.abs();
       sum += abs * abs; // RMS
       if (abs > peak) peak = abs;
     }
     
-    double rms = sqrt(sum / samples.length);
+    final double rms = sqrt(sum / samples.length);
     
     // Calculate volume consistency
-    List<double> chunkVolumes = [];
+    final List<double> chunkVolumes = [];
     const chunkSize = 4410; // ~0.1 sec at 44.1kHz
     for (int i = 0; i < samples.length; i += chunkSize) {
       double chunkSum = 0.0;
@@ -273,13 +273,13 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       chunkVolumes.add(chunkSum / count);
     }
     
-    double avgChunkVol = chunkVolumes.reduce((a, b) => a + b) / chunkVolumes.length;
+    final double avgChunkVol = chunkVolumes.reduce((a, b) => a + b) / chunkVolumes.length;
     double variance = 0.0;
     for (var v in chunkVolumes) {
       variance += pow(v - avgChunkVol, 2);
     }
     variance /= chunkVolumes.length;
-    double consistency = max(0, 100 - (sqrt(variance) * 1000));
+    final double consistency = max(0, 100 - (sqrt(variance) * 1000));
     
     return {
       'average': rms,
@@ -313,27 +313,27 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       }
     }
     
-    double fundamentalFreq = fft.frequency(fundamentalIdx, sampleRate.toDouble());
+    final double fundamentalFreq = fft.frequency(fundamentalIdx, sampleRate.toDouble());
     
     // Detect harmonics
-    Map<String, double> harmonics = {};
+    final Map<String, double> harmonics = {};
     double harmonicEnergy = 0.0;
     for (int h = 2; h <= 6; h++) {
-      int harmonicIdx = (fundamentalIdx * h);
+      final int harmonicIdx = (fundamentalIdx * h);
       if (harmonicIdx < magnitudes.length) {
-        double harmonicFreq = fft.frequency(harmonicIdx, sampleRate.toDouble());
+        final double harmonicFreq = fft.frequency(harmonicIdx, sampleRate.toDouble());
         harmonics['H$h'] = harmonicFreq;
         harmonicEnergy += magnitudes[harmonicIdx];
       }
     }
     
-    double harmonicRichness = min(100, (harmonicEnergy / maxMag) * 100);
+    final double harmonicRichness = min(100, (harmonicEnergy / maxMag) * 100);
     
     // Calculate tone clarity (SNR estimation)
     double signalEnergy = 0.0;
     double noiseEnergy = 0.0;
     for (int i = 1; i < magnitudes.length ~/ 2; i++) {
-      double freq = fft.frequency(i, sampleRate.toDouble());
+      final double freq = fft.frequency(i, sampleRate.toDouble());
       if ((freq - fundamentalFreq).abs() < 50) {
         signalEnergy += magnitudes[i];
       } else {
@@ -341,8 +341,8 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       }
     }
     
-    double snr = signalEnergy / max(noiseEnergy, 0.001);
-    double clarity = min(100, snr * 10);
+    final double snr = signalEnergy / max(noiseEnergy, 0.001);
+    final double clarity = min(100, snr * 10);
     
     return {
       'clarity': clarity,
@@ -356,7 +356,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     const chunkSize = 4096;
     final chunks = samples.length ~/ chunkSize;
     
-    List<double> centroids = [];
+    final List<double> centroids = [];
     double totalLowEnergy = 0.0;
     double totalMidEnergy = 0.0;
     double totalHighEnergy = 0.0;
@@ -381,7 +381,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       double weightedSum = 0.0;
       double magnitudeSum = 0.0;
       for (int j = 0; j < magnitudes.length ~/ 2; j++) {
-        double frequency = fft.frequency(j, sampleRate.toDouble());
+        final double frequency = fft.frequency(j, sampleRate.toDouble());
         weightedSum += frequency * magnitudes[j];
         magnitudeSum += magnitudes[j];
         
@@ -403,10 +403,10 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       }
     }
     
-    double totalEnergy = totalLowEnergy + totalMidEnergy + totalHighEnergy;
-    double brightness = totalEnergy > 0 ? (totalHighEnergy / totalEnergy) * 100 : 50.0;
-    double warmth = totalEnergy > 0 ? (totalLowEnergy / totalEnergy) * 100 : 50.0;
-    double nasality = totalEnergy > 0 ? (nasalEnergy / totalEnergy) * 100 : 20.0;
+    final double totalEnergy = totalLowEnergy + totalMidEnergy + totalHighEnergy;
+    final double brightness = totalEnergy > 0 ? (totalHighEnergy / totalEnergy) * 100 : 50.0;
+    final double warmth = totalEnergy > 0 ? (totalLowEnergy / totalEnergy) * 100 : 50.0;
+    final double nasality = totalEnergy > 0 ? (nasalEnergy / totalEnergy) * 100 : 20.0;
     
     return {
       'brightness': brightness,
@@ -430,8 +430,8 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       if (sample.abs() > threshold) activeCount++;
     }
     
-    double activeDuration = activeCount / sampleRate;
-    double silenceDuration = totalDuration - activeDuration;
+    final double activeDuration = activeCount / sampleRate;
+    final double silenceDuration = totalDuration - activeDuration;
     
     return {
       'active': activeDuration,
@@ -443,7 +443,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   static Map<String, dynamic> _analyzeRhythm(Float64List samples, int sampleRate) {
     // Simple onset detection using energy spikes
     const windowSize = 2205; // ~0.05 sec
-    List<double> energy = [];
+    final List<double> energy = [];
     
     for (int i = 0; i < samples.length; i += windowSize) {
       double sum = 0.0;
@@ -454,9 +454,9 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     }
     
     // Find peaks (onsets)
-    List<double> pulseTimes = [];
-    double avgEnergy = energy.reduce((a, b) => a + b) / energy.length;
-    double threshold = avgEnergy * 1.5;
+    final List<double> pulseTimes = [];
+    final double avgEnergy = energy.reduce((a, b) => a + b) / energy.length;
+    final double threshold = avgEnergy * 1.5;
     
     for (int i = 1; i < energy.length - 1; i++) {
       if (energy[i] > threshold &&
@@ -466,17 +466,17 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       }
     }
     
-    bool isPulsed = pulseTimes.length >= 3;
+    final bool isPulsed = pulseTimes.length >= 3;
     double tempo = 0.0;
     double regularity = 0.0;
     
     if (pulseTimes.length >= 2) {
       // Calculate tempo
-      List<double> intervals = [];
+      final List<double> intervals = [];
       for (int i = 1; i < pulseTimes.length; i++) {
         intervals.add(pulseTimes[i] - pulseTimes[i - 1]);
       }
-      double avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+      final double avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
       tempo = 60.0 / avgInterval; // BPM
       
       // Calculate regularity
@@ -507,11 +507,11 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       totalEnergy += sample * sample;
     }
     
-    double clippingScore = max(0, 100 - (clipCount / samples.length * 1000));
-    double energyScore = min(100, sqrt(totalEnergy / samples.length) * 100);
+    final double clippingScore = max(0, 100 - (clipCount / samples.length * 1000));
+    final double energyScore = min(100, sqrt(totalEnergy / samples.length) * 100);
     
-    double quality = (clippingScore + energyScore) / 2;
-    double noise = 100 - quality; // Simplified
+    final double quality = (clippingScore + energyScore) / 2;
+    final double noise = 100 - quality; // Simplified
     
     return {
       'score': quality,
@@ -550,7 +550,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     }
     
     // Normalize to 0-1 range
-    double peak = result.reduce(max);
+    final double peak = result.reduce(max);
     if (peak > 0) {
       for (int i = 0; i < points; i++) {
         result[i] /= peak;

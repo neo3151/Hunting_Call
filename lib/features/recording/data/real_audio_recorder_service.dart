@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:permission_handler/permission_handler.dart';
 import '../domain/audio_recorder_service.dart';
 
 class RealAudioRecorderService implements AudioRecorderService {
@@ -56,22 +56,22 @@ class RealAudioRecorderService implements AudioRecorderService {
     if (_isInitialized) return;
     _lastError = null;
     try {
-      debugPrint("RealAudioRecorder: Initializing...");
+      debugPrint('RealAudioRecorder: Initializing...');
       final tempRecorder = AudioRecorder();
       final hasPermission = await tempRecorder.hasPermission();
-      debugPrint("RealAudioRecorder: Has permission: $hasPermission");
+      debugPrint('RealAudioRecorder: Has permission: $hasPermission');
       await tempRecorder.dispose();
       
       if (!hasPermission) {
-        _lastError = "Microphone permission denied. Please grant access in your system settings.";
-        debugPrint("RealAudioRecorder: ERROR - $_lastError");
+        _lastError = 'Microphone permission denied. Please grant access in your system settings.';
+        debugPrint('RealAudioRecorder: ERROR - $_lastError');
         return;
       }
       _isInitialized = true;
-      debugPrint("RealAudioRecorder: Initialized successfully");
+      debugPrint('RealAudioRecorder: Initialized successfully');
     } catch (e) {
-      _lastError = "Initialization Error: $e";
-      debugPrint("RealAudioRecorder: ERROR - $_lastError");
+      _lastError = 'Initialization Error: $e';
+      debugPrint('RealAudioRecorder: ERROR - $_lastError');
     }
   }
 
@@ -79,16 +79,16 @@ class RealAudioRecorderService implements AudioRecorderService {
   Future<bool> startRecorder(String path) async {
     _lastError = null;
     
-    debugPrint("RealAudioRecorder: startRecorder called");
+    debugPrint('RealAudioRecorder: startRecorder called');
     // 1. Full cleanup of any previous session
     await _cleanup();
     
     // Ensure we are initialized
     if (!_isInitialized) {
-      debugPrint("RealAudioRecorder: Not initialized, calling init()");
+      debugPrint('RealAudioRecorder: Not initialized, calling init()');
       await init();
       if (!_isInitialized) {
-        debugPrint("RealAudioRecorder: Still not initialized after init(), aborting");
+        debugPrint('RealAudioRecorder: Still not initialized after init(), aborting');
         return false;
       }
     }
@@ -100,22 +100,8 @@ class RealAudioRecorderService implements AudioRecorderService {
     try {
       _recorder = AudioRecorder();
 
-      String filePath;
-      if (kIsWeb) {
-        filePath = 'recording_${DateTime.now().millisecondsSinceEpoch}.wav'; 
-      } else {
-        final tempDir = await getTemporaryDirectory();
-        final fileName = 'hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
-        filePath = p.join(tempDir.path, fileName);
-        
-        // Ensure parent directory exists (needed on some platforms)
-        final dir = Directory(tempDir.path);
-        if (!await dir.exists()) {
-          await dir.create(recursive: true);
-        }
-      }
-      _currentPath = filePath;
-      debugPrint("RealAudioRecorder: Recording to: $filePath");
+      _currentPath = path;
+      debugPrint('RealAudioRecorder: Recording to: $path');
 
       const config = RecordConfig(
         encoder: AudioEncoder.wav,
@@ -125,8 +111,8 @@ class RealAudioRecorderService implements AudioRecorderService {
       );
 
       // Start recording
-      await _recorder!.start(config, path: filePath);
-      debugPrint("RealAudioRecorder: Recording started successfully");
+      await _recorder!.start(config, path: _currentPath!);
+      debugPrint('RealAudioRecorder: Recording started successfully');
 
       // Listen for amplitude changes for visualizer
       _amplitudeSubscription = _recorder!.onAmplitudeChanged(_amplitudeSampleInterval).listen(
@@ -137,13 +123,13 @@ class RealAudioRecorderService implements AudioRecorderService {
           normalized = normalized.clamp(0.0, 1.0);
           _amplitudeController.add(normalized);
         },
-        onError: (e) => debugPrint("RealAudioRecorder: Amplitude stream error: $e"),
+        onError: (e) => debugPrint('RealAudioRecorder: Amplitude stream error: $e'),
       );
       
       return true;
     } catch (e) {
-      _lastError = "Failed to start recording: $e";
-      debugPrint("RealAudioRecorder: ERROR - $_lastError");
+      _lastError = 'Failed to start recording: $e';
+      debugPrint('RealAudioRecorder: ERROR - $_lastError');
       await _cleanup();
       return false;
     }
@@ -152,22 +138,22 @@ class RealAudioRecorderService implements AudioRecorderService {
   @override
   Future<String?> stopRecorder() async {
     try {
-      debugPrint("RealAudioRecorder: stopRecorder called");
+      debugPrint('RealAudioRecorder: stopRecorder called');
       if (_recorder == null) {
-        debugPrint("RealAudioRecorder: No active recorder, returning cached path");
+        debugPrint('RealAudioRecorder: No active recorder, returning cached path');
         return _currentPath;
       }
       
       final savedPath = await _recorder!.stop();
-      debugPrint("RealAudioRecorder: Stopped, path: $savedPath");
+      debugPrint('RealAudioRecorder: Stopped, path: $savedPath');
       
       // Crucial: Give the OS a moment to release the file handle
       await Future.delayed(_fileWriteCompleteDelay);
       
       return savedPath ?? _currentPath;
     } catch (e) {
-      _lastError = "Failed to stop recording: $e";
-      debugPrint("RealAudioRecorder: ERROR - $_lastError");
+      _lastError = 'Failed to stop recording: $e';
+      debugPrint('RealAudioRecorder: ERROR - $_lastError');
       return _currentPath;
     } finally {
       await _cleanup();
@@ -187,7 +173,7 @@ class RealAudioRecorderService implements AudioRecorderService {
         _recorder = null;
       }
     } catch (e) {
-      debugPrint("Cleanup Error: $e");
+      debugPrint('Cleanup Error: $e');
     }
   }
 
@@ -200,7 +186,7 @@ class RealAudioRecorderService implements AudioRecorderService {
   @override
   Future<void> cleanupOldFiles() async {
     try {
-      debugPrint("RealAudioRecorder: Running storage cleanup...");
+      debugPrint('RealAudioRecorder: Running storage cleanup...');
       final tempDir = await getTemporaryDirectory();
       final dir = Directory(tempDir.path);
       
@@ -209,20 +195,24 @@ class RealAudioRecorderService implements AudioRecorderService {
         final now = DateTime.now();
         int deletedCount = 0;
 
+        // Load settings to get cleanup frequency
+        final prefs = await SharedPreferences.getInstance();
+        final cleanupHours = prefs.getInt('app_settings_autoCleanupHours') ?? 24;
+
         for (final file in files) {
           if (file is File && p.extension(file.path) == '.wav' && p.basename(file.path).startsWith('hunting_call_')) {
             final stat = await file.stat();
-            // Delete files older than 1 hour to be safe
-            if (now.difference(stat.modified).inHours >= 1) {
+            // Delete files older than the specified hours
+            if (now.difference(stat.modified).inHours >= cleanupHours) {
               await file.delete();
               deletedCount++;
             }
           }
         }
-        debugPrint("RealAudioRecorder: Cleanup complete. Deleted $deletedCount old recordings.");
+        debugPrint('RealAudioRecorder: Cleanup complete. Deleted $deletedCount old recordings.');
       }
     } catch (e) {
-      debugPrint("RealAudioRecorder: Cleanup ERROR - $e");
+      debugPrint('RealAudioRecorder: Cleanup ERROR - $e');
     }
   }
 }

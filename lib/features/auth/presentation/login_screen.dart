@@ -57,12 +57,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           // 3. Create the profile with that UID
           await ref.read(profileNotifierProvider.notifier).createProfile(name, id: safeUid, birthday: birthday);
         } else {
-          throw Exception("Could not retrieve user ID after sign-in.");
+          throw Exception('Could not retrieve user ID after sign-in.');
         }
       } catch (e) {
         if (mounted) {
-          debugPrint("Profile creation failed: $e");
-          String message = "Authentication failed. Please check your internet connection.";
+          debugPrint('Profile creation failed: $e');
+          String message = 'Authentication failed. Please check your internet connection.';
           if (e.toString().contains('unknown-error')) {
             message = "Anonymous sign-in failed. Please ensure 'Anonymous' auth is enabled in your Firebase Console.";
           }
@@ -86,12 +86,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1B3B24),
-        title: const Text("Log In", style: TextStyle(color: Colors.white)),
+        title: const Text('Log In', style: TextStyle(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              "Enter the email address associated with your profile to sync progress.",
+              'Enter the email address associated with your profile to sync progress.',
               style: TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 16),
@@ -100,7 +100,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               autofocus: true,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
-                labelText: "Email Address",
+                labelText: 'Email Address',
                 labelStyle: TextStyle(color: Colors.white54),
                 enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
                 focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
@@ -111,11 +111,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("CANCEL", style: TextStyle(color: Colors.white54)),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, emailController.text.trim()),
-            child: const Text("LOG IN", style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+            child: const Text('LOG IN', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -126,7 +126,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       
       try {
         final profileRepo = ref.read(profileRepositoryProvider);
-        debugPrint("🔍 Searching for profiles by email: $email");
+        // debugPrint("🔍 Searching for profiles by email: $email");
         
         final profiles = await profileRepo.getProfilesByEmail(email);
         
@@ -139,7 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           selectedProfile = await showDialog<UserProfile>(
             context: context,
             builder: (context) => SimpleDialog(
-              title: const Text("Select Profile", style: TextStyle(color: Colors.white)),
+              title: const Text('Select Profile', style: TextStyle(color: Colors.white)),
               backgroundColor: const Color(0xFF1B3B24),
               children: profiles.map((p) => SimpleDialogOption(
                 onPressed: () => Navigator.pop(context, p),
@@ -153,8 +153,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(p.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text("Joined: ${DateFormat.yMMMd().format(p.joinedDate)}", style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                      Text("Calls: ${p.totalCalls}", style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text('Joined: ${DateFormat.yMMMd().format(p.joinedDate)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text('Calls: ${p.totalCalls}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -163,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
           
           if (selectedProfile != null) {
-            debugPrint("✅ Profile selected: ${selectedProfile.name} (${selectedProfile.id})");
+            // debugPrint("✅ Profile selected: ${selectedProfile.name} (${selectedProfile.id})");
             
             // Load profile to state FIRST, before signIn triggers AuthWrapper rebuild
             await ref.read(profileNotifierProvider.notifier).loadProfile(selectedProfile.id);
@@ -177,17 +177,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text("No profile found with this email."),
+                content: Text('No profile found with this email.'),
                 backgroundColor: Colors.orange,
               )
             );
           }
         }
       } catch (e) {
-        debugPrint("❌ Email login failed: $e");
+        debugPrint('❌ Email login failed: $e');
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text("Login error: $e"), backgroundColor: Colors.red)
+             SnackBar(content: Text('Login error: $e'), backgroundColor: Colors.red)
            );
         }
       }
@@ -196,7 +196,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _signInWithGoogle() async {
     try {
-      debugPrint('🔐 Starting Google Sign-In via AuthController...');
+      // debugPrint('🔐 Starting Google Sign-In via AuthController...');
       
       // AuthController now handles:
       // 1. Sign in with Google
@@ -204,15 +204,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authControllerProvider.notifier).signInWithGoogle();
       
       // Success is handled by AuthWrapper watching the state change
-      debugPrint('✅ Google Sign-In triggered successfully');
+      // debugPrint('✅ Google Sign-In triggered successfully');
       
     } catch (e, stackTrace) {
-      debugPrint("❌ Google Sign-In failed: $e");
-      debugPrint("Stack trace: $stackTrace");
+      debugPrint('❌ Google Sign-In failed: $e');
+      debugPrint('Stack trace: $stackTrace');
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Google Sign-In failed: $e"), backgroundColor: Colors.red)
+          SnackBar(content: Text('Google Sign-In failed: $e'), backgroundColor: Colors.red)
         );
       }
     }
@@ -220,11 +220,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profileState = ref.watch(profileNotifierProvider);
-    final profiles = profileState.allProfiles;
-    final isLoading = profileState.isLoading;
-
-    debugPrint("LoginScreen: Building. isLoading=$isLoading, profiles.length=${profiles.length}, error=${profileState.error}");
+    ref.watch(profileNotifierProvider);
 
     return Scaffold(
       body: BackgroundWrapper(
@@ -275,7 +271,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   onPressed: _signInWithGoogle,
                                   icon: const Icon(Icons.login, color: Colors.white, size: 24),
                                   label: Text(
-                                    "SIGN IN WITH GOOGLE",
+                                    'SIGN IN WITH GOOGLE',
                                     style: GoogleFonts.oswald(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -297,7 +293,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   onPressed: _signInWithEmail,
                                   icon: const Icon(Icons.email_outlined, color: Colors.white, size: 24),
                                   label: Text(
-                                    "LOG IN WITH EMAIL",
+                                    'LOG IN WITH EMAIL',
                                     style: GoogleFonts.oswald(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -319,7 +315,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.2))),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      child: Text("OR", style: GoogleFonts.lato(color: Colors.white38, fontSize: 12)),
+                                      child: Text('OR', style: GoogleFonts.lato(color: Colors.white38, fontSize: 12)),
                                     ),
                                     Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.2))),
                                   ],
@@ -349,7 +345,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
                                   },
                                   child: Text(
-                                    "Privacy Policy", 
+                                    'Privacy Policy', 
                                     style: GoogleFonts.lato(
                                       color: Colors.white38, 
                                       decoration: TextDecoration.underline,

@@ -6,6 +6,7 @@ import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_
 import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:hunting_calls_perfection/features/auth/domain/usecases/sign_out.dart';
 import 'package:hunting_calls_perfection/features/auth/domain/usecases/get_auth_state_stream.dart';
+import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Mocks
@@ -24,11 +25,11 @@ void main() {
 
   test('AuthController.signOut handles repository exceptions gracefully', () async {
     // Arrange
-    when(() => mockAuthRepo.signOut()).thenThrow(Exception("Simulated Logout Crash"));
+    when(() => mockAuthRepo.signOut()).thenThrow(Exception('Simulated Logout Crash'));
     
     final container = ProviderContainer(
       overrides: [
-        authRepositoryImplProvider.overrideWithValue(mockAuthRepo),
+        authRepositoryProvider.overrideWithValue(mockAuthRepo),
         getAuthStateStreamUseCaseProvider.overrideWithValue(GetAuthStateStream(mockAuthRepo)),
         signOutUseCaseProvider.overrideWithValue(SignOut(mockAuthRepo)),
       ],
@@ -48,10 +49,10 @@ void main() {
     
     // Check that the state reflects the error
     final state = container.read(authControllerProvider);
-    debugPrint("Final State: $state");
+    debugPrint('Final State: $state');
     
     expect(state.hasError, true);
-    expect(state.error.toString(), contains("Simulated Logout Crash"));
+    expect(state.error.toString(), contains('Simulated Logout Crash'));
     sub.close();
   });
   
@@ -61,7 +62,7 @@ void main() {
     
     final container = ProviderContainer(
       overrides: [
-        authRepositoryImplProvider.overrideWithValue(mockAuthRepo),
+        authRepositoryProvider.overrideWithValue(mockAuthRepo),
         getAuthStateStreamUseCaseProvider.overrideWithValue(GetAuthStateStream(mockAuthRepo)),
         signOutUseCaseProvider.overrideWithValue(SignOut(mockAuthRepo)),
       ],

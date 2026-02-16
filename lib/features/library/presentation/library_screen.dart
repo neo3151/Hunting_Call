@@ -18,8 +18,8 @@ class LibraryScreen extends ConsumerStatefulWidget {
 }
 
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
-  String _searchQuery = "";
-  final List<String> _categories = ["All", "Waterfowl", "Big Game", "Predators", "Land Birds"];
+  String _searchQuery = '';
+  final List<String> _categories = ['All', 'Waterfowl', 'Big Game', 'Predators', 'Land Birds'];
 
   Future<void> _togglePlayback(ReferenceCall call) async {
     final profile = ref.read(profileNotifierProvider).profile;
@@ -38,7 +38,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     if (isLocked) {
       if (mounted) {
-        UpgradePrompter.show(context, featureName: "This Call");
+        UpgradePrompter.show(context, featureName: 'This Call');
       }
       return;
     }
@@ -52,7 +52,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Could not play audio: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text('Could not play audio: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -74,7 +74,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
 
     if (isLocked) {
-      UpgradePrompter.show(context, featureName: "This Call");
+      UpgradePrompter.show(context, featureName: 'This Call');
       return;
     }
     
@@ -133,7 +133,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     onChanged: (val) => setState(() => _searchQuery = val),
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: "Search calls...",
+                      hintText: 'Search calls...',
                       hintStyle: const TextStyle(color: Colors.white54),
                       prefixIcon: const Icon(Icons.search, color: Colors.white54),
                       filled: true,
@@ -173,7 +173,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               children: _categories.map((category) {
                 final filtered = _getFilteredCalls(category);
                 if (filtered.isEmpty) {
-                  return const Center(child: Text("No calls found", style: TextStyle(color: Colors.white54)));
+                  return const Center(child: Text('No calls found', style: TextStyle(color: Colors.white54)));
                 }
                 return ListView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 220, 16, 16),
@@ -271,9 +271,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _buildMetricChip(Icons.music_note, "${call.idealPitchHz.toInt()} Hz"),
+                      _buildMetricChip(Icons.music_note, '${call.idealPitchHz.toInt()} Hz'),
                       const SizedBox(width: 8),
-                      _buildMetricChip(Icons.timer_outlined, "${call.idealDurationSec}s"),
+                      _buildMetricChip(Icons.timer_outlined, '${call.idealDurationSec}s'),
                       const SizedBox(width: 8),
                       const Spacer(),
                       // Learn More Indicator

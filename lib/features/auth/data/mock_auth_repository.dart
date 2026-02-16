@@ -21,25 +21,25 @@ class MockAuthRepository implements AuthRepository {
   Future<void> signIn(String userId) async {
     _currentUser = AuthUser(id: userId);
     _controller.add(_currentUser);
-    debugPrint("Mock Auth: Signed in as ${_currentUser?.id}");
+    debugPrint('Mock Auth: Signed in as ${_currentUser?.id}');
   }
 
   @override
   Future<void> signInAnonymously() async {
-    _currentUser = const AuthUser(id: "anon_user_123", isAnonymous: true);
+    _currentUser = const AuthUser(id: 'anon_user_123', isAnonymous: true);
     _controller.add(_currentUser);
-    debugPrint("Mock Auth: Signed in as anon");
+    debugPrint('Mock Auth: Signed in as anon');
   }
 
   @override
   Future<AuthUser> signInWithGoogle() async {
     _currentUser = const AuthUser(
-        id: "google_user_456", 
+        id: 'google_user_456', 
         email: 'mock@example.com', 
         displayName: 'Mock User'
     );
     _controller.add(_currentUser);
-    debugPrint("Mock Auth: Signed in with Google as ${_currentUser?.id}");
+    debugPrint('Mock Auth: Signed in with Google as ${_currentUser?.id}');
     return _currentUser!;
   }
 
@@ -47,7 +47,7 @@ class MockAuthRepository implements AuthRepository {
   Future<void> signOut() async {
     _currentUser = null;
     _controller.add(null);
-    debugPrint("Mock Auth: Signed out");
+    debugPrint('Mock Auth: Signed out');
   }
 
   @override
