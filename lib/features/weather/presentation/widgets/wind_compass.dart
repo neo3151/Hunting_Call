@@ -120,7 +120,7 @@ class _WindPainter extends CustomPainter {
     // Let's make it point WHERE IT'S BLOWING.
     
     final path = Path();
-    final headSize = 10.0;
+    const headSize = 10.0;
     path.moveTo(arrowEnd.dx, arrowEnd.dy);
     path.lineTo(
       arrowEnd.dx - headSize * math.cos(angle - 0.5),

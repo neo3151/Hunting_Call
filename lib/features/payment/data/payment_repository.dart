@@ -19,22 +19,22 @@ class MockPaymentRepository implements PaymentRepository {
     await Future.delayed(const Duration(seconds: 1));
     
     try {
-      debugPrint("🛒 PaymentRepository: Processing mock purchase for $userId...");
+      debugPrint('🛒 PaymentRepository: Processing mock purchase for $userId...');
       
       // Update profile status
       await _profileRepo.setPremiumStatus(userId, true);
       
-      debugPrint("✅ PaymentRepository: User is now PREMIUM.");
+      debugPrint('✅ PaymentRepository: User is now PREMIUM.');
       return true;
     } catch (e) {
-      debugPrint("❌ PaymentRepository: Purchase failed: $e");
+      debugPrint('❌ PaymentRepository: Purchase failed: $e');
       return false;
     }
   }
 
   @override
   Future<bool> restorePurchases(String userId) async {
-    debugPrint("🛒 PaymentRepository: Restoring purchases for $userId...");
+    debugPrint('🛒 PaymentRepository: Restoring purchases for $userId...');
     // For mock, we just say "Yes, restore it" if they click it, or maybe checking logic?
     // For this milestone, let's treat restore as "Give me premium".
     return purchasePremium(userId); 

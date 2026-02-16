@@ -50,7 +50,7 @@ class GetDailyChallengeUseCase {
           // Select challenge based on day of year
           try {
             final currentDate = now ?? DateTime.now();
-            final dayOfYear = int.parse(DateFormat("D").format(currentDate));
+            final dayOfYear = int.parse(DateFormat('D').format(currentDate));
             final index = dayOfYear % freeCalls.length;
             final selectedCall = freeCalls[index];
             
@@ -67,9 +67,9 @@ class GetDailyChallengeUseCase {
 
   /// Fix image asset path for certain hero images
   ReferenceCall _fixImageAsset(ReferenceCall call) {
-    if (call.imageUrl.contains("predator_hero") || 
-        call.imageUrl.contains("big_game_hero")) {
-      return call.copyWith(imageUrl: "assets/images/forest_background.png");
+    if (call.imageUrl.contains('predator_hero') || 
+        call.imageUrl.contains('big_game_hero')) {
+      return call.copyWith(imageUrl: 'assets/images/forest_background.png');
     }
     return call;
   }

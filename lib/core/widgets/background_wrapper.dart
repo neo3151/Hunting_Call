@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'connectivity_banner.dart';
 
 /// A wrapper widget that provides a tiled, blurred background pattern.
 /// This ensures a consistent "textured" look throughout the application.
@@ -55,8 +56,8 @@ class BackgroundWrapper extends StatelessWidget {
           ),
         ),
         
-        // The actual content
-        child,
+        // The actual content with connectivity banner
+        ConnectivityBanner(child: child),
       ],
     );
   }

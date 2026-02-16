@@ -40,14 +40,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: Text("HANDLER PROFILE", style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+          title: Text('HANDLER PROFILE', style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
         body: isLoading
             ? const Center(child: CircularProgressIndicator(color: Colors.white))
             : profile == null
-                ? const Center(child: Text("Profile not found.", style: TextStyle(color: Colors.white70)))
+                ? const Center(child: Text('Profile not found.', style: TextStyle(color: Colors.white70)))
                 : SingleChildScrollView(
                     padding: const EdgeInsets.all(24),
                     child: Column(
@@ -59,11 +59,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         // Stats Row
                         Row(
                           children: [
-                            Expanded(child: _buildGlassStatCard("TOTAL CALLS", profile.totalCalls.toString(), Icons.mic)),
+                            Expanded(child: _buildGlassStatCard('TOTAL CALLS', profile.totalCalls.toString(), Icons.mic)),
                             const SizedBox(width: 16),
-                            Expanded(child: _buildGlassStatCard("AVG ACCURACY", "${profile.averageScore.toStringAsFixed(1)}%", Icons.analytics)),
+                            Expanded(child: _buildGlassStatCard('AVG ACCURACY', '${profile.averageScore.toStringAsFixed(1)}%', Icons.analytics)),
                             const SizedBox(width: 16),
-                            Expanded(child: _buildGlassStatCard("DAILY STREAK", "${profile.currentStreak} 🔥", Icons.local_fire_department)),
+                            Expanded(child: _buildGlassStatCard('DAILY STREAK', '${profile.currentStreak} 🔥', Icons.local_fire_department)),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -80,7 +80,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               );
                             },
                             icon: const Icon(Icons.map_outlined, color: Colors.white70),
-                            label: const Text("VIEW FIELD MAP"),
+                            label: const Text('VIEW FIELD MAP'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
@@ -92,9 +92,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: () => UpgradePrompter.show(context, featureName: "Field Map"),
+                            onPressed: () => UpgradePrompter.show(context, featureName: 'Field Map'),
                             icon: const Icon(Icons.lock_outline, color: Colors.white38),
-                            label: const Text("FIELD MAP (LOCKED)"),
+                            label: const Text('FIELD MAP (LOCKED)'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white38,
                               side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
@@ -107,7 +107,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         
                         // Achievements Section
                         if (profile.achievements.isNotEmpty) ...[
-                          _buildSectionHeader("HONORS & BADGES"),
+                          _buildSectionHeader('HONORS & BADGES'),
                           const SizedBox(height: 16),
                           SizedBox(
                             height: 100,
@@ -134,7 +134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ],
                         
                         // History Section
-                        _buildSectionHeader("RECENT ACTIVITY"),
+                        _buildSectionHeader('RECENT ACTIVITY'),
                         const SizedBox(height: 16),
                         if (profile.history.isEmpty)
                            _buildEmptyHistory()
@@ -183,7 +183,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           style: GoogleFonts.oswald(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.0),
         ),
         Text(
-          "HANDLING SINCE ${DateFormat.yMMMd().format(profile.joinedDate).toUpperCase()}",
+          'HANDLING SINCE ${DateFormat.yMMMd().format(profile.joinedDate).toUpperCase()}',
           style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
       ],
@@ -296,7 +296,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: Colors.white12),
+                const Icon(Icons.chevron_right, color: Colors.white12),
               ],
             ),
           ),
@@ -318,7 +318,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           const Icon(Icons.mic_none, color: Colors.white10, size: 48),
           const SizedBox(height: 16),
-          Text("NO HUNTS RECORDED YET", style: GoogleFonts.oswald(color: Colors.white24, fontWeight: FontWeight.bold)),
+          Text('NO HUNTS RECORDED YET', style: GoogleFonts.oswald(color: Colors.white24, fontWeight: FontWeight.bold)),
         ],
       ),
     );

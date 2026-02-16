@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:hunting_calls_perfection/features/home/presentation/home_screen.dart';
 import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
-import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
 import 'package:hunting_calls_perfection/features/profile/domain/profile_model.dart';
 
@@ -41,7 +40,7 @@ void main() {
           sharedPreferences: mockPrefs,
         )),
         profileRepositoryProvider.overrideWithValue(mockProfileRepository),
-        authRepositoryImplProvider.overrideWithValue(mockAuthRepository),
+        authRepositoryProvider.overrideWithValue(mockAuthRepository),
       ],
       child: const MaterialApp(
         home: HomeScreen(userId: 'test_user'),
@@ -68,9 +67,9 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pumpAndSettle();
 
-    expect(find.text('PRACTICE\nCALL'), findsOneWidget);
-    expect(find.text('PROFILE'), findsOneWidget);
-    expect(find.text('LIBRARY'), findsOneWidget);
+    expect(find.textContaining('PRACTICE'), findsOneWidget);
+    expect(find.textContaining('PROFILE'), findsOneWidget);
+    expect(find.textContaining('LIBRARY'), findsOneWidget);
   });
 
   testWidgets('Should trigger sign out when logout button is tapped', (tester) async {
@@ -82,7 +81,16 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.logout));
-    await tester.pump();
+    await tester.pumpAndSettle(); // Wait for dialog
+
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Sign Out?'), findsOneWidget);
+    
+    final signOutButton = find.widgetWithText(TextButton, 'SIGN OUT');
+    expect(signOutButton, findsOneWidget);
+
+    await tester.tap(signOutButton);
+    await tester.pumpAndSettle();
 
     // HomeScreen now uses authControllerProvider.notifier.signOut()
     // which calls the signOut use case, which calls mockAuthRepository.signOut()

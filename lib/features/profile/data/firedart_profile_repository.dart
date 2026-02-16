@@ -16,18 +16,18 @@ class FiredartProfileRepository implements ProfileRepository {
 
     try {
       return await _withRetry(() async {
-        debugPrint("FiredartProfileRepository: Fetching profile for $userId...");
+        debugPrint('FiredartProfileRepository: Fetching profile for $userId...');
         final doc = await _firestore.collection(_collectionPath).document(userId).get().timeout(const Duration(seconds: 10), onTimeout: () {
-            throw Exception("Firestore get() timed out after 10 seconds");
+            throw Exception('Firestore get() timed out after 10 seconds');
         });
-        debugPrint("FiredartProfileRepository: Profile fetched for $userId.");
+        debugPrint('FiredartProfileRepository: Profile fetched for $userId.');
         final data = doc.map;
         _sanitizeProfileData(data, doc.id);
         return UserProfile.fromJson(data);
-      }, "getProfile");
+      }, 'getProfile');
     } catch (e) {
       if (e.toString().contains('NOT_FOUND')) {
-        debugPrint("FiredartProfileRepository: Profile not found for $userId — returning guest profile.");
+        debugPrint('FiredartProfileRepository: Profile not found for $userId — returning guest profile.');
         return UserProfile.guest();
       }
       rethrow;
@@ -43,7 +43,7 @@ class FiredartProfileRepository implements ProfileRepository {
         _sanitizeProfileData(data, doc.id);
         return UserProfile.fromJson(data);
       }).toList();
-    }, "getAllProfiles");
+    }, 'getAllProfiles');
   }
 
   @override
@@ -57,7 +57,7 @@ class FiredartProfileRepository implements ProfileRepository {
         _sanitizeProfileData(data, doc.id);
         return UserProfile.fromJson(data);
       }).toList();
-    }, "getProfilesByEmail");
+    }, 'getProfilesByEmail');
   }
 
   /// Helper to retry Firestore operations on Linux when hit by transient SignedOutExceptions
@@ -70,16 +70,16 @@ class FiredartProfileRepository implements ProfileRepository {
       } catch (e) {
         final errorStr = e.toString();
         if ((errorStr.contains('SignedOutException') || errorStr.contains('User signed out')) && retries > 1) {
-          debugPrint("FiredartProfileRepository: $label - Auth not ready, retries left: ${retries - 1}. Waiting 1s...");
+          debugPrint('FiredartProfileRepository: $label - Auth not ready, retries left: ${retries - 1}. Waiting 1s...');
           await Future.delayed(const Duration(seconds: 1));
           retries--;
           continue;
         }
-        debugPrint("FiredartProfileRepository: $label ERROR: $e");
+        debugPrint('FiredartProfileRepository: $label ERROR: $e');
         rethrow;
       }
     }
-    throw Exception("$label: Failed after maximum retries.");
+    throw Exception('$label: Failed after maximum retries.');
   }
 
   void _sanitizeProfileData(Map<String, dynamic> data, String docId) {
@@ -123,7 +123,7 @@ class FiredartProfileRepository implements ProfileRepository {
       );
       await docRef.set(newProfile.toJson());
       return newProfile;
-    }, "createProfile");
+    }, 'createProfile');
   }
 
   @override
@@ -140,19 +140,19 @@ class FiredartProfileRepository implements ProfileRepository {
       final data = newItem.toJson();
       
       final doc = await _firestore.collection(_collectionPath).document(userId).get();
-      Map<String, dynamic> existingData = doc.map;
+      final Map<String, dynamic> existingData = doc.map;
       
-      List<dynamic> history = List.from(existingData['history'] ?? []);
+      final history = List<dynamic>.from(existingData['history'] ?? <dynamic>[]);
       history.add(data);
       
-      int totalCalls = (existingData['totalCalls'] as int? ?? 0) + 1;
+      final totalCalls = (existingData['totalCalls'] as int? ?? 0) + 1;
       
       await _firestore.collection(_collectionPath).document(userId).update({
         'history': history,
         'totalCalls': totalCalls,
         'joinedDate': existingData['joinedDate'] ?? DateTime.now().toIso8601String(),
       });
-    }, "saveResultForUser");
+    }, 'saveResultForUser');
   }
 
   @override
@@ -161,15 +161,15 @@ class FiredartProfileRepository implements ProfileRepository {
 
     await _withRetry(() async {
       final doc = await _firestore.collection(_collectionPath).document(userId).get();
-      Map<String, dynamic> existingData = doc.map;
+      final Map<String, dynamic> existingData = doc.map;
       
-      Set<String> achievements = Set.from(existingData['achievements'] ?? []);
+      final Set<String> achievements = Set.from(existingData['achievements'] ?? []);
       achievements.addAll(achievementIds);
       
       await _firestore.collection(_collectionPath).document(userId).update({
         'achievements': achievements.toList(),
       });
-    }, "saveAchievements");
+    }, 'saveAchievements');
   }
 
   @override
@@ -184,10 +184,14 @@ class FiredartProfileRepository implements ProfileRepository {
       // doc is non-nullable in firedart
       
       final data = doc.map;
-      final lastDateMillis = data['lastDailyChallengeDate'] as int?;
-      final lastDate = lastDateMillis != null 
-          ? DateTime.fromMillisecondsSinceEpoch(lastDateMillis) 
-          : null;
+      final dynamic rawLastDate = data['lastDailyChallengeDate'];
+      DateTime? lastDate;
+      
+      if (rawLastDate is int) {
+        lastDate = DateTime.fromMillisecondsSinceEpoch(rawLastDate);
+      } else if (rawLastDate is String) {
+        lastDate = DateTime.tryParse(rawLastDate);
+      }
           
       bool shouldIncrement = false;
       if (lastDate == null) {
@@ -200,8 +204,8 @@ class FiredartProfileRepository implements ProfileRepository {
       }
       
       if (shouldIncrement) {
-        int currentStreak = data['currentStreak'] as int? ?? 0;
-        int longestStreak = data['longestStreak'] as int? ?? 0;
+        final int currentStreak = data['currentStreak'] as int? ?? 0;
+        final int longestStreak = data['longestStreak'] as int? ?? 0;
         
         bool isConsecutive = false;
         if (lastDate != null) {
@@ -212,9 +216,9 @@ class FiredartProfileRepository implements ProfileRepository {
             isConsecutive = true;
         }
         
-        int newStreak = isConsecutive ? currentStreak + 1 : 1;
-        int newLongest = newStreak > longestStreak ? newStreak : longestStreak;
-        int totalCompleted = (data['dailyChallengesCompleted'] as int? ?? 0) + 1;
+        final int newStreak = isConsecutive ? currentStreak + 1 : 1;
+        final int newLongest = newStreak > longestStreak ? newStreak : longestStreak;
+        final int totalCompleted = (data['dailyChallengesCompleted'] as int? ?? 0) + 1;
 
         await _firestore.collection(_collectionPath).document(userId).update({
           'dailyChallengesCompleted': totalCompleted,
@@ -223,7 +227,7 @@ class FiredartProfileRepository implements ProfileRepository {
           'longestStreak': newLongest,
         });
       }
-    }, "updateDailyChallengeStats");
+    }, 'updateDailyChallengeStats');
   }
 
   @override
@@ -232,7 +236,7 @@ class FiredartProfileRepository implements ProfileRepository {
       await _firestore.collection(_collectionPath).document(userId).update({
         'isPremium': isPremium,
       });
-      debugPrint("✅ Firedart: Set isPremium=$isPremium for $userId");
-    }, "setPremiumStatus");
+      debugPrint('✅ Firedart: Set isPremium=$isPremium for $userId');
+    }, 'setPremiumStatus');
   }
 }

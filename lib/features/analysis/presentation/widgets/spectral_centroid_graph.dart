@@ -84,7 +84,7 @@ class _CentroidPainter extends CustomPainter {
       ..close();
 
     final gradient = ui.Gradient.linear(
-      Offset(0, 0),
+      const Offset(0, 0),
       Offset(0, size.height),
       [color.withValues(alpha: 0.4), color.withValues(alpha: 0.0)],
     );

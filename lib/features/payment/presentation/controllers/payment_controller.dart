@@ -58,7 +58,7 @@ class PaymentNotifier extends Notifier<PaymentState> {
       );
       return result;
     } catch (e) {
-      debugPrint("PaymentNotifier: Purchase failed: $e");
+      debugPrint('PaymentNotifier: Purchase failed: $e');
       state = state.copyWith(
         status: PurchaseStatus.failed,
         error: e.toString(),
@@ -80,7 +80,7 @@ class PaymentNotifier extends Notifier<PaymentState> {
       );
       return result;
     } catch (e) {
-      debugPrint("PaymentNotifier: Restore failed: $e");
+      debugPrint('PaymentNotifier: Restore failed: $e');
       state = state.copyWith(
         status: PurchaseStatus.failed,
         error: e.toString(),

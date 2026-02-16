@@ -50,6 +50,14 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     await updateSetting((s) => s.copyWith(hapticFeedback: value));
   }
 
+  Future<void> setImageQuality(String value) async {
+    await updateSetting((s) => s.copyWith(imageQuality: value));
+  }
+
+  Future<void> setAutoCleanupHours(int value) async {
+    await updateSetting((s) => s.copyWith(autoCleanupHours: value));
+  }
+
   Future<void> resetToDefaults() async {
     const defaults = AppSettings();
     state = const AsyncValue.data(defaults);

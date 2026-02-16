@@ -51,14 +51,14 @@ class DailyChallengeService implements DailyChallengeRepository {
           );
        }
     } else {
-      final dayOfYear = int.parse(DateFormat("D").format(DateTime.now()));
+      final dayOfYear = int.parse(DateFormat('D').format(DateTime.now()));
       final index = dayOfYear % eligibleCalls.length;
       challengeCall = eligibleCalls[index];
     }
     
     // Safety check for image assets
-    if (challengeCall.imageUrl.contains("predator_hero") || challengeCall.imageUrl.contains("big_game_hero")) {
-       return challengeCall.copyWith(imageUrl: "assets/images/forest_background.png");
+    if (challengeCall.imageUrl.contains('predator_hero') || challengeCall.imageUrl.contains('big_game_hero')) {
+       return challengeCall.copyWith(imageUrl: 'assets/images/forest_background.png');
     }
     
     return challengeCall;

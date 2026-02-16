@@ -44,21 +44,21 @@ class RatingNotifier extends Notifier<RatingState> {
   /// Analyze a recorded call
   Future<RatingResult?> analyzeCall(String userId, String audioPath, String animalId) async {
     if (state.isAnalyzing) {
-      debugPrint("RatingNotifier: Analysis already in progress, ignoring request.");
+      debugPrint('RatingNotifier: Analysis already in progress, ignoring request.');
       return null;
     }
     
-    debugPrint("RatingNotifier: Starting analysis for $animalId at $audioPath");
+    debugPrint('RatingNotifier: Starting analysis for $animalId at $audioPath');
     state = state.copyWith(isAnalyzing: true, error: null);
     try {
       final result = await _ratingService.rateCall(userId, audioPath, animalId);
       if (!_mounted) return null; // Prevent setting state if disposed
       
-      debugPrint("RatingNotifier: Analysis complete. Success: ${result.score > 0}");
+      debugPrint('RatingNotifier: Analysis complete. Success: ${result.score > 0}');
       state = state.copyWith(isAnalyzing: false, result: result);
       return result;
     } catch (e, stack) {
-      debugPrint("RatingNotifier: Analysis error: $e\n$stack");
+      debugPrint('RatingNotifier: Analysis error: $e\n$stack');
       if (_mounted) {
         state = state.copyWith(isAnalyzing: false, error: e.toString());
       }
@@ -68,23 +68,23 @@ class RatingNotifier extends Notifier<RatingState> {
 
   /// Reset state
   void reset() {
-    debugPrint("RatingNotifier: Resetting state");
+    debugPrint('RatingNotifier: Resetting state');
     state = const RatingState();
   }
 
   /// Force a success state for debugging
   void forceSuccess() {
-    debugPrint("RatingNotifier: Forcing success state");
+    debugPrint('RatingNotifier: Forcing success state');
     state = RatingState(
       isAnalyzing: false,
       result: RatingResult(
         score: 95.0,
-        feedback: "Debug: This is a forced success result.",
+        feedback: 'Debug: This is a forced success result.',
         pitchHz: 440.0,
         metrics: {
-          "Pitch (Hz)": 440.0,
-          "Target Pitch": 440.0,
-          "Duration (s)": 1.5,
+          'Pitch (Hz)': 440.0,
+          'Target Pitch': 440.0,
+          'Duration (s)': 1.5,
         },
       ),
     );

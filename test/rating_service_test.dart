@@ -6,6 +6,8 @@ import 'package:hunting_calls_perfection/features/library/data/reference_databas
 import 'package:hunting_calls_perfection/features/analysis/data/real_rating_service.dart';
 import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
 import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/use_cases/analyze_audio_use_case.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/use_cases/calculate_score_use_case.dart';
 import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
 import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
 import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
@@ -24,13 +26,15 @@ void main() {
     mockAnalyzer = MockFrequencyAnalyzer();
     mockProfileRepository = MockProfileRepository();
     ratingService = RealRatingService(
+      analyzeUseCase: AnalyzeAudioUseCase(mockAnalyzer),
+      calculateUseCase: const CalculateScoreUseCase(),
       analyzer: mockAnalyzer,
       profileRepository: mockProfileRepository,
     );
     
     // Inject mock data into ReferenceDatabase
     ReferenceDatabase.calls = [
-      ReferenceCall(
+      const ReferenceCall(
         id: 'duck_mallard_greeting',
         animalName: 'Mallard Duck',
         callType: 'Greeting Call',
@@ -44,7 +48,7 @@ void main() {
         tolerancePitch: 50,
         toleranceDuration: 0.5,
       ),
-      ReferenceCall(
+      const ReferenceCall(
         id: 'turkey_hen_yelp',
         animalName: 'Wild Turkey',
         callType: 'Hen Yelp',
@@ -58,7 +62,7 @@ void main() {
         tolerancePitch: 50,
         toleranceDuration: 0.5,
       ),
-      ReferenceCall(
+      const ReferenceCall(
         id: 'elk_bull_bugle',
         animalName: 'Rocky Mountain Elk',
         callType: 'Bull Bugle',
@@ -225,13 +229,13 @@ void main() {
 }
 
 List<int> _int32(int value) {
-  var b = Uint8List(4);
+  final b = Uint8List(4);
   b.buffer.asByteData().setInt32(0, value, Endian.little);
   return b;
 }
 
 List<int> _int16(int value) {
-  var b = Uint8List(2);
+  final b = Uint8List(2);
   b.buffer.asByteData().setInt16(0, value, Endian.little);
   return b;
 }

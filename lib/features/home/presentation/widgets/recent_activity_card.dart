@@ -46,7 +46,7 @@ class RecentActivityCard extends StatelessWidget {
                   Text(historyItem.animalId.toUpperCase(),
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, color: Colors.white)),
-                  const Text("Last Session",
+                  const Text('Last Session',
                       style: TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),

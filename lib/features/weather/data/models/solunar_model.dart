@@ -23,15 +23,15 @@ class SolunarModel extends SolunarData {
     final moonriseStr = daily['moonrise'][0];
     final moonsetStr = daily['moonset'][0];
     
-    DateTime? moonrise = moonriseStr != null ? DateTime.parse(moonriseStr) : null;
+    final DateTime? moonrise = moonriseStr != null ? DateTime.parse(moonriseStr) : null;
     DateTime? moonset = moonsetStr != null ? DateTime.parse(moonsetStr) : null;
     
     final moonPhase = daily['moon_phase'][0] as double; // 0-1
     final illumination = (daily['moon_illumination'][0] as num).toDouble();
 
     // Logic extracted from original repository
-    List<ActivityPeriod> majorPeriods = [];
-    List<ActivityPeriod> minorPeriods = [];
+    final List<ActivityPeriod> majorPeriods = [];
+    final List<ActivityPeriod> minorPeriods = [];
 
     // Major Period 1: Moon Overhead
     if (moonrise != null && moonset != null) {

@@ -54,7 +54,7 @@ Everyone
 hunting, calls, wildlife, outdoors, practice, training, deer, elk, turkey, duck
 
 ## Contact Email
-[Your support email here]
+benchmarkappsllc@gmail.com
 
 ## Privacy Policy URL
-[Your privacy policy URL here — required for Google Sign-In apps]
+https://hunting-call-perfection.web.app/privacy-policy.html

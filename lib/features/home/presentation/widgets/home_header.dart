@@ -38,7 +38,7 @@ class HomeHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("WELCOME BACK,",
+                    Text('WELCOME BACK,',
                         style: GoogleFonts.oswald(
                             color: Colors.white70,
                             fontSize: 28,
@@ -79,7 +79,7 @@ class HomeHeader extends StatelessWidget {
         ? Colors.green.withValues(alpha: 0.2)
         : Colors.amber.withValues(alpha: 0.2);
     final borderColor = badgeColor.withValues(alpha: 0.5);
-    final label = isCloudMode ? "CLOUD" : "OFF-GRID";
+    final label = isCloudMode ? 'CLOUD' : 'OFF-GRID';
     final icon = isCloudMode ? Icons.cloud_done : Icons.wifi_off;
 
     return Container(
@@ -161,7 +161,7 @@ class HomeHeader extends StatelessWidget {
           }
         },
         icon: const Icon(Icons.logout, color: Colors.white70),
-        tooltip: "Sign Out",
+        tooltip: 'Sign Out',
       ),
     );
   }

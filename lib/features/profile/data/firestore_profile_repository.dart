@@ -19,19 +19,22 @@ class FirestoreProfileRepository implements ProfileRepository {
 
   @override
   Future<UserProfile> getProfile([String? userId]) async {
-    debugPrint("🔍 FirestoreProfileRepository.getProfile($userId)");
+    // debugPrint("🔍 FirestoreProfileRepository.getProfile($userId)");
     if (userId == null || userId == 'guest') {
       if (_localDataSource != null) {
-        debugPrint("🔍 Delegating 'guest' getProfile to local source.");
+        // debugPrint("🔍 Delegating 'guest' getProfile to local source.");
         final localProf = await _localDataSource!.getProfile('guest');
-        debugPrint("🔍 Local 'guest' profile premium status: ${localProf.isPremium}");
+        // debugPrint("🔍 Local 'guest' profile premium status: ${localProf.isPremium}");
         return localProf;
       }
       return UserProfile.guest();
     }
 
     try {
-      final doc = await _firestore.collection(_collectionPath).doc(userId).get();
+      final doc = await _firestore.collection(_collectionPath).doc(userId).get()
+          .timeout(const Duration(seconds: 10), onTimeout: () {
+        throw Exception('Firestore read timeout — check your connection.');
+      });
       UserProfile? profile;
       if (doc.exists) {
         final data = doc.data()!;
@@ -47,7 +50,7 @@ class FirestoreProfileRepository implements ProfileRepository {
         try {
            final localProfile = await _localDataSource!.getProfile(userId);
            if (localProfile.isPremium) {
-             debugPrint("✅ FirestoreProfileRepository: Local override applied! User is Premium locally.");
+              // debugPrint("✅ FirestoreProfileRepository: Local override applied! User is Premium locally.");
              profile = profile.copyWith(isPremium: true);
            }
         } catch (e) {
@@ -57,7 +60,7 @@ class FirestoreProfileRepository implements ProfileRepository {
       
       return profile!;
     } catch (e) {
-      debugPrint("FirestoreProfileRepository: getProfile ERROR: $e");
+      debugPrint('FirestoreProfileRepository: getProfile ERROR: $e');
       return UserProfile.guest();
     }
   }
@@ -65,24 +68,23 @@ class FirestoreProfileRepository implements ProfileRepository {
   @override
   Future<List<UserProfile>> getAllProfiles() async {
     try {
-      debugPrint("🔍 FirestoreProfileRepository: Starting getAllProfiles()...");
-      debugPrint("🔍 Collection path: $_collectionPath");
+      // debugPrint("🔍 FirestoreProfileRepository: Starting getAllProfiles()...");
+      // debugPrint("🔍 Collection path: $_collectionPath");
       
-      final snapshot = await _firestore.collection(_collectionPath).get();
+      final snapshot = await _firestore.collection(_collectionPath).get()
+          .timeout(const Duration(seconds: 10), onTimeout: () {
+        throw Exception('Firestore read timeout — check your connection.');
+      });
       
-      debugPrint("🔍 Firestore query completed");
-      debugPrint("🔍 Number of documents found: ${snapshot.docs.length}");
+      // debugPrint("🔍 Firestore query completed");
+      // debugPrint("🔍 Number of documents found: ${snapshot.docs.length}");
       
       if (snapshot.docs.isEmpty) {
-        debugPrint("⚠️ NO PROFILES FOUND IN FIRESTORE!");
-        debugPrint("⚠️ This means either:");
-        debugPrint("   1. No profiles have been created yet");
-        debugPrint("   2. Firestore rules are blocking reads");
-        debugPrint("   3. Wrong collection path");
+        // debugPrint("⚠️ NO PROFILES FOUND IN FIRESTORE!");
         return [];
       }
       
-      debugPrint("🔍 Processing ${snapshot.docs.length} profile documents...");
+      // debugPrint("🔍 Processing ${snapshot.docs.length} profile documents...");
       
       final profiles = snapshot.docs.map((doc) {
         // Reduced debug logging for performance
@@ -91,7 +93,7 @@ class FirestoreProfileRepository implements ProfileRepository {
         try {
           return UserProfile.fromJson(data);
         } catch (e) {
-          debugPrint("❌ Error parsing profile ${doc.id}: $e");
+          debugPrint('❌ Error parsing profile ${doc.id}: $e');
           // Return a fallback profile if parsing fails to avoid breaking the whole list
           return UserProfile(
             id: doc.id,
@@ -101,10 +103,10 @@ class FirestoreProfileRepository implements ProfileRepository {
         }
       }).toList();
       
-      debugPrint("✅ getAllProfiles() returning ${profiles.length} profiles");
+      // debugPrint("✅ getAllProfiles() returning ${profiles.length} profiles");
       return profiles;
     } catch (e) {
-      debugPrint("❌ FirestoreProfileRepository: getAllProfiles ERROR: $e");
+      debugPrint('❌ FirestoreProfileRepository: getAllProfiles ERROR: $e');
       rethrow;
     }
   }
@@ -112,14 +114,17 @@ class FirestoreProfileRepository implements ProfileRepository {
   @override
   Future<List<UserProfile>> getProfilesByEmail(String email) async {
     try {
-      debugPrint("🔍 Looking for profiles with email: $email");
+      // debugPrint("🔍 Looking for profiles with email: $email");
       final snapshot = await _firestore
           .collection(_collectionPath)
           .where('email', isEqualTo: email)
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 10), onTimeout: () {
+        throw Exception('Firestore read timeout — check your connection.');
+      });
           
       if (snapshot.docs.isEmpty) {
-        debugPrint("❌ No profiles found with that email.");
+        // debugPrint("❌ No profiles found with that email.");
         return [];
       }
       
@@ -129,11 +134,11 @@ class FirestoreProfileRepository implements ProfileRepository {
         return UserProfile.fromJson(data);
       }).toList();
   
-      debugPrint("✅ Found ${profiles.length} profiles for email.");
+      // debugPrint("✅ Found ${profiles.length} profiles for email.");
       return profiles;
       
     } catch(e) {
-       debugPrint("❌ Error getting profiles by email: $e");
+       debugPrint('❌ Error getting profiles by email: $e');
        return [];
     }
   }
@@ -159,7 +164,7 @@ class FirestoreProfileRepository implements ProfileRepository {
   @override
   Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday, String? email}) async {
     try {
-      debugPrint("FirestoreProfileRepository: Creating profile for '$name' (id: $id, email: $email)...");
+      // debugPrint("FirestoreProfileRepository: Creating profile for '$name' (id: $id, email: $email)...");
       final docRef = id != null 
           ? _firestore.collection(_collectionPath).doc(id)
           : _firestore.collection(_collectionPath).doc();
@@ -172,11 +177,14 @@ class FirestoreProfileRepository implements ProfileRepository {
         birthday: birthday,
       );
       
-      await docRef.set(newProfile.toJson());
-      debugPrint("FirestoreProfileRepository: Profile created successfully.");
+      await docRef.set(newProfile.toJson()).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw Exception('Firestore write timeout — check your connection.'),
+      );
+      // debugPrint("FirestoreProfileRepository: Profile created successfully.");
       return newProfile;
     } catch (e) {
-      debugPrint("FirestoreProfileRepository: createProfile ERROR: $e");
+      debugPrint('FirestoreProfileRepository: createProfile ERROR: $e');
       rethrow;
     }
   }
@@ -186,7 +194,7 @@ class FirestoreProfileRepository implements ProfileRepository {
     if (userId == 'guest') return;
 
     try {
-      debugPrint("FirestoreProfileRepository: Saving result for user $userId (animal: $animalId)...");
+      // debugPrint("FirestoreProfileRepository: Saving result for user $userId (animal: $animalId)...");
       
       final newItem = HistoryItem(
         result: result,
@@ -196,7 +204,7 @@ class FirestoreProfileRepository implements ProfileRepository {
 
       // Explicitly convert to JSON to avoid codec issues with nested objects
       final data = newItem.toJson();
-      debugPrint("FirestoreProfileRepository: Data serialized successfully.");
+      // debugPrint("FirestoreProfileRepository: Data serialized successfully.");
 
       // Use set with merge: true so it creates the document if it doesn't exist
       await _firestore.collection(_collectionPath).doc(userId).set({
@@ -206,13 +214,13 @@ class FirestoreProfileRepository implements ProfileRepository {
         'id': userId,
         'joinedDate': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)).timeout(const Duration(seconds: 10), onTimeout: () {
-        debugPrint("FirestoreProfileRepository: saveResultForUser TIMEOUT after 10s");
-        throw Exception("Firestore write timeout - check your connection.");
+        debugPrint('FirestoreProfileRepository: saveResultForUser TIMEOUT after 10s');
+        throw Exception('Firestore write timeout - check your connection.');
       });
       
-      debugPrint("FirestoreProfileRepository: Result saved successfully.");
+      // debugPrint("FirestoreProfileRepository: Result saved successfully.");
     } catch (e) {
-      debugPrint("FirestoreProfileRepository: saveResultForUser ERROR: $e");
+      debugPrint('FirestoreProfileRepository: saveResultForUser ERROR: $e');
       // We rethrow so the UI knows analysis of the save part failed
       rethrow;
     }
@@ -224,7 +232,10 @@ class FirestoreProfileRepository implements ProfileRepository {
 
     await _firestore.collection(_collectionPath).doc(userId).update({
       'achievements': FieldValue.arrayUnion(achievementIds),
-    });
+    }).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => throw Exception('Firestore write timeout — check your connection.'),
+    );
   }
 
   @override
@@ -279,12 +290,12 @@ class FirestoreProfileRepository implements ProfileRepository {
     // 1. Always attempt local save (Hybrid Persistence)
     if (_localDataSource != null) {
       try {
-        debugPrint("✅ FirestoreProfileRepository: Saving Premium status locally as backup/override.");
+        // debugPrint("✅ FirestoreProfileRepository: Saving Premium status locally as backup/override.");
         final localProfile = await _localDataSource!.getProfile(userId);
         final updated = localProfile.copyWith(isPremium: isPremium);
         await _localDataSource!.saveProfile(updated);
       } catch (e) {
-        debugPrint("⚠️ Failed to save local backup of premium status: $e");
+        debugPrint('⚠️ Failed to save local backup of premium status: $e');
       }
     }
 
@@ -298,9 +309,9 @@ class FirestoreProfileRepository implements ProfileRepository {
       await _firestore.collection(_collectionPath).doc(userId).update({
         'isPremium': isPremium,
       });
-      debugPrint("✅ Firestore: Set isPremium=$isPremium for $userId");
+      // debugPrint("✅ Firestore: Set isPremium=$isPremium for $userId");
     } catch (e) {
-      debugPrint("❌ Firestore: Error setting premium status: $e");
+      debugPrint('❌ Firestore: Error setting premium status: $e');
       // If we saved locally, we might NOT want to rethrow, because the user technically "has" the product on this device.
       // But for now, let's allow the UI to know cloud failed, OR just suppress if local worked.
       // Given the user experience "Success" is better if it works locally.

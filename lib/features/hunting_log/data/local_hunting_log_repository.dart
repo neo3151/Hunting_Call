@@ -26,7 +26,7 @@ class LocalHuntingLogRepository implements HuntingLogRepository {
   @override
   Future<List<HuntingLogEntry>> getLogs() async {
     final db = _database;
-    if (db == null) throw Exception("Database not initialized");
+    if (db == null) throw Exception('Database not initialized');
 
     final List<Map<String, dynamic>> maps = await db.query('hunting_logs', orderBy: 'timestamp DESC');
 
@@ -38,7 +38,7 @@ class LocalHuntingLogRepository implements HuntingLogRepository {
   @override
   Future<void> addLog(HuntingLogEntry entry) async {
     final db = _database;
-    if (db == null) throw Exception("Database not initialized");
+    if (db == null) throw Exception('Database not initialized');
 
     await db.insert(
       'hunting_logs',
@@ -50,7 +50,7 @@ class LocalHuntingLogRepository implements HuntingLogRepository {
   @override
   Future<void> deleteLog(String id) async {
     final db = _database;
-    if (db == null) throw Exception("Database not initialized");
+    if (db == null) throw Exception('Database not initialized');
 
     await db.delete(
       'hunting_logs',

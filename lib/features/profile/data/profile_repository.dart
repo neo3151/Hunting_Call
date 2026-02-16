@@ -92,7 +92,7 @@ class LocalProfileRepository implements ProfileRepository {
         (today.difference(DateTime(profile.lastDailyChallengeDate!.year, profile.lastDailyChallengeDate!.month, profile.lastDailyChallengeDate!.day)).inDays == 1);
       
       int newStreak = isConsecutive ? profile.currentStreak + 1 : 1;
-      int newLongest = newStreak > profile.longestStreak ? newStreak : profile.longestStreak;
+      final int newLongest = newStreak > profile.longestStreak ? newStreak : profile.longestStreak;
 
       // Handle first ever or if current streak was 0 for some reason
       if(profile.currentStreak == 0) newStreak = 1; 

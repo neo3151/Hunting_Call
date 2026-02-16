@@ -58,11 +58,27 @@
       },
       "oauth_client": [
         {
+          "client_id": "654995904748-b1cubl61t4nu59jl735a3dhves2ughls.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neo3151.huntingcalls",
+            "certificate_hash": "d7ecd27839dd64e1eb7abee50865f2b1924ce448"
+          }
+        },
+        {
           "client_id": "654995904748-m21vmhrvvvmqbq9ec8a2fo1cgpsr3csq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.neo3151.huntingcalls",
             "certificate_hash": "b6fdcf75b80fff434037146fc655adb65cc34b41"
+          }
+        },
+        {
+          "client_id": "654995904748-debug-client-id.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neo3151.huntingcalls",
+            "certificate_hash": "90e11b97d84fb83c6d211f83a99e131492f44ac0"
           }
         },
         {

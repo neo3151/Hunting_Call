@@ -36,7 +36,7 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<AuthUser> signInWithGoogle() async {
     try {
-      debugPrint("🔐 FirebaseAuthRepository: Starting Google Sign-In...");
+      debugPrint('🔐 FirebaseAuthRepository: Starting Google Sign-In...');
       
       final googleProvider = GoogleAuthProvider();
       googleProvider.addScope('email');
@@ -45,22 +45,22 @@ class FirebaseAuthRepository implements AuthRepository {
       final UserCredential userCredential = await _auth.signInWithProvider(googleProvider);
       final user = userCredential.user;
       
-      if (user == null) throw Exception("Google Sign-In returned null user");
+      if (user == null) throw Exception('Google Sign-In returned null user');
 
       final email = user.email;
       final displayName = user.displayName;
       final uid = user.uid;
       
-      debugPrint("✅ Google Sign-In successful!");
-      debugPrint("👤 Name: $displayName | Email: $email | UID: $uid");
+      debugPrint('✅ Google Sign-In successful!');
+      debugPrint('👤 Name: $displayName | Email: $email | UID: $uid');
       
       await _ensureProfileInFirestore(uid, email, displayName);
       
       return _mapFirebaseUser(user)!;
       
     } catch (e, stackTrace) {
-      debugPrint("❌ Google Sign-In Error: $e");
-      debugPrint("Stack trace: $stackTrace");
+      debugPrint('❌ Google Sign-In Error: $e');
+      debugPrint('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -73,7 +73,7 @@ class FirebaseAuthRepository implements AuthRepository {
       // 1. Check if profile exists by UID
       final docSnap = await profilesRef.doc(uid).get();
       if (docSnap.exists) {
-        debugPrint("🔍 Profile already exists for UID $uid");
+        debugPrint('🔍 Profile already exists for UID $uid');
         return;
       }
       
@@ -89,7 +89,7 @@ class FirebaseAuthRepository implements AuthRepository {
       // 3. No profile exists - create one
       final profileName = displayName ?? email?.split('@').first ?? 'Hunter';
       
-      debugPrint("🆕 Creating profile: $profileName (email: $email, uid: $uid)");
+      debugPrint('🆕 Creating profile: $profileName (email: $email, uid: $uid)');
       
       await profilesRef.doc(uid).set({
         'id': uid,
@@ -107,10 +107,10 @@ class FirebaseAuthRepository implements AuthRepository {
         'history': [],
       });
       
-      debugPrint("✅ Profile created in Firestore!");
+      debugPrint('✅ Profile created in Firestore!');
       
     } catch (e) {
-      debugPrint("⚠️ Error in _ensureProfileInFirestore: $e");
+      debugPrint('⚠️ Error in _ensureProfileInFirestore: $e');
     }
   }
 

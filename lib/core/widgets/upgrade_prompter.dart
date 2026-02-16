@@ -9,7 +9,7 @@ import '../../features/payment/data/payment_repository.dart';
 import '../../features/profile/presentation/controllers/profile_controller.dart';
 
 class UpgradePrompter {
-  static void show(BuildContext context, {String featureName = "This Feature"}) {
+  static void show(BuildContext context, {String featureName = 'This Feature'}) {
     showDialog(
       context: context,
       builder: (context) => Consumer(
@@ -36,7 +36,7 @@ class UpgradePrompter {
                   const Icon(Icons.lock_open_rounded, color: Color(0xFFFFD700), size: 48),
                   const SizedBox(height: 16),
                   Text(
-                    "UNLOCK PRO",
+                    'UNLOCK PRO',
                     style: GoogleFonts.oswald(
                       fontSize: 28, 
                       fontWeight: FontWeight.bold, 
@@ -46,15 +46,15 @@ class UpgradePrompter {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    "$featureName is only available in the Full Version.",
+                    '$featureName is only available in the Full Version.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.lato(color: Colors.white70, fontSize: 16),
                   ),
                   const SizedBox(height: 24),
-                  _buildFeatureItem(Icons.star, "50+ Professional Calls"),
-                  _buildFeatureItem(Icons.map, "Advanced Field Map"),
-                  _buildFeatureItem(Icons.emoji_events, "Global Leaderboards"),
-                  _buildFeatureItem(Icons.block, "No Ads"),
+                  _buildFeatureItem(Icons.star, '50+ Professional Calls'),
+                  _buildFeatureItem(Icons.map, 'Advanced Field Map'),
+                  _buildFeatureItem(Icons.emoji_events, 'Global Leaderboards'),
+                  _buildFeatureItem(Icons.block, 'No Ads'),
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
@@ -88,7 +88,7 @@ class UpgradePrompter {
                                
                                // 3. Show Success SnackBar (on the underlying screen)
                                scaffold.showSnackBar(const SnackBar(
-                                 content: Text("✅ Purchase Successful! Pro features unlocked."),
+                                 content: Text('✅ Purchase Successful! Pro features unlocked.'),
                                  backgroundColor: Colors.green,
                                  duration: Duration(seconds: 2),
                                ));
@@ -101,13 +101,13 @@ class UpgradePrompter {
                                // For now, let's close and show error.
                                navigator.pop();
                                scaffold.showSnackBar(const SnackBar(
-                                 content: Text("❌ Purchase failed. Please try again."),
+                                 content: Text('❌ Purchase failed. Please try again.'),
                                  backgroundColor: Colors.red,
                                ));
                              }
                           }
                         } catch (e) {
-                           debugPrint("Purchase error: $e");
+                           debugPrint('Purchase error: $e');
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -117,7 +117,7 @@ class UpgradePrompter {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
-                        "GET FULL VERSION", 
+                        'GET FULL VERSION', 
                         style: GoogleFonts.oswald(
                           fontWeight: FontWeight.bold, 
                           fontSize: 18,
@@ -129,7 +129,7 @@ class UpgradePrompter {
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text("MAYBE LATER", style: GoogleFonts.lato(color: Colors.white38)),
+                    child: Text('MAYBE LATER', style: GoogleFonts.lato(color: Colors.white38)),
                   ),
                 ],
               ),

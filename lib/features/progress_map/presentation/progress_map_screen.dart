@@ -190,7 +190,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                         fontSize: 13,
                         height: 1.2,
                         shadows: [
-                          Shadow(color: Colors.black87, blurRadius: 6),
+                          const Shadow(color: Colors.black87, blurRadius: 6),
                           Shadow(
                               color: world.primaryColor
                                   .withValues(alpha: 0.5),
@@ -220,7 +220,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
           const SizedBox(height: 10),
           Row(
             children: [
-              Icon(Icons.star, color: Colors.amberAccent, size: 14),
+              const Icon(Icons.star, color: Colors.amberAccent, size: 14),
               const SizedBox(width: 6),
               Expanded(
                 child: Stack(
@@ -642,10 +642,10 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            const Color(0xFF1E1E1E),
-            const Color(0xFF252525),
+            Color(0xFF1E1E1E),
+            Color(0xFF252525),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

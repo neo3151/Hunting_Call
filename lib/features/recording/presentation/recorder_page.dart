@@ -105,7 +105,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         final path = await notifier.stopRecording();
         
         if (mounted) {
-          if (path != null && path.isNotEmpty && !path.contains("not open")) {
+          if (path != null && path.isNotEmpty && !path.contains('not open')) {
               Navigator.of(context).push(
                  MaterialPageRoute(builder: (_) => RatingScreen(
                    audioPath: path, 
@@ -115,7 +115,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               );
           } else {
              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Recording Failed: Could not save audio file.")),
+                const SnackBar(content: Text('Recording Failed: Could not save audio file.')),
              );
           }
         }
@@ -148,7 +148,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
          if (!mounted) return;
          ScaffoldMessenger.of(context).showSnackBar(
              SnackBar(
-               content: Text("Recording Failed: ${finalState.errorMessage}"),
+               content: Text('Recording Failed: ${finalState.errorMessage}'),
                backgroundColor: Colors.red,
                duration: const Duration(seconds: 5),
              ),
@@ -232,8 +232,9 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
           ),
           ElevatedButton(
             onPressed: () async {
+              final navigator = Navigator.of(context);
               await openAppSettings();
-              if (mounted) Navigator.pop(context);
+              if (mounted) navigator.pop();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF81C784),
@@ -261,7 +262,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         setState(() => isPlayingReference = true);
       } catch (e) {
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Could not play audio: $e")));
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not play audio: $e')));
         }
       }
     }
@@ -311,7 +312,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                           value: selectedCallId,
                           dropdownColor: const Color(0xFF1B3B24),
                           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
-                          hint: Text("Select Call to Practice", style: GoogleFonts.lato(color: Colors.white70)),
+                          hint: Text('Select Call to Practice', style: GoogleFonts.lato(color: Colors.white70)),
                           onChanged: (isRecording || isCountingDown) ? null : (String? newValue) {
                             if (newValue != null && !newValue.startsWith('header_')) {
                               ref.read(selectedCallIdProvider.notifier).state = newValue;
@@ -329,7 +330,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               _buildGlassButton(
                 onPressed: (isRecording || isCountingDown || isProcessing) ? null : _playReferenceSound,
                 icon: isPlayingReference ? Icons.stop_circle_outlined : Icons.volume_up_rounded,
-                label: isPlayingReference ? "STOP REFERENCE" : "HEAR SAMPLE",
+                label: isPlayingReference ? 'STOP REFERENCE' : 'HEAR SAMPLE',
               ),
               
               const SizedBox(height: 24),
@@ -346,7 +347,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                         child: _buildSmallIconButton(
                           onPressed: _resetRecording,
                           icon: Icons.refresh_rounded,
-                          label: "RESET",
+                          label: 'RESET',
                         ),
                       )
                     else

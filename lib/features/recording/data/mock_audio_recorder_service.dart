@@ -21,7 +21,7 @@ class MockAudioRecorderService implements AudioRecorderService {
   Future<void> init() async {
     // Simulate perm request
     // await Future.delayed(const Duration(milliseconds: 200));
-    debugPrint("Mock Recorder: Init");
+    debugPrint('Mock Recorder: Init');
   }
 
   @override
@@ -29,10 +29,10 @@ class MockAudioRecorderService implements AudioRecorderService {
     _isRecording = true;
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       // Generate fake waveform data (0.0 to 1.0)
-       double randomAmp = Random().nextDouble();
+       final double randomAmp = Random().nextDouble();
        _amplitudeController.add(randomAmp);
     });
-    debugPrint("Mock Recorder: Started recording to $path");
+    debugPrint('Mock Recorder: Started recording to $path');
     return true;
   }
 
@@ -41,13 +41,13 @@ class MockAudioRecorderService implements AudioRecorderService {
     _isRecording = false;
     _timer?.cancel();
     _amplitudeController.add(0.0); 
-    debugPrint("Mock Recorder: Stopped.");
-    return "mock/path/to/audio.aac";
+    debugPrint('Mock Recorder: Stopped.');
+    return 'mock/path/to/audio.aac';
   }
 
   @override
   Future<void> cleanupOldFiles() async {
-    debugPrint("Mock Recorder: Cleaning up old files");
+    debugPrint('Mock Recorder: Cleaning up old files');
     // No-op for mock
   }
 

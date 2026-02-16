@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/auth_user.dart';
-import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/sign_in.dart';
 import '../../domain/usecases/sign_in_anonymously.dart';
 import '../../domain/usecases/sign_in_with_google.dart';

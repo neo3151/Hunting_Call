@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -40,7 +39,7 @@ class RealRatingService implements RatingService {
 
   @override
   Future<RatingResult> rateCall(String userId, String audioPath, String animalType) async {
-    debugPrint("RealRatingService: rateCall started for $animalType at $audioPath");
+    debugPrint('RealRatingService: rateCall started for $animalType at $audioPath');
     
     // Try to get location (fire and forget or await briefly?)
     // Await briefly so we have it for the result
@@ -56,7 +55,7 @@ class RealRatingService implements RatingService {
         );
       }
     } catch (e) {
-      debugPrint("Error getting location: $e");
+      debugPrint('Error getting location: $e');
     }
 
     try {
@@ -74,7 +73,7 @@ class RealRatingService implements RatingService {
       if (userAnalysis.dominantFrequencyHz == 0 && userAnalysis.totalDurationSec == 0) {
         return RatingResult(
           score: 0,
-          feedback: "Could not analyze your recording. Please try again in a quiet place.",
+          feedback: 'Could not analyze your recording. Please try again in a quiet place.',
           pitchHz: 0,
           metrics: {},
         );
@@ -85,7 +84,7 @@ class RealRatingService implements RatingService {
       
       if (refAnalysis == null) {
         try {
-          debugPrint("RealRatingService: Analyzing reference for $animalType (not cached)");
+          debugPrint('RealRatingService: Analyzing reference for $animalType (not cached)');
           final assetPath = reference.audioAssetPath;
           final ByteData data = await rootBundle.load(assetPath);
           final List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
@@ -99,10 +98,10 @@ class RealRatingService implements RatingService {
           
           try { await tempFile.delete(); } catch (_) {}
         } catch (e) {
-          debugPrint("Reference Analysis Error: $e");
+          debugPrint('Reference Analysis Error: $e');
         }
       } else {
-        debugPrint("RealRatingService: Using cached reference for $animalType");
+        debugPrint('RealRatingService: Using cached reference for $animalType');
       }
 
       // 3. Calculate score (via use case - extracts all scoring logic to domain layer)
@@ -128,19 +127,19 @@ class RealRatingService implements RatingService {
       final durationScore = analysisResult.durationScore.score;
       final detectedPitch = analysisResult.pitchScore.actualHz;
       
-      String technicalFeedback = "";
+      String technicalFeedback = '';
       final bool pitchIsGood = pitchScore >= 85;
       final bool timbreIsGood = timbreScore >= 80;
       final bool rhythmIsGood = rhythmScore >= 80;
       
       if (pitchIsGood && timbreIsGood && rhythmIsGood) {
-        technicalFeedback = "Outstanding! You sound just like a ${reference.animalName}.";
+        technicalFeedback = 'Outstanding! You sound just like a ${reference.animalName}.';
       } else if (!pitchIsGood) {
-        technicalFeedback = detectedPitch > reference.idealPitchHz ? "Too High! Lower your pitch." : "Too Low! Raise your pitch.";
+        technicalFeedback = detectedPitch > reference.idealPitchHz ? 'Too High! Lower your pitch.' : 'Too Low! Raise your pitch.';
       } else if (!timbreIsGood) {
-        technicalFeedback = userAnalysis.nasality > (refAnalysis?.nasality ?? 50) + 15 ? "Too much nasality!" : "Tone is muffled.";
+        technicalFeedback = userAnalysis.nasality > (refAnalysis?.nasality ?? 50) + 15 ? 'Too much nasality!' : 'Tone is muffled.';
       } else {
-        technicalFeedback = "Watch your rhythm and stability.";
+        technicalFeedback = 'Watch your rhythm and stability.';
       }
 
       final String personalityCritique = PersonalityFeedbackService.getSpecificCritique({
@@ -152,32 +151,32 @@ class RealRatingService implements RatingService {
 
       final result = RatingResult(
         score: analysisResult.overallScore,
-        feedback: "$technicalFeedback $personalityCritique",
+        feedback: '$technicalFeedback $personalityCritique',
         pitchHz: analysisResult.pitchScore.actualHz,
         metrics: {
-          "Pitch (Hz)": analysisResult.pitchScore.actualHz,
-          "Target Pitch": analysisResult.pitchScore.idealHz,
-          "Duration (s)": analysisResult.durationScore.actualSec,
-          "score_pitch": pitchScore,
-          "score_timbre": timbreScore,
-          "score_rhythm": rhythmScore,
-          "score_duration": durationScore,
-          "avg_volume": userAnalysis.averageVolume * 100,
-          "peak_volume": userAnalysis.peakVolume * 100,
-          "consistency": userAnalysis.volumeConsistency,
-          "tone_clarity": userAnalysis.toneClarity,
-          "harmonic_richness": userAnalysis.harmonicRichness,
-          "call_quality": userAnalysis.callQualityScore,
-          "brightness": userAnalysis.brightness,
-          "warmth": userAnalysis.warmth,
-          "nasality": userAnalysis.nasality,
+          'Pitch (Hz)': analysisResult.pitchScore.actualHz,
+          'Target Pitch': analysisResult.pitchScore.idealHz,
+          'Duration (s)': analysisResult.durationScore.actualSec,
+          'score_pitch': pitchScore,
+          'score_timbre': timbreScore,
+          'score_rhythm': rhythmScore,
+          'score_duration': durationScore,
+          'avg_volume': userAnalysis.averageVolume * 100,
+          'peak_volume': userAnalysis.peakVolume * 100,
+          'consistency': userAnalysis.volumeConsistency,
+          'tone_clarity': userAnalysis.toneClarity,
+          'harmonic_richness': userAnalysis.harmonicRichness,
+          'call_quality': userAnalysis.callQualityScore,
+          'brightness': userAnalysis.brightness,
+          'warmth': userAnalysis.warmth,
+          'nasality': userAnalysis.nasality,
         },
         userWaveform: userAnalysis.waveform,
         referenceWaveform: refAnalysis?.waveform,
         latitude: _currentPosition?.latitude,
         longitude: _currentPosition?.longitude,
       );
-      debugPrint("RealRatingService: Pro-Grade Analysis complete. Score: ${result.score}");
+      debugPrint('RealRatingService: Pro-Grade Analysis complete. Score: ${result.score}');
 
       // Save to history
       await profileRepository.saveResultForUser(userId, result, animalType);
@@ -196,7 +195,7 @@ class RealRatingService implements RatingService {
             ),
           );
         } catch (e) {
-          debugPrint("Leaderboard submission failed: $e");
+          debugPrint('Leaderboard submission failed: $e');
         }
       }
       
@@ -205,17 +204,17 @@ class RealRatingService implements RatingService {
         if (userId != 'guest') {
           final dailyCall = DailyChallengeService.getDailyChallengeStatic();
           if (dailyCall.id == animalType && analysisResult.overallScore >= 70) {
-            debugPrint("Daily Challenge ($animalType) Completed by $userId with score ${analysisResult.overallScore}");
+            debugPrint('Daily Challenge ($animalType) Completed by $userId with score ${analysisResult.overallScore}');
             await profileRepository.updateDailyChallengeStats(userId);
           }
         }
       } catch (e) {
-        debugPrint("Daily Challenge update failed: $e");
+        debugPrint('Daily Challenge update failed: $e');
       }
       
       return result;
     } catch (e) {
-      debugPrint("RealRatingService: Analysis failed: $e");
+      debugPrint('RealRatingService: Analysis failed: $e');
       rethrow;
     }
   }

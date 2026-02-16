@@ -14,6 +14,8 @@ class SettingsRepository {
           prefs.getBool('${_prefix}notificationsEnabled') ?? true,
       soundEffects: prefs.getBool('${_prefix}soundEffects') ?? true,
       hapticFeedback: prefs.getBool('${_prefix}hapticFeedback') ?? true,
+      imageQuality: prefs.getString('${_prefix}imageQuality') ?? 'high',
+      autoCleanupHours: prefs.getInt('${_prefix}autoCleanupHours') ?? 24,
     );
   }
 
@@ -25,6 +27,8 @@ class SettingsRepository {
         '${_prefix}notificationsEnabled', settings.notificationsEnabled);
     await prefs.setBool('${_prefix}soundEffects', settings.soundEffects);
     await prefs.setBool('${_prefix}hapticFeedback', settings.hapticFeedback);
+    await prefs.setString('${_prefix}imageQuality', settings.imageQuality);
+    await prefs.setInt('${_prefix}autoCleanupHours', settings.autoCleanupHours);
   }
 
   Future<void> clearSettings() async {

@@ -13,7 +13,7 @@ class LeaderboardPreview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "DAILY LEADERS",
+          'DAILY LEADERS',
           style: GoogleFonts.oswald(
             color: Colors.white,
             fontSize: 16,
@@ -23,7 +23,7 @@ class LeaderboardPreview extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         ...leaders.take(3).map((entry) =>
-            _buildLeaderItem(entry.rank, entry.username, "${entry.score.toInt()}%")),
+            _buildLeaderItem(entry.rank, entry.username, '${entry.score.toInt()}%')),
       ],
     );
   }
@@ -34,7 +34,7 @@ class LeaderboardPreview extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            "#$rank",
+            '#$rank',
             style: GoogleFonts.oswald(
                 color: Colors.white24, fontWeight: FontWeight.bold),
           ),

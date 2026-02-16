@@ -20,7 +20,7 @@ final locationProvider = FutureProvider<Position>((ref) async {
     );
   }
 
-  bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
     throw 'Location services are disabled.';
   }

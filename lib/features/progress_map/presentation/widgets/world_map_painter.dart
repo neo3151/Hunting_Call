@@ -393,5 +393,5 @@ class WorldMapPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant WorldMapPainter old) => true;
+  bool shouldRepaint(covariant WorldMapPainter oldDelegate) => true;
 }

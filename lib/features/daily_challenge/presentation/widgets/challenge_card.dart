@@ -76,7 +76,7 @@ class ChallengeCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(
-                    "START CHALLENGE",
+                    'START CHALLENGE',
                     style: GoogleFonts.oswald(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
@@ -96,9 +96,9 @@ class ChallengeCard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _buildStatItem(
-            "DIFFICULTY", challengeCall.difficulty.toUpperCase(), Colors.orangeAccent),
-        _buildStatItem("REPS", "0/3", Colors.white70),
-        _buildStatItem("REWARD", "+500 XP", const Color(0xFF5FF7B6)),
+            'DIFFICULTY', challengeCall.difficulty.toUpperCase(), Colors.orangeAccent),
+        _buildStatItem('REPS', '0/3', Colors.white70),
+        _buildStatItem('REWARD', '+500 XP', const Color(0xFF5FF7B6)),
       ],
     );
   }

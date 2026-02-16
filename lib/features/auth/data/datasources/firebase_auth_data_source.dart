@@ -93,7 +93,7 @@ class FirebaseAuthDataSource implements AuthRemoteDataSource {
 
   /// Desktop Google Sign-In via Firebase's signInWithProvider (OAuth popup).
   Future<AuthUserModel> _signInWithGoogleDesktop() async {
-    debugPrint("🔐 Desktop: Using signInWithProvider for Google Sign-In...");
+    debugPrint('🔐 Desktop: Using signInWithProvider for Google Sign-In...');
     
     final googleProvider = GoogleAuthProvider();
     googleProvider.addScope('email');
@@ -106,7 +106,7 @@ class FirebaseAuthDataSource implements AuthRemoteDataSource {
       throw Exception('Google Sign-In via provider returned null user');
     }
 
-    debugPrint("✅ Desktop Google Sign-In successful: ${user.displayName} (${user.email})");
+    debugPrint('✅ Desktop Google Sign-In successful: ${user.displayName} (${user.email})');
     return AuthUserModel.fromFirebaseUser(user);
   }
 
