@@ -1,7 +1,7 @@
 name: hunting_calls_perfection
 description: A mobile app to help hunters perfect their animal calls.
 publish_to: 'none'
-version: 1.3.0+10
+version: 1.3.0+12
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
