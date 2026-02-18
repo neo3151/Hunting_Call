@@ -172,7 +172,7 @@ class RealRatingService implements RatingService {
           'nasality': userAnalysis.nasality,
         },
         userWaveform: userAnalysis.waveform,
-        referenceWaveform: refAnalysis?.waveform,
+        referenceWaveform: reference.waveform ?? refAnalysis?.waveform,
         latitude: _currentPosition?.latitude,
         longitude: _currentPosition?.longitude,
       );

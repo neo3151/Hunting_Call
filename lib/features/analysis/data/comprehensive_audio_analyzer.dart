@@ -11,11 +11,10 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   final _cache = WaveformCacheDatabase();
   
   ComprehensiveAudioAnalyzer() {
-    // Auto-cleanup old cache entries on initialization
-    _cache.clearOldCache(maxAge: const Duration(days: 7)).then((deleted) {
-      if (deleted > 0) {
-        AppLogger.d('WaveformCache: Cleaned up $deleted old entries');
-      }
+    // Clear ALL cached waveforms — normalization curve changed from sqrt to
+    // pow(1.5), so every cached waveform is stale and must be recomputed.
+    _cache.clearCache().then((_) {
+      AppLogger.d('WaveformCache: Cleared all entries (normalization update)');
     });
   }
 
@@ -525,6 +524,8 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Extract a downsampled waveform for visualization
+  /// Uses RMS amplitude (not peak) for better dynamic range representation,
+  /// then applies a sqrt curve so quiet sections are more visible.
   static List<double> _extractWaveform(Float64List samples, int points) {
     if (samples.isEmpty) return List.filled(points, 0.0);
     
@@ -539,22 +540,37 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     }
     
     for (int i = 0; i < points; i++) {
-      double maxVal = 0.0;
+      double sumSquares = 0.0;
       final start = i * chunkSize;
       final end = min(start + chunkSize, samples.length);
+      int count = 0;
       
       for (int j = start; j < end; j++) {
-        final abs = samples[j].abs();
-        if (abs > maxVal) maxVal = abs;
+        sumSquares += samples[j] * samples[j];
+        count++;
       }
-      result[i] = maxVal;
+      result[i] = count > 0 ? sqrt(sumSquares / count) : 0.0;
     }
     
-    // Normalize to 0-1 range
-    final double peak = result.reduce(max);
-    if (peak > 0) {
+    // Contrast-stretch to 0-1: maps the actual min-max RMS range to the full
+    // visual range. This is critical for mastered reference audio where RMS
+    // values cluster in a narrow band (e.g. 0.85-1.0) — without stretching,
+    // all bars look the same height regardless of the call's rhythmic pattern.
+    final double maxVal = result.reduce(max);
+    final double minVal = result.reduce(min);
+    final double range = maxVal - minVal;
+    
+    if (range > 0) {
       for (int i = 0; i < points; i++) {
-        result[i] /= peak;
+        // Stretch to 0-1
+        result[i] = (result[i] - minVal) / range;
+        // Gentle power curve for visual polish (quieter parts slightly smaller)
+        result[i] = pow(result[i], 1.3).toDouble();
+      }
+    } else if (maxVal > 0) {
+      // All chunks identical — flat signal, just normalize
+      for (int i = 0; i < points; i++) {
+        result[i] = result[i] / maxVal;
       }
     }
     

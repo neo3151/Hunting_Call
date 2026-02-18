@@ -246,7 +246,7 @@ class _WaveformPainter extends CustomPainter {
       // 1. Draw Reference
       if (referenceWaveform != null) {
         final refVal = (referenceWaveform!.length > sourceIdx) ? referenceWaveform![sourceIdx] : 0.0;
-        final refH = refVal * size.height * animationValue;
+        final refH = refVal * size.height * 0.85 * animationValue;
         
         paint.color = refColor;
         canvas.drawRRect(
@@ -259,7 +259,7 @@ class _WaveformPainter extends CustomPainter {
       }
 
       // 2. Draw User
-      final userH = userVal * size.height * animationValue;
+      final userH = userVal * size.height * 0.85 * animationValue;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromCenter(center: Offset(x + barWidth/2, centerY), width: barWidth * 0.7, height: userH.clamp(2, size.height)),

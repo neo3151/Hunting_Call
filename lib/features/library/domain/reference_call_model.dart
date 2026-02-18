@@ -16,6 +16,7 @@ class ReferenceCall {
   final bool isLocked; // If true, the call is "Coming Soon" or requires unlock
   final bool isPulsedCall; // Whether call has rhythmic pulses
   final double idealTempo; // Calls per minute (if pulsed)
+  final List<double>? waveform; // Pre-computed waveform data for visualization
 
   const ReferenceCall({
     required this.id,
@@ -35,6 +36,7 @@ class ReferenceCall {
     this.isLocked = false,
     this.isPulsedCall = false,
     this.idealTempo = 0.0,
+    this.waveform,
   });
 
   ReferenceCall copyWith({
@@ -55,6 +57,7 @@ class ReferenceCall {
     bool? isLocked,
     bool? isPulsedCall,
     double? idealTempo,
+    List<double>? waveform,
   }) {
     return ReferenceCall(
       id: id ?? this.id,
@@ -74,6 +77,7 @@ class ReferenceCall {
       isLocked: isLocked ?? this.isLocked,
       isPulsedCall: isPulsedCall ?? this.isPulsedCall,
       idealTempo: idealTempo ?? this.idealTempo,
+      waveform: waveform ?? this.waveform,
     );
   }
 
@@ -96,6 +100,7 @@ class ReferenceCall {
       isLocked: json['isLocked'] as bool? ?? false,
       isPulsedCall: json['isPulsedCall'] as bool? ?? false,
       idealTempo: (json['idealTempo'] as num?)?.toDouble() ?? 0.0,
+      waveform: (json['waveform'] as List<dynamic>?)?.map((e) => (e as num).toDouble()).toList(),
     );
   }
 
@@ -117,5 +122,6 @@ class ReferenceCall {
     'isLocked': isLocked,
     'isPulsedCall': isPulsedCall,
     'idealTempo': idealTempo,
+    if (waveform != null) 'waveform': waveform,
   };
 }
