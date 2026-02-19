@@ -51,5 +51,10 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> ensureTechnicalSession() async {
+    // No-op for mock
+  }
+
+  @override
   bool get isMock => true;
 }

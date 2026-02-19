@@ -150,8 +150,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 // Tabs
                 TabBar(
                   isScrollable: true,
-                  indicatorColor: const Color(0xFF81C784),
-                  labelColor: const Color(0xFF81C784),
+                  indicatorColor: const Color(0xFFFF8C00),
+                  labelColor: const Color(0xFFFF8C00),
                   unselectedLabelColor: Colors.white54,
                   labelStyle: GoogleFonts.oswald(fontWeight: FontWeight.bold),
                   tabs: _categories.map((cat) => Tab(text: cat.toUpperCase())).toList(),
@@ -165,6 +165,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             image: DecorationImage(
               image: AssetImage('assets/images/forest_background.png'),
               fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
               colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
             ),
           ),
@@ -217,14 +218,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   color: isLocked
                       ? Colors.black.withValues(alpha: 0.3)
                       : isPlaying 
-                          ? const Color(0xFF81C784).withValues(alpha: 0.2)
+                          ? const Color(0xFFFF8C00).withValues(alpha: 0.2)
                           : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isLocked
                         ? Colors.white.withValues(alpha: 0.05)
                         : isPlaying 
-                            ? const Color(0xFF81C784).withValues(alpha: 0.5)
+                            ? const Color(0xFFFF8C00).withValues(alpha: 0.5)
                             : Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
@@ -294,7 +295,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Widget _buildDifficultyBadge(String difficulty) {
     Color color;
     switch (difficulty.toLowerCase()) {
-      case 'easy': color = const Color(0xFF81C784); break;
+      case 'easy': color = const Color(0xFFFF8C00); break;
       case 'intermediate': color = const Color(0xFFFFB74D); break;
       case 'pro': color = const Color(0xFFE57373); break;
       default: color = Colors.white54;
@@ -340,7 +341,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             : isPlaying ? Icons.stop_circle_rounded : Icons.play_circle_filled_rounded,
         color: isLocked
             ? Colors.white24
-            : isPlaying ? const Color(0xFF81C784) : Colors.white70,
+            : isPlaying ? const Color(0xFFFF8C00) : Colors.white70,
         size: 40,
       ),
     );

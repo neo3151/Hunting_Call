@@ -43,7 +43,7 @@ class SettingsScreen extends ConsumerWidget {
               Expanded(
                 child: settingsAsync.when(
                   loading: () => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF81C784)),
+                    child: CircularProgressIndicator(color: Color(0xFFFF8C00)),
                   ),
                   error: (e, _) => Center(
                     child: Text('Error: $e',
@@ -65,7 +65,7 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.darkMode,
                               onChanged: notifier.setDarkMode,
-                              activeColor: const Color(0xFF81C784),
+                              activeColor: const Color(0xFFFF8C00),
                             ),
                           ),
                           const Divider(color: Colors.white12),
@@ -96,7 +96,7 @@ class SettingsScreen extends ConsumerWidget {
                                     WidgetStateProperty.resolveWith((states) {
                                   if (states
                                       .contains(WidgetState.selected)) {
-                                    return const Color(0xFF81C784)
+                                    return const Color(0xFFFF8C00)
                                         .withValues(alpha: 0.3);
                                   }
                                   return Colors.white.withValues(alpha: 0.05);
@@ -116,7 +116,7 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.notificationsEnabled,
                               onChanged: notifier.setNotificationsEnabled,
-                              activeColor: const Color(0xFF81C784),
+                              activeColor: const Color(0xFFFF8C00),
                             ),
                           ),
                           const Divider(color: Colors.white12),
@@ -129,7 +129,7 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.soundEffects,
                               onChanged: notifier.setSoundEffects,
-                              activeColor: const Color(0xFF81C784),
+                              activeColor: const Color(0xFFFF8C00),
                             ),
                           ),
                           const Divider(color: Colors.white12),
@@ -140,7 +140,7 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.hapticFeedback,
                               onChanged: notifier.setHapticFeedback,
-                              activeColor: const Color(0xFF81C784),
+                              activeColor: const Color(0xFFFF8C00),
                             ),
                           ),
                           const Divider(color: Colors.white12),
@@ -161,7 +161,7 @@ class SettingsScreen extends ConsumerWidget {
                               style: ButtonStyle(
                                 backgroundColor: WidgetStateProperty.resolveWith((states) {
                                   if (states.contains(WidgetState.selected)) {
-                                    return const Color(0xFF81C784).withValues(alpha: 0.3);
+                                    return const Color(0xFFFF8C00).withValues(alpha: 0.3);
                                   }
                                   return Colors.white.withValues(alpha: 0.05);
                                 }),
@@ -177,7 +177,7 @@ class SettingsScreen extends ConsumerWidget {
                             subtitle: 'Auto-delete old recordings',
                             trailing: DropdownButton<int>(
                               value: settings.autoCleanupHours,
-                              dropdownColor: const Color(0xFF1B3B24),
+                              dropdownColor: const Color(0xFF1A1A1A),
                               underline: const SizedBox.shrink(),
                               items: const [
                                 DropdownMenuItem(value: 1, child: Text('1h', style: TextStyle(color: Colors.white, fontSize: 13))),
@@ -208,7 +208,7 @@ class SettingsScreen extends ConsumerWidget {
                           _settingsTile(
                             icon: Icons.info_outline,
                             title: 'App Version',
-                            subtitle: '1.3.0 (Build 4)',
+                            subtitle: '1.5.0 (Build 16)',
                             trailing: const SizedBox.shrink(),
                           ),
                           const SizedBox(height: 24),
@@ -221,7 +221,7 @@ class SettingsScreen extends ConsumerWidget {
                                   context: context,
                                   builder: (ctx) => AlertDialog(
                                     backgroundColor:
-                                        const Color(0xFF1B3B24),
+                                        const Color(0xFF1A1A1A),
                                     title: Text('Reset Settings?',
                                         style: GoogleFonts.oswald(
                                             color: Colors.white)),
@@ -282,7 +282,7 @@ class SettingsScreen extends ConsumerWidget {
       child: Text(
         title,
         style: GoogleFonts.oswald(
-          color: const Color(0xFF81C784),
+          color: const Color(0xFFFF8C00),
           fontSize: 14,
           fontWeight: FontWeight.bold,
           letterSpacing: 2.0,

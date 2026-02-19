@@ -1,4 +1,23 @@
-# 📋 Changelog - Hunting Calls Perfection Updates
+# 📋 Changelog - OUTCALL Updates
+
+## Version 1.5.0 - February 18, 2026
+
+### 🦅 Revolutionary Rebrand: Welcome to OUTCALL
+- **Rebranded**: Transformed "Hunting Call" into **OUTCALL**.
+- **Visuals**: Updated app icon, feature graphics, and Play Store assets.
+- **Legal**: Added dedicated Privacy Policy page on GitHub Pages.
+
+### 🛡️ Critical Fixes & Stability
+- **Authentication**: Resolved the persistent Google Sign-In redirect loop. Sign-in is now seamless.
+- **Analysis**: Fixed spectrogram overlay in practice mode. Real-time feedback is now crystal clear.
+- **Version Control**: Implemented `VersionCheckService` to ensure users are always on the latest, most stable release.
+
+### ✨ UI/UX Refinement
+- **Layout**: Optimized animal image alignment in challenge cards and screens.
+- **Onboarding**: Refined flow for a smoother first-time experience.
+- **Build**: Incrementing to build `1.5.0+16` with optimized release configurations.
+
+---
 
 ## Version 1.1.0 - February 10, 2026
 

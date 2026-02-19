@@ -1,4 +1,15 @@
 {
+    "hosting": {
+        "public": "docs",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**",
+            "*.md",
+            "*.txt",
+            "*.png"
+        ]
+    },
     "firestore": {
         "rules": "firestore.rules"
     },

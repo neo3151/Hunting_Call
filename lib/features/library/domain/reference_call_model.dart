@@ -17,6 +17,7 @@ class ReferenceCall {
   final bool isPulsedCall; // Whether call has rhythmic pulses
   final double idealTempo; // Calls per minute (if pulsed)
   final List<double>? waveform; // Pre-computed waveform data for visualization
+  final List<List<double>>? spectrogram; // Real FFT spectrogram: [time][freq_band]
 
   const ReferenceCall({
     required this.id,
@@ -37,6 +38,7 @@ class ReferenceCall {
     this.isPulsedCall = false,
     this.idealTempo = 0.0,
     this.waveform,
+    this.spectrogram,
   });
 
   ReferenceCall copyWith({
@@ -58,6 +60,7 @@ class ReferenceCall {
     bool? isPulsedCall,
     double? idealTempo,
     List<double>? waveform,
+    List<List<double>>? spectrogram,
   }) {
     return ReferenceCall(
       id: id ?? this.id,
@@ -78,6 +81,7 @@ class ReferenceCall {
       isPulsedCall: isPulsedCall ?? this.isPulsedCall,
       idealTempo: idealTempo ?? this.idealTempo,
       waveform: waveform ?? this.waveform,
+      spectrogram: spectrogram ?? this.spectrogram,
     );
   }
 
@@ -101,6 +105,9 @@ class ReferenceCall {
       isPulsedCall: json['isPulsedCall'] as bool? ?? false,
       idealTempo: (json['idealTempo'] as num?)?.toDouble() ?? 0.0,
       waveform: (json['waveform'] as List<dynamic>?)?.map((e) => (e as num).toDouble()).toList(),
+      spectrogram: (json['spectrogram'] as List<dynamic>?)?.map(
+        (row) => (row as List<dynamic>).map((e) => (e as num).toDouble()).toList(),
+      ).toList(),
     );
   }
 
@@ -123,5 +130,6 @@ class ReferenceCall {
     'isPulsedCall': isPulsedCall,
     'idealTempo': idealTempo,
     if (waveform != null) 'waveform': waveform,
+    if (spectrogram != null) 'spectrogram': spectrogram,
   };
 }

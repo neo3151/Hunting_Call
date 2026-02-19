@@ -30,7 +30,7 @@ Look for the line starting with `SHA1:` and copy that value.
 2. Select project: **hunting-call-perfection**
 3. Click the gear icon ⚙️ > **Project settings**
 4. Scroll to **Your apps** section
-5. Find: **Hunting Calls Perfection** (`com.example.hunting_calls_perfection`)
+5. Find: **Outcall** (`com.example.hunting_calls_perfection`)
 6. Click **Add fingerprint**
 7. Paste your SHA-1 fingerprint
 8. Click **Save**

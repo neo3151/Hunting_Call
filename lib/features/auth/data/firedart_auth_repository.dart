@@ -119,10 +119,8 @@ class FiredartAuthRepository implements AuthRepository {
   Future<void> signIn(String userId) async {
     AppLogger.d('FiredartAuth: signIn (impersonate) requested for $userId');
     
-    if (!_auth.isSignedIn) {
-      AppLogger.d('FiredartAuth: No technical session. Creating one first.');
-      await _ensureTechnicalSession();
-    }
+    // Always ensure a fresh technical session to avoid stale token issues
+    await _ensureTechnicalSession(forceRefresh: true);
 
     _impersonatedUserId = userId;
     _setSessionActive(true);
@@ -141,11 +139,33 @@ class FiredartAuthRepository implements AuthRepository {
   }
   
   /// Ensures a technical Firedart session exists (for Firestore access).
-  Future<void> _ensureTechnicalSession() async {
+  /// If [forceRefresh] is true, signs out first to get a fresh token.
+  Future<void> _ensureTechnicalSession({bool forceRefresh = false}) async {
+    if (forceRefresh && _auth.isSignedIn) {
+      AppLogger.d('FiredartAuth: Force-refreshing technical session...');
+      try {
+        _auth.signOut();
+      } catch (e) {
+        AppLogger.d('FiredartAuth: signOut during refresh failed (ignoring): $e');
+      }
+    }
     if (!_auth.isSignedIn) {
       AppLogger.d('FiredartAuth: Creating technical anonymous session...');
       await _auth.signInAnonymously();
       AppLogger.d('FiredartAuth: Technical session created. Waiting 500ms for settlement.');
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+  }
+
+  @override
+  Future<void> ensureTechnicalSession() async {
+    // Creates a firedart session for Firestore access WITHOUT
+    // setting _hasActiveSession or _impersonatedUserId.
+    // This means no auth state is emitted → AuthWrapper doesn't rebuild.
+    if (!_auth.isSignedIn) {
+      AppLogger.d('FiredartAuth: Creating silent technical session for Firestore access...');
+      await _auth.signInAnonymously();
+      AppLogger.d('FiredartAuth: Silent technical session created.');
       await Future.delayed(const Duration(milliseconds: 500));
     }
   }
@@ -160,6 +180,17 @@ class FiredartAuthRepository implements AuthRepository {
     AppLogger.d('FiredartAuth: signOut requested.');
     _impersonatedUserId = null;
     _setSessionActive(false);
+    
+    // Also sign out of firedart to invalidate the technical session
+    // so the next login gets a fresh token
+    try {
+      if (_auth.isSignedIn) {
+        _auth.signOut();
+        AppLogger.d('FiredartAuth: Technical session also signed out.');
+      }
+    } catch (e) {
+      AppLogger.d('FiredartAuth: Technical signOut failed (ignoring): $e');
+    }
     
     // Emit null immediately so AuthWrapper shows LoginScreen
     _emitCurrentState();

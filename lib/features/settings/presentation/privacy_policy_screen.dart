@@ -68,7 +68,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         Text(
           title,
           style: GoogleFonts.oswald(
-            color: const Color(0xFF81C784),
+            color: const Color(0xFFFF8C00),
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),

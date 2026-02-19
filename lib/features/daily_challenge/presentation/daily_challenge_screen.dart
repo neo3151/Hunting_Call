@@ -6,6 +6,7 @@ import 'controllers/daily_challenge_controller.dart';
 import '../../recording/presentation/recorder_page.dart';
 import 'widgets/challenge_card.dart';
 import 'widgets/leaderboard_preview.dart';
+import 'package:hunting_calls_perfection/core/utils/animal_image_alignment.dart';
 
 class DailyChallengeScreen extends ConsumerWidget {
   final String userId;
@@ -84,6 +85,7 @@ class DailyChallengeScreen extends ConsumerWidget {
             child: Image.asset(
               challengeCall.imageUrl,
               fit: BoxFit.cover,
+              alignment: AnimalImageAlignment.forImage(challengeCall.imageUrl),
               color: Colors.black87,
               colorBlendMode: BlendMode.darken,
             ),

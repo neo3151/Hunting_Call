@@ -86,7 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final email = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1B3B24),
+        backgroundColor: const Color(0xFF1A1A1A),
         title: const Text('Log In', style: TextStyle(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -126,8 +126,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!mounted) return;
       
       try {
+        // Ensure a technical session exists for Firestore access
+        // (sign-out clears the firedart session, so we need a fresh one)
+        // Use ensureTechnicalSession to avoid triggering AuthWrapper rebuild
+        final authRepo = ref.read(authRepositoryProvider);
+        await authRepo.ensureTechnicalSession();
+        
         final profileRepo = ref.read(profileRepositoryProvider);
-        // AppLogger.d("🔍 Searching for profiles by email: $email");
         
         final profiles = await profileRepo.getProfilesByEmail(email);
         
@@ -141,7 +146,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             context: context,
             builder: (context) => SimpleDialog(
               title: const Text('Select Profile', style: TextStyle(color: Colors.white)),
-              backgroundColor: const Color(0xFF1B3B24),
+              backgroundColor: const Color(0xFF1A1A1A),
               children: profiles.map((p) => SimpleDialogOption(
                 onPressed: () => Navigator.pop(context, p),
                 child: Container(
@@ -241,10 +246,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const Icon(Icons.forest_rounded, size: 80, color: Color(0xFF81C784)),
+                              const Icon(Icons.forest_rounded, size: 80, color: Color(0xFFFF8C00)),
                               const SizedBox(height: 24),
                               Text(
-                                'GOBBLE\nGURU',
+                                'OUTCALL',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.oswald(
                                   fontSize: 48,
@@ -328,8 +333,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ElevatedButton(
                                 onPressed: _createNewProfile,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF81C784),
-                                  foregroundColor: const Color(0xFF0F1E12),
+                                  backgroundColor: const Color(0xFFFF8C00),
+                                  foregroundColor: const Color(0xFF121212),
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   elevation: 0,
@@ -415,13 +420,13 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF81C784),
+              primary: Color(0xFFFF8C00),
               onPrimary: Colors.black,
-              surface: Color(0xFF1B3B24),
+              surface: Color(0xFF1A1A1A),
               onSurface: Colors.white,
             ),
             dialogTheme: const DialogThemeData(
-              backgroundColor: Color(0xFF0F1E12),
+              backgroundColor: Color(0xFF121212),
             ),
           ),
           child: child!,
@@ -444,7 +449,7 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
         top: 24, left: 24, right: 24
       ),
       decoration: const BoxDecoration(
-        color: Color(0xFF1B3B24),
+        color: Color(0xFF1A1A1A),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -504,8 +509,8 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
               'birthday': _birthday,
             }) : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF81C784),
-              foregroundColor: const Color(0xFF0F1E12),
+              backgroundColor: const Color(0xFFFF8C00),
+              foregroundColor: const Color(0xFF121212),
               disabledBackgroundColor: Colors.grey.shade700,
               disabledForegroundColor: Colors.grey.shade400,
               padding: const EdgeInsets.symmetric(vertical: 16),

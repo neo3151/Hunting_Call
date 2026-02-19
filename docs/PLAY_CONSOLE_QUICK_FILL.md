@@ -4,7 +4,7 @@
 
 ### App Name
 ```
-Gobble Guru
+Outcall
 ```
 
 ### Short Description
@@ -14,9 +14,9 @@ Master hunting calls with AI-powered analysis and real-time feedback
 
 ### Full Description
 ```
-🦌 **Master the Art of Hunting Calls**
+🦌 **Master Your Calls with OUTCALL**
 
-Gobble Guru is the ultimate training companion for hunters who want to perfect their calling techniques. Whether you're pursuing waterfowl, deer, predators, or upland game, our AI-powered analysis helps you sound like a pro.
+Outcall is the ultimate training companion for hunters who want to perfect their calling techniques. Whether you're pursuing waterfowl, deer, predators, or upland game, our AI-powered analysis helps you sound like a pro.
 
 🎯 **Key Features**
 
@@ -70,11 +70,11 @@ Access a comprehensive collection of authentic hunting calls:
 • Competition callers preparing for events
 • Anyone passionate about hunting
 
-**Why Gobble Guru?**
+**Why Outcall?**
 
-Traditional call training relies on guesswork and trial-and-error in the field. Gobble Guru brings the power of AI and audio analysis to your practice sessions, giving you objective feedback that accelerates your learning. Practice at home, perfect your technique, and head into the field with confidence.
+Traditional call training relies on guesswork and trial-and-error in the field. Outcall brings the power of AI and audio analysis to your practice sessions, giving you objective feedback that accelerates your learning. Practice at home, perfect your technique, and head into the field with confidence.
 
-Whether you're preparing for waterfowl season, practicing your turkey yelps, or mastering predator calls, Gobble Guru provides the tools and feedback you need to sound authentic and effective.
+Whether you're preparing for waterfowl season, practicing your turkey yelps, or mastering predator calls, Outcall provides the tools and feedback you need to sound authentic and effective.
 
 **Download now and start mastering your hunting calls today!**
 ```

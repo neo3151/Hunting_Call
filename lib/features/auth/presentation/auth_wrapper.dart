@@ -6,8 +6,11 @@ import '../../onboarding/presentation/controllers/onboarding_controller.dart';
 import 'login_screen.dart';
 import 'controllers/auth_controller.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
-import '../../home/presentation/home_screen.dart';
+import '../../../core/widgets/main_shell.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+
+import '../../../core/services/version_check_service.dart';
+import '../../../core/widgets/update_required_screen.dart';
 
 /// Watches auth state and shows LoginScreen, OnboardingScreen, or HomeScreen.
 /// Profile creation is handled by LoginScreen - this only loads existing profiles.
@@ -18,9 +21,35 @@ class AuthWrapper extends ConsumerStatefulWidget {
   ConsumerState<AuthWrapper> createState() => _AuthWrapperState();
 }
 
+enum VersionCheckStatus { pending, ok, required }
+
 class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   bool _isLoadingProfile = false;
   String? _lastHandledUserId;
+  VersionCheckStatus _versionStatus = VersionCheckStatus.pending;
+
+  @override
+  void initState() {
+    super.initState();
+    _performVersionCheck();
+  }
+
+  Future<void> _performVersionCheck() async {
+    try {
+      final service = ref.read(versionCheckServiceProvider);
+      final isRequired = await service.isUpdateRequired();
+      if (mounted) {
+        setState(() {
+          _versionStatus = isRequired ? VersionCheckStatus.required : VersionCheckStatus.ok;
+        });
+      }
+    } catch (e) {
+      AppLogger.d('AuthWrapper: Version check failed: $e');
+      if (mounted) {
+        setState(() => _versionStatus = VersionCheckStatus.ok); // Proceed anyway on error
+      }
+    }
+  }
 
   Future<void> _loadProfile(String userId) async {
     if (_lastHandledUserId == userId || userId == 'guest') return;
@@ -56,10 +85,9 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       AppLogger.d('AuthWrapper: ⚠️ No profile found for $userId — user needs to create one via login screen.');
       
     } catch (e, stack) {
-      AppLogger.d('AuthWrapper: Error: $e');
+      AppLogger.d('AuthWrapper: Error loading profile: $e');
       AppLogger.d('Stack: $stack');
-      // Reset on error so user can retry if needed
-      _lastHandledUserId = null;
+      // Don't reset _lastHandledUserId — that causes infinite retry loops
     } finally {
       if (mounted) {
         setState(() => _isLoadingProfile = false);
@@ -69,6 +97,18 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    if (_versionStatus == VersionCheckStatus.required) {
+      return const UpdateRequiredScreen();
+    }
+    
+    if (_versionStatus == VersionCheckStatus.pending) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFFFF8C00)),
+        ),
+      );
+    }
+
     final authState = ref.watch(authControllerProvider);
     final _ = ref.read(onboardingProvider); // Use read or watch? Watch is better for changes.
     // onboardingProvider seems to be a StateProvider or similar.
@@ -80,7 +120,12 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         if (user == null) {
           _lastHandledUserId = null;
           // Reset profile state to prevent session bleed
-          ref.read(profileNotifierProvider.notifier).reset();
+          // Defer to post-frame callback to avoid modifying provider during build
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              ref.read(profileNotifierProvider.notifier).reset();
+            }
+          });
           AppLogger.d('AuthWrapper: user is null. Returning LoginScreen.');
           return const LoginScreen();
         }
@@ -117,7 +162,7 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         }
         
         AppLogger.d('AuthWrapper: User authenticated and onboarding seen. Returning HomeScreen($userId).');
-        return HomeScreen(userId: userId);
+        return MainShell(userId: userId);
       },
       loading: () => const Scaffold(
         body: Center(

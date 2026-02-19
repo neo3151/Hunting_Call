@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +13,8 @@ import '../../../core/widgets/background_wrapper.dart';
 import '../../rating/presentation/rating_screen.dart';
 import '../../library/data/reference_database.dart';
 import '../../library/domain/reference_call_model.dart';
+import 'widgets/live_visualizer.dart';
+import '../domain/visualization_settings.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
   final String userId;
@@ -31,6 +34,10 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   StreamSubscription? _playerCompleteSubscription;
   Timer? _autoStopTimer;
 
+  // New: Amplitude buffer for smooth visualization
+  final List<double> _amplitudeBuffer = [];
+  StreamSubscription<double>? _amplitudeSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -41,17 +48,14 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         ref.read(selectedCallIdProvider.notifier).state = widget.preselectedAnimalId!;
       } else {
         final isPremium = ref.read(profileNotifierProvider).profile?.isPremium ?? false;
-        // Fix: Use dynamic lock check
         final availableCalls = ReferenceDatabase.calls.where((c) => !ReferenceDatabase.isLocked(c.id, isPremium)).toList();
         
         if (availableCalls.isNotEmpty) {
            ref.read(selectedCallIdProvider.notifier).state = availableCalls.first.id;
         } else {
-           // Fallback if somehow everything is locked (should not happen with starter pack)
            ref.read(selectedCallIdProvider.notifier).state = ReferenceDatabase.calls.first.id;
          }
       }
-      // Initialization is now handled by use cases, no need for explicit init()
     });
     
     _pulseController = AnimationController(
@@ -63,12 +67,26 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     _playerCompleteSubscription = _audioPlayer.onPlayerComplete.listen((_) {
       if (mounted) setState(() => isPlayingReference = false);
     });
+
+    // Subscribe to amplitude stream
+    _amplitudeSubscription = ref.read(amplitudeStreamProvider.stream).listen((amp) {
+      if (mounted) {
+        setState(() {
+          _amplitudeBuffer.add(amp);
+          // Keep buffer size manageable (approx 5 seconds of history at 50ms intervals = 100 samples)
+          if (_amplitudeBuffer.length > 100) {
+            _amplitudeBuffer.removeAt(0);
+          }
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _autoStopTimer?.cancel();
     _playerCompleteSubscription?.cancel();
+    _amplitudeSubscription?.cancel();
     _audioPlayer.dispose();
     _pulseController.dispose();
     super.dispose();
@@ -87,82 +105,100 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     _autoStopTimer?.cancel();
     await HapticFeedback.selectionClick();
     ref.read(recordingNotifierProvider.notifier).reset();
+    setState(() {
+      _amplitudeBuffer.clear();
+    });
   }
 
   void _toggleRecording() async {
     if (isProcessing) return;
     
+    debugPrint('🎙️ _toggleRecording called!');
+    
     final notifier = ref.read(recordingNotifierProvider.notifier);
     final recordingState = ref.read(recordingNotifierProvider);
     final selectedCallId = ref.read(selectedCallIdProvider);
 
-    if (recordingState.isRecording) {
-      // Stopping recording
-      setState(() => isProcessing = true);
-      await HapticFeedback.mediumImpact();
-      
-      try {
-        final path = await notifier.stopRecording();
+    try {
+      if (recordingState.isRecording) {
+        // Stopping recording
+        setState(() => isProcessing = true);
+        await HapticFeedback.mediumImpact();
         
-        if (mounted) {
-          if (path != null && path.isNotEmpty && !path.contains('not open')) {
-              Navigator.of(context).push(
-                 MaterialPageRoute(builder: (_) => RatingScreen(
-                   audioPath: path, 
-                   animalId: selectedCallId,
-                   userId: widget.userId,
-                 ))
-              );
-          } else {
-             ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Recording Failed: Could not save audio file.')),
-             );
+        try {
+          final path = await notifier.stopRecording();
+          
+          if (mounted) {
+            if (path != null && path.isNotEmpty && !path.contains('not open')) {
+                Navigator.of(context).push(
+                   MaterialPageRoute(builder: (_) => RatingScreen(
+                     audioPath: path, 
+                     animalId: selectedCallId,
+                     userId: widget.userId,
+                   ))
+                );
+            } else {
+               ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Recording Failed: Could not save audio file.')),
+               );
+            }
+          }
+        } finally {
+          if (mounted) setState(() => isProcessing = false);
+        }
+      } else {
+        // Starting recording
+        if (!Platform.isLinux) {
+          final permissionStatus = await Permission.microphone.status;
+          
+          if (permissionStatus.isDenied) {
+            final granted = await Permission.microphone.request();
+            if (!granted.isGranted) {
+              if (mounted) _showPermissionDeniedDialog();
+              return;
+            }
+          } else if (permissionStatus.isPermanentlyDenied) {
+            if (mounted) _showPermissionSettingsDialog();
+            return;
           }
         }
-      } finally {
-        if (mounted) setState(() => isProcessing = false);
-      }
-    } else {
-      // Starting recording - check permissions first
-      final permissionStatus = await Permission.microphone.status;
-      
-      if (permissionStatus.isDenied) {
-        // First denial - request permission
-        final granted = await Permission.microphone.request();
-        if (!granted.isGranted) {
-          if (mounted) _showPermissionDeniedDialog();
-          return;
+        
+        debugPrint('🎙️ Starting recording with countdown...');
+        await HapticFeedback.heavyImpact();
+        
+        // Clear buffer on start
+        setState(() => _amplitudeBuffer.clear());
+
+        await notifier.startRecordingWithCountdown();
+        
+        final finalState = ref.read(recordingNotifierProvider);
+        if (finalState.status == RecordingStatus.error) {
+           if (!mounted) return;
+           ScaffoldMessenger.of(context).showSnackBar(
+               SnackBar(
+                 content: Text('Recording Failed: ${finalState.errorMessage}'),
+                 backgroundColor: Colors.red,
+                 duration: const Duration(seconds: 5),
+               ),
+           );
+        } else if (finalState.isRecording) {
+          final call = ReferenceDatabase.getById(selectedCallId);
+          final autoStopSec = (call.idealDurationSec + 2).clamp(3, 60).toInt();
+          _autoStopTimer?.cancel();
+          _autoStopTimer = Timer(Duration(seconds: autoStopSec), () {
+            if (mounted && ref.read(recordingNotifierProvider).isRecording) {
+              _toggleRecording();
+            }
+          });
         }
-      } else if (permissionStatus.isPermanentlyDenied) {
-        // User selected "Don't ask again"
-        if (mounted) _showPermissionSettingsDialog();
-        return;
       }
-      
-      // Permission granted, proceed with recording
-      await HapticFeedback.heavyImpact();
-      await notifier.startRecordingWithCountdown();
-      
-      final finalState = ref.read(recordingNotifierProvider);
-      if (finalState.status == RecordingStatus.error) {
-         if (!mounted) return;
-         ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(
-               content: Text('Recording Failed: ${finalState.errorMessage}'),
-               backgroundColor: Colors.red,
-               duration: const Duration(seconds: 5),
-             ),
-         );
-      } else if (finalState.isRecording) {
-        // Auto-stop recording after call duration + 2 seconds
-        final call = ReferenceDatabase.getById(selectedCallId);
-        final autoStopSec = (call.idealDurationSec + 2).clamp(3, 60).toInt();
-        _autoStopTimer?.cancel();
-        _autoStopTimer = Timer(Duration(seconds: autoStopSec), () {
-          if (mounted && ref.read(recordingNotifierProvider).isRecording) {
-            _toggleRecording();
-          }
-        });
+    } catch (e, stackTrace) {
+      debugPrint('🔴 _toggleRecording error: $e');
+      debugPrint('🔴 Stack trace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
       }
     }
   }
@@ -172,7 +208,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1B3B24),
+        backgroundColor: const Color(0xFF1A1A1A),
         title: Row(
           children: [
             const Icon(Icons.mic_off, color: Colors.orangeAccent),
@@ -194,12 +230,12 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               Navigator.pop(context);
               final granted = await Permission.microphone.request();
               if (granted.isGranted) {
-                _toggleRecording(); // Retry recording
+                _toggleRecording();
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF81C784),
-              foregroundColor: const Color(0xFF0F1E12),
+              backgroundColor: const Color(0xFFFF8C00),
+              foregroundColor: const Color(0xFF121212),
             ),
             child: const Text('Allow'),
           ),
@@ -213,7 +249,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1B3B24),
+        backgroundColor: const Color(0xFF1A1A1A),
         title: Row(
           children: [
             const Icon(Icons.settings, color: Colors.orangeAccent),
@@ -237,8 +273,8 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               if (mounted) navigator.pop();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF81C784),
-              foregroundColor: const Color(0xFF0F1E12),
+              backgroundColor: const Color(0xFFFF8C00),
+              foregroundColor: const Color(0xFF121212),
             ),
             child: const Text('Open Settings'),
           ),
@@ -276,11 +312,13 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     final isRecording = recordingState.isRecording;
     final isCountingDown = recordingState.isCountingDown;
     
-
+    // New: Watch visualization settings
+    final vizSettings = ref.watch(visualizationSettingsProvider);
+    final selectedCall = ReferenceDatabase.getById(selectedCallId);
 
     return BackgroundWrapper(
       child: Scaffold(
-        backgroundColor: Colors.transparent, // Important for BackgroundWrapper
+        backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           title: Text('RECORD CALL', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
@@ -292,7 +330,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Animal Selection Card (Glassmorphism)
+              // 1. Animal Selection
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: ClipRRect(
@@ -310,7 +348,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                         child: DropdownButton<String>(
                           isExpanded: true,
                           value: selectedCallId,
-                          dropdownColor: const Color(0xFF1B3B24),
+                          dropdownColor: const Color(0xFF1A1A1A),
                           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
                           hint: Text('Select Call to Practice', style: GoogleFonts.lato(color: Colors.white70)),
                           onChanged: (isRecording || isCountingDown) ? null : (String? newValue) {
@@ -325,6 +363,88 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              
+              // 2. LIVE VISUALIZER
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Container(
+                    height: 140,
+                    decoration: BoxDecoration(
+                        color: Colors.black26, 
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white10),
+                    ),
+                    child: Stack(
+                        children: [
+                            // Optimized: Use StreamBuilder for high-frequency updates
+                            // This ensures only the visualizer rebuilds, not the whole page.
+                            StreamBuilder<double>(
+                              stream: ref.watch(amplitudeStreamProvider.stream),
+                              builder: (context, snapshot) {
+                                // Update local buffer
+                                if (snapshot.hasData) {
+                                  _amplitudeBuffer.add(snapshot.data!);
+                                  if (_amplitudeBuffer.length > 100) {
+                                      _amplitudeBuffer.removeAt(0);
+                                  }
+                                }
+                                
+                                return LiveVisualizer(
+                                    amplitudes: List<double>.from(_amplitudeBuffer), // Create copy to force repaint
+                                    referencePattern: vizSettings.showReferenceOverlay ? selectedCall.waveform : null,
+                                    referenceSpectrogram: vizSettings.showReferenceOverlay ? selectedCall.spectrogram : null,
+                                    mode: vizSettings.mode,
+                                    color: (isRecording || isCountingDown) ? Colors.tealAccent : Colors.teal.withValues(alpha: 0.5),
+                                    isRecording: isRecording || isCountingDown, // Show active state during countdown too
+                                );
+                              }
+                            ),
+                            
+                            // Mode Toggles Overlay (Top Right)
+                            Positioned(
+                                top: 4,
+                                right: 4,
+                                child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                        // Mode Toggle
+                                        IconButton(
+                                            onPressed: () => ref.read(visualizationSettingsProvider.notifier).toggleMode(),
+                                            icon: Icon(
+                                                vizSettings.mode == VisualizationMode.waveform ? Icons.graphic_eq : Icons.bar_chart, 
+                                                color: Colors.white54, 
+                                                size: 18
+                                            ),
+                                            tooltip: 'Switch View',
+                                        ),
+                                        // Reference Overlay Toggle
+                                        IconButton(
+                                            onPressed: () => ref.read(visualizationSettingsProvider.notifier).toggleReferenceOverlay(),
+                                            icon: Icon(
+                                                Icons.layers, 
+                                                color: vizSettings.showReferenceOverlay ? Colors.orangeAccent : Colors.white54, 
+                                                size: 18
+                                            ),
+                                            tooltip: 'Toggle Reference',
+                                        ),
+                                    ],
+                                ),
+                            ),
+                            // Label Overlay (Top Left)
+                            Positioned(
+                                top: 8,
+                                left: 12,
+                                child: Text(
+                                    vizSettings.mode == VisualizationMode.waveform ? 'WAVEFORM' : 'SPECTRAL SYNC',
+                                    style: GoogleFonts.oswald(color: Colors.white24, fontSize: 10, letterSpacing: 1),
+                                ),
+                            ),
+                        ],
+                    ),
+                ),
+              ),
+
               const SizedBox(height: 24),
               
               _buildGlassButton(
@@ -335,27 +455,56 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               
               const SizedBox(height: 24),
               
-              GestureDetector(
-                onTap: (isCountingDown || isProcessing) ? null : _toggleRecording,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Retry Button
-                    if (isRecording || isCountingDown)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 24.0),
-                        child: _buildSmallIconButton(
-                          onPressed: _resetRecording,
-                          icon: Icons.refresh_rounded,
-                          label: 'RESET',
-                        ),
-                      )
-                    else
-                      const SizedBox(width: 80), // Placeholder to keep main button centered
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   // ... (Existing controls code similar)
+                   // Retry Button
+                  if (isRecording || isCountingDown)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 24.0),
+                      child: _buildSmallIconButton(
+                        onPressed: _resetRecording,
+                        icon: Icons.refresh_rounded,
+                        label: 'RESET',
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 80),
 
-                    Stack(
+                  // Mic button with decorative rings
+                  SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: Stack(
                       alignment: Alignment.center,
                       children: [
+                        // Outer decorative ring
+                        if (!isRecording && !isCountingDown && !isProcessing)
+                          Container(
+                            width: 150,
+                            height: 150,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFFF8C00).withValues(alpha: 0.15),
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        // Inner decorative ring
+                        if (!isRecording && !isCountingDown && !isProcessing)
+                          Container(
+                            width: 125,
+                            height: 125,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFFF8C00).withValues(alpha: 0.25),
+                                width: 2,
+                              ),
+                            ),
+                          ),
                         if (isRecording)
                           ScaleTransition(
                             scale: _pulseAnimation,
@@ -377,51 +526,52 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                               border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 3),
                             ),
                           ),
-                        Container(
+                        // THE ACTUAL BUTTON
+                        SizedBox(
                           width: 90,
                           height: 90,
-                          decoration: BoxDecoration(
-                            color: isProcessing
-                                ? Colors.grey.withValues(alpha: 0.8)
-                                : isRecording 
-                                    ? Colors.red.withValues(alpha: 0.8) 
-                                    : isCountingDown 
-                                        ? Colors.orange.withValues(alpha: 0.8)
-                                        : Colors.green.withValues(alpha: 0.8),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: (isProcessing ? Colors.grey : isRecording ? Colors.red : isCountingDown ? Colors.orange : Colors.green).withValues(alpha: 0.4),
-                                blurRadius: 20,
-                                spreadRadius: 5,
-                              )
-                            ],
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
-                          ),
-                          child: isProcessing
-                              ? const Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
-                              : isCountingDown
-                                  ? Center(
-                                      child: Text(
+                          child: ElevatedButton(
+                            onPressed: (isCountingDown || isProcessing) ? null : () {
+                              debugPrint('🎙️ RECORD BUTTON PRESSED!');
+                              _toggleRecording();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: const CircleBorder(),
+                              padding: EdgeInsets.zero,
+                              backgroundColor: isProcessing
+                                  ? Colors.grey.withValues(alpha: 0.8)
+                                  : isRecording 
+                                      ? Colors.red.withValues(alpha: 0.8) 
+                                      : isCountingDown 
+                                          ? Colors.orange.withValues(alpha: 0.8)
+                                          : const Color(0xFFFF8C00),
+                              elevation: 8,
+                              shadowColor: (isProcessing ? Colors.grey : isRecording ? Colors.red : const Color(0xFFFF8C00)).withValues(alpha: 0.4),
+                              side: BorderSide(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                            ),
+                            child: isProcessing
+                                ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
+                                : isCountingDown
+                                    ? Text(
                                         '${recordingState.countdownValue}',
                                         style: GoogleFonts.oswald(
                                           fontSize: 48,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
                                         ),
+                                      )
+                                    : Icon(
+                                        isRecording ? Icons.stop : Icons.mic,
+                                        color: Colors.white,
+                                        size: 36,
                                       ),
-                                    )
-                                  : Icon(
-                                      isRecording ? Icons.stop : Icons.mic,
-                                      color: Colors.white,
-                                      size: 36,
-                                    ),
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(width: 80), // Balancing placeholder
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 80),
+                ],
               ),
               const SizedBox(height: 24),
               if (isRecording)
@@ -451,19 +601,36 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                 ),
 
               const SizedBox(height: 8),
-              Text(
-                isCountingDown 
-                    ? 'GET READY...' 
-                    : isRecording 
-                        ? 'RECORDING IN PROGRESS' 
-                        : 'READY TO RECORD',
-                style: GoogleFonts.oswald(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isRecording ? Colors.redAccent.shade100 : Colors.white70,
-                  letterSpacing: 2.0,
+              // TAP TO RECORD
+              TextButton(
+                onPressed: (isCountingDown || isProcessing) ? null : () {
+                  debugPrint('🎙️ TEXT BUTTON PRESSED!');
+                  _toggleRecording();
+                },
+                child: Text(
+                  isCountingDown 
+                      ? 'GET READY...' 
+                      : isRecording 
+                          ? 'RECORDING IN PROGRESS' 
+                          : 'TAP TO RECORD',
+                  style: GoogleFonts.oswald(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isRecording ? Colors.redAccent.shade100 : const Color(0xFFFF8C00),
+                    letterSpacing: 2.0,
+                  ),
                 ),
               ),
+              if (!isRecording && !isCountingDown && !isProcessing) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'Match the reference call above to improve your score',
+                  style: GoogleFonts.lato(
+                    fontSize: 12,
+                    color: Colors.white38,
+                  ),
+                ),
+              ],
               const SizedBox(height: 40),
             ],
           ),
@@ -523,12 +690,12 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Row(
                   children: [
-                    Icon(_getCategoryIcon(category), color: const Color(0xFF81C784), size: 14),
+                    Icon(_getCategoryIcon(category), color: const Color(0xFFFF8C00), size: 14),
                     const SizedBox(width: 8),
                     Text(
                       category.toUpperCase(),
                       style: GoogleFonts.oswald(
-                        color: const Color(0xFF81C784),
+                        color: const Color(0xFFFF8C00),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
@@ -603,7 +770,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   Widget _buildDifficultyBadge(String difficulty) {
     Color color;
     switch (difficulty.toLowerCase()) {
-      case 'easy': color = const Color(0xFF81C784); break;
+      case 'easy': color = const Color(0xFFFF8C00); break;
       case 'intermediate': color = const Color(0xFFFFB74D); break;
       case 'pro': color = const Color(0xFFE57373); break;
       default: color = Colors.white54;
@@ -632,8 +799,6 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       default: return Icons.category;
     }
   }
-
-
 
   Widget _buildSmallIconButton({required VoidCallback onPressed, required IconData icon, required String label}) {
     return Column(

@@ -173,7 +173,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           child: const CircleAvatar(
             radius: 50,
-            backgroundColor: Color(0xFF1B3B24),
+            backgroundColor: Color(0xFF1A1A1A),
             child: Icon(Icons.person, size: 50, color: Colors.white70),
           ),
         ),
