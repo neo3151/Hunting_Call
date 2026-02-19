@@ -28,7 +28,7 @@ class LeaderboardScreen extends ConsumerWidget {
         ),
       ),
       body: scoresAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF81C784))),
+        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFFF8C00))),
         error: (error, stack) => Center(child: Text('Error: $error', style: const TextStyle(color: Colors.white70))),
         data: (scores) {
           if (scores.isEmpty) {
@@ -77,7 +77,7 @@ class LeaderboardScreen extends ConsumerWidget {
                       entry.score.toStringAsFixed(1),
                       style: GoogleFonts.oswald(
                         fontSize: 20, 
-                        color: isTop3 ? const Color(0xFFFFD700) : const Color(0xFF81C784),
+                        color: isTop3 ? const Color(0xFFFFD700) : const Color(0xFFFF8C00),
                         fontWeight: FontWeight.bold,
                       ),
                     ),

@@ -1,18 +1,14 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import '../../recording/presentation/recorder_page.dart';
-import '../../profile/presentation/profile_screen.dart';
-import '../../library/presentation/library_screen.dart';
 import '../../daily_challenge/data/daily_challenge_service.dart';
 import '../../daily_challenge/presentation/daily_challenge_screen.dart';
-import '../../hunting_log/presentation/hunting_log_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
-import '../../weather/presentation/weather_screen.dart';
 import 'controllers/home_controller.dart';
 import 'widgets/home_header.dart';
-import 'widgets/action_card.dart';
 import 'widgets/daily_challenge_card.dart';
 import 'widgets/recent_activity_card.dart';
 
@@ -46,7 +42,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         !homeState.isLoading) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF81C784)),
+          child: CircularProgressIndicator(color: Color(0xFFFF8C00)),
         ),
       );
     }
@@ -146,8 +142,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: const Icon(Icons.refresh),
             label: const Text('Retry'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF81C784),
-              foregroundColor: const Color(0xFF0F1E12),
+              backgroundColor: const Color(0xFFFF8C00),
+              foregroundColor: const Color(0xFF121212),
             ),
           ),
           const SizedBox(height: 12),
@@ -157,7 +153,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SnackBar(
                   content:
                       Text('Contact support at: BenchmarkAppsLLC@gmail.com'),
-                  backgroundColor: Color(0xFF81C784),
+                  backgroundColor: Color(0xFFFF8C00),
                 ),
               );
             },
@@ -185,85 +181,99 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildActionGrid(BuildContext context, String activeUserId) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Quick Practice card
         Expanded(
-          flex: 3,
-          child: SizedBox(
-            height: 220,
-            child: ActionCard(
-              title: 'PRACTICE\nCALL',
-              icon: Icons.mic_external_on,
-              color: const Color(0xFFC5E1A5),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (_) => RecorderPage(userId: activeUserId)),
-              ),
+          child: _buildQuickActionCard(
+            icon: Icons.mic,
+            iconColor: const Color(0xFFFF8C00),
+            title: 'Quick\nPractice',
+            subtitle: 'Start a session now',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => RecorderPage(userId: activeUserId)),
             ),
           ),
         ),
         const SizedBox(width: 16),
+        // Daily Challenge card
         Expanded(
-          flex: 2,
-          child: Column(
-            children: [
-              SizedBox(
-                height: 102,
-                child: ActionCard(
-                  title: 'PROFILE',
-                  icon: Icons.person_outline,
-                  color: const Color(0xFFD7CCC8),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            ProfileScreen(userId: activeUserId)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 102,
-                child: ActionCard(
-                  title: 'LIBRARY',
-                  icon: Icons.library_music_outlined,
-                  color: const Color(0xFFCFD8DC),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            LibraryScreen(userId: activeUserId)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 102,
-                child: ActionCard(
-                  title: 'LOG',
-                  icon: Icons.history_edu,
-                  color: const Color(0xFFBCAAA4),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const HuntingLogScreen()),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 102,
-                child: ActionCard(
-                  title: 'WEATHER',
-                  icon: Icons.wb_sunny_outlined,
-                  color: const Color(0xFFFFF9C4),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const WeatherScreen()),
-                  ),
-                ),
-              ),
-            ],
+          child: _buildQuickActionCard(
+            icon: Icons.emoji_events,
+            iconColor: const Color(0xFFFF8C00),
+            title: 'Daily\nChallenge',
+            subtitle: 'Compete for top scores',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => DailyChallengeScreen(userId: activeUserId)),
+            ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A1A).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: iconColor.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 28),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.oswald(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.lato(
+                    fontSize: 11,
+                    color: Colors.white54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

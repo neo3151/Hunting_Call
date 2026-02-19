@@ -1,10 +1,10 @@
-# Privacy Policy for Gobble Guru
+# Privacy Policy for Outcall
 
 **Last Updated: February 15, 2026**
 
 ## Introduction
 
-Gobble Guru ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application.
+Outcall ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application.
 
 ## Information We Collect
 
@@ -67,7 +67,7 @@ We use Google Firebase for:
 
 ## Third-Party Services
 
-Gobble Guru integrates with the following third-party services:
+Outcall integrates with the following third-party services:
 - **Google Firebase** (Authentication, Firestore, Crashlytics)
 - **Google Sign-In** (Optional authentication method)
 - **Google Maps** (Location display in hunting logs)
@@ -92,7 +92,7 @@ You have the right to:
 
 ## Children's Privacy
 
-Gobble Guru is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately.
+Outcall is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately.
 
 ## Data Retention
 
@@ -113,10 +113,10 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 If you have questions or concerns about this Privacy Policy, please contact us:
 
 **Email**: BenchmarkAppsLLC@gmail.com  
-**App**: Gobble Guru → Profile → Settings → Help & Support
+**App**: Outcall → Profile → Settings → Help & Support
 
 ---
 
 ## Consent
 
-By using Gobble Guru, you consent to this Privacy Policy and agree to its terms.
+By using Outcall, you consent to this Privacy Policy and agree to its terms.

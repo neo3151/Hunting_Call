@@ -38,5 +38,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> ensureTechnicalSession() async {
+    // No-op — session handled by underlying data source
+  }
+
+  @override
   bool get isMock => false;
 }

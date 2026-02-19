@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/entities/auth_user.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'dart:io';
 
 class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuth get _auth => FirebaseAuth.instance;
@@ -38,13 +40,33 @@ class FirebaseAuthRepository implements AuthRepository {
     try {
       AppLogger.d('🔐 FirebaseAuthRepository: Starting Google Sign-In...');
       
-      final googleProvider = GoogleAuthProvider();
-      googleProvider.addScope('email');
-      googleProvider.addScope('profile');
+      UserCredential userCredential;
       
-      final UserCredential userCredential = await _auth.signInWithProvider(googleProvider);
+      if (Platform.isAndroid || Platform.isIOS) {
+        // Use native Google Sign-In for mobile to avoid redirect issues
+        final GoogleSignIn googleSignIn = GoogleSignIn(
+          scopes: ['email', 'profile'],
+        );
+        
+        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+        if (googleUser == null) throw Exception('Google Sign-In canceled by user');
+        
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final OAuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        
+        userCredential = await _auth.signInWithCredential(credential);
+      } else {
+        // Fallback or Desktop/Web flow
+        final googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+        googleProvider.addScope('profile');
+        userCredential = await _auth.signInWithProvider(googleProvider);
+      }
+      
       final user = userCredential.user;
-      
       if (user == null) throw Exception('Google Sign-In returned null user');
 
       final email = user.email;
@@ -121,6 +143,11 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<AuthUser?> get currentUser async => _mapFirebaseUser(_auth.currentUser);
+
+  @override
+  Future<void> ensureTechnicalSession() async {
+    // No-op for Firebase — session handled automatically
+  }
 
   @override
   bool get isMock => false;

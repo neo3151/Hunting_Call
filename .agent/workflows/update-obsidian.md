@@ -9,7 +9,7 @@ Run this workflow at the end of any significant task (feature completion, major 
 ## Steps
 
 1. **Identify the relevant note** in the Obsidian vault (`/home/neo/.gemini/` on Linux, `C:\Users\neo31\Notes\` on Windows). Check if a note already exists for the topic area:
-   - `Gobble Guru.md` — Hunting Call app project status
+   - `Outcall.md` — Hunting Call app project status
    - `Clean Architecture Migration.md` — architecture/refactoring work
    - Create a new note if the topic doesn't match an existing one (e.g. `Audio Pipeline.md`, `Firebase Setup.md`)
 

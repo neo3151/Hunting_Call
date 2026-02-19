@@ -99,7 +99,7 @@ const worlds = [
     category: 'Land Birds',
     emoji: '🐦',
     primaryColor: Color(0xFF2E7D32),
-    accentColor: Color(0xFF81C784),
+    accentColor: Color(0xFFFF8C00),
     bgColorTop: Color(0xFF0D1A0D),
     bgColorBot: Color(0xFF060F06),
     pathColor: Color(0xFF5D4037),

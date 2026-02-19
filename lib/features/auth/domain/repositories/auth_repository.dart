@@ -13,5 +13,9 @@ abstract class AuthRepository {
 
   Future<void> signOut();
   
+  /// Creates a technical session for Firestore access without
+  /// triggering auth state changes (no AuthWrapper rebuild).
+  Future<void> ensureTechnicalSession();
+  
   bool get isMock;
 }

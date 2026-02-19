@@ -1,13 +1,13 @@
-# Gobble Guru — Play Store Listing
+# Outcall — Play Store Listing
 
 ## App Title
-Gobble Guru: Master Your Calls
+Outcall: Master Your Calls
 
 ## Short Description (80 chars max)
 Practice & perfect your hunting calls with real-time analysis and audio coaching.
 
 ## Full Description (4000 chars max)
-🦌 **Gobble Guru: Master Your Calls** is the ultimate training app for hunters who want to sharpen their calling skills before heading into the field.
+🦌 **Outcall: Master Your Calls** is the ultimate training app for hunters who want to sharpen their calling skills before heading into the field.
 
 **PRACTICE WITH REAL CALLS**
 Browse a complete library of 50 professional-grade animal calls covering North American game — from Whitetail Deer grunts to Elk bugles, Turkey yelps to Predator calls. Each recording is sourced from real wildlife audio, giving you authentic sounds to study and replicate.
@@ -40,7 +40,7 @@ Compete with other hunters to see who can produce the most accurate calls. Climb
 **SPECIES COVERED:**
 Whitetail Deer, Elk, Moose, Turkey, Duck, Goose, Coyote, Black Bear, Pronghorn, Bobwhite Quail, Pheasant, Dove, Crow, and many more.
 
-Whether you're a seasoned hunter or just getting started, Hunting Calls gives you the tools to practice anywhere, anytime. Perfect your technique at home so you're ready when it matters in the field.
+Whether you're a seasoned hunter or just getting started, OUTCALL gives you the tools to practice anywhere, anytime. Perfect your technique at home so you're ready when it matters in the field.
 
 📱 **Privacy**: We respect your privacy. See our full privacy policy in the app settings.
 

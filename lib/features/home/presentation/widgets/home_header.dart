@@ -26,7 +26,7 @@ class HomeHeader extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
           decoration: BoxDecoration(
-            color: const Color(0xFF1B3B24).withValues(alpha: 0.4),
+            color: const Color(0xFF1A1A1A).withValues(alpha: 0.4),
             borderRadius:
                 const BorderRadius.vertical(bottom: Radius.circular(32)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
@@ -133,7 +133,7 @@ class HomeHeader extends StatelessWidget {
           final confirmed = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: const Color(0xFF1B3B24),
+              backgroundColor: const Color(0xFF1A1A1A),
               title: Text('Sign Out?',
                   style: GoogleFonts.oswald(color: Colors.white)),
               content: const Text(

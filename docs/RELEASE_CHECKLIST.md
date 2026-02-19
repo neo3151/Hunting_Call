@@ -1,4 +1,4 @@
-# Gobble Guru — Release Candidate Checklist
+# Outcall — Release Candidate Checklist
 
 ## ✅ Working Features
 - [x] Google Sign-In with profile creation and dedup
@@ -56,7 +56,7 @@
 ## 📱 Play Store Requirements
 
 ### 7. Store Listing Assets
-- [x] App icon finalized — Gobble Guru branded (gold turkey on dark green) via `flutter_launcher_icons`
+- [x] App icon finalized — Outcall branded (gold turkey on dark green) via `flutter_launcher_icons`
 - [x] Feature graphic (1024x500) — saved to `docs/feature_graphic.png`
 - [x] Screenshots (phone + tablet)
 - [x] App description and metadata — `docs/PLAY_STORE_LISTING.md`

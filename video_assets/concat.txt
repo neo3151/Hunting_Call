@@ -1,0 +1,7 @@
+file 'frames/scene_01_intro.mp4'
+file 'frames/scene_02_library.mp4'
+file 'frames/scene_03_analysis.mp4'
+file 'frames/scene_04_practice.mp4'
+file 'frames/scene_05_progress.mp4'
+file 'frames/scene_06_challenge.mp4'
+file 'frames/scene_07_outro.mp4'

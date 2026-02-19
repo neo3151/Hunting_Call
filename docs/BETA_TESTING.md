@@ -1,6 +1,6 @@
-# Closed Beta Testing Guide: Gobble Guru
+# Closed Beta Testing Guide: Outcall
 
-To download and test the **Gobble Guru** closed beta, follow these steps.
+To download and test the **Outcall** closed beta, follow these steps.
 
 ## 1. Join the Testing Group
 Before you can download the app, you must be added to the authorized testers list in the Google Play Console.
@@ -17,7 +17,7 @@ Once you are on the list, you need to opt-in via one of the following links:
 [Join on Android](https://play.google.com/store/apps/details?id=com.neo3151.huntingcalls)
 
 ## 3. Download the App
-After opting in, you can download **Gobble Guru** directly from the Play Store:
+After opting in, you can download **Outcall** directly from the Play Store:
 
 [Download on Google Play](https://play.google.com/store/apps/details?id=com.neo3151.huntingcalls)
 

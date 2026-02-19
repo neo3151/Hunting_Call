@@ -21,13 +21,16 @@ flutter build appbundle --release \
 echo "=== Packaging Debug Symbols ==="
 # Native symbols (unstripped) from intermediates
 cd build/app/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib
-zip -r ../../../../../../../outputs/native-debug-symbols.zip .
-cd ../../../../../../../
+zip -r ../../../../../../outputs/native-debug-symbols.zip .
+cd - > /dev/null
 
 # Dart symbols
 cd build/app/outputs/symbols
 zip -r ../dart-debug-symbols.zip .
-cd ../../../
+cd - > /dev/null
+
+echo "=== Building Android APK ==="
+flutter build apk --release
 
 echo "=== Building Linux Bundle ==="
 flutter build linux --release

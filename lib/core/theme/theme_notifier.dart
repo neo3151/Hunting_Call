@@ -14,21 +14,21 @@ class ThemeNotifier extends Notifier<bool> {
   ThemeData get currentTheme => state ? darkTheme : lightTheme;
 
   static final lightTheme = ThemeData(
-    primarySwatch: Colors.green,
+    primarySwatch: Colors.orange,
     useMaterial3: true,
-    scaffoldBackgroundColor: const Color(0xFFF5F7F2),
+    scaffoldBackgroundColor: const Color(0xFF121212),
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2E7D32),
-      brightness: Brightness.light,
+      seedColor: const Color(0xFFFF8C00),
+      brightness: Brightness.dark,
     ),
   );
 
   static final darkTheme = ThemeData(
-    primarySwatch: Colors.green,
+    primarySwatch: Colors.orange,
     useMaterial3: true,
-    scaffoldBackgroundColor: const Color(0xFF1B1B1B),
+    scaffoldBackgroundColor: const Color(0xFF0D0D0D),
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF66BB6A),
+      seedColor: const Color(0xFFFF8C00),
       brightness: Brightness.dark,
     ),
   );

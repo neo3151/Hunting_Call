@@ -988,11 +988,11 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   ),
                 );
               },
-              icon: const Icon(Icons.emoji_events_outlined, color: Color(0xFF81C784)),
+              icon: const Icon(Icons.emoji_events_outlined, color: Color(0xFFFF8C00)),
               label: Text('VIEW GLOBAL RANKINGS', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
-                side: BorderSide(color: const Color(0xFF81C784).withValues(alpha: 0.5)),
+                side: BorderSide(color: const Color(0xFFFF8C00).withValues(alpha: 0.5)),
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),

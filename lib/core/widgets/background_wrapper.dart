@@ -13,9 +13,9 @@ class BackgroundWrapper extends StatelessWidget {
   const BackgroundWrapper({
     super.key,
     required this.child,
-    this.tilingOpacity = 0.35, // Increased from 0.15
-    this.blurSigma = 6.0,      // Decreased from 10.0 (less blurry = more viewable)
-    this.overlayOpacity = 0.5, // Decreased from 0.7 (lighter overlay)
+    this.tilingOpacity = 0.15, // Subtle texture on charcoal
+    this.blurSigma = 8.0,      // More blur for smoother dark background
+    this.overlayOpacity = 0.7, // Darker overlay for deep charcoal feel
   });
 
   @override

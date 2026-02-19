@@ -73,7 +73,7 @@ class WaveformOverlay extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    _buildLegendItem('REF', Colors.white.withValues(alpha: 0.3)),
+                    _buildLegendItem('REF', const Color(0xFFFF6D00)),
                     const SizedBox(width: 8),
                     _buildLegendItem('YOU', const Color(0xFF5FF7B6)),
                   ],
@@ -196,8 +196,8 @@ class WaveformOverlay extends StatelessWidget {
                 userWaveform: userWaveform,
                 referenceWaveform: referenceWaveform,
                 animationValue: anim,
-                userColor: const Color(0xFF5FF7B6),
-                refColor: Colors.white.withValues(alpha: 0.15),
+                userColor: const Color(0xBB5FF7B6),
+                refColor: const Color(0xFFFF6D00),
               ),
             );
           },
@@ -229,13 +229,20 @@ class _WaveformPainter extends CustomPainter {
     final barWidth = (size.width - (dataPoints - 1) * barGap) / dataPoints;
     final centerY = size.height / 2;
 
-    final paint = Paint()..style = PaintingStyle.fill;
+
+    final refPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [refColor, refColor.withValues(alpha: 0.7)],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     final userPaint = Paint()
       ..style = PaintingStyle.fill
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [userColor, userColor.withValues(alpha: 0.7)],
+        colors: [userColor, userColor.withValues(alpha: 0.5)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     for (int i = 0; i < dataPoints; i++) {
@@ -243,22 +250,21 @@ class _WaveformPainter extends CustomPainter {
       final userVal = (userWaveform.length > sourceIdx) ? userWaveform[sourceIdx] : 0.0;
       final x = i * (barWidth + barGap);
 
-      // 1. Draw Reference
+      // 1. Draw Reference (safety orange)
       if (referenceWaveform != null) {
         final refVal = (referenceWaveform!.length > sourceIdx) ? referenceWaveform![sourceIdx] : 0.0;
         final refH = refVal * size.height * 0.85 * animationValue;
         
-        paint.color = refColor;
         canvas.drawRRect(
           RRect.fromRectAndRadius(
             Rect.fromCenter(center: Offset(x + barWidth/2, centerY), width: barWidth, height: refH.clamp(2, size.height)),
             Radius.circular(barWidth / 2),
           ),
-          paint,
+          refPaint,
         );
       }
 
-      // 2. Draw User
+      // 2. Draw User (semi-transparent teal overlaid)
       final userH = userVal * size.height * 0.85 * animationValue;
       canvas.drawRRect(
         RRect.fromRectAndRadius(

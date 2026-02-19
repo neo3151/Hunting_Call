@@ -33,9 +33,30 @@ import 'features/hunting_log/data/local_hunting_log_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firedart/firedart.dart' as fd;
 import 'core/services/file_service.dart';
+import 'core/services/version_check_service.dart';
 
 // ─── Platform Environment ───────────────────────────────────────────────────
 
+/// Must be overridden with a [PlatformEnvironment] at app startup.
+final platformEnvironmentProvider = Provider<PlatformEnvironment>((ref) {
+  throw UnimplementedError(
+    'platformEnvironmentProvider must be overridden in ProviderScope',
+  );
+});
+
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  return ref.watch(platformEnvironmentProvider).sharedPreferences;
+});
+
+/// Provides [VersionCheckService].
+final versionCheckServiceProvider = Provider<VersionCheckService>((ref) {
+  final env = ref.watch(platformEnvironmentProvider);
+  return VersionCheckServiceImpl(
+    firestore: env.isFirebaseEnabled && !env.isLinux ? FirebaseFirestore.instance : null,
+    firedart: env.isFirebaseEnabled && env.isLinux ? fd.Firestore.instance : null,
+    isLinux: env.isLinux,
+  );
+});
 /// Holds the platform and Firebase state determined at app startup.
 /// Must be overridden in [ProviderScope] before the app runs.
 class PlatformEnvironment {
@@ -55,19 +76,7 @@ class PlatformEnvironment {
   });
 }
 
-/// Must be overridden with a [PlatformEnvironment] at app startup.
-final platformEnvironmentProvider = Provider<PlatformEnvironment>((ref) {
-  throw UnimplementedError(
-    'platformEnvironmentProvider must be overridden in ProviderScope',
-  );
-});
-
 // ─── Core Providers ─────────────────────────────────────────────────────────
-
-/// SharedPreferences instance — sourced from the environment.
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  return ref.watch(platformEnvironmentProvider).sharedPreferences;
-});
 
 /// Provides [FileService] implementation.
 final fileServiceProvider = Provider<FileService>((ref) {

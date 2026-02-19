@@ -1,4 +1,4 @@
-# 🦌 Hunting Calls Perfection
+# 🦌 Outcall
 
 ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)
@@ -8,7 +8,7 @@
 
 ## 🎯 Master the Art of the Hunt
 
-**Hunting Calls Perfection** is a high-performance Flutter application designed to help hunters refine their animal calling techniques through real-time audio analysis and feedback.
+**Outcall** is a high-performance Flutter application designed to help hunters refine their animal calling techniques through real-time audio analysis and feedback.
 
 <p align="center">
   <img src="assets/images/logo.png" width="200" alt="App Logo">

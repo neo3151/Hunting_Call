@@ -79,9 +79,9 @@ class _SplashScreenState extends State<SplashScreen>
             center: Alignment(0, -0.3),
             radius: 1.2,
             colors: [
-              Color(0xFF2D4A2E), // Forest green center
-              Color(0xFF1B3320), // Darker green
-              Color(0xFF0F1E12), // Near-black green edges
+              Color(0xFF2A2D33), // Dark charcoal center
+              Color(0xFF1C1E23), // Darker
+              Color(0xFF15181D), // Near-black edges
             ],
             stops: [0.0, 0.5, 1.0],
           ),
@@ -120,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
                       decoration: BoxDecoration(
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFC9A84C).withValues(alpha: 0.15),
+                            color: const Color(0xFFE8922D).withValues(alpha: 0.15),
                             blurRadius: 60,
                             spreadRadius: 10,
                           ),
@@ -142,11 +142,11 @@ class _SplashScreenState extends State<SplashScreen>
                           shaderCallback: (bounds) {
                             return LinearGradient(
                               colors: const [
-                                Color(0xFF8B7333),
-                                Color(0xFFC9A84C),
-                                Color(0xFFE8D48B),
-                                Color(0xFFC9A84C),
-                                Color(0xFF8B7333),
+                                Color(0xFF8B5A1B),
+                                Color(0xFFE8922D),
+                                Color(0xFFF0B860),
+                                Color(0xFFE8922D),
+                                Color(0xFF8B5A1B),
                               ],
                               stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
                               transform: _SlidingGradientTransform(
@@ -167,9 +167,9 @@ class _SplashScreenState extends State<SplashScreen>
 
                     // Tagline
                     Text(
-                      'Master Your Hunting Calls',
+                      'Master Your Craft',
                       style: TextStyle(
-                        color: const Color(0xFFC9A84C).withValues(alpha: 0.7),
+                        color: const Color(0xFFE8922D).withValues(alpha: 0.7),
                         fontSize: 14,
                         fontWeight: FontWeight.w300,
                         letterSpacing: 3.0,
@@ -194,10 +194,10 @@ class _SplashScreenState extends State<SplashScreen>
                   );
                 },
                 child: const Text(
-                  'v1.3.0',
+                  'v1.5.0',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFF4A6B4D),
+                    color: Color(0xFF3A3D44),
                     fontSize: 12,
                     letterSpacing: 1.5,
                   ),
@@ -230,7 +230,7 @@ class _ForestParticlePainter extends CustomPainter {
       final y = size.height * (1.0 - progress);
       final opacity = math.sin(progress * math.pi) * particle.maxOpacity;
 
-      paint.color = const Color(0xFFC9A84C).withValues(alpha: opacity.clamp(0.0, 1.0));
+      paint.color = const Color(0xFFE8922D).withValues(alpha: opacity.clamp(0.0, 1.0));
       canvas.drawCircle(Offset(x, y), particle.radius, paint);
     }
   }
