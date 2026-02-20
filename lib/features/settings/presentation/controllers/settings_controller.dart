@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
 import '../../data/settings_repository.dart';
 import '../../domain/settings_model.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
@@ -30,8 +31,8 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     }
   }
 
-  Future<void> setDarkMode(bool value) async {
-    await updateSetting((s) => s.copyWith(darkMode: value));
+  Future<void> setTheme(AppTheme theme) async {
+    await updateSetting((s) => s.copyWith(theme: theme));
   }
 
   Future<void> setDistanceUnit(String value) async {

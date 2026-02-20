@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
-import '../../../profile/domain/profile_model.dart';
+import '../../../profile/domain/entities/user_profile.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 

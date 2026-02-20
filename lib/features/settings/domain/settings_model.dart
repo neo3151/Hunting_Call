@@ -1,6 +1,8 @@
+import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
+
 /// Domain model for application settings.
 class AppSettings {
-  final bool darkMode;
+  final AppTheme theme;
   final String distanceUnit; // 'imperial' | 'metric'
   final bool notificationsEnabled;
   final bool soundEffects;
@@ -9,7 +11,7 @@ class AppSettings {
   final int autoCleanupHours;
 
   const AppSettings({
-    this.darkMode = true,
+    this.theme = AppTheme.classic,
     this.distanceUnit = 'imperial',
     this.notificationsEnabled = true,
     this.soundEffects = true,
@@ -19,7 +21,7 @@ class AppSettings {
   });
 
   AppSettings copyWith({
-    bool? darkMode,
+    AppTheme? theme,
     String? distanceUnit,
     bool? notificationsEnabled,
     bool? soundEffects,
@@ -28,7 +30,7 @@ class AppSettings {
     int? autoCleanupHours,
   }) {
     return AppSettings(
-      darkMode: darkMode ?? this.darkMode,
+      theme: theme ?? this.theme,
       distanceUnit: distanceUnit ?? this.distanceUnit,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       soundEffects: soundEffects ?? this.soundEffects,
@@ -39,7 +41,7 @@ class AppSettings {
   }
 
   Map<String, dynamic> toMap() => {
-        'darkMode': darkMode,
+        'theme': theme.name,
         'distanceUnit': distanceUnit,
         'notificationsEnabled': notificationsEnabled,
         'soundEffects': soundEffects,
@@ -50,7 +52,10 @@ class AppSettings {
 
   factory AppSettings.fromMap(Map<String, dynamic> map) {
     return AppSettings(
-      darkMode: map['darkMode'] as bool? ?? true,
+      theme: AppTheme.values.firstWhere(
+        (e) => e.name == map['theme'],
+        orElse: () => map['darkMode'] == false ? AppTheme.classic : AppTheme.classic, // Fallback logic
+      ),
       distanceUnit: map['distanceUnit'] as String? ?? 'imperial',
       notificationsEnabled: map['notificationsEnabled'] as bool? ?? true,
       soundEffects: map['soundEffects'] as bool? ?? true,

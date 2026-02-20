@@ -1,7 +1,7 @@
 import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/profile_model.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
 import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
-import 'local_profile_data_source.dart';
+import '../datasources/local_profile_data_source.dart';
 
 class LocalProfileRepository implements ProfileRepository {
   final ProfileDataSource dataSource;

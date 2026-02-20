@@ -6,14 +6,14 @@ import 'features/auth/data/firebase_auth_repository.dart';
 import 'features/auth/data/mock_auth_repository.dart';
 
 import 'features/recording/domain/audio_recorder_service.dart';
-import 'features/recording/data/real_audio_recorder_service.dart';
-import 'features/recording/data/mock_audio_recorder_service.dart';
+import 'features/recording/data/repositories/real_audio_recorder_service.dart';
+import 'features/recording/data/repositories/mock_audio_recorder_service.dart';
 
-import 'features/profile/data/local_profile_data_source.dart';
+import 'features/profile/data/datasources/local_profile_data_source.dart';
 import 'features/profile/domain/repositories/profile_repository.dart';
-import 'features/profile/data/profile_repository.dart'; // LocalProfileRepository
-import 'features/profile/data/firestore_profile_repository.dart';
-import 'features/profile/data/firedart_profile_repository.dart';
+import 'features/profile/data/repositories/local_profile_repository.dart'; // LocalProfileRepository
+import 'features/profile/data/repositories/firestore_profile_repository.dart';
+import 'features/profile/data/repositories/firedart_profile_repository.dart';
 
 import 'features/leaderboard/domain/repositories/leaderboard_service.dart';
 import 'features/leaderboard/data/leaderboard_service.dart'; // FirebaseLeaderboardService
@@ -34,6 +34,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firedart/firedart.dart' as fd;
 import 'core/services/file_service.dart';
 import 'core/services/version_check_service.dart';
+import 'core/services/cloud_audio_service.dart';
 
 // ─── Platform Environment ───────────────────────────────────────────────────
 
@@ -155,6 +156,7 @@ final ratingServiceProvider = Provider<RatingService>((ref) {
     analyzer: ref.watch(frequencyAnalyzerProvider),
     profileRepository: ref.watch(profileRepositoryProvider),
     leaderboardService: ref.watch(leaderboardServiceProvider),
+    cloudAudioService: ref.watch(cloudAudioServiceProvider),
   );
 });
 

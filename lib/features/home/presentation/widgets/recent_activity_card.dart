@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../../profile/domain/profile_model.dart';
+import '../../../profile/domain/entities/user_profile.dart';
 
 /// Displays the most recent hunt result on the home screen.
 class RecentActivityCard extends StatelessWidget {

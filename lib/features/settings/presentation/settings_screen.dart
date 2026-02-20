@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import 'controllers/settings_controller.dart';
 import 'privacy_policy_screen.dart';
+import '../../../core/theme/app_theme.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -59,13 +60,50 @@ class SettingsScreen extends ConsumerWidget {
                         children: [
                           _sectionTitle('APPEARANCE'),
                           _settingsTile(
-                            icon: Icons.dark_mode,
-                            title: 'Dark Mode',
-                            subtitle: 'Use dark theme throughout the app',
-                            trailing: Switch(
-                              value: settings.darkMode,
-                              onChanged: notifier.setDarkMode,
-                              activeColor: const Color(0xFFFF8C00),
+                            icon: Icons.palette_outlined,
+                            title: 'App Theme',
+                            subtitle: 'Choose your color palette',
+                            trailing: SegmentedButton<AppTheme>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: AppTheme.classic,
+                                  icon: Icon(Icons.circle, color: Color(0xFFFF8C00), size: 14),
+                                  label: Text('ORA', style: TextStyle(fontSize: 10)),
+                                ),
+                                ButtonSegment(
+                                  value: AppTheme.midnight,
+                                  icon: Icon(Icons.circle, color: Color(0xFF3A86FF), size: 14),
+                                  label: Text('BLU', style: TextStyle(fontSize: 10)),
+                                ),
+                                ButtonSegment(
+                                  value: AppTheme.forest,
+                                  icon: Icon(Icons.circle, color: Color(0xFF2ECC71), size: 14),
+                                  label: Text('GRN', style: TextStyle(fontSize: 10)),
+                                ),
+                                ButtonSegment(
+                                  value: AppTheme.hunter,
+                                  icon: Icon(Icons.circle, color: Color(0xFFE74C3C), size: 14),
+                                  label: Text('RED', style: TextStyle(fontSize: 10)),
+                                ),
+                              ],
+                              selected: {settings.theme},
+                              onSelectionChanged: (v) =>
+                                  notifier.setTheme(v.first),
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    WidgetStateProperty.resolveWith((states) {
+                                  if (states
+                                      .contains(WidgetState.selected)) {
+                                    return const Color(0xFFFF8C00)
+                                        .withValues(alpha: 0.3);
+                                  }
+                                  return Colors.white.withValues(alpha: 0.05);
+                                }),
+                                foregroundColor:
+                                    WidgetStateProperty.all(Colors.white),
+                                side: WidgetStateProperty.all(
+                                    const BorderSide(color: Colors.white24)),
+                              ),
                             ),
                           ),
                           const Divider(color: Colors.white12),

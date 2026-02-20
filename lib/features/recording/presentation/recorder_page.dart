@@ -13,6 +13,7 @@ import '../../../core/widgets/background_wrapper.dart';
 import '../../rating/presentation/rating_screen.dart';
 import '../../library/data/reference_database.dart';
 import '../../library/domain/reference_call_model.dart';
+import '../../../core/services/cloud_audio_service.dart';
 import 'widgets/live_visualizer.dart';
 import '../domain/visualization_settings.dart';
 
@@ -96,6 +97,45 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     final int minutes = seconds ~/ 60;
     final int remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  /// Compute average amplitude from reference waveform for coaching zone
+  double _computeRefAvg(List<double>? waveform) {
+    if (waveform == null || waveform.isEmpty) return 0.0;
+    double sum = 0;
+    int count = 0;
+    for (final v in waveform) {
+      if (v > 0.05) {
+        sum += v;
+        count++;
+      }
+    }
+    return count > 0 ? sum / count : 0.0;
+  }
+
+  /// Get coaching feedback based on current amplitude vs reference target
+  ({String text, Color color}) _getCoachingFeedback(double refAvg) {
+    if (_amplitudeBuffer.isEmpty || refAvg < 0.05) {
+      return (text: '', color: Colors.transparent);
+    }
+    // Use the average of last 10 samples for stable feedback
+    final recent = _amplitudeBuffer.length > 10
+        ? _amplitudeBuffer.sublist(_amplitudeBuffer.length - 10)
+        : _amplitudeBuffer;
+    final currentAvg = recent.fold<double>(0.0, (a, b) => a + b) / recent.length;
+    
+    if (currentAvg < 0.02) return (text: '', color: Colors.transparent); // Silence
+    
+    final zoneLow = refAvg * 0.5;
+    final zoneHigh = refAvg * 1.5;
+    
+    if (currentAvg >= zoneLow && currentAvg <= zoneHigh) {
+      return (text: '🎯 IN RANGE', color: const Color(0xFF5FF7B6));
+    } else if (currentAvg < zoneLow) {
+      return (text: '🔇 TOO QUIET', color: const Color(0xFFFFD54F));
+    } else {
+      return (text: '📢 TOO LOUD', color: const Color(0xFFFF5252));
+    }
   }
 
   bool isProcessing = false;
@@ -291,10 +331,15 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     } else {
       final selectedCallId = ref.read(selectedCallIdProvider);
       final call = ReferenceDatabase.getById(selectedCallId);
-      final assetPath = call.audioAssetPath.replaceFirst('assets/', '');
+      final cloudAudio = ref.read(cloudAudioServiceProvider);
       
       try {
-        await _audioPlayer.play(AssetSource(assetPath));
+        final source = await cloudAudio.resolveAudioSource(call.id, call.audioAssetPath);
+        if (source.isAsset) {
+          await _audioPlayer.play(AssetSource(source.path));
+        } else {
+          await _audioPlayer.play(DeviceFileSource(source.path));
+        }
         setState(() => isPlayingReference = true);
       } catch (e) {
         if (mounted) {
@@ -396,7 +441,8 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                                     referenceSpectrogram: vizSettings.showReferenceOverlay ? selectedCall.spectrogram : null,
                                     mode: vizSettings.mode,
                                     color: (isRecording || isCountingDown) ? Colors.tealAccent : Colors.teal.withValues(alpha: 0.5),
-                                    isRecording: isRecording || isCountingDown, // Show active state during countdown too
+                                    isRecording: isRecording || isCountingDown,
+                                    referenceAvgAmplitude: _computeRefAvg(selectedCall.waveform),
                                 );
                               }
                             ),
@@ -443,6 +489,27 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                         ],
                     ),
                 ),
+              ),
+              // Coaching Text Indicator
+              if (isRecording) Builder(
+                builder: (context) {
+                  final refAvg = _computeRefAvg(selectedCall.waveform);
+                  final feedback = _getCoachingFeedback(refAvg);
+                  if (feedback.text.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 200),
+                      style: GoogleFonts.oswald(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                        color: feedback.color,
+                      ),
+                      child: Text(feedback.text),
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 24),

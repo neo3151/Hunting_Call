@@ -7,7 +7,7 @@ import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:hunting_calls_perfection/features/home/presentation/home_screen.dart';
 import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
 import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/profile_model.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -67,9 +67,10 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('PRACTICE'), findsOneWidget);
-    expect(find.textContaining('PROFILE'), findsOneWidget);
-    expect(find.textContaining('LIBRARY'), findsOneWidget);
+    expect(find.textContaining('Quick'), findsOneWidget);
+    expect(find.textContaining('Practice'), findsOneWidget);
+    expect(find.textContaining('Daily'), findsOneWidget);
+    expect(find.textContaining('Challenge'), findsOneWidget);
   });
 
   testWidgets('Should trigger sign out when logout button is tapped', (tester) async {
@@ -90,7 +91,8 @@ void main() {
     expect(signOutButton, findsOneWidget);
 
     await tester.tap(signOutButton);
-    await tester.pumpAndSettle();
+    // Use pump() instead of pumpAndSettle to avoid timeout from infinite loading animation
+    await tester.pump(const Duration(milliseconds: 500)); 
 
     // HomeScreen now uses authControllerProvider.notifier.signOut()
     // which calls the signOut use case, which calls mockAuthRepository.signOut()

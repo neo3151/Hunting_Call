@@ -1,39 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/settings/presentation/controllers/settings_controller.dart';
+import 'app_theme.dart';
 
-class ThemeNotifier extends Notifier<bool> {
+class ThemeNotifier extends Notifier<AppTheme> {
   @override
-  bool build() {
-    return false; // Default to light mode (matching previous _isDarkMode = false)
+  AppTheme build() {
+    final settingsAsync = ref.watch(settingsNotifierProvider);
+    return settingsAsync.maybeWhen(
+      data: (settings) => settings.theme,
+      orElse: () => AppTheme.classic,
+    );
   }
 
-  void toggleTheme() {
-    state = !state;
+  ThemeData get currentTheme {
+    switch (state) {
+      case AppTheme.classic:
+        return _buildTheme(const Color(0xFFFF8C00));
+      case AppTheme.midnight:
+        return _buildTheme(const Color(0xFF3A86FF));
+      case AppTheme.forest:
+        return _buildTheme(const Color(0xFF2ECC71));
+      case AppTheme.hunter:
+        return _buildTheme(const Color(0xFFE74C3C));
+    }
   }
 
-  ThemeData get currentTheme => state ? darkTheme : lightTheme;
-
-  static final lightTheme = ThemeData(
-    primarySwatch: Colors.orange,
-    useMaterial3: true,
-    scaffoldBackgroundColor: const Color(0xFF121212),
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFFFF8C00),
-      brightness: Brightness.dark,
-    ),
-  );
-
-  static final darkTheme = ThemeData(
-    primarySwatch: Colors.orange,
-    useMaterial3: true,
-    scaffoldBackgroundColor: const Color(0xFF0D0D0D),
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFFFF8C00),
-      brightness: Brightness.dark,
-    ),
-  );
+  ThemeData _buildTheme(Color seedColor) {
+    return ThemeData(
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFF0D0D0D),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: seedColor,
+        brightness: Brightness.dark,
+      ),
+    );
+  }
 }
 
-final themeNotifierProvider = NotifierProvider<ThemeNotifier, bool>(() {
+final themeNotifierProvider = NotifierProvider<ThemeNotifier, AppTheme>(() {
   return ThemeNotifier();
 });

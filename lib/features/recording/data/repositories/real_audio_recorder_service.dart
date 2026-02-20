@@ -5,16 +5,17 @@ import 'package:record/record.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import '../domain/audio_recorder_service.dart';
+import '../../domain/audio_recorder_service.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class RealAudioRecorderService implements AudioRecorderService {
   // ============ CONFIGURATION CONSTANTS ============
   
-  /// Amplitude offset for normalization. The `record` package reports amplitude
-  /// in decibels from approximately -160 (silence) to 0 (maximum). We normalize
-  /// this to a 0.0-1.0 range for the visualizer.
-  static const double _amplitudeDbMin = -160.0;
+  /// Amplitude noise floor for normalization. The `record` package reports amplitude
+  /// in decibels where 0 is maximum and negative values are quieter. We use -55dB
+  /// as the floor so ambient noise (~-60dB) reads as zero and the visualizer only
+  /// responds to intentional voice input. Values between -55dB and 0dB map to 0.0–1.0.
+  static const double _amplitudeDbMin = -55.0;
   
   /// Delay after cleanup to allow the OS to release audio stream handles.
   /// This is a workaround for Windows which doesn't release handles immediately.

@@ -9,7 +9,6 @@ import '../../onboarding/presentation/onboarding_screen.dart';
 import '../../../core/widgets/main_shell.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
-import '../../../core/services/version_check_service.dart';
 import '../../../core/widgets/update_required_screen.dart';
 
 /// Watches auth state and shows LoginScreen, OnboardingScreen, or HomeScreen.

@@ -2,11 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hunting_calls_perfection/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
 import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
 import 'package:hunting_calls_perfection/config/freemium_config.dart';
+import 'package:hunting_calls_perfection/config/app_config.dart';
 
 void main() {
   late CheckCallLockStatusUseCase useCase;
 
   setUp(() {
+    AppConfig.create(flavor: AppFlavor.free, appName: 'Hunting Call Test');
     useCase = const CheckCallLockStatusUseCase();
   });
 

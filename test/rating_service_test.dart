@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
+import 'package:hunting_calls_perfection/config/app_config.dart';
 import 'package:hunting_calls_perfection/features/analysis/data/real_rating_service.dart';
 import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
 import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
@@ -23,6 +24,7 @@ void main() {
 
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
+    AppConfig.create(flavor: AppFlavor.free, appName: 'Hunting Call Test');
     mockAnalyzer = MockFrequencyAnalyzer();
     mockProfileRepository = MockProfileRepository();
     ratingService = RealRatingService(
@@ -136,7 +138,7 @@ void main() {
         peakVolume: 0.75,
         volumeConsistency: 100.0,
         toneClarity: 100.0,
-        harmonicRichness: 80.0,
+        harmonicRichness: 100.0,
         harmonics: {},
         brightness: 50.0,
         warmth: 50.0,

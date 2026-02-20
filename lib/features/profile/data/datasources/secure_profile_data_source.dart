@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../domain/profile_model.dart';
+import '../../domain/entities/user_profile.dart';
 import 'local_profile_data_source.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 

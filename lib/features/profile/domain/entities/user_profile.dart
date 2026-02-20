@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
-import '../../rating/domain/rating_model.dart';
+import '../../../rating/domain/rating_model.dart';
 
-part 'profile_model.g.dart';
+part 'user_profile.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class UserProfile {

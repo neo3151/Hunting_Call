@@ -27,7 +27,7 @@ class GetDailyChallengeUseCase {
       final allCallsResult = _getAllCallsUseCase.execute();
       
       return allCallsResult.fold(
-        (failure) => left(const NoChallengesAvailable()),
+        (failure) => right(_getDefaultChallenge()),
         (allCalls) {
           // Filter to only free calls (everyone can play daily challenges)
           final freeCalls = allCalls.where((call) {

@@ -7,7 +7,7 @@ import 'controllers/auth_controller.dart';
 
 import '../../../core/widgets/background_wrapper.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
-import '../../profile/domain/profile_model.dart';
+import '../../profile/domain/entities/user_profile.dart';
 import '../../settings/presentation/privacy_policy_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';

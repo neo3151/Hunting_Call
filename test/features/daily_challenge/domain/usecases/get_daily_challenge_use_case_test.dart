@@ -4,6 +4,7 @@ import 'package:hunting_calls_perfection/features/library/domain/use_cases/get_a
 import 'package:hunting_calls_perfection/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
 import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
 import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
+import 'package:hunting_calls_perfection/config/app_config.dart';
 
 void main() {
   late GetDailyChallengeUseCase useCase;
@@ -11,6 +12,7 @@ void main() {
   late CheckCallLockStatusUseCase checkLockStatusUseCase;
 
   setUp(() {
+    AppConfig.create(flavor: AppFlavor.free, appName: 'Hunting Call Test');
     getAllCallsUseCase = const GetAllCallsUseCase();
     checkLockStatusUseCase = const CheckCallLockStatusUseCase();
     useCase = GetDailyChallengeUseCase(getAllCallsUseCase, checkLockStatusUseCase);

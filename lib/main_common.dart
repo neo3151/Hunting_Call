@@ -17,6 +17,7 @@ import 'features/library/data/reference_database.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/data/firedart_auth_repository.dart';
 import 'config/app_config.dart';
+import 'core/services/cloud_audio_service.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 void mainCommon() async {
@@ -38,6 +39,10 @@ void mainCommon() async {
   // Initialize Reference Database
   await ReferenceDatabase.init();
   
+  // Initialize Cloud Audio Service (caches paid call downloads)
+  final cloudAudio = CloudAudioService();
+  await cloudAudio.init();
+
   // Initialize Firebase
   bool firebaseReady = false;
   try {
@@ -147,12 +152,14 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
 
   @override
   Widget build(BuildContext context) {
-    final themeNotifier = ref.read(themeNotifierProvider.notifier);
+    // Watch the theme state so MaterialApp rebuilds on theme change
+    ref.watch(themeNotifierProvider);
+    final themeData = ref.read(themeNotifierProvider.notifier).currentTheme;
     
     return MaterialApp(
       title: AppConfig.instance.appName,
       debugShowCheckedModeBanner: false,
-      theme: themeNotifier.currentTheme,
+      theme: themeData,
       home: const SplashScreen(),
     );
   }

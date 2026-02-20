@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import '../failures/profile_failure.dart';
-import '../profile_model.dart';
+import '../entities/user_profile.dart';
 import '../achievement_service.dart';
 
 /// Use case for calculating new achievements earned by a user

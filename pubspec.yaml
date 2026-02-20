@@ -37,6 +37,7 @@ dependencies:
   firebase_auth: ^5.4.4
   cloud_firestore: ^5.6.2
   firebase_crashlytics: ^4.3.2
+  firebase_storage: ^12.4.4
   json_annotation: ^4.8.1
   fftea: ^1.5.0+1
   shared_preferences: ^2.5.3
@@ -70,7 +71,23 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/audio/
+    # Free-tier audio (bundled in APK). Paid calls download from Firebase Storage.
+    - assets/audio/duck_mallard_greeting.mp3
+    - assets/audio/duck_mallard_greeting_v2.mp3
+    - assets/audio/goose_canadian_honk.mp3
+    - assets/audio/wood_duck.mp3
+    - assets/audio/deer_buck_grunt.mp3
+    - assets/audio/deer_doe_bleat.mp3
+    - assets/audio/cougar.mp3
+    - assets/audio/coyote_howl.mp3
+    - assets/audio/rabbit_distress.mp3
+    - assets/audio/fox_scream.mp3
+    - assets/audio/turkey_gobble.mp3
+    - assets/audio/crow.mp3
+    - assets/audio/dove.mp3
+    - assets/audio/owl_barred_hoot.mp3
+    - assets/audio/coyote_yip.mp3
+    - assets/audio/awebo.mp3
     - assets/images/
     - assets/images/animals/
     - assets/data/

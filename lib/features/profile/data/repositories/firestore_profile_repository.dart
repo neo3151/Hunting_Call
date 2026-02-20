@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../domain/profile_model.dart';
-import '../../rating/domain/rating_model.dart';
-import '../domain/repositories/profile_repository.dart';
-import '../domain/use_cases/update_daily_challenge_stats_use_case.dart';
-import '../domain/entities/daily_challenge_stats.dart';
-import 'local_profile_data_source.dart';
+import '../../domain/entities/user_profile.dart';
+import '../../../rating/domain/rating_model.dart';
+import '../../domain/repositories/profile_repository.dart';
+import '../../domain/use_cases/update_daily_challenge_stats_use_case.dart';
+import '../../domain/entities/daily_challenge_stats.dart';
+import '../datasources/local_profile_data_source.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class FirestoreProfileRepository implements ProfileRepository {

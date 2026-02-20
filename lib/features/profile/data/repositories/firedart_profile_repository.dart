@@ -1,7 +1,7 @@
 import 'package:firedart/firedart.dart';
-import '../domain/profile_model.dart';
-import '../../rating/domain/rating_model.dart';
-import '../domain/repositories/profile_repository.dart';
+import '../../domain/entities/user_profile.dart';
+import '../../../rating/domain/rating_model.dart';
+import '../../domain/repositories/profile_repository.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class FiredartProfileRepository implements ProfileRepository {
@@ -138,16 +138,35 @@ class FiredartProfileRepository implements ProfileRepository {
       );
 
       final data = newItem.toJson();
+      final docRef = _firestore.collection(_collectionPath).document(userId);
       
-      final doc = await _firestore.collection(_collectionPath).document(userId).get();
-      final Map<String, dynamic> existingData = doc.map;
+      // Try to get existing doc — firedart throws NOT_FOUND if it doesn't exist
+      Map<String, dynamic> existingData = {};
+      try {
+        final doc = await docRef.get();
+        existingData = doc.map;
+      } catch (e) {
+        if (e.toString().contains('NOT_FOUND')) {
+          // Profile doesn't exist yet — create it
+          AppLogger.d('FiredartProfileRepository: Profile $userId not found, creating...');
+          await docRef.set({
+            'id': userId,
+            'name': 'Hunter',
+            'joinedDate': DateTime.now().toIso8601String(),
+            'history': [data],
+            'totalCalls': 1,
+          });
+          return;
+        }
+        rethrow;
+      }
       
       final history = List<dynamic>.from(existingData['history'] ?? <dynamic>[]);
       history.add(data);
       
       final totalCalls = (existingData['totalCalls'] as int? ?? 0) + 1;
       
-      await _firestore.collection(_collectionPath).document(userId).update({
+      await docRef.update({
         'history': history,
         'totalCalls': totalCalls,
         'joinedDate': existingData['joinedDate'] ?? DateTime.now().toIso8601String(),
@@ -160,13 +179,29 @@ class FiredartProfileRepository implements ProfileRepository {
     if (userId == 'guest' || achievementIds.isEmpty) return;
 
     await _withRetry(() async {
-      final doc = await _firestore.collection(_collectionPath).document(userId).get();
-      final Map<String, dynamic> existingData = doc.map;
+      final docRef = _firestore.collection(_collectionPath).document(userId);
+      
+      Map<String, dynamic> existingData = {};
+      try {
+        final doc = await docRef.get();
+        existingData = doc.map;
+      } catch (e) {
+        if (e.toString().contains('NOT_FOUND')) {
+          await docRef.set({
+            'id': userId,
+            'name': 'Hunter',
+            'joinedDate': DateTime.now().toIso8601String(),
+            'achievements': achievementIds,
+          });
+          return;
+        }
+        rethrow;
+      }
       
       final Set<String> achievements = Set.from(existingData['achievements'] ?? []);
       achievements.addAll(achievementIds);
       
-      await _firestore.collection(_collectionPath).document(userId).update({
+      await docRef.update({
         'achievements': achievements.toList(),
       });
     }, 'saveAchievements');
@@ -179,11 +214,29 @@ class FiredartProfileRepository implements ProfileRepository {
     await _withRetry(() async {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
+      final docRef = _firestore.collection(_collectionPath).document(userId);
       
-      final doc = await _firestore.collection(_collectionPath).document(userId).get();
-      // doc is non-nullable in firedart
+      Map<String, dynamic> data = {};
+      try {
+        final doc = await docRef.get();
+        data = doc.map;
+      } catch (e) {
+        if (e.toString().contains('NOT_FOUND')) {
+          // Profile doesn't exist — create with initial stats
+          await docRef.set({
+            'id': userId,
+            'name': 'Hunter',
+            'joinedDate': DateTime.now().toIso8601String(),
+            'dailyChallengesCompleted': 1,
+            'lastDailyChallengeDate': now.millisecondsSinceEpoch,
+            'currentStreak': 1,
+            'longestStreak': 1,
+          });
+          return;
+        }
+        rethrow;
+      }
       
-      final data = doc.map;
       final dynamic rawLastDate = data['lastDailyChallengeDate'];
       DateTime? lastDate;
       
@@ -220,7 +273,7 @@ class FiredartProfileRepository implements ProfileRepository {
         final int newLongest = newStreak > longestStreak ? newStreak : longestStreak;
         final int totalCompleted = (data['dailyChallengesCompleted'] as int? ?? 0) + 1;
 
-        await _firestore.collection(_collectionPath).document(userId).update({
+        await docRef.update({
           'dailyChallengesCompleted': totalCompleted,
           'lastDailyChallengeDate': now.millisecondsSinceEpoch,
           'currentStreak': newStreak,
@@ -233,9 +286,23 @@ class FiredartProfileRepository implements ProfileRepository {
   @override
   Future<void> setPremiumStatus(String userId, bool isPremium) async {
     return _withRetry(() async {
-      await _firestore.collection(_collectionPath).document(userId).update({
-        'isPremium': isPremium,
-      });
+      final docRef = _firestore.collection(_collectionPath).document(userId);
+      try {
+        await docRef.update({
+          'isPremium': isPremium,
+        });
+      } catch (e) {
+        if (e.toString().contains('NOT_FOUND')) {
+          await docRef.set({
+            'id': userId,
+            'name': 'Hunter',
+            'joinedDate': DateTime.now().toIso8601String(),
+            'isPremium': isPremium,
+          });
+        } else {
+          rethrow;
+        }
+      }
       AppLogger.d('✅ Firedart: Set isPremium=$isPremium for $userId');
     }, 'setPremiumStatus');
   }

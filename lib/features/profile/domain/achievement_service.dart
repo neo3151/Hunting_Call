@@ -1,4 +1,4 @@
-import '../domain/profile_model.dart';
+import 'entities/user_profile.dart';
 
 class Achievement {
   final String id;

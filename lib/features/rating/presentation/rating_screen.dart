@@ -14,6 +14,7 @@ import './widgets/waveform_overlay.dart';
 import '../domain/personality_feedback_service.dart';
 import '../../leaderboard/presentation/leaderboard_screen.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:hunting_calls_perfection/core/services/cloud_audio_service.dart';
 
 class RatingScreen extends ConsumerStatefulWidget {
   final String audioPath;
@@ -102,10 +103,15 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       result.fold(
         (failure) => AppLogger.d('Error getting reference call: ${failure.message}'),
         (reference) async {
-          final assetPath = reference.audioAssetPath.replaceFirst('assets/', '');
+          final cloudAudio = ref.read(cloudAudioServiceProvider);
           
           try {
-            await _refPlayer.play(AssetSource(assetPath));
+            final source = await cloudAudio.resolveAudioSource(reference.id, reference.audioAssetPath);
+            if (source.isAsset) {
+              await _refPlayer.play(AssetSource(source.path));
+            } else {
+              await _refPlayer.play(DeviceFileSource(source.path));
+            }
             if (mounted) setState(() => _isRefPlaying = true);
           } catch (e) {
             AppLogger.d('Error playing reference audio: $e');

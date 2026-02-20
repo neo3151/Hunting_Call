@@ -51,8 +51,8 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pumpAndSettle();
 
-    expect(find.text('HUNTING\nCALLS'), findsOneWidget);
-    expect(find.text('MASTER THE WILD'), findsOneWidget);
+    expect(find.text('OUTCALL'), findsOneWidget);
+    expect(find.text('MASTER YOUR CALLS'), findsOneWidget);
   });
 
   testWidgets('Should show "NEW HUNTER PROFILE" button', (tester) async {

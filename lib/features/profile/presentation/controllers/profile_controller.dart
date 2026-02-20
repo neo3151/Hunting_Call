@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/repositories/profile_repository.dart';
-import '../../domain/profile_model.dart';
+import '../../domain/entities/user_profile.dart';
 import '../../../rating/domain/rating_model.dart';
 import '../../domain/providers.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';

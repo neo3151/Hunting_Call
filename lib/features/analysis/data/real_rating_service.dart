@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
+import '../../../core/services/cloud_audio_service.dart';
 import '../../rating/domain/rating_model.dart';
 import '../../rating/domain/rating_service.dart';
 import '../domain/audio_analysis_model.dart';
@@ -23,6 +24,7 @@ class RealRatingService implements RatingService {
   final FrequencyAnalyzer analyzer; // Still needed for reference audio analysis
   final ProfileRepository profileRepository;
   final LeaderboardService? leaderboardService;
+  final CloudAudioService? cloudAudioService;
   
   Position? _currentPosition;
 
@@ -32,6 +34,7 @@ class RealRatingService implements RatingService {
     required this.analyzer, 
     required this.profileRepository,
     this.leaderboardService,
+    this.cloudAudioService,
   }) : _analyzeUseCase = analyzeUseCase,
        _calculateUseCase = calculateUseCase;
 
@@ -86,17 +89,24 @@ class RealRatingService implements RatingService {
         try {
           AppLogger.d('RealRatingService: Analyzing reference for $animalType (not cached)');
           final assetPath = reference.audioAssetPath;
-          final ByteData data = await rootBundle.load(assetPath);
-          final List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
           
-          final tempDir = Directory.systemTemp;
-          final tempFile = File('${tempDir.path}/ref_${reference.id}.wav');
-          await tempFile.writeAsBytes(bytes);
+          // Use CloudAudioService if available, otherwise fall back to rootBundle
+          String refFilePath;
+          if (cloudAudioService != null) {
+            refFilePath = await cloudAudioService!.resolveFilePath(reference.id, assetPath);
+          } else {
+            final ByteData data = await rootBundle.load(assetPath);
+            final List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+            final tempDir = Directory.systemTemp;
+            final tempFile = File('${tempDir.path}/ref_${reference.id}.wav');
+            await tempFile.writeAsBytes(bytes);
+            refFilePath = tempFile.path;
+          }
           
-          refAnalysis = await analyzer.analyzeAudio(tempFile.path);
+          refAnalysis = await analyzer.analyzeAudio(refFilePath);
           _refCache[animalType] = refAnalysis;
           
-          try { await tempFile.delete(); } catch (_) {}
+          try { await File(refFilePath).delete(); } catch (_) {}
         } catch (e) {
           AppLogger.d('Reference Analysis Error: $e');
         }

@@ -37,10 +37,9 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
 
   Future<void> _togglePlayback() async {
     final audioService = ref.read(audioServiceProvider);
-    final assetPath = widget.call.audioAssetPath.replaceFirst('assets/', '');
     
     try {
-      await audioService.playAsset(assetPath, widget.call.id);
+      await audioService.play(widget.call.id, widget.call.audioAssetPath);
       if (mounted) setState(() {}); // Trigger rebuild
     } catch (e) {
       if (mounted) {

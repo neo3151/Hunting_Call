@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../domain/profile_model.dart';
+import '../../domain/entities/user_profile.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 abstract class ProfileDataSource {

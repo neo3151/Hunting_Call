@@ -45,10 +45,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
     
     final audioService = ref.read(audioServiceProvider);
-    final assetPath = call.audioAssetPath.replaceFirst('assets/', '');
     
     try {
-      await audioService.playAsset(assetPath, call.id);
+      await audioService.play(call.id, call.audioAssetPath);
       if (mounted) setState(() {}); // Trigger rebuild
     } catch (e) {
       if (mounted) {
