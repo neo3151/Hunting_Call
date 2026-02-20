@@ -7,6 +7,7 @@ import '../../recording/presentation/recorder_page.dart';
 import '../../daily_challenge/data/daily_challenge_service.dart';
 import '../../daily_challenge/presentation/daily_challenge_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
+import '../../leaderboard/presentation/global_leaderboard_screen.dart';
 import 'controllers/home_controller.dart';
 import 'widgets/home_header.dart';
 import 'widgets/daily_challenge_card.dart';
@@ -180,34 +181,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildActionGrid(BuildContext context, String activeUserId) {
-    return Row(
+    return Column(
       children: [
-        // Quick Practice card
-        Expanded(
-          child: _buildQuickActionCard(
-            icon: Icons.mic,
-            iconColor: const Color(0xFFFF8C00),
-            title: 'Quick\nPractice',
-            subtitle: 'Start a session now',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (_) => RecorderPage(userId: activeUserId)),
+        Row(
+          children: [
+            // Quick Practice card
+            Expanded(
+              child: _buildQuickActionCard(
+                icon: Icons.mic,
+                iconColor: const Color(0xFFFF8C00),
+                title: 'Quick\nPractice',
+                subtitle: 'Start a session now',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) => RecorderPage(userId: activeUserId)),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 16),
+            // Daily Challenge card
+            Expanded(
+              child: _buildQuickActionCard(
+                icon: Icons.emoji_events,
+                iconColor: const Color(0xFFFF8C00),
+                title: 'Daily\nChallenge',
+                subtitle: 'Compete for top scores',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) => DailyChallengeScreen(userId: activeUserId)),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 16),
-        // Daily Challenge card
-        Expanded(
-          child: _buildQuickActionCard(
-            icon: Icons.emoji_events,
-            iconColor: const Color(0xFFFF8C00),
-            title: 'Daily\nChallenge',
-            subtitle: 'Compete for top scores',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (_) => DailyChallengeScreen(userId: activeUserId)),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            // Global Leaderboard card
+            Expanded(
+              child: _buildQuickActionCard(
+                icon: Icons.public,
+                iconColor: const Color(0xFF3A86FF),
+                title: 'Global\nRankings',
+                subtitle: 'See top hunters',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) => const GlobalLeaderboardScreen()),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 16),
+            const Expanded(child: SizedBox.shrink()), // Placeholder for symmetry
+          ],
         ),
       ],
     );

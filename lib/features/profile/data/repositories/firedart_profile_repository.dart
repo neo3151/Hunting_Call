@@ -306,4 +306,21 @@ class FiredartProfileRepository implements ProfileRepository {
       AppLogger.d('✅ Firedart: Set isPremium=$isPremium for $userId');
     }, 'setPremiumStatus');
   }
+
+  @override
+  Future<List<UserProfile>> getTopGlobalUsers({int limit = 50}) async {
+    return _withRetry(() async {
+      final query = await _firestore
+          .collection(_collectionPath)
+          .orderBy('averageScore', descending: true)
+          .limit(limit)
+          .get();
+          
+      return query.map((doc) {
+        final data = doc.map;
+        _sanitizeProfileData(data, doc.id);
+        return UserProfile.fromJson(data);
+      }).where((p) => p.totalCalls > 0).toList(); // Filter out 0-call profiles
+    }, 'getTopGlobalUsers');
+  }
 }

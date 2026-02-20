@@ -1,12 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/leaderboard_entry.dart';
 import '../../domain/repositories/leaderboard_service.dart';
+import '../../../profile/domain/entities/user_profile.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 
 final leaderboardScoresProvider = StreamProvider.family<List<LeaderboardEntry>, String>((ref, animalId) {
   final service = ref.watch(leaderboardServiceProvider);
   if (service == null) return const Stream.empty();
   return service.getTopScores(animalId);
+});
+
+final globalLeaderboardProvider = FutureProvider<List<UserProfile>>((ref) async {
+  final repo = ref.watch(profileRepositoryProvider);
+  return repo.getTopGlobalUsers();
 });
 
 class LeaderboardNotifier extends StateNotifier<AsyncValue<void>> {

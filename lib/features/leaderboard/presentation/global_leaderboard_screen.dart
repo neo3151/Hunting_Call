@@ -1,0 +1,161 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/presentation/controllers/leaderboard_controller.dart';
+import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
+
+class GlobalLeaderboardScreen extends ConsumerWidget {
+  const GlobalLeaderboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncUsers = ref.watch(globalLeaderboardProvider);
+
+    return Scaffold(
+      body: BackgroundWrapper(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Custom App Bar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'GLOBAL RANKINGS',
+                      style: GoogleFonts.oswald(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: asyncUsers.when(
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFFF8C00)),
+                  ),
+                  error: (e, st) => Center(
+                    child: Text('Error: $e', style: const TextStyle(color: Colors.white70)),
+                  ),
+                  data: (users) {
+                    if (users.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.public_off, color: Colors.white24, size: 64),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No global rankings yet.',
+                              style: GoogleFonts.oswald(fontSize: 20, color: Colors.white54),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Complete calls to get ranked!',
+                              style: TextStyle(color: Colors.white38),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: users.length,
+                      separatorBuilder: (context, index) => const Divider(color: Colors.white10),
+                      itemBuilder: (context, index) {
+                        final user = users[index];
+                        final rank = index + 1;
+                        final isTop3 = rank <= 3;
+
+                        return ListTile(
+                          leading: _buildRankBadge(rank),
+                          title: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                user.name,
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                              if (user.isAlphaTester) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.star, color: Colors.orangeAccent, size: 14),
+                              ],
+                            ],
+                          ),
+                          subtitle: Text(
+                            '${user.totalCalls} calls total',
+                            style: const TextStyle(color: Colors.white38, fontSize: 12),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                user.averageScore.toStringAsFixed(1),
+                                style: GoogleFonts.oswald(
+                                  fontSize: 20, 
+                                  color: isTop3 ? const Color(0xFFFFD700) : const Color(0xFFFF8C00),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Text('%', style: TextStyle(color: Colors.white30, fontSize: 12)),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRankBadge(int rank) {
+    Color bgColor;
+    Color textColor = Colors.white;
+
+    switch (rank) {
+      case 1:
+        bgColor = const Color(0xFFFFD700); // Gold
+        textColor = Colors.black;
+        break;
+      case 2:
+        bgColor = const Color(0xFFC0C0C0); // Silver
+        textColor = Colors.black;
+        break;
+      case 3:
+        bgColor = const Color(0xFFCD7F32); // Bronze
+        break;
+      default:
+        bgColor = Colors.white.withValues(alpha: 0.1);
+    }
+
+    return Container(
+      width: 32,
+      height: 32,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: bgColor,
+        shape: BoxShape.circle,
+      ),
+      child: Text(
+        '#$rank',
+        style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+      ),
+    );
+  }
+}

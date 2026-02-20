@@ -320,4 +320,38 @@ class FirestoreProfileRepository implements ProfileRepository {
       if (_localDataSource == null) rethrow;
     }
   }
+
+  @override
+  Future<List<UserProfile>> getTopGlobalUsers({int limit = 50}) async {
+    try {
+      final snapshot = await _firestore
+          .collection(_collectionPath)
+          .orderBy('averageScore', descending: true)
+          .limit(limit)
+          .get()
+          .timeout(const Duration(seconds: 10), onTimeout: () {
+        throw Exception('Firestore read timeout — check your connection.');
+      });
+          
+      final profiles = snapshot.docs.map((doc) {
+        final data = doc.data();
+        _sanitizeProfileData(data, doc.id);
+        try {
+          return UserProfile.fromJson(data);
+        } catch (e) {
+          AppLogger.d('❌ Error parsing profile ${doc.id}: $e');
+          return UserProfile(
+            id: doc.id,
+            name: data['name'] ?? 'Error Profile',
+            joinedDate: DateTime.now(),
+          );
+        }
+      }).where((p) => p.totalCalls > 0).toList(); // Filter out users who haven't made a call
+      
+      return profiles;
+    } catch (e) {
+      AppLogger.d('❌ Error getting top global users: $e');
+      return [];
+    }
+  }
 }

@@ -113,4 +113,19 @@ class LocalProfileRepository implements ProfileRepository {
     final updated = profile.copyWith(isPremium: isPremium);
     await dataSource.saveProfile(updated);
   }
+
+  @override
+  Future<List<UserProfile>> getTopGlobalUsers({int limit = 50}) async {
+    final allProfiles = await getAllProfiles();
+    // Filter profiles with at least 1 call to avoid showing empty users
+    final validProfiles = allProfiles.where((p) => p.totalCalls > 0).toList();
+    
+    // Sort by average score descending
+    validProfiles.sort((a, b) => b.averageScore.compareTo(a.averageScore));
+    
+    if (validProfiles.length > limit) {
+      return validProfiles.sublist(0, limit);
+    }
+    return validProfiles;
+  }
 }

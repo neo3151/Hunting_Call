@@ -10,4 +10,5 @@ abstract class ProfileRepository {
   Future<void> saveAchievements(String userId, List<String> achievementIds);
   Future<void> updateDailyChallengeStats(String userId);
   Future<void> setPremiumStatus(String userId, bool isPremium);
+  Future<List<UserProfile>> getTopGlobalUsers({int limit = 50});
 }
