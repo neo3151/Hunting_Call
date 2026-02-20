@@ -64,8 +64,6 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     try {
       AppLogger.d('AuthWrapper: Loading profile for $userId');
       
-      final profileRepo = ref.read(profileRepositoryProvider);
-      
       // Check 1: Profile notifier might already have a profile loaded
       final currentProfile = ref.read(profileNotifierProvider).profile;
       if (currentProfile != null && currentProfile.id != 'guest') {
@@ -73,15 +71,28 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         return;
       }
       
-      // Check 2: Try to find profile by Firebase UID
-      final profile = await profileRepo.getProfile(userId);
-      if (profile.id != 'guest') {
-        AppLogger.d('AuthWrapper: ✅ Profile found by UID: ${profile.name}');
-        await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
-        return;
+      // Check 2: Try to find profile by Firebase UID.
+      // The profile may not exist yet because LoginScreen._createNewProfile
+      // creates the auth account first (which triggers this rebuild) and
+      // THEN writes the profile. Retry a few times to give it a chance.
+      final profileRepo = ref.read(profileRepositoryProvider);
+      const maxRetries = 5;
+      for (int attempt = 1; attempt <= maxRetries; attempt++) {
+        AppLogger.d('AuthWrapper: getProfile attempt $attempt/$maxRetries for $userId');
+        final profile = await profileRepo.getProfile(userId);
+        if (profile.id != 'guest') {
+          AppLogger.d('AuthWrapper: ✅ Profile found by UID: ${profile.name}');
+          await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
+          return;
+        }
+        if (attempt < maxRetries) {
+          AppLogger.d('AuthWrapper: Profile not found yet, waiting 1s before retry...');
+          await Future.delayed(const Duration(seconds: 1));
+          if (!mounted) return;
+        }
       }
       
-      AppLogger.d('AuthWrapper: ⚠️ No profile found for $userId — user needs to create one via login screen.');
+      AppLogger.d('AuthWrapper: ⚠️ No profile found for $userId after $maxRetries attempts — showing guest fallback.');
       
     } catch (e, stack) {
       AppLogger.d('AuthWrapper: Error loading profile: $e');

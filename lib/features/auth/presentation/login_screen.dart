@@ -7,7 +7,7 @@ import 'controllers/auth_controller.dart';
 
 import '../../../core/widgets/background_wrapper.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
-import '../../profile/domain/entities/user_profile.dart';
+
 import '../../settings/presentation/privacy_policy_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
@@ -41,58 +41,84 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (result != null) {
       final name = result['name'] as String;
       final birthday = result['birthday'] as DateTime?;
+      final email = result['email'] as String?;
+      final password = result['password'] as String?;
 
-    if (name.isNotEmpty) {
-      
-      try {
-        // 1. Sign in anonymously first
-        await ref.read(authControllerProvider.notifier).signInAnonymously();
-        
-        // 2. Get the user ID from the repository
-        // (Stream-based state may not have propagated yet, so query directly)
-        
-        final currentUser = await ref.read(authRepositoryProvider).currentUser;
-        final safeUid = currentUser?.id;
-        
-        if (safeUid != null) {
-          // 3. Create the profile with that UID
-          await ref.read(profileNotifierProvider.notifier).createProfile(name, id: safeUid, birthday: birthday);
-        } else {
-          throw Exception('Could not retrieve user ID after sign-in.');
-        }
-      } catch (e) {
-        if (mounted) {
-          AppLogger.d('Profile creation failed: $e');
-          String message = 'Authentication failed. Please check your internet connection.';
-          if (e.toString().contains('unknown-error')) {
-            message = "Anonymous sign-in failed. Please ensure 'Anonymous' auth is enabled in your Firebase Console.";
+      if (name.isNotEmpty) {
+        // Capture providers BEFORE async gap to avoid "unmounted widget" errors
+        final authRepo = ref.read(authRepositoryProvider);
+        final profileNotifier = ref.read(profileNotifierProvider.notifier);
+        final authNotifier = ref.read(authControllerProvider.notifier);
+
+        try {
+          String? safeUid;
+
+          if (email != null && password != null) {
+            // SILENT sign-up: creates the auth account WITHOUT emitting auth
+            // state, so AuthWrapper doesn't rebuild yet. This gives us time
+            // to write the profile to Firestore first.
+            AppLogger.d('LoginScreen: Silent sign-up for $email...');
+            safeUid = await authRepo.signUpSilent(email, password);
+            AppLogger.d('LoginScreen: Silent sign-up complete. UID: $safeUid');
+          } else {
+            // Anonymous sign-in (no race issue since no profile to save)
+            AppLogger.d('LoginScreen: Anonymous sign-in...');
+            await authNotifier.signInAnonymously();
+            final currentUser = await authRepo.currentUser;
+            safeUid = currentUser?.id;
+            AppLogger.d('LoginScreen: Anonymous UID: $safeUid');
           }
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(
-               content: Text(message),
-               backgroundColor: Colors.redAccent,
-               behavior: SnackBarBehavior.floating,
-             )
-           );
+
+          if (safeUid != null) {
+            // Create the profile in Firestore BEFORE triggering AuthWrapper
+            AppLogger.d('LoginScreen: Creating profile for $safeUid...');
+            await profileNotifier.createProfile(name, id: safeUid, birthday: birthday);
+            AppLogger.d('LoginScreen: Profile created! Now emitting auth state...');
+
+            // NOW emit auth state — AuthWrapper will rebuild and find the profile
+            authRepo.emitAuthState();
+          } else {
+            throw Exception('Could not retrieve user ID after authentication.');
+          }
+        } catch (e) {
+          AppLogger.d('Profile creation failed: $e');
+          if (mounted) {
+            String message = 'Profile creation failed. Please check your internet connection.';
+            if (e.toString().contains('email-already-in-use')) {
+              message = 'This email is already in use. Please log in instead.';
+            } else if (e.toString().contains('weak-password')) {
+              message = 'Password is too weak. Please use at least 6 characters.';
+            } else if (e.toString().contains('OPERATION_NOT_ALLOWED')) {
+              message = 'Email sign-up is disabled. Please enable it in Firebase Console.';
+            }
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: Colors.redAccent,
+                behavior: SnackBarBehavior.floating,
+              )
+            );
+          }
         }
       }
-    }
     }
   }
 
   Future<void> _signInWithEmail() async {
     final emailController = TextEditingController();
+    final passwordController = TextEditingController();
     
-    final email = await showDialog<String>(
+    final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('Log In', style: TextStyle(color: Colors.white)),
+        title: const Text('Hunter Log In', style: TextStyle(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Enter the email address associated with your profile to sync progress.',
+              'Enter your credentials to sync your hunting progress across devices.',
               style: TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 16),
@@ -107,6 +133,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
               ),
             ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                labelStyle: TextStyle(color: Colors.white54),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+              ),
+            ),
           ],
         ),
         actions: [
@@ -115,85 +153,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, emailController.text.trim()),
+            onPressed: () {
+              if (emailController.text.isEmpty || passwordController.text.isEmpty) return;
+              Navigator.pop(context, {
+                'email': emailController.text.trim(),
+                'password': passwordController.text
+              });
+            },
             child: const Text('LOG IN', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
 
-    if (email != null && email.isNotEmpty) {
+    if (result != null) {
+      final email = result['email']!;
+      final password = result['password']!;
+      
       if (!mounted) return;
       
       try {
-        // Ensure a technical session exists for Firestore access
-        // (sign-out clears the firedart session, so we need a fresh one)
-        // Use ensureTechnicalSession to avoid triggering AuthWrapper rebuild
-        final authRepo = ref.read(authRepositoryProvider);
-        await authRepo.ensureTechnicalSession();
-        
-        final profileRepo = ref.read(profileRepositoryProvider);
-        
-        final profiles = await profileRepo.getProfilesByEmail(email);
-        
-        if (profiles.isNotEmpty) {
-          UserProfile? selectedProfile;
-          
-          // Always ask user to confirm/pick, even if there's only one.
-          // This ensures they know WHICH profile they are logging into.
-          if (!mounted) return;
-          selectedProfile = await showDialog<UserProfile>(
-            context: context,
-            builder: (context) => SimpleDialog(
-              title: const Text('Select Profile', style: TextStyle(color: Colors.white)),
-              backgroundColor: const Color(0xFF1A1A1A),
-              children: profiles.map((p) => SimpleDialogOption(
-                onPressed: () => Navigator.pop(context, p),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white24),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(p.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('Joined: ${DateFormat.yMMMd().format(p.joinedDate)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                      Text('Calls: ${p.totalCalls}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                    ],
-                  ),
-                ),
-              )).toList(),
-            ),
-          );
-          
-          if (selectedProfile != null) {
-            // AppLogger.d("✅ Profile selected: ${selectedProfile.name} (${selectedProfile.id})");
-            
-            // Load profile to state FIRST, before signIn triggers AuthWrapper rebuild
-            await ref.read(profileNotifierProvider.notifier).loadProfile(selectedProfile.id);
-            
-            // Now sign in (this fires the auth stream → AuthWrapper rebuilds,
-            // but the profile is already loaded so AuthWrapper finds it)
-            await ref.read(authControllerProvider.notifier).signIn(selectedProfile.id);
-          }
-          
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No profile found with this email.'),
-                backgroundColor: Colors.orange,
-              )
-            );
-          }
-        }
+        // Use the new secure auth method
+        await ref.read(authControllerProvider.notifier).signInWithEmail(email, password);
+        // AuthWrapper will handle navigation once state updates
       } catch (e) {
         AppLogger.d('❌ Email login failed: $e');
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('Login error: $e'), backgroundColor: Colors.red)
+             SnackBar(
+               content: Text('Login failed: ${e.toString().contains('invalid-credential') ? 'Invalid email or password.' : e}'), 
+               backgroundColor: Colors.redAccent
+             )
            );
         }
       }
@@ -385,28 +375,37 @@ class _CreateProfileSheet extends StatefulWidget {
 
 class _CreateProfileSheetState extends State<_CreateProfileSheet> {
   final _controller = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   DateTime? _birthday;
   bool _isValid = false;
+  bool _useEmail = false;
   
-  /// Minimum characters required for a valid profile name
   static const int _minNameLength = 2;
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_validateInput);
+    _emailController.addListener(_validateInput);
+    _passwordController.addListener(_validateInput);
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   void _validateInput() {
-    final isValid = _controller.text.trim().length >= _minNameLength && _birthday != null;
-    if (isValid != _isValid) {
-      setState(() => _isValid = isValid);
+    bool valid = _controller.text.trim().length >= _minNameLength && _birthday != null;
+    if (_useEmail) {
+      valid = valid && _emailController.text.contains('@') && _passwordController.text.length >= 6;
+    }
+    if (valid != _isValid) {
+      setState(() => _isValid = valid);
     }
   }
 
@@ -474,7 +473,7 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
               focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
               errorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
               focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
-              errorText: _controller.text.isNotEmpty && !_isValid 
+              errorText: _controller.text.isNotEmpty && !_isValid && !_useEmail
                   ? 'Name must be at least $_minNameLength characters' 
                   : null,
             ),
@@ -502,11 +501,52 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
               ),
             ),
           ),
+          
+          const SizedBox(height: 16),
+          CheckboxListTile(
+            title: const Text('Create account for cloud sync', style: TextStyle(color: Colors.white70, fontSize: 14)),
+            value: _useEmail,
+            activeColor: Colors.greenAccent,
+            onChanged: (val) {
+              setState(() {
+                _useEmail = val ?? false;
+                _validateInput();
+              });
+            },
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+          ),
+          
+          if (_useEmail) ...[
+            TextField(
+              controller: _emailController,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Email Address',
+                labelStyle: TextStyle(color: Colors.white54),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Password (min 6 chars)',
+                labelStyle: TextStyle(color: Colors.white54),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
+              ),
+            ),
+          ],
+
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _isValid ? () => Navigator.pop(context, {
               'name': _controller.text.trim(),
               'birthday': _birthday,
+              'email': _useEmail ? _emailController.text.trim() : null,
+              'password': _useEmail ? _passwordController.text : null,
             }) : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF8C00),

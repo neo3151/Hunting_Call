@@ -70,6 +70,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     });
 
     // Subscribe to amplitude stream
+    // ignore: deprecated_member_use
     _amplitudeSubscription = ref.read(amplitudeStreamProvider.stream).listen((amp) {
       if (mounted) {
         setState(() {
@@ -425,7 +426,10 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                             // Optimized: Use StreamBuilder for high-frequency updates
                             // This ensures only the visualizer rebuilds, not the whole page.
                             StreamBuilder<double>(
-                              stream: ref.watch(amplitudeStreamProvider.stream),
+                              stream: ref.watch(amplitudeStreamProvider).whenData((v) => v).asData != null
+                                // ignore: deprecated_member_use
+                                ? ref.watch(amplitudeStreamProvider.stream)
+                                : const Stream<double>.empty(),
                               builder: (context, snapshot) {
                                 // Update local buffer
                                 if (snapshot.hasData) {

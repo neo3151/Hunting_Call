@@ -15,17 +15,21 @@ PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
 AAB_PATH = os.path.join(PROJECT_DIR, "build", "app", "outputs", "bundle", "release", "app-release.aab")
 APK_PATH = os.path.join(PROJECT_DIR, "build", "app", "outputs", "flutter-apk", "app-release.apk")
 
-# GDrive credentials (pongownsyou@gmail.com)
+# GDrive credentials
 GDRIVE_TOKEN = os.path.join(SCRIPT_DIR, "gdrive_token.json")
 GDRIVE_CREDS = os.path.join(SCRIPT_DIR, "gdrive_credentials.json")
 GDRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
 
-# Gmail credentials (pongownsyou@gmail.com)
+# Gmail credentials
 GMAIL_TOKEN = os.path.join(SCRIPT_DIR, "token.json")
 GMAIL_SCOPES = [
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/gmail.readonly",
 ]
+
+# Admin email configuration
+ADMIN_EMAIL_TO = os.environ.get("ADMIN_EMAIL_TO", "admin@example.com")
+ADMIN_EMAIL_FROM = os.environ.get("ADMIN_EMAIL_FROM", "noreply@example.com")
 
 def get_creds(token_path, scopes):
     creds = None
@@ -147,8 +151,8 @@ def main():
     gmail_service = build("gmail", "v1", credentials=gmail_creds)
 
     msg = MIMEMultipart()
-    msg["to"] = "benchmarkappsllc@gmail.com"
-    msg["from"] = "pongownsyou@gmail.com"
+    msg["to"] = ADMIN_EMAIL_TO
+    msg["from"] = ADMIN_EMAIL_FROM
     msg["subject"] = "latest aab and apk, this is automated"
 
     body = (
@@ -182,8 +186,8 @@ def main():
         
         # Rebuild message with links
         msg = MIMEMultipart()
-        msg["to"] = "benchmarkappsllc@gmail.com"
-        msg["from"] = "pongownsyou@gmail.com"
+        msg["to"] = ADMIN_EMAIL_TO
+        msg["from"] = ADMIN_EMAIL_FROM
         msg["subject"] = "latest aab and apk, this is automated"
         msg.attach(MIMEText(body_with_links))
     else:

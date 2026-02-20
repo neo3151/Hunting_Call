@@ -4,6 +4,8 @@ import '../../domain/entities/auth_user.dart';
 import '../../domain/usecases/sign_in.dart';
 import '../../domain/usecases/sign_in_anonymously.dart';
 import '../../domain/usecases/sign_in_with_google.dart';
+import '../../domain/usecases/sign_in_with_email.dart';
+import '../../domain/usecases/sign_up_with_email.dart';
 import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/get_auth_state_stream.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
@@ -32,6 +34,14 @@ final signInWithGoogleUseCaseProvider = Provider((ref) {
 
 final signInUseCaseProvider = Provider((ref) {
   return SignIn(ref.watch(authRepositoryProvider));
+});
+
+final signInWithEmailUseCaseProvider = Provider((ref) {
+  return SignInWithEmail(ref.watch(authRepositoryProvider));
+});
+
+final signUpWithEmailUseCaseProvider = Provider((ref) {
+  return SignUpWithEmail(ref.watch(authRepositoryProvider));
 });
 
 final signOutUseCaseProvider = Provider((ref) {
@@ -77,12 +87,46 @@ class AuthController extends StreamNotifier<AuthUser?> {
     }
   }
 
+  Future<void> signInWithEmail(String email, String password) async {
+    state = const AsyncValue.loading();
+    try {
+      final useCase = ref.read(signInWithEmailUseCaseProvider);
+      await useCase(email, password);
+    } catch (e) {
+      final error = _normalizeAuthError(e);
+      state = const AsyncValue.data(null); // Revert to unauthenticated data state to avoid global error screen
+      throw error; // Throw normalized error to be caught by UI
+    }
+  }
+
+  Future<void> signUpWithEmail(String email, String password) async {
+    state = const AsyncValue.loading();
+    try {
+      final useCase = ref.read(signUpWithEmailUseCaseProvider);
+      await useCase(email, password);
+    } catch (e) {
+      final error = _normalizeAuthError(e);
+      state = const AsyncValue.data(null);
+      throw error;
+    }
+  }
+
+  Object _normalizeAuthError(Object e) {
+    final errorStr = e.toString();
+    // Normalise Firedart/REST errors to Firebase SDK style strings
+    // so the LoginScreen catches them properly.
+    if (errorStr.contains('EMAIL_EXISTS')) return Exception('email-already-in-use');
+    if (errorStr.contains('INVALID_PASSWORD')) return Exception('invalid-credential');
+    if (errorStr.contains('EMAIL_NOT_FOUND')) return Exception('invalid-credential');
+    if (errorStr.contains('WEAK_PASSWORD')) return Exception('weak-password');
+    return e;
+  }
+
   Future<void> signIn(String userId) async {
     state = const AsyncValue.loading();
     try {
       final useCase = ref.read(signInUseCaseProvider);
       await useCase(userId);
-      // State updates automatically via stream
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }

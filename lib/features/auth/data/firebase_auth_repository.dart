@@ -36,6 +36,22 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> signInWithEmail(String email, String password) async {
+    AppLogger.d('🔐 FirebaseAuthRepository: Signing in with email: $email');
+    await _auth.signInWithEmailAndPassword(email: email, password: password);
+  }
+
+  @override
+  Future<void> signUpWithEmail(String email, String password) async {
+    AppLogger.d('🔐 FirebaseAuthRepository: Signing up with email: $email');
+    final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+    final user = userCredential.user;
+    if (user != null) {
+      await _ensureProfileInFirestore(user.uid, email, null);
+    }
+  }
+
+  @override
   Future<AuthUser> signInWithGoogle() async {
     try {
       AppLogger.d('🔐 FirebaseAuthRepository: Starting Google Sign-In...');
@@ -151,4 +167,20 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   bool get isMock => false;
+
+  @override
+  Future<String> signUpSilent(String email, String password) async {
+    // On mobile Firebase, just do regular signup — the race is less severe
+    // because the Firebase SDK manages the auth state stream internally.
+    final cred = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    return cred.user!.uid;
+  }
+
+  @override
+  void emitAuthState() {
+    // No-op on mobile — Firebase SDK auto-emits via authStateChanges stream
+  }
 }

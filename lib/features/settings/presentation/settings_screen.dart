@@ -246,7 +246,7 @@ class SettingsScreen extends ConsumerWidget {
                           _settingsTile(
                             icon: Icons.info_outline,
                             title: 'App Version',
-                            subtitle: '1.5.0 (Build 16)',
+                            subtitle: '1.5.1 (Build 17)',
                             trailing: const SizedBox.shrink(),
                           ),
                           const SizedBox(height: 24),

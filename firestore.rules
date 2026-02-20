@@ -53,15 +53,8 @@ service cloud.firestore {
     //             a Cloud Function for admin use. Currently allowed
     //             for authenticated users as a temporary measure.
 
-    match /profiles/{userId} {
-      // BETA: Any authenticated user can read/create/update profiles.
-      // Relaxed because:
-      //   1. Linux desktop uses anonymous auth with impersonated profile IDs
-      //   2. hasOnlyAllowedFields() / isValidProfileData() fail on partial
-      //      updates (e.g. setPremiumStatus only sends {isPremium: true})
-      //      and on documents that don't yet exist (resource.data is null).
-      // TODO: Restore field validation + ownership checks before production.
-      allow read, create, update: if isAuthenticated();
+      // Production-grade rule: Only allow a user to read/create/update their OWN document.
+      allow read, create, update: if isOwner(userId);
 
       // Never allow client-side deletes
       allow delete: if false;

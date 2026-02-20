@@ -32,6 +32,20 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> signInWithEmail(String email, String password) async {
+    _currentUser = AuthUser(id: 'email_user_789', email: email);
+    _controller.add(_currentUser);
+    AppLogger.d('Mock Auth: Signed in with email $email');
+  }
+
+  @override
+  Future<void> signUpWithEmail(String email, String password) async {
+    _currentUser = AuthUser(id: 'new_email_user_101', email: email);
+    _controller.add(_currentUser);
+    AppLogger.d('Mock Auth: Signed up with email $email');
+  }
+
+  @override
   Future<AuthUser> signInWithGoogle() async {
     _currentUser = const AuthUser(
         id: 'google_user_456', 
@@ -57,4 +71,16 @@ class MockAuthRepository implements AuthRepository {
 
   @override
   bool get isMock => true;
+
+  @override
+  Future<String> signUpSilent(String email, String password) async {
+    _currentUser = AuthUser(id: 'silent_user_999', email: email);
+    // Don't emit — that's the point
+    return _currentUser!.id;
+  }
+
+  @override
+  void emitAuthState() {
+    _controller.add(_currentUser);
+  }
 }

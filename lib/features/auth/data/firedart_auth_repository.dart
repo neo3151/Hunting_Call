@@ -10,9 +10,6 @@ import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 class FiredartAuthRepository implements AuthRepository {
   FirebaseAuth get _auth => FirebaseAuth.instance;
   
-  /// Stores the ID of the user we are "impersonating" for this session.
-  String? _impersonatedUserId;
-  
   /// Whether the user has an active session (explicitly logged in).
   /// Persisted to disk so it survives app restarts.
   bool _hasActiveSession = false;
@@ -43,11 +40,9 @@ class FiredartAuthRepository implements AuthRepository {
       if (sessionFile.existsSync() && _auth.isSignedIn) {
         // User was previously logged in and session persists
         _hasActiveSession = true;
-        _impersonatedUserId = _auth.userId;
-        AppLogger.d('FiredartAuth: Restored session for user $_impersonatedUserId');
+        AppLogger.d('FiredartAuth: Restored session for user ${_auth.userId}');
       } else {
         _hasActiveSession = false;
-        _impersonatedUserId = null;
         AppLogger.d('FiredartAuth: No active session found — will show login.');
       }
     } catch (e) {
@@ -79,13 +74,8 @@ class FiredartAuthRepository implements AuthRepository {
   }
 
   AuthUser? _createCurrentAuthUser() {
-    if (!_hasActiveSession) return null;
-    
-    if (_impersonatedUserId != null) {
-      return AuthUser(id: _impersonatedUserId!);
-    }
-    
-    return null;
+    if (!_hasActiveSession || !_auth.isSignedIn) return null;
+    return AuthUser(id: _auth.userId);
   }
 
   @override
@@ -117,24 +107,52 @@ class FiredartAuthRepository implements AuthRepository {
 
   @override
   Future<void> signIn(String userId) async {
-    AppLogger.d('FiredartAuth: signIn (impersonate) requested for $userId');
-    
-    // Always ensure a fresh technical session to avoid stale token issues
-    await _ensureTechnicalSession(forceRefresh: true);
-
-    _impersonatedUserId = userId;
-    _setSessionActive(true);
-    AppLogger.d('FiredartAuth: Now impersonating $userId');
-    _emitCurrentState();
+    // Deprecated insecure method - we'll just sign in anonymously for now
+    // to maintain some level of compatibility strictly for technical sessions
+    AppLogger.d('FiredartAuth: DEPRECATED signIn (impersonate) called for $userId. Using anonymous instead.');
+    await signInAnonymously();
   }
 
   @override
   Future<void> signInAnonymously() async {
     AppLogger.d('FiredartAuth: Anonymous sign-in requested.');
-    await _ensureTechnicalSession();
-    _impersonatedUserId = _auth.userId;
+    await _ensureTechnicalSession(forceRefresh: true);
     _setSessionActive(true);
-    AppLogger.d('FiredartAuth: Signed in as anonymous user: $_impersonatedUserId');
+    AppLogger.d('FiredartAuth: Signed in as anonymous user: ${_auth.userId}');
+    _emitCurrentState();
+  }
+
+  @override
+  Future<void> signInWithEmail(String email, String password) async {
+    AppLogger.d('FiredartAuth: Email sign-in requested for $email');
+    await _auth.signIn(email, password);
+    _setSessionActive(true);
+    AppLogger.d('FiredartAuth: Signed in as ${_auth.userId}');
+    _emitCurrentState();
+  }
+
+  @override
+  Future<void> signUpWithEmail(String email, String password) async {
+    AppLogger.d('FiredartAuth: Email sign-up requested for $email');
+    await _auth.signUp(email, password);
+    _setSessionActive(true);
+    AppLogger.d('FiredartAuth: Signed up as ${_auth.userId}');
+    _emitCurrentState();
+  }
+
+  @override
+  Future<String> signUpSilent(String email, String password) async {
+    AppLogger.d('FiredartAuth: SILENT email sign-up requested for $email');
+    await _auth.signUp(email, password);
+    _setSessionActive(true);
+    final uid = _auth.userId;
+    AppLogger.d('FiredartAuth: Silent sign-up complete. UID: $uid (auth state NOT emitted)');
+    return uid;
+  }
+
+  @override
+  void emitAuthState() {
+    AppLogger.d('FiredartAuth: Manual auth state emission requested.');
     _emitCurrentState();
   }
   
@@ -178,7 +196,6 @@ class FiredartAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() async {
     AppLogger.d('FiredartAuth: signOut requested.');
-    _impersonatedUserId = null;
     _setSessionActive(false);
     
     // Also sign out of firedart to invalidate the technical session

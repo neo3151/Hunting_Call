@@ -127,15 +127,7 @@ assets/audio/gmail_imports/
 assets/audio/replacements/
 *.wav
 
-scripts/token.json
-
-scripts/gdrive_token.json
-releases/
-scripts/gmail_token.json
-scripts/gmail_token.json
-
 # OAuth tokens and credentials (secrets — never commit)
-scripts/*token*.json
-scripts/credentials.json
-scripts/play-store-key.json
-releases/
+scripts/*.json
+!scripts/video_info*.json
+!scripts/requirements*.txt

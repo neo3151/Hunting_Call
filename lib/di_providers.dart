@@ -9,7 +9,10 @@ import 'features/recording/domain/audio_recorder_service.dart';
 import 'features/recording/data/repositories/real_audio_recorder_service.dart';
 import 'features/recording/data/repositories/mock_audio_recorder_service.dart';
 
+
 import 'features/profile/data/datasources/local_profile_data_source.dart';
+import 'features/profile/data/datasources/secure_profile_data_source.dart';
+import 'features/profile/data/datasources/migrating_profile_data_source.dart';
 import 'features/profile/domain/repositories/profile_repository.dart';
 import 'features/profile/data/repositories/local_profile_repository.dart'; // LocalProfileRepository
 import 'features/profile/data/repositories/firestore_profile_repository.dart';
@@ -110,8 +113,11 @@ final audioRecorderServiceProvider = Provider<AudioRecorderService>((ref) {
 
 /// Provides the local data source for profiles.
 final profileDataSourceProvider = Provider<ProfileDataSource>((ref) {
-  return LocalProfileDataSource(
-    sharedPreferences: ref.watch(sharedPreferencesProvider),
+  return MigratingProfileDataSource(
+    localDataSource: LocalProfileDataSource(
+      sharedPreferences: ref.watch(sharedPreferencesProvider),
+    ),
+    secureDataSource: SecureProfileDataSource(),
   );
 });
 
