@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:hunting_calls_perfection/features/rating/presentation/controllers/rating_controller.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
@@ -341,7 +342,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                             const SizedBox(height: 40),
                             _tryRender(() => _buildTipSection(), 'Tip'),
                             const SizedBox(height: 32),
-                            _buildActionButtons(),
+                            _buildActionButtons(result),
                           ],
                         ),
                       ),
@@ -965,7 +966,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(RatingResult? result) {
     final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
     final callResult = getCallUseCase.execute(widget.animalId);
     
@@ -1032,6 +1033,28 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF5FF7B6),
                   foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  if (result != null) {
+                    final scoreStr = result.score.toInt().toString();
+                    final text = 'I just scored $scoreStr% on the ${animal.animalName} call in Hunting Calls Perfection! Think you can beat me? 🦌🦆';
+                    // ignore: deprecated_member_use
+                    Share.share(text);
+                  }
+                },
+                icon: const Icon(Icons.share, color: Colors.white),
+                label: Text('SHARE SCORE', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
