@@ -46,6 +46,12 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    AppLogger.d('Mock Auth: Password reset email requested for $email');
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+
+  @override
   Future<AuthUser> signInWithGoogle() async {
     _currentUser = const AuthUser(
         id: 'google_user_456', 

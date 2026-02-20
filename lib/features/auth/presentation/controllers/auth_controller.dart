@@ -6,6 +6,7 @@ import '../../domain/usecases/sign_in_anonymously.dart';
 import '../../domain/usecases/sign_in_with_google.dart';
 import '../../domain/usecases/sign_in_with_email.dart';
 import '../../domain/usecases/sign_up_with_email.dart';
+import '../../domain/usecases/send_password_reset_email.dart';
 import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/get_auth_state_stream.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
@@ -42,6 +43,10 @@ final signInWithEmailUseCaseProvider = Provider((ref) {
 
 final signUpWithEmailUseCaseProvider = Provider((ref) {
   return SignUpWithEmail(ref.watch(authRepositoryProvider));
+});
+
+final sendPasswordResetEmailUseCaseProvider = Provider((ref) {
+  return SendPasswordResetEmail(ref.watch(authRepositoryProvider));
 });
 
 final signOutUseCaseProvider = Provider((ref) {
@@ -108,6 +113,17 @@ class AuthController extends StreamNotifier<AuthUser?> {
       final error = _normalizeAuthError(e);
       state = const AsyncValue.data(null);
       throw error;
+    }
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    // We don't change state to loading here because it's usually a background action 
+    // that doesn't sign the user in or out.
+    try {
+      final useCase = ref.read(sendPasswordResetEmailUseCaseProvider);
+      await useCase(email);
+    } catch (e) {
+      throw _normalizeAuthError(e);
     }
   }
 

@@ -145,6 +145,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
               ),
             ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () async {
+                  final email = emailController.text.trim();
+                  if (email.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please enter your email address first.'), backgroundColor: Colors.orangeAccent)
+                    );
+                    return;
+                  }
+                  try {
+                    await ref.read(authControllerProvider.notifier).sendPasswordResetEmail(email);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Password reset email sent! Check your inbox.'), backgroundColor: Colors.green)
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to send reset email: $e'), backgroundColor: Colors.redAccent)
+                      );
+                    }
+                  }
+                },
+                child: const Text('Forgot Password?', style: TextStyle(color: Colors.white54, fontSize: 12)),
+              ),
+            ),
           ],
         ),
         actions: [

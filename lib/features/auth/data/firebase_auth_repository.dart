@@ -52,6 +52,12 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    AppLogger.d('🔐 FirebaseAuthRepository: Sending password reset email to: $email');
+    await _auth.sendPasswordResetEmail(email: email);
+  }
+
+  @override
   Future<AuthUser> signInWithGoogle() async {
     try {
       AppLogger.d('🔐 FirebaseAuthRepository: Starting Google Sign-In...');

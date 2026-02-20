@@ -15,6 +15,9 @@ abstract class AuthRepository {
   /// Registers a new user with email and password.
   Future<void> signUpWithEmail(String email, String password);
 
+  /// Sends a password reset email to the given address.
+  Future<void> sendPasswordResetEmail(String email);
+
   /// Registers a new user WITHOUT emitting auth state changes.
   /// Returns the new user's ID so the caller can create a profile
   /// before triggering a navigation rebuild.

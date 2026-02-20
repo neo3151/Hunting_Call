@@ -141,6 +141,12 @@ class FiredartAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    AppLogger.d('FiredartAuth: Sending password reset email to $email');
+    await _auth.resetPassword(email);
+  }
+
+  @override
   Future<String> signUpSilent(String email, String password) async {
     AppLogger.d('FiredartAuth: SILENT email sign-up requested for $email');
     await _auth.signUp(email, password);
