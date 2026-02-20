@@ -1045,7 +1045,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 onPressed: () {
                   if (result != null) {
                     final scoreStr = result.score.toInt().toString();
-                    final text = 'I just scored $scoreStr% on the ${animal.animalName} call in Hunting Calls Perfection! Think you can beat me? 🦌🦆';
+                    final text = 'I just scored $scoreStr% on the ${animal.animalName} call in OUTCALL! Think you can beat me? 🦌🦆';
                     // ignore: deprecated_member_use
                     Share.share(text);
                   }
