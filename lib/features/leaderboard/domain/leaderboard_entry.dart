@@ -4,6 +4,7 @@ class LeaderboardEntry {
   final double score; // 0.0 - 1.0 (or 0-100)
   final DateTime timestamp;
   final String? profileImageUrl;
+  final bool isAlphaTester;
 
   LeaderboardEntry({
     required this.userId,
@@ -11,6 +12,7 @@ class LeaderboardEntry {
     required this.score,
     required this.timestamp,
     this.profileImageUrl,
+    this.isAlphaTester = false,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +22,7 @@ class LeaderboardEntry {
       'score': score,
       'timestamp': timestamp.millisecondsSinceEpoch,
       'profileImageUrl': profileImageUrl,
+      'isAlphaTester': isAlphaTester,
     };
   }
 
@@ -30,6 +33,7 @@ class LeaderboardEntry {
       score: (json['score'] as num).toDouble(),
       timestamp: DateTime.fromMillisecondsSinceEpoch(json['timestamp'] as int),
       profileImageUrl: json['profileImageUrl'] as String?,
+      isAlphaTester: json['isAlphaTester'] as bool? ?? false,
     );
   }
 }

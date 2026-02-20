@@ -62,9 +62,18 @@ class LeaderboardScreen extends ConsumerWidget {
               
               return ListTile(
                 leading: _buildRankBadge(index + 1),
-                title: Text(
-                  entry.userName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                title: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      entry.userName,
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    if (entry.isAlphaTester) ...[
+                      const SizedBox(width: 4),
+                      const Icon(Icons.star, color: Colors.orangeAccent, size: 14),
+                    ],
+                  ],
                 ),
                 subtitle: Text(
                   DateFormat.yMMMd().format(entry.timestamp),

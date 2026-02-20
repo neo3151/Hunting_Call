@@ -202,6 +202,7 @@ class RealRatingService implements RatingService {
               userName: profile.name,
               score: analysisResult.overallScore,
               timestamp: DateTime.now(),
+              isAlphaTester: profile.isAlphaTester,
             ),
           );
         } catch (e) {

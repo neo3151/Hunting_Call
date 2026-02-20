@@ -186,6 +186,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           'HANDLING SINCE ${DateFormat.yMMMd().format(profile.joinedDate).toUpperCase()}',
           style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
+        if (profile.isAlphaTester) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.orangeAccent.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.5)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star, color: Colors.orangeAccent, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  'ALPHA TESTER',
+                  style: GoogleFonts.lato(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }

@@ -19,6 +19,7 @@ class UserProfile {
   final int longestStreak;
   final DateTime? birthday;
   final bool isPremium; // Entitlement: Has user purchased the full app?
+  final bool isAlphaTester;
 
   UserProfile({
     required this.id,
@@ -35,6 +36,7 @@ class UserProfile {
     this.longestStreak = 0,
     this.birthday,
     this.isPremium = false,
+    this.isAlphaTester = false,
   });
 
   factory UserProfile.guest() {
@@ -43,6 +45,7 @@ class UserProfile {
       name: 'Guest Handler',
       joinedDate: DateTime.now(),
       isPremium: false,
+      isAlphaTester: false,
     );
   }
 
@@ -58,6 +61,7 @@ class UserProfile {
     int? longestStreak,
     DateTime? birthday,
     bool? isPremium,
+    bool? isAlphaTester,
   }) {
     return UserProfile(
       id: id,
@@ -74,6 +78,7 @@ class UserProfile {
       longestStreak: longestStreak ?? this.longestStreak,
       birthday: birthday ?? this.birthday,
       isPremium: isPremium ?? this.isPremium,
+      isAlphaTester: isAlphaTester ?? this.isAlphaTester,
     );
   }
 

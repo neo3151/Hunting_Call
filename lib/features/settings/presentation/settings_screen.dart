@@ -3,6 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/background_wrapper.dart';
 import 'controllers/settings_controller.dart';
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../profile/presentation/controllers/profile_controller.dart';
 import 'privacy_policy_screen.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -228,6 +233,16 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           const Divider(color: Colors.white12),
 
+                          _sectionTitle('FEEDBACK & SUPPORT'),
+                          _settingsTile(
+                            icon: Icons.bug_report_outlined,
+                            title: 'Send Feedback',
+                            subtitle: 'Report a bug or suggest a feature',
+                            trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+                            onTap: () => _sendFeedbackEmail(context, ref),
+                          ),
+                          const Divider(color: Colors.white12),
+
                           _sectionTitle('ABOUT'),
                           _settingsTile(
                             icon: Icons.shield_outlined,
@@ -373,5 +388,70 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _sendFeedbackEmail(BuildContext context, WidgetRef ref) async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    final deviceInfo = DeviceInfoPlugin();
+    String deviceModel = 'Unknown Device';
+    String osVersion = 'Unknown OS';
+
+    if (Platform.isAndroid) {
+      final info = await deviceInfo.androidInfo;
+      deviceModel = '${info.manufacturer} ${info.model}';
+      osVersion = 'Android ${info.version.release} (SDK ${info.version.sdkInt})';
+    } else if (Platform.isIOS) {
+      final info = await deviceInfo.iosInfo;
+      deviceModel = info.utsname.machine;
+      osVersion = 'iOS ${info.systemVersion}';
+    } else if (Platform.isLinux) {
+      final info = await deviceInfo.linuxInfo;
+      deviceModel = info.prettyName;
+      osVersion = info.versionId ?? 'Unknown';
+    }
+
+    final String appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+    // Optionally grab user ID if they are logged in.
+    final profileState = ref.read(profileNotifierProvider);
+    final String userId = profileState.profile?.id ?? 'Not logged in';
+
+    final String body = '''
+Please describe the issue or feedback below:
+
+
+
+========================
+Diagnostic Info (Please leave this section intact):
+App Version: $appVersion
+Device: $deviceModel
+OS: $osVersion
+User ID: $userId
+========================
+''';
+
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'support@huntingcalls.app', // Placeholder, developer can update this later
+      queryParameters: {
+        'subject': 'Outcall Alpha Feedback - $appVersion',
+        'body': body,
+      },
+    );
+
+    try {
+      if (!await launchUrl(emailLaunchUri)) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not open email app.')),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+      }
+    }
   }
 }
