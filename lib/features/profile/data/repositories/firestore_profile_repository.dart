@@ -175,6 +175,7 @@ class FirestoreProfileRepository implements ProfileRepository {
         email: email,
         joinedDate: DateTime.now(),
         birthday: birthday,
+        isAlphaTester: true,
       );
       
       await docRef.set(newProfile.toJson()).timeout(
@@ -213,6 +214,7 @@ class FirestoreProfileRepository implements ProfileRepository {
         // If document is new, we should at least have these basic fields
         'id': userId,
         'joinedDate': FieldValue.serverTimestamp(),
+        'isAlphaTester': true,
       }, SetOptions(merge: true)).timeout(const Duration(seconds: 10), onTimeout: () {
         AppLogger.d('FirestoreProfileRepository: saveResultForUser TIMEOUT after 10s');
         throw Exception('Firestore write timeout - check your connection.');

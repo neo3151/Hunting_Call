@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/background_wrapper.dart';
@@ -8,6 +9,8 @@ import '../../daily_challenge/data/daily_challenge_service.dart';
 import '../../daily_challenge/presentation/daily_challenge_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../../leaderboard/presentation/global_leaderboard_screen.dart';
+import '../../../core/services/remote_config/remote_config_service.dart';
+import '../../../core/widgets/offline_banner.dart';
 import 'controllers/home_controller.dart';
 import 'widgets/home_header.dart';
 import 'widgets/daily_challenge_card.dart';
@@ -41,62 +44,90 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (homeState.profile == null &&
         homeState.error == null &&
         !homeState.isLoading) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF8C00)),
+          child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
         ),
       );
     }
 
-    return Scaffold(
-      body: BackgroundWrapper(
-        child: SafeArea(
-          child: homeState.isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: Colors.white))
-              : homeState.error != null
-                  ? _buildErrorState(homeState.error!)
-                  : Column(
-                      children: [
-                        HomeHeader(
-                          userName: homeState.userName,
-                          isCloudMode: homeState.isCloudMode,
-                          onSignOut: () => ref
-                              .read(homeNotifierProvider.notifier)
-                              .signOut(),
-                          onSettings: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const SettingsScreen()),
-                          ),
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 8),
-                                _buildDailyChallenge(context, activeUserId),
-                                const SizedBox(height: 24),
-                                _buildActionGrid(context, activeUserId),
-                                const SizedBox(height: 32),
-                                if (homeState.mostRecentActivity != null) ...[
-                                  Text('RECENT HUNTS',
-                                      style: GoogleFonts.oswald(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white70)),
-                                  const SizedBox(height: 16),
-                                  RecentActivityCard(
-                                      historyItem:
-                                          homeState.mostRecentActivity!),
-                                ],
-                              ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: const Color(0xFF1A1A1A),
+            title: Text('Exit App?', style: GoogleFonts.oswald(color: Colors.white)),
+            content: Text('Are you sure you want to leave the Hunt?', style: GoogleFonts.lato(color: Colors.white70)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text('EXIT', style: TextStyle(color: Theme.of(context).primaryColor)),
+              ),
+            ],
+          ),
+        );
+        if (shouldExit == true) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        body: BackgroundWrapper(
+          child: SafeArea(
+            child: homeState.isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.white))
+                : homeState.error != null
+                    ? _buildErrorState(homeState.error!)
+                    : Column(
+                        children: [
+                          HomeHeader(
+                            userName: homeState.userName,
+                            isCloudMode: homeState.isCloudMode,
+                            onSignOut: () => ref
+                                .read(homeNotifierProvider.notifier)
+                                .signOut(),
+                            onSettings: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) => const SettingsScreen()),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                          const OfflineBanner(),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  _buildDailyChallenge(context, activeUserId),
+                                  const SizedBox(height: 24),
+                                  _buildActionGrid(context, activeUserId),
+                                  const SizedBox(height: 32),
+                                  if (homeState.mostRecentActivity != null) ...[
+                                    Text('RECENT HUNTS',
+                                        style: GoogleFonts.oswald(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white70)),
+                                    const SizedBox(height: 16),
+                                    RecentActivityCard(
+                                        historyItem:
+                                            homeState.mostRecentActivity!),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+          ),
         ),
       ),
     );
@@ -143,7 +174,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: const Icon(Icons.refresh),
             label: const Text('Retry'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF8C00),
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: const Color(0xFF121212),
             ),
           ),
@@ -151,10 +182,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           TextButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content:
-                      Text('Contact support at: BenchmarkAppsLLC@gmail.com'),
-                  backgroundColor: Color(0xFFFF8C00),
+                      const Text('Contact support at: BenchmarkAppsLLC@gmail.com'),
+                  backgroundColor: Theme.of(context).primaryColor,
                 ),
               );
             },
@@ -189,7 +220,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: _buildQuickActionCard(
                 icon: Icons.mic,
-                iconColor: const Color(0xFFFF8C00),
+                iconColor: Theme.of(context).primaryColor,
                 title: 'Quick\nPractice',
                 subtitle: 'Start a session now',
                 onTap: () => Navigator.of(context).push(
@@ -203,7 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: _buildQuickActionCard(
                 icon: Icons.emoji_events,
-                iconColor: const Color(0xFFFF8C00),
+                iconColor: Theme.of(context).primaryColor,
                 title: 'Daily\nChallenge',
                 subtitle: 'Compete for top scores',
                 onTap: () => Navigator.of(context).push(
@@ -217,19 +248,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 16),
         Row(
           children: [
-            // Global Leaderboard card
-            Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.public,
-                iconColor: const Color(0xFF3A86FF),
-                title: 'Global\nRankings',
-                subtitle: 'See top hunters',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) => const GlobalLeaderboardScreen()),
+            // Global Leaderboard card (Feature Flagged)
+            if (ref.watch(remoteConfigServiceProvider).isLeaderboardEnabled)
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: Icons.public,
+                  iconColor: const Color(0xFF3A86FF),
+                  title: 'Global\nRankings',
+                  subtitle: 'See top hunters',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const GlobalLeaderboardScreen()),
+                  ),
+                ),
+              )
+            else
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: Icons.public_off,
+                  iconColor: Colors.grey,
+                  title: 'Rankings\nOffline',
+                  subtitle: 'Coming back soon',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Global Rankings is currently undergoing maintenance.'),
+                        backgroundColor: Theme.of(context).primaryColor,
+                      ),
+                    );
+                  },
                 ),
               ),
-            ),
             const SizedBox(width: 16),
             const Expanded(child: SizedBox.shrink()), // Placeholder for symmetry
           ],

@@ -151,7 +151,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                           icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
                           label: Text(isPlaying ? 'STOP REFERENCE' : 'LISTEN TO REFERENCE'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF8C00),
+                            backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.black,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -290,7 +290,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   Widget _sectionHeader(String title) {
     return Text(
       title,
-      style: GoogleFonts.oswald(color: const Color(0xFFFF8C00), fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+      style: GoogleFonts.oswald(color: Theme.of(context).primaryColor, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.2),
     );
   }
 
@@ -320,16 +320,16 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFF8C00).withValues(alpha: 0.1),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFFF8C00).withValues(alpha: 0.2)),
+        border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.tips_and_updates_rounded, color: Color(0xFFFF8C00)),
+              Icon(Icons.tips_and_updates_rounded, color: Theme.of(context).primaryColor),
               const SizedBox(width: 12),
               Text(
                 'FIELD PRO TIPS',
@@ -350,7 +350,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   Widget _buildDifficultyBadge(String difficulty) {
     Color color;
     switch (difficulty.toLowerCase()) {
-      case 'easy': color = const Color(0xFFFF8C00); break;
+      case 'easy': color = Theme.of(context).primaryColor; break;
       case 'intermediate': color = const Color(0xFFFFB74D); break;
       case 'pro': color = const Color(0xFFE57373); break;
       default: color = Colors.white54;

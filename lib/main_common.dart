@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'dart:io';
@@ -18,7 +20,9 @@ import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/data/firedart_auth_repository.dart';
 import 'config/app_config.dart';
 import 'core/services/cloud_audio_service.dart';
+import 'core/services/remote_config/remote_config_service.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'core/widgets/global_error_view.dart';
 
 void mainCommon() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +55,12 @@ void mainCommon() async {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+      
+      // Initialize App Check (Prevent database scraping/abuse)
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.playIntegrity,
+      );
+      
       firebaseReady = true;
       // AppLogger.d("✅ Firebase: Initialized successfully. Apps count: ${Firebase.apps.length}");
     } else {
@@ -64,6 +74,15 @@ void mainCommon() async {
     AppLogger.d("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
   }
   
+  if (firebaseReady) {
+    try {
+      final remoteConfig = RemoteConfigService(FirebaseRemoteConfig.instance);
+      await remoteConfig.initialize();
+    } catch (e) {
+      AppLogger.d('Remote config init failed: $e');
+    }
+  }
+  
   // Global Error Handling — route to Crashlytics if available
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
@@ -71,6 +90,14 @@ void mainCommon() async {
     if (firebaseReady && (Platform.isAndroid || Platform.isIOS)) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(details);
     }
+  };
+
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    // Send background analytics
+    if (firebaseReady && (Platform.isAndroid || Platform.isIOS)) {
+      FirebaseCrashlytics.instance.recordFlutterError(details);
+    }
+    return GlobalErrorView(details: details);
   };
 
   // Catch async errors that escape the widget tree

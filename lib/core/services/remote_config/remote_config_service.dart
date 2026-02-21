@@ -1,0 +1,45 @@
+import 'dart:io';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+/// Provider for the RemoteConfigService
+final remoteConfigServiceProvider = Provider<RemoteConfigService>((ref) {
+  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    return RemoteConfigService(null);
+  }
+  return RemoteConfigService(FirebaseRemoteConfig.instance);
+});
+
+/// A service that wraps Firebase Remote Config to fetch and provide feature flags
+class RemoteConfigService {
+  final FirebaseRemoteConfig? _remoteConfig;
+
+  RemoteConfigService(this._remoteConfig);
+
+  /// Initializes the remote config service with default values and settings
+  Future<void> initialize() async {
+    if (_remoteConfig == null) return;
+    try {
+      // Set default values before fetching
+      await _remoteConfig!.setDefaults(const {
+        'is_leaderboard_enabled': true,
+        // Add more default flags here as the app grows
+      });
+
+      // Configure fetch interval (e.g., fetch every 1 hour, or 0 during dev)
+      await _remoteConfig!.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: const Duration(minutes: 1),
+        minimumFetchInterval: const Duration(hours: 1), // During dev, set to 0. For prod, 1-12 hours.
+      ));
+
+      // Fetch and activate the latest values from Firebase
+      await _remoteConfig!.fetchAndActivate();
+    } catch (e) {
+      // If fetching fails (e.g., no internet), it will safely use the defaults
+      print('Remote Config fetch failed: $e');
+    }
+  }
+
+  /// The Kill Switch: checks if the leaderboard feature is currently enabled
+  bool get isLeaderboardEnabled => _remoteConfig?.getBool('is_leaderboard_enabled') ?? true;
+}

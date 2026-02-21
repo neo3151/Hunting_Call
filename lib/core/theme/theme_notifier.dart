@@ -30,8 +30,10 @@ class ThemeNotifier extends Notifier<AppTheme> {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: const Color(0xFF0D0D0D),
+      primaryColor: seedColor,
       colorScheme: ColorScheme.fromSeed(
         seedColor: seedColor,
+        primary: seedColor,
         brightness: Brightness.dark,
       ),
     );

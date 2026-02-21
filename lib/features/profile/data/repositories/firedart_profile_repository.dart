@@ -120,6 +120,7 @@ class FiredartProfileRepository implements ProfileRepository {
         email: email,
         joinedDate: DateTime.now(),
         birthday: birthday,
+        isAlphaTester: true,
       );
       await docRef.set(newProfile.toJson());
       return newProfile;
@@ -155,6 +156,7 @@ class FiredartProfileRepository implements ProfileRepository {
             'joinedDate': DateTime.now().toIso8601String(),
             'history': [data],
             'totalCalls': 1,
+            'isAlphaTester': true,
           });
           return;
         }

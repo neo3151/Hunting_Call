@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hunting_calls_perfection/features/leaderboard/presentation/controllers/leaderboard_controller.dart';
 import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
+import 'package:hunting_calls_perfection/core/widgets/offline_banner.dart';
 
 class GlobalLeaderboardScreen extends ConsumerWidget {
   const GlobalLeaderboardScreen({super.key});
@@ -38,10 +39,11 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              const OfflineBanner(),
               Expanded(
                 child: asyncUsers.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFFF8C00)),
+                  loading: () => Center(
+                    child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
                   ),
                   error: (e, st) => Center(
                     child: Text('Error: $e', style: const TextStyle(color: Colors.white70)),
@@ -103,7 +105,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                                 user.averageScore.toStringAsFixed(1),
                                 style: GoogleFonts.oswald(
                                   fontSize: 20, 
-                                  color: isTop3 ? const Color(0xFFFFD700) : const Color(0xFFFF8C00),
+                                  color: isTop3 ? const Color(0xFFFFD700) : Theme.of(context).primaryColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

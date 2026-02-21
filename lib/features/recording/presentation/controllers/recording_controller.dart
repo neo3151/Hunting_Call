@@ -5,6 +5,8 @@ import '../../domain/providers.dart';
 import '../../domain/use_cases/start_recording_use_case.dart';
 import '../../domain/use_cases/stop_recording_use_case.dart';
 import '../../domain/failures/recording_failure.dart';
+import '../../../library/data/reference_database.dart';
+import '../../../../core/services/logger/logger_service.dart';
 
 /// State for recording session
 enum RecordingStatus { idle, countdown, recording, stopping, error }
@@ -70,6 +72,7 @@ class RecordingNotifier extends Notifier<RecordingState> {
   Future<void> startRecordingWithCountdown() async {
     if (state.isRecording || state.isCountingDown) return;
 
+    ref.read(loggerServiceProvider).log('Start recording pressed (countdown initiated)');
     state = state.copyWith(status: RecordingStatus.countdown, clearFailure: true);
 
     final fileName = 'hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
@@ -92,6 +95,7 @@ class RecordingNotifier extends Notifier<RecordingState> {
     result.fold(
       // Error
       (failure) {
+        ref.read(loggerServiceProvider).recordError(failure, null, reason: 'Failed to start recording');
         state = state.copyWith(
           status: RecordingStatus.error,
           failure: failure,
@@ -100,6 +104,7 @@ class RecordingNotifier extends Notifier<RecordingState> {
       },
       // Success
       (audioPath) {
+        ref.read(loggerServiceProvider).log('Recording actually started: $audioPath');
         state = state.copyWith(
           status: RecordingStatus.recording,
           clearCountdown: true,
@@ -132,6 +137,7 @@ class RecordingNotifier extends Notifier<RecordingState> {
     return result.fold(
       // Error
       (failure) {
+        ref.read(loggerServiceProvider).recordError(failure, null, reason: 'Failed to stop recording');
         state = state.copyWith(
           status: RecordingStatus.error,
           failure: failure,
@@ -140,6 +146,7 @@ class RecordingNotifier extends Notifier<RecordingState> {
       },
       // Success
       (audioPath) {
+        ref.read(loggerServiceProvider).log('Recording stopped successfully: $audioPath');
         state = state.copyWith(
           status: RecordingStatus.idle,
           audioPath: audioPath,
@@ -162,7 +169,7 @@ final recordingNotifierProvider = NotifierProvider<RecordingNotifier, RecordingS
 
 /// State for the selected call
 final selectedCallIdProvider = StateProvider<String>((ref) {
-  return 'goose_long_distance_contact'; // Default or first call ID
+  return ReferenceDatabase.calls.isNotEmpty ? ReferenceDatabase.calls.first.id : 'unknown';
 });
 
 /// Stream of amplitude changes for visualization

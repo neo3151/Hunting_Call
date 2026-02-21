@@ -200,6 +200,11 @@ class RealAudioRecorderService implements AudioRecorderService {
         final prefs = await SharedPreferences.getInstance();
         final cleanupHours = prefs.getInt('app_settings_autoCleanupHours') ?? 24;
 
+        if (cleanupHours <= 0) {
+          AppLogger.d('RealAudioRecorder: Cleanup skipped. User has selected never to delete recordings.');
+          return;
+        }
+
         for (final file in files) {
           if (file is File && p.extension(file.path) == '.wav' && p.basename(file.path).startsWith('hunting_call_')) {
             final stat = await file.stat();

@@ -11,6 +11,7 @@ import '../../../core/widgets/background_wrapper.dart';
 import '../../progress_map/presentation/progress_map_screen.dart';
 import '../../../config/app_config.dart';
 import '../../../core/widgets/upgrade_prompter.dart';
+import '../../../core/widgets/offline_banner.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -44,13 +45,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
-            : profile == null
-                ? const Center(child: Text('Profile not found.', style: TextStyle(color: Colors.white70)))
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
+        body: Column(
+          children: [
+            const OfflineBanner(),
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                  : profile == null
+                      ? const Center(child: Text('Profile not found.', style: TextStyle(color: Colors.white70)))
+                      : SingleChildScrollView(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
                       children: [
                         // Header Section
                         _buildProfileHeader(profile),
@@ -151,6 +156,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ],
                     ),
                   ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -191,18 +199,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.orangeAccent.withValues(alpha: 0.2),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.5)),
+              border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.star, color: Colors.orangeAccent, size: 14),
+                Icon(Icons.star, color: Theme.of(context).primaryColor, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   'ALPHA TESTER',
-                  style: GoogleFonts.lato(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                  style: GoogleFonts.lato(color: Theme.of(context).primaryColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0),
                 ),
               ],
             ),
@@ -217,7 +225,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: GoogleFonts.oswald(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orangeAccent.withValues(alpha: 0.8), letterSpacing: 1.5),
+        style: GoogleFonts.oswald(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor.withValues(alpha: 0.8), letterSpacing: 1.5),
       ),
     );
   }
@@ -261,7 +269,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.3)),
+              border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
             ),
             child: Text(achievement.icon, style: const TextStyle(fontSize: 30)),
           ),
@@ -348,7 +356,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Color _getScoreColor(double score) {
     if (score >= 80) return Colors.greenAccent;
-    if (score >= 60) return Colors.orangeAccent;
+    if (score >= 60) return Theme.of(context).primaryColor;
     return Colors.redAccent;
   }
 }

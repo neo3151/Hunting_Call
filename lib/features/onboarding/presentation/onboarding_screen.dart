@@ -83,7 +83,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     child: ElevatedButton(
                       onPressed: _nextPage,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF8C00),
+                        backgroundColor: Theme.of(context).primaryColor,
                         foregroundColor: const Color(0xFF121212),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -120,7 +120,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           height: 8,
           decoration: BoxDecoration(
             color: _currentPage == index
-                ? const Color(0xFFFF8C00)
+                ? Theme.of(context).primaryColor
                 : Colors.white24,
             borderRadius: BorderRadius.circular(4),
           ),
@@ -167,10 +167,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xFFFF8C00).withValues(alpha: 0.2),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 64, color: const Color(0xFFFF8C00)),
+            child: Icon(icon, size: 64, color: Theme.of(context).primaryColor),
           ),
           const SizedBox(height: 48),
           Text(

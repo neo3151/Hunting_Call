@@ -74,8 +74,8 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const CircularProgressIndicator(
-                              color: Color(0xFFFF8C00)),
+                          CircularProgressIndicator(
+                              color: Theme.of(context).primaryColor),
                           const SizedBox(height: 16),
                           Text('Loading world...',
                               style: GoogleFonts.pressStart2p(

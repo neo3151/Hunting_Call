@@ -152,7 +152,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   final email = emailController.text.trim();
                   if (email.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter your email address first.'), backgroundColor: Colors.orangeAccent)
+                      SnackBar(content: const Text('Please enter your email address first.'), backgroundColor: Theme.of(context).primaryColor)
                     );
                     return;
                   }
@@ -186,7 +186,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               if (emailController.text.isEmpty || passwordController.text.isEmpty) return;
               Navigator.pop(context, {
                 'email': emailController.text.trim(),
-                'password': passwordController.text
+                'password': passwordController.text.trimRight(), // Trim trailing spaces from copy-pastes
               });
             },
             child: const Text('LOG IN', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
@@ -265,7 +265,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const Icon(Icons.forest_rounded, size: 80, color: Color(0xFFFF8C00)),
+                              Icon(Icons.forest_rounded, size: 80, color: Theme.of(context).primaryColor),
                               const SizedBox(height: 24),
                               Text(
                                 'OUTCALL',
@@ -352,7 +352,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ElevatedButton(
                                 onPressed: _createNewProfile,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFF8C00),
+                                  backgroundColor: Theme.of(context).primaryColor,
                                   foregroundColor: const Color(0xFF121212),
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -447,10 +447,10 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFFF8C00),
+            colorScheme: ColorScheme.dark(
+              primary: Theme.of(context).primaryColor,
               onPrimary: Colors.black,
-              surface: Color(0xFF1A1A1A),
+              surface: const Color(0xFF1A1A1A),
               onSurface: Colors.white,
             ),
             dialogTheme: const DialogThemeData(
@@ -575,10 +575,10 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
               'name': _controller.text.trim(),
               'birthday': _birthday,
               'email': _useEmail ? _emailController.text.trim() : null,
-              'password': _useEmail ? _passwordController.text : null,
+              'password': _useEmail ? _passwordController.text.trimRight() : null,
             }) : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF8C00),
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: const Color(0xFF121212),
               disabledBackgroundColor: Colors.grey.shade700,
               disabledForegroundColor: Colors.grey.shade400,

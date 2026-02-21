@@ -275,7 +275,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF8C00),
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: const Color(0xFF121212),
             ),
             child: const Text('Allow'),
@@ -314,7 +314,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               if (mounted) navigator.pop();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF8C00),
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: const Color(0xFF121212),
             ),
             child: const Text('Open Settings'),
@@ -558,7 +558,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: const Color(0xFFFF8C00).withValues(alpha: 0.15),
+                                color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
                                 width: 2,
                               ),
                             ),
@@ -571,7 +571,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: const Color(0xFFFF8C00).withValues(alpha: 0.25),
+                                color: Theme.of(context).primaryColor.withValues(alpha: 0.25),
                                 width: 2,
                               ),
                             ),
@@ -615,9 +615,9 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                                       ? Colors.red.withValues(alpha: 0.8) 
                                       : isCountingDown 
                                           ? Colors.orange.withValues(alpha: 0.8)
-                                          : const Color(0xFFFF8C00),
+                                          : Theme.of(context).primaryColor,
                               elevation: 8,
-                              shadowColor: (isProcessing ? Colors.grey : isRecording ? Colors.red : const Color(0xFFFF8C00)).withValues(alpha: 0.4),
+                              shadowColor: (isProcessing ? Colors.grey : isRecording ? Colors.red : Theme.of(context).primaryColor).withValues(alpha: 0.4),
                               side: BorderSide(color: Colors.white.withValues(alpha: 0.2), width: 2),
                             ),
                             child: isProcessing
@@ -687,7 +687,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                   style: GoogleFonts.oswald(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: isRecording ? Colors.redAccent.shade100 : const Color(0xFFFF8C00),
+                    color: isRecording ? Colors.redAccent.shade100 : Theme.of(context).primaryColor,
                     letterSpacing: 2.0,
                   ),
                 ),
@@ -761,12 +761,12 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Row(
                   children: [
-                    Icon(_getCategoryIcon(category), color: const Color(0xFFFF8C00), size: 14),
+                    Icon(_getCategoryIcon(category), color: Theme.of(context).primaryColor, size: 14),
                     const SizedBox(width: 8),
                     Text(
                       category.toUpperCase(),
                       style: GoogleFonts.oswald(
-                        color: const Color(0xFFFF8C00),
+                        color: Theme.of(context).primaryColor,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
@@ -841,7 +841,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   Widget _buildDifficultyBadge(String difficulty) {
     Color color;
     switch (difficulty.toLowerCase()) {
-      case 'easy': color = const Color(0xFFFF8C00); break;
+      case 'easy': color = Theme.of(context).primaryColor; break;
       case 'intermediate': color = const Color(0xFFFFB74D); break;
       case 'pro': color = const Color(0xFFE57373); break;
       default: color = Colors.white54;

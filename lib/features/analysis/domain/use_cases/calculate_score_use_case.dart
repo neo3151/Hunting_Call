@@ -42,6 +42,27 @@ class CalculateScoreUseCase {
     }
     
     // Calculate individual scores
+    final volumeScore = _calculateVolumeScore(
+      params.userAnalysis.averageVolume,
+      params.userAnalysis.volumeConsistency,
+    );
+
+    // GUARD: If it's effectively silence, fail the score or give a zero before complex trait comparison
+    if (params.userAnalysis.averageVolume < 0.005) {
+      return right(AnalysisResult(
+        recordingId: params.recordingId,
+        userId: params.userId,
+        animalId: params.animalId,
+        overallScore: 0.0,
+        pitchScore: PitchScore(score: 0, actualHz: 0, idealHz: reference.idealPitchHz, deviation: 0),
+        volumeScore: volumeScore,
+        durationScore: DurationScore(score: 0, actualSec: params.userAnalysis.totalDurationSec, idealSec: reference.idealDurationSec, deviation: 0),
+        toneScore: ToneScore(score: 0, brightness: 0, warmth: 0, nasality: 0),
+        rhythmScore: RhythmScore(score: 0, stability: 0, regularity: 0, tempo: 0),
+        analyzedAt: DateTime.now(),
+      ));
+    }
+
     final pitchScore = _calculatePitchScore(
       params.userAnalysis.dominantFrequencyHz,
       reference.idealPitchHz,
@@ -52,11 +73,6 @@ class CalculateScoreUseCase {
       params.userAnalysis.totalDurationSec,
       reference.idealDurationSec,
       reference.toleranceDuration,
-    );
-    
-    final volumeScore = _calculateVolumeScore(
-      params.userAnalysis.averageVolume,
-      params.userAnalysis.volumeConsistency,
     );
     
     final toneScore = _calculateToneScore(
@@ -71,13 +87,25 @@ class CalculateScoreUseCase {
     );
     
     // Calculate overall score (weighted average)
-    final overallScore = (
+    double overallScore = (
       pitchScore.score * 0.40 +
       toneScore.score * 0.30 +
       rhythmScore.score * 0.20 +
       (durationScore.score * 0.7 + volumeScore.score * 0.3) * 0.10
     ).clamp(0.0, 100.0);
     
+    // NEW: Apply Harmonic/Clarity Noise Penalty
+    // Punish broad-spectrum noise (wind/breathing) that lacks biological harmonics.
+    // We require BOTH to be low to trigger the penalty, preventing false positives 
+    // on extremely pure (synthesized) signals that might confuse the SNR calculation.
+    double noisePenalty = 0.0;
+    if (params.userAnalysis.toneClarity < 25.0 && params.userAnalysis.harmonicRichness < 25.0) {
+      double lowestMetric = min(params.userAnalysis.toneClarity, params.userAnalysis.harmonicRichness);
+      noisePenalty = (25.0 - lowestMetric) * 2.0; // Aggressive scale
+    }
+    
+    overallScore = max(0.0, overallScore - noisePenalty);
+
     return right(AnalysisResult(
       recordingId: params.recordingId,
       userId: params.userId,
@@ -183,8 +211,11 @@ class CalculateScoreUseCase {
       
       score = max(0, 100 - (brightnessPenalty + warmthPenalty + nasalityPenalty));
     } else {
-      // Fallback: use user's tone clarity and harmonic richness
-      score = (userAnalysis.toneClarity * 0.7) + (userAnalysis.harmonicRichness * 0.3);
+      // Fallback: use the highest of clarity or harmonics. 
+      // Mathematical pure signals lack SNR 'clarity' but have perfect harmonics.
+      // Because FFT energy distribution naturally caps pure harmonics around 80%,
+      // we apply a 1.25x buffer so a perfectly executed call can hit 100%.
+      score = min(100.0, max(userAnalysis.toneClarity, userAnalysis.harmonicRichness) * 1.25);
     }
     
     return ToneScore(

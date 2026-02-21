@@ -142,9 +142,9 @@ def main():
     parser = argparse.ArgumentParser(description="Upload or promote AAB on Google Play Store")
     parser.add_argument(
         "--track",
-        default="internal",
+        default="alpha",
         choices=["internal", "alpha", "beta", "production"],
-        help="Release track (default: internal)",
+        help="Release track (default: alpha)",
     )
     parser.add_argument(
         "--aab",

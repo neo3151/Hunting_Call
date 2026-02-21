@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:io' show Platform, File, Process;
+import 'package:path_provider/path_provider.dart';
 import 'package:hunting_calls_perfection/features/rating/presentation/controllers/rating_controller.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
@@ -995,11 +997,11 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   ),
                 );
               },
-              icon: const Icon(Icons.emoji_events_outlined, color: Color(0xFFFF8C00)),
+              icon: Icon(Icons.emoji_events_outlined, color: Theme.of(context).primaryColor),
               label: Text('VIEW GLOBAL RANKINGS', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
-                side: BorderSide(color: const Color(0xFFFF8C00).withValues(alpha: 0.5)),
+                side: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -1042,16 +1044,59 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {
+                onPressed: () async {
                   if (result != null) {
                     final scoreStr = result.score.toInt().toString();
                     final text = 'I just scored $scoreStr% on the ${animal.animalName} call in OUTCALL! Think you can beat me? 🦌🦆';
-                    // ignore: deprecated_member_use
-                    Share.share(text);
+                    
+                    if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+                      try {
+                        final downloadsDir = await getDownloadsDirectory();
+                        if (downloadsDir != null) {
+                          final fileName = 'outcall_recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
+                          final destPath = '${downloadsDir.path}/$fileName';
+                          await File(widget.audioPath).copy(destPath);
+                          
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Saved to Downloads: $fileName (Opening folder...)'),
+                                backgroundColor: const Color(0xFF5FF7B6),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                          
+                          // Reveal the file in the file manager
+                          if (Platform.isLinux) {
+                             await Process.run('xdg-open', [downloadsDir.path]);
+                          } else if (Platform.isWindows) {
+                             await Process.run('explorer.exe', ['/select,', destPath]);
+                          } else if (Platform.isMacOS) {
+                             await Process.run('open', ['-R', destPath]);
+                          }
+
+                        }
+                      } catch (e) {
+                         if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error saving file: $e'),
+                                backgroundColor: Colors.redAccent,
+                              ),
+                            );
+                          }
+                      }
+                    } else {
+                      await Share.shareXFiles(
+                        [XFile(widget.audioPath)],
+                        text: text,
+                      );
+                    }
                   }
                 },
                 icon: const Icon(Icons.share, color: Colors.white),
-                label: Text('SHARE SCORE', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                label: Text('SAVE / SHARE RECORDING', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),

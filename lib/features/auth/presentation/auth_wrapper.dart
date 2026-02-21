@@ -112,9 +112,9 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     }
     
     if (_versionStatus == VersionCheckStatus.pending) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF8C00)),
+          child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
         ),
       );
     }

@@ -48,8 +48,8 @@ class SettingsScreen extends ConsumerWidget {
               // Content
               Expanded(
                 child: settingsAsync.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFFF8C00)),
+                  loading: () => Center(
+                    child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
                   ),
                   error: (e, _) => Center(
                     child: Text('Error: $e',
@@ -63,29 +63,29 @@ class SettingsScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _sectionTitle('APPEARANCE'),
+                          _sectionTitle(context, 'APPEARANCE'),
                           _settingsTile(
                             icon: Icons.palette_outlined,
                             title: 'App Theme',
                             subtitle: 'Choose your color palette',
                             trailing: SegmentedButton<AppTheme>(
-                              segments: const [
-                                ButtonSegment(
+                              segments: [
+                                const ButtonSegment(
                                   value: AppTheme.classic,
                                   icon: Icon(Icons.circle, color: Color(0xFFFF8C00), size: 14),
                                   label: Text('ORA', style: TextStyle(fontSize: 10)),
                                 ),
-                                ButtonSegment(
+                                const ButtonSegment(
                                   value: AppTheme.midnight,
                                   icon: Icon(Icons.circle, color: Color(0xFF3A86FF), size: 14),
                                   label: Text('BLU', style: TextStyle(fontSize: 10)),
                                 ),
-                                ButtonSegment(
+                                const ButtonSegment(
                                   value: AppTheme.forest,
                                   icon: Icon(Icons.circle, color: Color(0xFF2ECC71), size: 14),
                                   label: Text('GRN', style: TextStyle(fontSize: 10)),
                                 ),
-                                ButtonSegment(
+                                const ButtonSegment(
                                   value: AppTheme.hunter,
                                   icon: Icon(Icons.circle, color: Color(0xFFE74C3C), size: 14),
                                   label: Text('RED', style: TextStyle(fontSize: 10)),
@@ -99,7 +99,7 @@ class SettingsScreen extends ConsumerWidget {
                                     WidgetStateProperty.resolveWith((states) {
                                   if (states
                                       .contains(WidgetState.selected)) {
-                                    return const Color(0xFFFF8C00)
+                                    return Theme.of(context).primaryColor
                                         .withValues(alpha: 0.3);
                                   }
                                   return Colors.white.withValues(alpha: 0.05);
@@ -113,7 +113,7 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           const Divider(color: Colors.white12),
 
-                          _sectionTitle('PREFERENCES'),
+                          _sectionTitle(context, 'PREFERENCES'),
                           _settingsTile(
                             icon: Icons.straighten,
                             title: 'Distance Unit',
@@ -139,7 +139,7 @@ class SettingsScreen extends ConsumerWidget {
                                     WidgetStateProperty.resolveWith((states) {
                                   if (states
                                       .contains(WidgetState.selected)) {
-                                    return const Color(0xFFFF8C00)
+                                    return Theme.of(context).primaryColor
                                         .withValues(alpha: 0.3);
                                   }
                                   return Colors.white.withValues(alpha: 0.05);
@@ -159,12 +159,12 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.notificationsEnabled,
                               onChanged: notifier.setNotificationsEnabled,
-                              activeColor: const Color(0xFFFF8C00),
+                              activeColor: Theme.of(context).primaryColor,
                             ),
                           ),
                           const Divider(color: Colors.white12),
 
-                          _sectionTitle('AUDIO & HAPTICS'),
+                          _sectionTitle(context, 'AUDIO & HAPTICS'),
                           _settingsTile(
                             icon: Icons.volume_up_outlined,
                             title: 'Sound Effects',
@@ -172,7 +172,7 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.soundEffects,
                               onChanged: notifier.setSoundEffects,
-                              activeColor: const Color(0xFFFF8C00),
+                              activeColor: Theme.of(context).primaryColor,
                             ),
                           ),
                           const Divider(color: Colors.white12),
@@ -183,12 +183,12 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.hapticFeedback,
                               onChanged: notifier.setHapticFeedback,
-                              activeColor: const Color(0xFFFF8C00),
+                              activeColor: Theme.of(context).primaryColor,
                             ),
                           ),
                           const Divider(color: Colors.white12),
 
-                          _sectionTitle('PERFORMANCE & STORAGE'),
+                          _sectionTitle(context, 'PERFORMANCE & STORAGE'),
                           _settingsTile(
                             icon: Icons.high_quality,
                             title: 'Image Quality',
@@ -204,7 +204,7 @@ class SettingsScreen extends ConsumerWidget {
                               style: ButtonStyle(
                                 backgroundColor: WidgetStateProperty.resolveWith((states) {
                                   if (states.contains(WidgetState.selected)) {
-                                    return const Color(0xFFFF8C00).withValues(alpha: 0.3);
+                                    return Theme.of(context).primaryColor.withValues(alpha: 0.3);
                                   }
                                   return Colors.white.withValues(alpha: 0.05);
                                 }),
@@ -223,6 +223,7 @@ class SettingsScreen extends ConsumerWidget {
                               dropdownColor: const Color(0xFF1A1A1A),
                               underline: const SizedBox.shrink(),
                               items: const [
+                                DropdownMenuItem(value: 0, child: Text('Never', style: TextStyle(color: Colors.white, fontSize: 13))),
                                 DropdownMenuItem(value: 1, child: Text('1h', style: TextStyle(color: Colors.white, fontSize: 13))),
                                 DropdownMenuItem(value: 6, child: Text('6h', style: TextStyle(color: Colors.white, fontSize: 13))),
                                 DropdownMenuItem(value: 24, child: Text('24h', style: TextStyle(color: Colors.white, fontSize: 13))),
@@ -233,7 +234,7 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           const Divider(color: Colors.white12),
 
-                          _sectionTitle('FEEDBACK & SUPPORT'),
+                          _sectionTitle(context, 'FEEDBACK & SUPPORT'),
                           _settingsTile(
                             icon: Icons.bug_report_outlined,
                             title: 'Send Feedback',
@@ -243,7 +244,7 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           const Divider(color: Colors.white12),
 
-                          _sectionTitle('ABOUT'),
+                          _sectionTitle(context, 'ABOUT'),
                           _settingsTile(
                             icon: Icons.shield_outlined,
                             title: 'Privacy Policy',
@@ -329,13 +330,13 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _sectionTitle(String title) {
+  Widget _sectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 12),
       child: Text(
         title,
         style: GoogleFonts.oswald(
-          color: const Color(0xFFFF8C00),
+          color: Theme.of(context).primaryColor,
           fontSize: 14,
           fontWeight: FontWeight.bold,
           letterSpacing: 2.0,

@@ -12,6 +12,7 @@ import '../../domain/usecases/get_auth_state_stream.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import '../../../../core/services/logger/logger_service.dart';
 
 // --- Dependency Injection via Riverpod ---
 // Auth repository is provided by di_providers.dart (platform-aware: Firebase/Firedart/Mock)
@@ -73,10 +74,13 @@ class AuthController extends StreamNotifier<AuthUser?> {
   Future<void> signInAnonymously() async {
     state = const AsyncValue.loading();
     try {
+      ref.read(loggerServiceProvider).log('Attempting sign in anonymously');
       final useCase = ref.read(signInAnonymouslyUseCaseProvider);
       await useCase();
+      ref.read(loggerServiceProvider).log('Signed in anonymously successfully');
       // State updates automatically via stream
     } catch (e, st) {
+      ref.read(loggerServiceProvider).recordError(e, st, reason: 'Anonymous sign in failed');
       state = AsyncValue.error(e, st);
     }
   }
@@ -84,10 +88,13 @@ class AuthController extends StreamNotifier<AuthUser?> {
   Future<void> signInWithGoogle() async {
     state = const AsyncValue.loading();
     try {
+      ref.read(loggerServiceProvider).log('Attempting sign in with Google');
       final useCase = ref.read(signInWithGoogleUseCaseProvider);
       await useCase();
+      ref.read(loggerServiceProvider).log('Signed in with Google successfully');
       // State updates automatically via stream
     } catch (e, st) {
+      ref.read(loggerServiceProvider).recordError(e, st, reason: 'Google sign in failed');
       state = AsyncValue.error(e, st);
     }
   }
@@ -95,10 +102,13 @@ class AuthController extends StreamNotifier<AuthUser?> {
   Future<void> signInWithEmail(String email, String password) async {
     state = const AsyncValue.loading();
     try {
+      ref.read(loggerServiceProvider).log('Attempting sign in with Email ($email)');
       final useCase = ref.read(signInWithEmailUseCaseProvider);
       await useCase(email, password);
-    } catch (e) {
+      ref.read(loggerServiceProvider).log('Signed in with Email successfully');
+    } catch (e, st) {
       final error = _normalizeAuthError(e);
+      ref.read(loggerServiceProvider).recordError(error, st, reason: 'Email sign in failed');
       state = const AsyncValue.data(null); // Revert to unauthenticated data state to avoid global error screen
       throw error; // Throw normalized error to be caught by UI
     }
@@ -153,12 +163,15 @@ class AuthController extends StreamNotifier<AuthUser?> {
     try {
       // Clear the current profile BEFORE signing out to prevent session bleed
       AppLogger.d('AuthController: Resetting profile state before sign-out');
+      ref.read(loggerServiceProvider).log('Attempting sign out');
       ref.read(profileNotifierProvider.notifier).reset();
       
       final useCase = ref.read(signOutUseCaseProvider);
       await useCase();
+      ref.read(loggerServiceProvider).log('Signed out successfully');
       // State updates automatically via stream
     } catch (e, st) {
+      ref.read(loggerServiceProvider).recordError(e, st, reason: 'Sign out failed');
       state = AsyncValue.error(e, st);
     }
   }

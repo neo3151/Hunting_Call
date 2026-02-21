@@ -63,10 +63,13 @@ class _MainShellState extends State<MainShell> {
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          selectedItemColor: const Color(0xFFFF8C00), // Orange
+          selectedIconTheme: IconThemeData(color: Theme.of(context).primaryColor),
+          unselectedIconTheme: const IconThemeData(color: Colors.white54),
+          selectedItemColor: Colors.white, // Makes the letters crisp and readable
           unselectedItemColor: Colors.white54,
           selectedLabelStyle: GoogleFonts.oswald(
             fontSize: 11,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
           ),
