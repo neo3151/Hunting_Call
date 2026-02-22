@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 import '../../profile/presentation/controllers/profile_controller.dart';
@@ -6,10 +7,10 @@ import '../../onboarding/presentation/controllers/onboarding_controller.dart';
 import 'login_screen.dart';
 import 'controllers/auth_controller.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
-import '../../../core/widgets/main_shell.dart';
+import 'package:hunting_calls_perfection/core/widgets/main_shell.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
-import '../../../core/widgets/update_required_screen.dart';
+import 'package:hunting_calls_perfection/core/widgets/update_required_screen.dart';
 
 /// Watches auth state and shows LoginScreen, OnboardingScreen, or HomeScreen.
 /// Profile creation is handled by LoginScreen - this only loads existing profiles.
@@ -127,16 +128,25 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       data: (user) {
         AppLogger.d('AuthWrapper: data received. user: ${user?.id}');
         
+        // 1. Check Onboarding First
+        final onboardingState = ref.watch(onboardingProvider);
+        
+        return onboardingState.when(
+          data: (hasSeenOnboarding) {
+            if (!hasSeenOnboarding) {
+              AppLogger.d('AuthWrapper: Onboarding not seen. Returning OnboardingScreen.');
+              return const OnboardingScreen();
+            }
+        
+        // 2. Handle Authentication
         if (user == null) {
           _lastHandledUserId = null;
-          // Reset profile state to prevent session bleed
-          // Defer to post-frame callback to avoid modifying provider during build
+          // Clean up profile notifier
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               ref.read(profileNotifierProvider.notifier).reset();
             }
           });
-          AppLogger.d('AuthWrapper: user is null. Returning LoginScreen.');
           return const LoginScreen();
         }
 
@@ -164,15 +174,16 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
           );
         }
         
-        // Check onboarding (using ref.watch to rebuild if it changes)
-        final onb = ref.watch(onboardingProvider);
-        if (!onb) {
-          AppLogger.d('AuthWrapper: Onboarding not seen. Returning OnboardingScreen.');
-          return const OnboardingScreen();
-        }
-        
         AppLogger.d('AuthWrapper: User authenticated and onboarding seen. Returning HomeScreen($userId).');
         return MainShell(userId: userId);
+          },
+          loading: () => const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ),
+          error: (error, stack) => Scaffold(
+            body: Center(child: Text('Error loading app state: $error')),
+          ),
+        );
       },
       loading: () => const Scaffold(
         body: Center(
@@ -193,18 +204,33 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         
         return Scaffold(
           body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                const SizedBox(height: 16),
-                Text('Auth Error: $error'),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => ref.invalidate(authControllerProvider),
-                  child: const Text('Retry'),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.cloud_off_rounded, color: Colors.orangeAccent, size: 64),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Network's drunk—try again?",
+                    style: GoogleFonts.oswald(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: const Color(0xFF121212),
+                    ),
+                    onPressed: () => ref.invalidate(authControllerProvider),
+                    child: Text('TRY AGAIN', style: GoogleFonts.oswald(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
             ),
           ),
         );
