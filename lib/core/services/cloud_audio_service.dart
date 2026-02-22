@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../config/freemium_config.dart';
+import 'package:hunting_calls_perfection/config/freemium_config.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// Service for resolving audio file paths.

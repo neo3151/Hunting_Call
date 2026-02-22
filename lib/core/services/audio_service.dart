@@ -1,7 +1,7 @@
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
-import 'cloud_audio_service.dart';
+import 'package:hunting_calls_perfection/core/services/cloud_audio_service.dart';
 
 /// Global audio service for playing reference call audio across the app.
 /// Prevents memory leaks by centralizing AudioPlayer lifecycle management.

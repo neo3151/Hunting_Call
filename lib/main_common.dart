@@ -6,26 +6,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'firebase_options.dart';
+import 'package:hunting_calls_perfection/firebase_options.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'injection_container.dart' as di;
-import 'di_providers.dart';
-import 'core/theme/theme_notifier.dart';
-import 'features/splash/presentation/splash_screen.dart';
-import 'features/library/data/reference_database.dart';
-import 'features/auth/domain/repositories/auth_repository.dart';
-import 'features/auth/data/firedart_auth_repository.dart';
-import 'config/app_config.dart';
-import 'core/services/cloud_audio_service.dart';
-import 'core/services/remote_config/remote_config_service.dart';
+import 'package:hunting_calls_perfection/injection_container.dart' as di;
+import 'package:hunting_calls_perfection/di_providers.dart';
+import 'package:hunting_calls_perfection/core/theme/theme_notifier.dart';
+import 'package:hunting_calls_perfection/features/splash/presentation/splash_screen.dart';
+import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
+import 'package:hunting_calls_perfection/features/auth/data/firedart_auth_repository.dart';
+import 'package:hunting_calls_perfection/config/app_config.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
-import 'core/widgets/global_error_view.dart';
+import 'package:hunting_calls_perfection/core/widgets/global_error_view.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void mainCommon() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   
   // Explicitly allow all orientations (important for tablets)
   await SystemChrome.setPreferredOrientations([
@@ -42,10 +41,6 @@ void mainCommon() async {
   
   // Initialize Reference Database
   await ReferenceDatabase.init();
-  
-  // Initialize Cloud Audio Service (caches paid call downloads)
-  final cloudAudio = CloudAudioService();
-  await cloudAudio.init();
 
   // Initialize Firebase
   bool firebaseReady = false;
@@ -68,19 +63,10 @@ void mainCommon() async {
     }
 
   } catch (e, stackTrace) {
-    AppLogger.d("❌ Firebase: Initialization failed. Entering 'Off-Grid' mode.");
-    AppLogger.d('Error: $e');
-    AppLogger.d('Stack: $stackTrace');
-    AppLogger.d("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
-  }
-  
-  if (firebaseReady) {
-    try {
-      final remoteConfig = RemoteConfigService(FirebaseRemoteConfig.instance);
-      await remoteConfig.initialize();
-    } catch (e) {
-      AppLogger.d('Remote config init failed: $e');
-    }
+      AppLogger.d("❌ Firebase: Initialization failed. Entering 'Off-Grid' mode.");
+      AppLogger.d('Error: $e');
+      AppLogger.d('Stack: $stackTrace');
+      AppLogger.d("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
   }
   
   // Global Error Handling — route to Crashlytics if available
@@ -181,12 +167,14 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
   Widget build(BuildContext context) {
     // Watch the theme state so MaterialApp rebuilds on theme change
     ref.watch(themeNotifierProvider);
-    final themeData = ref.read(themeNotifierProvider.notifier).currentTheme;
+    final themeNotifier = ref.read(themeNotifierProvider.notifier);
     
     return MaterialApp(
       title: AppConfig.instance.appName,
       debugShowCheckedModeBanner: false,
-      theme: themeData,
+      theme: themeNotifier.lightTheme,
+      darkTheme: themeNotifier.darkTheme,
+      themeMode: ThemeMode.system, // Auto-switch based on system settings
       home: const SplashScreen(),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import '../failures/profile_failure.dart';
-import '../entities/user_profile.dart';
-import '../achievement_service.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/failures/profile_failure.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/achievement_service.dart';
 
 /// Use case for calculating new achievements earned by a user
 /// 

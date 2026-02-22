@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/widgets/background_wrapper.dart';
+import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
 import 'package:hunting_calls_perfection/features/weather/presentation/controllers/temperature_controller.dart';
-import '../domain/weather_entities.dart';
-import '../presentation/weather_controller.dart';
-import 'widgets/wind_compass.dart';
+import 'package:hunting_calls_perfection/features/weather/domain/weather_entities.dart';
+import 'package:hunting_calls_perfection/features/weather/presentation/weather_controller.dart';
+import 'package:hunting_calls_perfection/features/weather/presentation/widgets/wind_compass.dart';
 
 class WeatherScreen extends ConsumerWidget {
   const WeatherScreen({super.key});

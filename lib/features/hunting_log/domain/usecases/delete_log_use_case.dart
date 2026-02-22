@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../repositories/hunting_log_repository.dart';
-import '../failures/hunting_log_failure.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/domain/repositories/hunting_log_repository.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/domain/failures/hunting_log_failure.dart';
 
 /// Use case: Delete a hunting log entry
 /// 

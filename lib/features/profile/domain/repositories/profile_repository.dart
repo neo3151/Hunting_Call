@@ -1,4 +1,4 @@
-import '../entities/user_profile.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
 import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
 
 abstract class ProfileRepository {

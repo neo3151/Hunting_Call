@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'controllers/onboarding_controller.dart';
-import '../../../features/auth/presentation/controllers/auth_controller.dart';
+import 'package:hunting_calls_perfection/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -133,15 +133,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return _buildPage(
       icon: Icons.multitrack_audio_rounded,
       title: 'Master Your\nCraft',
-      description: 'Record, analyze, and perfect your animal calls with expert feedback and real-time scoring',
+      description: 'Your goal: Record, analyze, and perfect your animal calls with expert feedback and real-time scoring.',
     );
   }
 
   Widget _buildHowItWorksPage() {
     return _buildPage(
       icon: Icons.graphic_eq,
-      title: 'Practice\nMakes Perfect',
-      description: '1. Choose an animal call\n2. Listen to the reference\n3. Record your attempt\n4. Get instant AI feedback',
+      title: 'Quick Demo',
+      description: '1. Select a call\n2. Listen to the pro reference\n3. Record your attempt\n4. Get instant AI score and hints',
     );
   }
 
@@ -149,7 +149,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return _buildPage(
       icon: Icons.explore_rounded,
       title: 'Your Hunt\nBegins',
-      description: 'Access 50+ calls, track progress, compete on leaderboards, and improve your technique',
+      description: 'Access 50+ calls, track progress, and improve your technique instantly.',
     );
   }
 

@@ -3,18 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/widgets/background_wrapper.dart';
-import '../../recording/presentation/recorder_page.dart';
-import '../../daily_challenge/data/daily_challenge_service.dart';
-import '../../daily_challenge/presentation/daily_challenge_screen.dart';
-import '../../settings/presentation/settings_screen.dart';
-import '../../leaderboard/presentation/global_leaderboard_screen.dart';
-import '../../../core/services/remote_config/remote_config_service.dart';
-import '../../../core/widgets/offline_banner.dart';
-import 'controllers/home_controller.dart';
-import 'widgets/home_header.dart';
-import 'widgets/daily_challenge_card.dart';
-import 'widgets/recent_activity_card.dart';
+import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
+import 'package:hunting_calls_perfection/core/widgets/skeleton_loader.dart';
+import 'package:hunting_calls_perfection/features/recording/presentation/recorder_page.dart';
+import 'package:hunting_calls_perfection/features/daily_challenge/presentation/daily_challenge_screen.dart';
+import 'package:hunting_calls_perfection/features/daily_challenge/presentation/controllers/daily_challenge_controller.dart';
+import 'package:hunting_calls_perfection/features/settings/presentation/settings_screen.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/presentation/global_leaderboard_screen.dart';
+import 'package:hunting_calls_perfection/core/services/remote_config/remote_config_service.dart';
+import 'package:hunting_calls_perfection/core/widgets/offline_banner.dart';
+import 'package:hunting_calls_perfection/features/home/presentation/controllers/home_controller.dart';
+import 'package:hunting_calls_perfection/features/home/presentation/widgets/home_header.dart';
+import 'package:hunting_calls_perfection/features/home/presentation/widgets/daily_challenge_card.dart';
+import 'package:hunting_calls_perfection/features/home/presentation/widgets/recent_activity_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -45,8 +46,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         homeState.error == null &&
         !homeState.isLoading) {
       return Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+        body: BackgroundWrapper(
+          child: SafeArea(
+            child: const DashboardSkeleton(),
+          ),
         ),
       );
     }
@@ -81,8 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         body: BackgroundWrapper(
           child: SafeArea(
             child: homeState.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Colors.white))
+                ? const DashboardSkeleton()
                 : homeState.error != null
                     ? _buildErrorState(homeState.error!)
                     : Column(
@@ -201,13 +203,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildDailyChallenge(BuildContext context, String activeUserId) {
-    final challengeCall = DailyChallengeService.getDailyChallengeStatic();
-    return DailyChallengeCard(
-      challengeCall: challengeCall,
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-            builder: (_) => DailyChallengeScreen(userId: activeUserId)),
+    final challengeAsync = ref.watch(dailyChallengeProvider);
+
+    return challengeAsync.when(
+      loading: () => ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: 180,
+          color: Colors.white.withValues(alpha: 0.1),
+          child: const Center(
+            child: CircularProgressIndicator(color: Colors.greenAccent),
+          ),
+        ),
       ),
+      error: (_, __) => const SizedBox.shrink(), // Or an error banner if desired
+      data: (challengeCall) {
+        if (challengeCall == null) return const SizedBox.shrink();
+
+        return DailyChallengeCard(
+          challengeCall: challengeCall,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+                builder: (_) => DailyChallengeScreen(userId: activeUserId)),
+          ),
+        );
+      },
     );
   }
 

@@ -1,13 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
-import '../../data/settings_repository.dart';
-import '../../domain/settings_model.dart';
+import 'package:hunting_calls_perfection/features/settings/data/settings_repository.dart';
+import 'package:hunting_calls_perfection/features/settings/domain/settings_model.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 // ─── Repository Provider ────────────────────────────────────────────────────
 
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
-  return SettingsRepository();
+  final storage = ref.watch(simpleStorageProvider);
+  return SettingsRepository(storage);
 });
 
 // ─── Controller ─────────────────────────────────────────────────────────────

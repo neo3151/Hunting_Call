@@ -7,15 +7,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
-import '../../profile/presentation/controllers/profile_controller.dart';
+import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:hunting_calls_perfection/features/recording/presentation/controllers/recording_controller.dart';
-import '../../../core/widgets/background_wrapper.dart';
-import '../../rating/presentation/rating_screen.dart';
-import '../../library/data/reference_database.dart';
-import '../../library/domain/reference_call_model.dart';
-import '../../../core/services/cloud_audio_service.dart';
-import 'widgets/live_visualizer.dart';
-import '../domain/visualization_settings.dart';
+import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
+import 'package:hunting_calls_perfection/features/rating/presentation/rating_screen.dart';
+import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
+import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
+import 'package:hunting_calls_perfection/core/services/cloud_audio_service.dart';
+import 'package:hunting_calls_perfection/features/recording/presentation/widgets/live_visualizer.dart';
+import 'package:hunting_calls_perfection/features/recording/domain/visualization_settings.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
   final String userId;
@@ -788,19 +788,23 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
             child: Row(
               children: [
                 ClipOval(
-                  child: Image.asset(
-                    call.imageUrl,
-                    width: 32,
-                    height: 32,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                  child: Semantics(
+                    label: 'Target animal: ${call.animalName}',
+                    image: true,
+                    child: Image.asset(
+                      call.imageUrl,
                       width: 32,
                       height: 32,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.photo, size: 16, color: Colors.white38),
                       ),
-                      child: const Icon(Icons.photo, size: 16, color: Colors.white38),
                     ),
                   ),
                 ),

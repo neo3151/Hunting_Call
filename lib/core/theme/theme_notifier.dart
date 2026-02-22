@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/settings/presentation/controllers/settings_controller.dart';
-import 'app_theme.dart';
+import 'package:hunting_calls_perfection/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
 
 class ThemeNotifier extends Notifier<AppTheme> {
   @override
@@ -13,20 +13,40 @@ class ThemeNotifier extends Notifier<AppTheme> {
     );
   }
 
-  ThemeData get currentTheme {
+  Color _getSeedColor() {
     switch (state) {
       case AppTheme.classic:
-        return _buildTheme(const Color(0xFFFF8C00));
+        return const Color(0xFFFF8C00);
       case AppTheme.midnight:
-        return _buildTheme(const Color(0xFF3A86FF));
+        return const Color(0xFF3A86FF);
       case AppTheme.forest:
-        return _buildTheme(const Color(0xFF2ECC71));
+        return const Color(0xFF2ECC71);
       case AppTheme.hunter:
-        return _buildTheme(const Color(0xFFE74C3C));
+        return const Color(0xFFE74C3C);
     }
   }
 
-  ThemeData _buildTheme(Color seedColor) {
+  ThemeData get lightTheme {
+    final seedColor = _getSeedColor();
+    return ThemeData(
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFFF9F9F9),
+      primaryColor: seedColor,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: seedColor,
+        primary: seedColor,
+        brightness: Brightness.light,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          textStyle: const TextStyle(fontSize: 16.0),
+        ),
+      ),
+    );
+  }
+
+  ThemeData get darkTheme {
+    final seedColor = _getSeedColor();
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: const Color(0xFF0D0D0D),
@@ -36,8 +56,16 @@ class ThemeNotifier extends Notifier<AppTheme> {
         primary: seedColor,
         brightness: Brightness.dark,
       ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          textStyle: const TextStyle(fontSize: 16.0),
+        ),
+      ),
     );
   }
+  
+  // Keep currentTheme for backwards compatibility if used elsewhere directly
+  ThemeData get currentTheme => darkTheme; 
 }
 
 final themeNotifierProvider = NotifierProvider<ThemeNotifier, AppTheme>(() {

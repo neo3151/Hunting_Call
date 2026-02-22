@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
-import '../../domain/entities/auth_user.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/entities/auth_user.dart';
 
 class AuthUserModel extends AuthUser {
   const AuthUserModel({

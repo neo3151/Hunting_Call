@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../../data/reference_database.dart';
-import '../failures/library_failure.dart';
+import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
+import 'package:hunting_calls_perfection/features/library/domain/failures/library_failure.dart';
 
 /// Use case for checking if a call is locked based on user premium status
 class CheckCallLockStatusUseCase {

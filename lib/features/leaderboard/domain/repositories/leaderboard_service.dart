@@ -1,4 +1,4 @@
-import '../leaderboard_entry.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/domain/leaderboard_entry.dart';
 
 /// Abstract interface for leaderboard operations.
 /// Lives in the domain layer — implementations go in data/.

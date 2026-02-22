@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:hunting_calls_perfection/core/widgets/skeleton_loader.dart';
 import 'package:hunting_calls_perfection/features/leaderboard/presentation/controllers/leaderboard_controller.dart';
 
 class LeaderboardScreen extends ConsumerWidget {
@@ -28,7 +29,7 @@ class LeaderboardScreen extends ConsumerWidget {
         ),
       ),
       body: scoresAsync.when(
-        loading: () => Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor)),
+        loading: () => const ListSkeleton(),
         error: (error, stack) => Center(child: Text('Error: $error', style: const TextStyle(color: Colors.white70))),
         data: (scores) {
           if (scores.isEmpty) {

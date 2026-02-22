@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../onboarding_repository.dart';
-import '../failures/onboarding_failure.dart';
+import 'package:hunting_calls_perfection/features/onboarding/domain/onboarding_repository.dart';
+import 'package:hunting_calls_perfection/features/onboarding/domain/failures/onboarding_failure.dart';
 
 /// Use case: Mark onboarding as completed
 /// 

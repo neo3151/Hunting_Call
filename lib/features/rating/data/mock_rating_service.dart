@@ -1,6 +1,6 @@
 import 'dart:math';
-import '../domain/rating_model.dart';
-import '../domain/rating_service.dart';
+import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
+import 'package:hunting_calls_perfection/features/rating/domain/rating_service.dart';
 
 class MockRatingService implements RatingService {
   @override

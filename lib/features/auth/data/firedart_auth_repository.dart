@@ -3,8 +3,8 @@ import 'package:firedart/firedart.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import '../domain/repositories/auth_repository.dart';
-import '../domain/entities/auth_user.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/entities/auth_user.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class FiredartAuthRepository implements AuthRepository {

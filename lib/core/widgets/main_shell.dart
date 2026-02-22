@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../features/home/presentation/home_screen.dart';
-import '../../features/library/presentation/library_screen.dart';
-import '../../features/recording/presentation/recorder_page.dart';
-import '../../features/progress_map/presentation/progress_map_screen.dart';
-import '../../features/profile/presentation/profile_screen.dart';
+import 'package:hunting_calls_perfection/features/home/presentation/home_screen.dart';
+import 'package:hunting_calls_perfection/features/library/presentation/library_screen.dart';
+import 'package:hunting_calls_perfection/features/recording/presentation/recorder_page.dart';
+import 'package:hunting_calls_perfection/features/progress_map/presentation/progress_map_screen.dart';
+import 'package:hunting_calls_perfection/features/profile/presentation/profile_screen.dart';
 
 /// Persistent bottom navigation shell that wraps all main screens.
 /// Matches the Play Store screenshot design with dark green + orange brand colors.
@@ -59,7 +60,10 @@ class _MainShellState extends State<MainShell> {
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
+          onTap: (index) {
+            HapticFeedback.lightImpact();
+            setState(() => _currentIndex = index);
+          },
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -82,26 +86,31 @@ class _MainShellState extends State<MainShell> {
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Home',
+              tooltip: 'Home Screen',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.library_music_outlined),
               activeIcon: Icon(Icons.library_music),
               label: 'Library',
+              tooltip: 'Audio Library',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.mic_none),
               activeIcon: Icon(Icons.mic),
               label: 'Practice',
+              tooltip: 'Recording Practice',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.bar_chart_outlined),
               activeIcon: Icon(Icons.bar_chart),
               label: 'Progress',
+              tooltip: 'Training Progress',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: 'Profile',
+              tooltip: 'User Profile',
             ),
           ],
         ),

@@ -1,35 +1,51 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:intl/intl.dart';
-import '../../../library/domain/reference_call_model.dart';
-import '../../../library/domain/use_cases/get_all_calls_use_case.dart';
-import '../../../library/domain/use_cases/check_call_lock_status_use_case.dart';
-import '../failures/daily_challenge_failure.dart';
+import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
+import 'package:hunting_calls_perfection/features/library/domain/use_cases/get_all_calls_use_case.dart';
+import 'package:hunting_calls_perfection/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
+import 'package:hunting_calls_perfection/features/daily_challenge/domain/failures/daily_challenge_failure.dart';
+import 'package:hunting_calls_perfection/features/daily_challenge/domain/daily_challenge_repository.dart';
 
 /// Use case: Get today's daily challenge call.
 /// 
-/// Selects a challenge from the pool of free (unlocked) calls based on
-/// the current day of the year, ensuring everyone can participate.
+/// First attempts to fetch from Cloud/Cache via [DailyChallengeRepository].
+/// If that fails or returns null, falls back to mathematical selection.
 class GetDailyChallengeUseCase {
   final GetAllCallsUseCase _getAllCallsUseCase;
   final CheckCallLockStatusUseCase _checkLockStatusUseCase;
+  final DailyChallengeRepository _repository;
 
   const GetDailyChallengeUseCase(
     this._getAllCallsUseCase,
     this._checkLockStatusUseCase,
+    this._repository,
   );
 
-  /// Execute the use case
+  /// Execute the use case asynchronously
   /// 
   /// Returns today's challenge call or a failure if none available
-  Either<DailyChallengeFailure, ReferenceCall> execute({DateTime? now}) {
+  Future<Either<DailyChallengeFailure, ReferenceCall>> execute({DateTime? now}) async {
     try {
+      // 1. Check if Cloud/Cache has a specific daily challenge for us
+      final cloudChallengeId = await _repository.getDailyChallengeId();
+      
       // Get all available calls
       final allCallsResult = _getAllCallsUseCase.execute();
       
       return allCallsResult.fold(
         (failure) => right(_getDefaultChallenge()),
         (allCalls) {
-          // Filter to only free calls (everyone can play daily challenges)
+          // If we got a cloud ID, try to find it
+          if (cloudChallengeId != null) {
+            try {
+               final matchedCall = allCalls.firstWhere((call) => call.id == cloudChallengeId);
+               return right(_fixImageAsset(matchedCall));
+            } catch (e) {
+               // Cloud ID wasn't found in our library, fallback gracefully
+            }
+          }
+
+          // Fallback Strategy: Filter to free calls based on Day of Year
           final freeCalls = allCalls.where((call) {
             final lockResult = _checkLockStatusUseCase.execute(
               callId: call.id,

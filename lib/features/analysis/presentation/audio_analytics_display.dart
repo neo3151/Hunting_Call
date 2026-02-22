@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../domain/audio_analysis_model.dart';
-import 'widgets/analytics_metric_card.dart';
-import 'widgets/harmonics_display.dart';
-import 'widgets/spectral_centroid_graph.dart';
-import 'widgets/pitch_track_graph.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
+import 'package:hunting_calls_perfection/features/analysis/presentation/widgets/analytics_metric_card.dart';
+import 'package:hunting_calls_perfection/features/analysis/presentation/widgets/harmonics_display.dart';
+import 'package:hunting_calls_perfection/features/analysis/presentation/widgets/spectral_centroid_graph.dart';
+import 'package:hunting_calls_perfection/features/analysis/presentation/widgets/pitch_track_graph.dart';
 
 /// Widget to display comprehensive audio analytics.
 ///

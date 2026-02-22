@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../config/app_config.dart';
-import '../widgets/background_wrapper.dart';
+import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
 
 class UpdateRequiredScreen extends StatelessWidget {
   const UpdateRequiredScreen({super.key});

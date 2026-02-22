@@ -4,14 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
-import '../../profile/domain/entities/user_profile.dart';
-import '../../library/data/reference_database.dart';
-import '../domain/achievement_service.dart';
-import '../../../core/widgets/background_wrapper.dart';
-import '../../progress_map/presentation/progress_map_screen.dart';
-import '../../../config/app_config.dart';
-import '../../../core/widgets/upgrade_prompter.dart';
-import '../../../core/widgets/offline_banner.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
+import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/achievement_service.dart';
+import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
+import 'package:hunting_calls_perfection/features/progress_map/presentation/progress_map_screen.dart';
+import 'package:hunting_calls_perfection/config/app_config.dart';
+import 'package:hunting_calls_perfection/core/widgets/upgrade_prompter.dart';
+import 'package:hunting_calls_perfection/core/widgets/offline_banner.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String userId;

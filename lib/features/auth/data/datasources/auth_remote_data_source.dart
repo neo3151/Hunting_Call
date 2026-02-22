@@ -1,4 +1,4 @@
-import '../models/auth_user_model.dart';
+import 'package:hunting_calls_perfection/features/auth/data/models/auth_user_model.dart';
 
 abstract class AuthRemoteDataSource {
   Stream<AuthUserModel?> get authStateChanges;

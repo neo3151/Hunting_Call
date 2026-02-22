@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
-import '../../profile/presentation/controllers/profile_controller.dart';
-import '../../onboarding/presentation/controllers/onboarding_controller.dart';
-import 'login_screen.dart';
-import 'controllers/auth_controller.dart';
-import '../../onboarding/presentation/onboarding_screen.dart';
+import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:hunting_calls_perfection/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:hunting_calls_perfection/features/auth/presentation/login_screen.dart';
+import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:hunting_calls_perfection/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:hunting_calls_perfection/core/widgets/main_shell.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 

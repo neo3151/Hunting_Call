@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/providers.dart';
+import 'package:hunting_calls_perfection/features/payment/domain/providers.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 // ──────────────────────────────────────────────────────────

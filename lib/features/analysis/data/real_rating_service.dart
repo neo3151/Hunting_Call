@@ -1,26 +1,27 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
-import '../../../core/services/cloud_audio_service.dart';
-import '../../rating/domain/rating_model.dart';
-import '../../rating/domain/rating_service.dart';
-import '../domain/audio_analysis_model.dart';
-import '../domain/frequency_analyzer.dart';
-import '../domain/use_cases/analyze_audio_use_case.dart';
-import '../domain/use_cases/calculate_score_use_case.dart';
-import '../../library/data/reference_database.dart';
+import 'package:hunting_calls_perfection/core/services/cloud_audio_service.dart';
+import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
+import 'package:hunting_calls_perfection/features/rating/domain/rating_service.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/use_cases/analyze_audio_use_case.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/use_cases/calculate_score_use_case.dart';
+import 'package:hunting_calls_perfection/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
+import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
 
-import '../../profile/domain/repositories/profile_repository.dart';
-import '../../leaderboard/domain/repositories/leaderboard_service.dart';
-import '../../leaderboard/domain/leaderboard_entry.dart';
-import '../../daily_challenge/data/daily_challenge_service.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/domain/repositories/leaderboard_service.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/domain/leaderboard_entry.dart';
 
-import '../../rating/domain/personality_feedback_service.dart';
+import 'package:hunting_calls_perfection/features/rating/domain/personality_feedback_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class RealRatingService implements RatingService {
   final AnalyzeAudioUseCase _analyzeUseCase;
   final CalculateScoreUseCase _calculateUseCase;
+  final GetDailyChallengeUseCase _getDailyChallengeUseCase;
   final FrequencyAnalyzer analyzer; // Still needed for reference audio analysis
   final ProfileRepository profileRepository;
   final LeaderboardService? leaderboardService;
@@ -31,12 +32,14 @@ class RealRatingService implements RatingService {
   RealRatingService({
     required AnalyzeAudioUseCase analyzeUseCase,
     required CalculateScoreUseCase calculateUseCase,
+    required GetDailyChallengeUseCase getDailyChallengeUseCase,
     required this.analyzer, 
     required this.profileRepository,
     this.leaderboardService,
     this.cloudAudioService,
   }) : _analyzeUseCase = analyzeUseCase,
-       _calculateUseCase = calculateUseCase;
+       _calculateUseCase = calculateUseCase,
+       _getDailyChallengeUseCase = getDailyChallengeUseCase;
 
   static final Map<String, AudioAnalysis> _refCache = {};
 
@@ -213,11 +216,16 @@ class RealRatingService implements RatingService {
       // Check if this call matches the Daily Challenge
       try {
         if (userId != 'guest') {
-          final dailyCall = DailyChallengeService.getDailyChallengeStatic();
-          if (dailyCall.id == animalType && analysisResult.overallScore >= 70) {
-            AppLogger.d('Daily Challenge ($animalType) Completed by $userId with score ${analysisResult.overallScore}');
-            await profileRepository.updateDailyChallengeStats(userId);
-          }
+          final challengeResult = await _getDailyChallengeUseCase.execute();
+          challengeResult.fold(
+            (l) => AppLogger.d('Could not fetch daily challenge for completion check: $l'),
+            (dailyCall) async {
+              if (dailyCall.id == animalType && analysisResult.overallScore >= 70) {
+                AppLogger.d('Daily Challenge ($animalType) Completed by $userId with score ${analysisResult.overallScore}');
+                await profileRepository.updateDailyChallengeStats(userId);
+              }
+            }
+          );
         }
       } catch (e) {
         AppLogger.d('Daily Challenge update failed: $e');

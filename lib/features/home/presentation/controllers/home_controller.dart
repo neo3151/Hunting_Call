@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../profile/presentation/controllers/profile_controller.dart';
-import '../../../profile/domain/entities/user_profile.dart';
-import '../../../auth/presentation/controllers/auth_controller.dart';
+import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
+import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 // ─── State ──────────────────────────────────────────────────────────────────

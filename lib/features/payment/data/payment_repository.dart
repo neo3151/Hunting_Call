@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../profile/domain/repositories/profile_repository.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
-import '../domain/repositories/payment_repository.dart';
+import 'package:hunting_calls_perfection/features/payment/domain/repositories/payment_repository.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {

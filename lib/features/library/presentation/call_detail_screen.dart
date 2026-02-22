@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../library/domain/reference_call_model.dart';
-import 'acoustic_spectrum_widget.dart';
+import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
+import 'package:hunting_calls_perfection/features/library/presentation/acoustic_spectrum_widget.dart';
 
-import '../../recording/presentation/recorder_page.dart';
-import '../../leaderboard/presentation/leaderboard_screen.dart';
-import '../../../config/app_config.dart';
+import 'package:hunting_calls_perfection/features/recording/presentation/recorder_page.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/presentation/leaderboard_screen.dart';
+import 'package:hunting_calls_perfection/config/app_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/widgets/upgrade_prompter.dart';
-import '../../profile/presentation/controllers/profile_controller.dart';
-import '../../../core/services/audio_service.dart';
+import 'package:hunting_calls_perfection/core/widgets/upgrade_prompter.dart';
+import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:hunting_calls_perfection/core/services/audio_service.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 import 'package:hunting_calls_perfection/core/utils/animal_image_alignment.dart';
 
@@ -70,12 +70,16 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
               children: [
                 Hero(
                   tag: 'animal_${widget.call.id}',
-                  child: Image.asset(
-                    widget.call.imageUrl,
-                    width: double.infinity,
-                    height: 350,
-                    fit: BoxFit.cover,
-                    alignment: AnimalImageAlignment.forImage(widget.call.imageUrl),
+                  child: Semantics(
+                    label: 'Detailed photo of ${widget.call.animalName}',
+                    image: true,
+                    child: Image.asset(
+                      widget.call.imageUrl,
+                      width: double.infinity,
+                      height: 350,
+                      fit: BoxFit.cover,
+                      alignment: AnimalImageAlignment.forImage(widget.call.imageUrl),
+                    ),
                   ),
                 ),
                 Positioned.fill(
@@ -149,7 +153,10 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _togglePlayback,
                           icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
-                          label: Text(isPlaying ? 'STOP REFERENCE' : 'LISTEN TO REFERENCE'),
+                          label: Text(
+                            isPlaying ? 'STOP REFERENCE' : 'LISTEN TO REFERENCE',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.black,

@@ -1,5 +1,5 @@
 
-import '../../domain/weather_entities.dart';
+import 'package:hunting_calls_perfection/features/weather/domain/weather_entities.dart';
 
 class WeatherModel extends WeatherData {
   const WeatherModel({

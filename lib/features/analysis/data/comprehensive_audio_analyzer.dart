@@ -2,9 +2,9 @@ import 'dart:io';
 import 'dart:math';
 import 'package:fftea/fftea.dart';
 import 'package:flutter/foundation.dart';
-import '../domain/frequency_analyzer.dart';
-import '../domain/audio_analysis_model.dart';
-import 'waveform_cache_database.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
+import 'package:hunting_calls_perfection/features/analysis/data/waveform_cache_database.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {

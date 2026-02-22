@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math' as math;
-import '../../auth/presentation/auth_wrapper.dart';
+import 'package:hunting_calls_perfection/features/auth/presentation/auth_wrapper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:hunting_calls_perfection/core/services/remote_config/remote_config_service.dart';
+import 'package:hunting_calls_perfection/core/services/cloud_audio_service.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
   late final AnimationController _logoController;
   late final AnimationController _shimmerController;
@@ -45,6 +50,9 @@ class _SplashScreenState extends State<SplashScreen>
     // Start logo animation
     _logoController.forward();
 
+    // Start background background initializations
+    _initDeferredServices();
+
     // Navigate after delay
     Timer(const Duration(milliseconds: 2800), () {
       if (mounted) {
@@ -59,6 +67,31 @@ class _SplashScreenState extends State<SplashScreen>
         );
       }
     });
+  }
+
+  Future<void> _initDeferredServices() async {
+    // 1. Ensure Flutter has rendered the first frame of this widget
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    // 2. Remove the OS native splash screen to reveal our animated splash
+    FlutterNativeSplash.remove();
+
+    // 3. Precache heavy images to prevent jumping when navigating
+    if (mounted) {
+      precacheImage(const AssetImage('assets/images/forest_pattern.png'), context);
+      precacheImage(const AssetImage('assets/images/app_icon.png'), context);
+    }
+
+    // 4. Initialize services deferred from main.dart
+    try {
+      final remoteConfig = RemoteConfigService(FirebaseRemoteConfig.instance);
+      await remoteConfig.initialize();
+    } catch (_) {}
+
+    try {
+      final cloudAudio = ref.read(cloudAudioServiceProvider);
+      await cloudAudio.init();
+    } catch (_) {}
   }
 
   @override

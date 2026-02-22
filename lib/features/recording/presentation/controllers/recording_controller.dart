@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
-import '../../domain/providers.dart';
-import '../../domain/use_cases/start_recording_use_case.dart';
-import '../../domain/use_cases/stop_recording_use_case.dart';
-import '../../domain/failures/recording_failure.dart';
-import '../../../library/data/reference_database.dart';
-import '../../../../core/services/logger/logger_service.dart';
+import 'package:hunting_calls_perfection/features/recording/domain/providers.dart';
+import 'package:hunting_calls_perfection/features/recording/domain/use_cases/start_recording_use_case.dart';
+import 'package:hunting_calls_perfection/features/recording/domain/use_cases/stop_recording_use_case.dart';
+import 'package:hunting_calls_perfection/features/recording/domain/failures/recording_failure.dart';
+import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
+import 'package:hunting_calls_perfection/core/services/logger/logger_service.dart';
 
 /// State for recording session
 enum RecordingStatus { idle, countdown, recording, stopping, error }

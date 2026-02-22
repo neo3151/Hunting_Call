@@ -1,6 +1,6 @@
 
-import 'config/app_config.dart';
-import 'main_common.dart';
+import 'package:hunting_calls_perfection/config/app_config.dart';
+import 'package:hunting_calls_perfection/main_common.dart';
 
 void main() {
   AppConfig.create(

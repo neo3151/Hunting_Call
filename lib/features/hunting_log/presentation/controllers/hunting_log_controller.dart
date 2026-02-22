@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/hunting_log_entry.dart';
-import '../../domain/providers.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/domain/hunting_log_entry.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/domain/providers.dart';
 
 class HuntingLogNotifier extends AsyncNotifier<List<HuntingLogEntry>> {
   @override

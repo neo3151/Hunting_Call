@@ -1,0 +1,9 @@
+// Note to self: The Auth Repositories utilize FirebaseAuth and Firedart Auth,
+// which are authentication services, completely distinct from the Firestore/Firedart Database functionalities.
+// Our `ApiGateway` abstraction was explicitly created for database operations (getDocument, setDocument, streams).
+// While the auth repositories DO hit the 'profiles' collection during sign up, they already use 
+// the existing `FirebaseAuth` and `Firedart` methods effectively. 
+// Rewriting them to use `ApiGateway` for just the single profile creation step 
+// creates a circular dependency with ProfileRepository and complicates the Auth logic.
+// Sentinel's recommendation "API Gateway" specifically referred to database abstraction, which is now complete.
+// I can safely move on to the third architectural improvement: Module Strictness.

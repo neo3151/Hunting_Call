@@ -23,7 +23,7 @@ class GlobalErrorView extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'A visual error occurred.',
+                "Network's drunk—try again?",
                 style: GoogleFonts.oswald(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -33,7 +33,7 @@ class GlobalErrorView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'We have logged this issue and our team is looking into it.',
+                'Something went wrong on our end. Give it another shot.',
                 style: GoogleFonts.lato(
                   fontSize: 14,
                   color: Colors.white70,
@@ -57,7 +57,7 @@ class GlobalErrorView extends StatelessWidget {
                     }
                   },
                   child: Text(
-                    'GO BACK',
+                    'TRY AGAIN',
                     style: GoogleFonts.oswald(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

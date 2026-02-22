@@ -1,4 +1,4 @@
-import '../repositories/payment_repository.dart';
+import 'package:hunting_calls_perfection/features/payment/domain/repositories/payment_repository.dart';
 
 /// Use case: Process a premium purchase for a user.
 class PurchasePremium {

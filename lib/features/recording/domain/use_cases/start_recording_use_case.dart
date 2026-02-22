@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../audio_recorder_service.dart';
-import '../failures/recording_failure.dart';
+import 'package:hunting_calls_perfection/features/recording/domain/audio_recorder_service.dart';
+import 'package:hunting_calls_perfection/features/recording/domain/failures/recording_failure.dart';
 
 /// Use case for starting a recording session with countdown
 class StartRecordingUseCase {

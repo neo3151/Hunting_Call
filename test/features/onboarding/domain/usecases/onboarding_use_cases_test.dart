@@ -14,7 +14,7 @@ class MockOnboardingRepository implements OnboardingRepository {
   }
 
   @override
-  bool hasSeenOnboarding() {
+  Future<bool> hasSeenOnboarding() async {
     if (_shouldThrowError) throw Exception('Storage failed');
     return _hasSeenOnboarding;
   }
@@ -49,12 +49,12 @@ void main() {
   });
 
   group('CheckOnboardingStatusUseCase', () {
-    test('returns false when onboarding not completed', () {
+    test('returns false when onboarding not completed', () async {
       // Arrange
       final useCase = CheckOnboardingStatusUseCase(mockRepository);
 
       // Act
-      final result = useCase.execute();
+      final result = await useCase.execute();
 
       // Assert
       expect(result.isRight(), true);
@@ -70,7 +70,7 @@ void main() {
       await mockRepository.completeOnboarding();
 
       // Act
-      final result = useCase.execute();
+      final result = await useCase.execute();
 
       // Assert
       expect(result.isRight(), true);
@@ -80,13 +80,13 @@ void main() {
       );
     });
 
-    test('returns StorageError when operation fails', () {
+    test('returns StorageError when operation fails', () async {
       // Arrange
       final useCase = CheckOnboardingStatusUseCase(mockRepository);
       mockRepository.setShouldThrowError(true);
 
       // Act
-      final result = useCase.execute();
+      final result = await useCase.execute();
 
       // Assert
       expect(result.isLeft(), true);
@@ -104,14 +104,14 @@ void main() {
     test('successfully marks onboarding as complete', () async {
       // Arrange
       final useCase = CompleteOnboardingUseCase(mockRepository);
-      expect(mockRepository.hasSeenOnboarding(), false);
+      expect(await mockRepository.hasSeenOnboarding(), false);
 
       // Act
       final result = await useCase.execute();
 
       // Assert
       expect(result.isRight(), true);
-      expect(mockRepository.hasSeenOnboarding(), true);
+      expect(await mockRepository.hasSeenOnboarding(), true);
     });
 
     test('returns StorageError when operation fails', () async {
@@ -141,7 +141,7 @@ void main() {
       final completeUseCase = CompleteOnboardingUseCase(mockRepository);
 
       // Act & Assert - Initially not completed
-      var checkResult = checkUseCase.execute();
+      var checkResult = await checkUseCase.execute();
       expect(checkResult.isRight(), true);
       checkResult.fold(
         (_) => fail('Should succeed'),
@@ -153,7 +153,7 @@ void main() {
       expect(completeResult.isRight(), true);
 
       // Act & Assert - Check again (should be completed)
-      checkResult = checkUseCase.execute();
+      checkResult = await checkUseCase.execute();
       checkResult.fold(
         (_) => fail('Should succeed'),
         (hasCompleted) => expect(hasCompleted, true),

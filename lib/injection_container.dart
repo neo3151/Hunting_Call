@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'features/auth/data/firedart_file_store.dart';
-import 'firebase_options.dart';
-import 'features/hunting_log/data/local_hunting_log_repository.dart';
+import 'package:hunting_calls_perfection/features/auth/data/firedart_file_store.dart';
+import 'package:hunting_calls_perfection/firebase_options.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/data/local_hunting_log_repository.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// Whether Firebase (or Firedart on Linux) is available.

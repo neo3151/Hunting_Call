@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../entities/daily_challenge_stats.dart';
-import '../failures/profile_failure.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/daily_challenge_stats.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/failures/profile_failure.dart';
 
 /// Pure use case for calculating daily challenge streak logic
 /// 

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel | Mission Control</title>
+    <style>
+        :root {
+            --bg-color: #0b0b10;
+            --sidebar-bg: #111116;
+            --chat-bg: #16161e;
+            --accent-color: #00f2ff;
+            --text-color: #e0e0e6;
+            --muted-color: #6c6c75;
+            --border-color: rgba(255, 255, 255, 0.1);
+
+            --msg-director-bg: #2b2b3d;
+            --msg-worker-bg: #1f1f28;
+            --msg-date-color: rgba(255, 255, 255, 0.2);
+
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+
+            --font-main: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        #sidebar {
+            width: 300px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+        }
+
+        #mission-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .mission-card {
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mission-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mission-card.active {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: rgba(0, 242, 255, 0.3);
+        }
+
+        .mission-id {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .mission-preview {
+            font-size: 0.85rem;
+            color: var(--muted-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* MAIN CHAT AREA */
+        #main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--chat-bg);
+            position: relative;
+        }
+
+        #chat-header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .current-mission-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        #chat-feed {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            scroll-behavior: smooth;
+        }
+
+        .message-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            max-width: 80%;
+        }
+
+        .message-group.director {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message-group.worker {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .msg-sender {
+            font-size: 0.7rem;
+            color: var(--muted-color);
+            margin-bottom: 0.2rem;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        .msg-bubble {
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            max-width: fit-content;
+        }
+
+        .director .msg-bubble {
+            background: var(--msg-director-bg);
+            border-bottom-right-radius: 4px;
+            border-left: none;
+            color: #fff;
+        }
+
+        .worker .msg-bubble {
+            background: var(--msg-worker-bg);
+            border-bottom-left-radius: 4px;
+            color: #ccc;
+        }
+
+        .msg-bubble.thought {
+            font-style: italic;
+            color: #a0a0a0;
+            background: transparent;
+            border: 1px dashed #444;
+            padding: 0.5rem 1rem;
+        }
+
+        .msg-bubble.plan {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            background: rgba(0, 242, 255, 0.05);
+            border-left: 2px solid var(--accent-color);
+            border-radius: 4px;
+        }
+
+        .msg-meta {
+            font-size: 0.65rem;
+            color: var(--msg-date-color);
+            margin-top: 0.3rem;
+            text-align: right;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message-group:hover .msg-meta {
+            opacity: 1;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* CONNECTION STATUS */
+        #connection-status {
+            position: fixed;
+            bottom: 1rem;
+            right: 1.5rem;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 100;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff3333;
+            box-shadow: 0 0 8px #ff3333;
+        }
+
+        .status-dot.online {
+            background: #00ff66;
+            box-shadow: 0 0 8px #00ff66;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">Sentinel</div>
+        </div>
+        <div id="mission-list">
+            <!-- Populated via JS -->
+        </div>
+    </div>
+
+    <div id="main-panel">
+        <div id="chat-header">
+            <div class="current-mission-title" id="current-mission-id">Select a Mission</div>
+            <!-- Future: Agent avatars? -->
+        </div>
+        <div id="chat-feed">
+            <!-- Messages populated via JS -->
+        </div>
+    </div>
+
+    <div id="connection-status">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Connecting...</span>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        let API_BASE = window.location.origin;
+        const DISCOVERY_FILE = "discovery.json";
+
+        // --- STATE ---
+        let missions = new Map(); // missionId -> LogEntry[]
+        let currentMissionId = null;
+        let lastLogCount = 0;
+
+        // --- DISCOVERY LOGIC ---
+        async function resolveDiscovery() {
+            if (window.location.protocol === 'file:') {
+                try {
+                    const resp = await fetch(DISCOVERY_FILE);
+                    const config = await resp.json();
+                    if (config.live_url) {
+                        API_BASE = config.live_url;
+                        console.log("Discovery: " + API_BASE);
+                    }
+                } catch (e) {
+                    console.warn("Local discovery failed.");
+                }
+            }
+        }
+
+        // --- CORE LOGIC ---
+        async function fetchLogs() {
+            try {
+                const response = await fetch(`${API_BASE}/api/logs`);
+                if (!response.ok) throw new Error("API Error");
+                const data = await response.json();
+                processLogs(data.logs);
+                updateConnectionStatus(true);
+            } catch (err) {
+                console.error(err);
+                updateConnectionStatus(false, err.message);
+            }
+        }
+
+        function processLogs(logs) {
+            // Group logs by mission ID
+            const newMissions = new Map();
+            let hasNewLogs = logs.length !== lastLogCount;
+
+            logs.forEach(log => {
+                const mid = log.missionId || "SYSTEM_EVENTS";
+                if (!newMissions.has(mid)) newMissions.set(mid, []);
+                newMissions.get(mid).push(log);
+            });
+
+            missions = newMissions;
+            lastLogCount = logs.length;
+
+            renderMissionList();
+
+            // If current mission active, re-render chat or auto-select latest if none
+            if (!currentMissionId && missions.size > 0) {
+                // Select the most recent mission (assumes logs are chronological)
+                const ids = Array.from(missions.keys());
+                selectMission(ids[ids.length - 1]); // Last key = most recent usually
+            } else if (currentMissionId && hasNewLogs) {
+                renderChat(currentMissionId);
+            }
+        }
+
+        function renderMissionList() {
+            const listEl = document.getElementById('mission-list');
+            // Sort missions by latest timestamp? For now, insertion order (reverse)
+            const ids = Array.from(missions.keys()).reverse();
+
+            listEl.innerHTML = ids.map(mid => {
+                const msgs = missions.get(mid);
+                const lastMsg = msgs[msgs.length - 1];
+                const isActive = mid === currentMissionId ? 'active' : '';
+
+                return `
+                    <div class="mission-card ${isActive}" onclick="selectMission('${mid}')">
+                        <div class="mission-id">#${mid}</div>
+                        <div class="mission-preview">${lastMsg.message}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectMission(mid) {
+            currentMissionId = mid;
+            document.getElementById('current-mission-id').innerText = `Mission: ${mid}`;
+            renderMissionList(); // update active class
+            renderChat(mid);
+        }
+
+        function renderChat(mid) {
+            const feed = document.getElementById('chat-feed');
+            const logs = missions.get(mid) || [];
+
+            const wasAtBottom = feed.scrollHeight - feed.scrollTop <= feed.clientHeight + 100;
+
+            feed.innerHTML = logs.map(log => {
+                const role = log.context && log.context.toLowerCase().includes('director') ? 'director' : 'worker';
+                const typeClass = log.level === 'THOUGHT' ? 'thought' : (log.level === 'PLAN' ? 'plan' : '');
+
+                // Clean up context name (remove Role prefix if present)
+                let senderName = log.context;
+                if (senderName.includes(':')) {
+                    senderName = senderName.split(':')[1];
+                }
+
+                return `
+                    <div class="message-group ${role}">
+                        <div class="msg-sender">${senderName}</div>
+                        <div class="msg-bubble ${typeClass}">
+                            ${formatMessage(log.message)}
+                            <span class="msg-meta">${new Date(log.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (wasAtBottom) {
+                feed.scrollTop = feed.scrollHeight;
+            }
+        }
+
+        function formatMessage(msg) {
+            // Simple formatter for newlines and basic markdown
+            return msg.replace(/\n/g, '<br>');
+        }
+
+        function updateConnectionStatus(isOnline, errorMsg) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+
+            if (isOnline) {
+                dot.classList.add('online');
+                text.innerText = "Online";
+                text.style.color = "#e0e0e6";
+            } else {
+                dot.classList.remove('online');
+                text.innerText = errorMsg || "Disconnected";
+                text.style.color = "#ff3333";
+            }
+        }
+
+        // --- INIT ---
+        (async () => {
+            await resolveDiscovery();
+            fetchLogs();
+            setInterval(fetchLogs, 2000);
+        })();
+    </script>
+</body>
+
+</html>

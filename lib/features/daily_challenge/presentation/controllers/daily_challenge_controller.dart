@@ -1,16 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
 import 'package:hunting_calls_perfection/features/daily_challenge/domain/providers.dart';
+import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
-/// Provides the daily challenge call via Riverpod.
+/// Provides the daily challenge call via Riverpod Future.
 /// Returns null if there's an error getting the challenge.
-final dailyChallengeProvider = Provider<ReferenceCall?>((ref) {
+final dailyChallengeProvider = FutureProvider<ReferenceCall?>((ref) async {
   final useCase = ref.watch(getDailyChallengeUseCaseProvider);
-  final result = useCase.execute();
+  final result = await useCase.execute();
   
   return result.fold(
     (failure) {
-      // Log error but return null to allow UI to handle gracefully
+      AppLogger.d('error fetching challenge: ${failure.message}');
       return null;
     },
     (challenge) => challenge,

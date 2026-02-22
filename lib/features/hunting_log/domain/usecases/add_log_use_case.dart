@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import '../hunting_log_entry.dart';
-import '../repositories/hunting_log_repository.dart';
-import '../failures/hunting_log_failure.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/domain/hunting_log_entry.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/domain/repositories/hunting_log_repository.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/domain/failures/hunting_log_failure.dart';
 
 /// Use case: Add a new hunting log entry
 /// 

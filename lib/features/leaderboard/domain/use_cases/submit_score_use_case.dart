@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../leaderboard_entry.dart';
-import '../failures/leaderboard_failure.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/domain/leaderboard_entry.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/domain/failures/leaderboard_failure.dart';
 
 /// Result of a score submission attempt
 class SubmitScoreResult {

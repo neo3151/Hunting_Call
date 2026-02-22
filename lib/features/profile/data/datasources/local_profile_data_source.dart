@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hunting_calls_perfection/core/services/simple_storage.dart';
 
-import '../../domain/entities/user_profile.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 abstract class ProfileDataSource {
@@ -13,13 +13,13 @@ abstract class ProfileDataSource {
 }
 
 class LocalProfileDataSource implements ProfileDataSource {
-  final SharedPreferences sharedPreferences;
+  final ISimpleStorage _storage;
 
-  LocalProfileDataSource({required this.sharedPreferences});
+  LocalProfileDataSource({required ISimpleStorage storage}) : _storage = storage;
 
   @override
   Future<UserProfile> getProfile(String userId) async {
-    final jsonString = sharedPreferences.getString('user_profile_$userId');
+    final jsonString = await _storage.getString('user_profile_$userId');
     AppLogger.d('🔍 LocalProfileDataSource: Reading user_profile_$userId: $jsonString');
     if (jsonString != null) {
       final p = UserProfile.fromJson(json.decode(jsonString));
@@ -40,7 +40,7 @@ class LocalProfileDataSource implements ProfileDataSource {
 
   @override
   Future<void> saveProfile(UserProfile profile) async {
-    await sharedPreferences.setString(
+    await _storage.setString(
       'user_profile_${profile.id}',
       json.encode(profile.toJson()),
     );
@@ -48,7 +48,7 @@ class LocalProfileDataSource implements ProfileDataSource {
 
   @override
   Future<List<String>> getProfileIds() async {
-    return sharedPreferences.getStringList('profile_index') ?? [];
+    return await _storage.getStringList('profile_index') ?? [];
   }
 
   @override
@@ -56,7 +56,7 @@ class LocalProfileDataSource implements ProfileDataSource {
     final ids = await getProfileIds();
     if (!ids.contains(id)) {
       ids.add(id);
-      await sharedPreferences.setStringList('profile_index', ids);
+      await _storage.setStringList('profile_index', ids);
     }
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/leaderboard_entry.dart';
-import '../../domain/repositories/leaderboard_service.dart';
-import '../../../profile/domain/entities/user_profile.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/domain/leaderboard_entry.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/domain/repositories/leaderboard_service.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 
 final leaderboardScoresProvider = StreamProvider.family<List<LeaderboardEntry>, String>((ref, animalId) {

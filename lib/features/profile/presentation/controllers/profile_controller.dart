@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/repositories/profile_repository.dart';
-import '../../domain/entities/user_profile.dart';
-import '../../../rating/domain/rating_model.dart';
-import '../../domain/providers.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
+import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/providers.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 

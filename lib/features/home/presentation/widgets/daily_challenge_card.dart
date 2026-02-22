@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../library/domain/reference_call_model.dart';
+import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
 import 'package:hunting_calls_perfection/core/utils/animal_image_alignment.dart';
 
 /// Banner card showing today's daily challenge on the home screen.
@@ -22,10 +22,14 @@ class DailyChallengeCard extends StatelessWidget {
         children: [
           // Background Image
           Positioned.fill(
-            child: Image.asset(
-              challengeCall.imageUrl,
-              fit: BoxFit.cover,
-              alignment: AnimalImageAlignment.forImage(challengeCall.imageUrl),
+            child: Semantics(
+              label: 'Image of ${challengeCall.animalName}',
+              image: true,
+              child: Image.asset(
+                challengeCall.imageUrl,
+                fit: BoxFit.cover,
+                alignment: AnimalImageAlignment.forImage(challengeCall.imageUrl),
+              ),
             ),
           ),
           // Gradient Overlay

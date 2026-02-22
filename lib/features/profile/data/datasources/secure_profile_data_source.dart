@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../../domain/entities/user_profile.dart';
-import 'local_profile_data_source.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
+import 'package:hunting_calls_perfection/features/profile/data/datasources/local_profile_data_source.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// Secure implementation of [ProfileDataSource] backed by

@@ -2,7 +2,7 @@
 /// Lives in the domain layer — implementations go in data/.
 abstract class OnboardingRepository {
   /// Returns true if the user has completed onboarding.
-  bool hasSeenOnboarding();
+  Future<bool> hasSeenOnboarding();
 
   /// Marks onboarding as completed.
   Future<void> completeOnboarding();

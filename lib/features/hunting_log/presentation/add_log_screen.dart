@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:uuid/uuid.dart';
-import '../domain/hunting_log_entry.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/domain/hunting_log_entry.dart';
 import 'package:hunting_calls_perfection/features/hunting_log/presentation/controllers/hunting_log_controller.dart';
 
 class AddLogScreen extends ConsumerStatefulWidget {
@@ -110,7 +110,10 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                     child: ElevatedButton.icon(
                       onPressed: _isLoading ? null : _getLocation,
                       icon: const Icon(Icons.my_location),
-                      label: Text(_latitude != null ? 'Location Set' : 'Use Current Location'),
+                      label: Text(
+                        _latitude != null ? 'Location Set' : 'Use Current Location',
+                        style: const TextStyle(fontSize: 16),
+                      ),
                     ),
                   ),
                   if (_latitude != null) ...[
@@ -127,7 +130,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Save Entry'),
+                child: const Text('Save Entry', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

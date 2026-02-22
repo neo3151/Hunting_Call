@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hunting_calls_perfection/core/services/simple_storage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hunting_calls_perfection/features/profile/data/datasources/local_profile_data_source.dart';
 import 'package:hunting_calls_perfection/features/profile/data/datasources/secure_profile_data_source.dart';
@@ -10,13 +10,14 @@ import 'package:hunting_calls_perfection/features/profile/domain/entities/user_p
 import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
 
 class MockSecureStorage extends Mock implements FlutterSecureStorage {}
+class MockSimpleStorage extends Mock implements ISimpleStorage {}
 
 void main() {
   late LocalProfileDataSource localDataSource;
   late SecureProfileDataSource secureDataSource;
   late MigratingProfileDataSource migratingDataSource;
   late MockSecureStorage mockSecureStorage;
-  late SharedPreferences sharedPrefs;
+  late MockSimpleStorage mockStorage;
 
   const userId = 'test_user_123';
   final testProfile = UserProfile(
@@ -41,11 +42,10 @@ void main() {
   );
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
-    sharedPrefs = await SharedPreferences.getInstance();
+    mockStorage = MockSimpleStorage();
     mockSecureStorage = MockSecureStorage();
     
-    localDataSource = LocalProfileDataSource(sharedPreferences: sharedPrefs);
+    localDataSource = LocalProfileDataSource(storage: mockStorage);
     secureDataSource = SecureProfileDataSource(secureStorage: mockSecureStorage);
     migratingDataSource = MigratingProfileDataSource(
       localDataSource: localDataSource,
@@ -91,7 +91,8 @@ void main() {
           .thenAnswer((_) async => json.encode(defaultProfile.toJson()));
       
       // 2. Local storage has the real data
-      await sharedPrefs.setString('user_profile_$userId', json.encode(testProfile.toJson()));
+      when(() => mockStorage.getString('user_profile_$userId'))
+          .thenAnswer((_) async => json.encode(testProfile.toJson()));
       
       // 3. Mock save to secure
       when(() => mockSecureStorage.write(key: any(named: 'key'), value: any(named: 'value')))
@@ -129,8 +130,8 @@ void main() {
         value: any(named: 'value'),
       )).called(1);
       
-      // Verify NOT written to shared prefs
-      expect(sharedPrefs.containsKey('user_profile_$userId'), false);
+      // Verify NOT written to local storage
+      verifyNever(() => mockStorage.setString('user_profile_$userId', any()));
     });
   });
 }

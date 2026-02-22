@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:math';
-import '../../domain/audio_recorder_service.dart';
+import 'package:hunting_calls_perfection/features/recording/domain/audio_recorder_service.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class MockAudioRecorderService implements AudioRecorderService {

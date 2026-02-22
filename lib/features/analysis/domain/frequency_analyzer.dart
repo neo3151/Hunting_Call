@@ -1,4 +1,4 @@
-import 'audio_analysis_model.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
 
 abstract class FrequencyAnalyzer {
   /// Analyzes the audio at [audioPath] and returns the dominant frequency in Hz.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../leaderboard/data/mock_leaderboard_data.dart';
+import 'package:hunting_calls_perfection/features/leaderboard/data/mock_leaderboard_data.dart';
 
 /// Compact leaderboard preview showing top 3 daily leaders.
 class LeaderboardPreview extends StatelessWidget {

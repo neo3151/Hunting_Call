@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/auth_user.dart';
-import '../../domain/usecases/sign_in.dart';
-import '../../domain/usecases/sign_in_anonymously.dart';
-import '../../domain/usecases/sign_in_with_google.dart';
-import '../../domain/usecases/sign_in_with_email.dart';
-import '../../domain/usecases/sign_up_with_email.dart';
-import '../../domain/usecases/send_password_reset_email.dart';
-import '../../domain/usecases/sign_out.dart';
-import '../../domain/usecases/get_auth_state_stream.dart';
-import '../../../profile/presentation/controllers/profile_controller.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/entities/auth_user.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/usecases/sign_in.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/usecases/sign_in_anonymously.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/usecases/sign_in_with_google.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/usecases/sign_in_with_email.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/usecases/sign_up_with_email.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/usecases/send_password_reset_email.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/usecases/sign_out.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/usecases/get_auth_state_stream.dart';
+import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
-import '../../../../core/services/logger/logger_service.dart';
+import 'package:hunting_calls_perfection/core/services/logger/logger_service.dart';
 
 // --- Dependency Injection via Riverpod ---
 // Auth repository is provided by di_providers.dart (platform-aware: Firebase/Firedart/Mock)

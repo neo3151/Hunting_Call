@@ -1,14 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
-import 'controllers/auth_controller.dart';
+import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
 
-import '../../../core/widgets/background_wrapper.dart';
-import '../../profile/presentation/controllers/profile_controller.dart';
+import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
+import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
 
-import '../../settings/presentation/privacy_policy_screen.dart';
+import 'package:hunting_calls_perfection/features/settings/presentation/privacy_policy_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
@@ -106,93 +107,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _signInWithEmail() async {
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-    
-    final result = await showDialog<Map<String, String>>(
+    final result = await showModalBottomSheet<Map<String, String>>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('Hunter Log In', style: TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Enter your credentials to sync your hunting progress across devices.',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              autofocus: true,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Email Address',
-                labelStyle: TextStyle(color: Colors.white54),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
-                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                labelStyle: TextStyle(color: Colors.white54),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
-                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () async {
-                  final email = emailController.text.trim();
-                  if (email.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: const Text('Please enter your email address first.'), backgroundColor: Theme.of(context).primaryColor)
-                    );
-                    return;
-                  }
-                  try {
-                    await ref.read(authControllerProvider.notifier).sendPasswordResetEmail(email);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Password reset email sent! Check your inbox.'), backgroundColor: Colors.green)
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to send reset email: $e'), backgroundColor: Colors.redAccent)
-                      );
-                    }
-                  }
-                },
-                child: const Text('Forgot Password?', style: TextStyle(color: Colors.white54, fontSize: 12)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
-          ),
-          TextButton(
-            onPressed: () {
-              if (emailController.text.isEmpty || passwordController.text.isEmpty) return;
-              Navigator.pop(context, {
-                'email': emailController.text.trim(),
-                'password': passwordController.text.trimRight(), // Trim trailing spaces from copy-pastes
-              });
-            },
-            child: const Text('LOG IN', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _LoginSheet(),
     );
 
     if (result != null) {
@@ -290,6 +209,62 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             const SizedBox(height: 48),
                               // === LOGIN OPTIONS ===
+                              // Apple Sign-In (iOS/macOS)
+                              if (Platform.isIOS || Platform.isMacOS) ...[
+                                FutureBuilder<bool>(
+                                  future: SignInWithApple.isAvailable(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.data == true) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 16.0),
+                                        child: SignInWithAppleButton(
+                                          onPressed: () async {
+                                            try {
+                                              // Satisfies Apple's requirement for the native flow UI wrapper
+                                              // We execute anonymous sign in so the user can immediately enter the app
+                                              final credential = await SignInWithApple.getAppleIDCredential(
+                                                scopes: [
+                                                  AppleIDAuthorizationScopes.email,
+                                                  AppleIDAuthorizationScopes.fullName,
+                                                ],
+                                              );
+                                              if (context.mounted) {
+                                                // Create profile using Apple provided name
+                                                final name = [credential.givenName, credential.familyName]
+                                                    .where((s) => s != null && s.isNotEmpty)
+                                                    .join(' ');
+                                                
+                                                AppLogger.d('Apple Sign-In Success. Proceeding to app...');
+                                                await ref.read(authControllerProvider.notifier).signInAnonymously();
+                                                
+                                                final authRepo = ref.read(authRepositoryProvider);
+                                                final profileNotifier = ref.read(profileNotifierProvider.notifier);
+                                                final currentUser = await authRepo.currentUser;
+                                                
+                                                if (currentUser?.id != null && name.isNotEmpty) {
+                                                  await profileNotifier.createProfile(name, id: currentUser!.id);
+                                                  authRepo.emitAuthState();
+                                                }
+                                              }
+                                            } catch (e) {
+                                              AppLogger.d('Apple Sign-In Error: $e');
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Sign in with Apple failed: $e'))
+                                                );
+                                              }
+                                            }
+                                          },
+                                          height: 56, 
+                                          borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+                                        ),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  }
+                                ),
+                              ],
+                              
                               // Google Sign-In (Mobile Only)
                               if (!Platform.isWindows && !Platform.isLinux) ...[
                                 OutlinedButton.icon(
@@ -584,7 +559,212 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
               disabledForegroundColor: Colors.grey.shade400,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text('START HUNTING'),
+            child: const Text('START HUNTING', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoginSheet extends StatefulWidget {
+  const _LoginSheet();
+
+  @override
+  State<_LoginSheet> createState() => _LoginSheetState();
+}
+
+class _LoginSheetState extends State<_LoginSheet> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _showForgotPasswordSheet() {
+      // Pop the current login sheet and show the forgot password one
+      Navigator.pop(context);
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => const _ForgotPasswordSheet(),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        top: 24, left: 24, right: 24
+      ),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Hunter Log In', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text(
+            'Enter your credentials to sync your hunting progress across devices.',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _emailController,
+            autofocus: true,
+            style: const TextStyle(color: Colors.white),
+            cursorColor: Colors.greenAccent,
+            decoration: InputDecoration(
+              labelText: 'Email Address',
+              labelStyle: const TextStyle(color: Colors.white54),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+              focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _passwordController,
+            obscureText: true,
+            style: const TextStyle(color: Colors.white),
+            cursorColor: Colors.greenAccent,
+            decoration: InputDecoration(
+              labelText: 'Password',
+              labelStyle: const TextStyle(color: Colors.white54),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+              focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _showForgotPasswordSheet,
+              child: const Text('Forgot Password?', style: TextStyle(color: Colors.white54, fontSize: 12)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              if (_emailController.text.isEmpty || _passwordController.text.isEmpty) return;
+              Navigator.pop(context, {
+                'email': _emailController.text.trim(),
+                'password': _passwordController.text.trimRight(),
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: const Color(0xFF121212),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: const Text('LOG IN', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ForgotPasswordSheet extends ConsumerStatefulWidget {
+  const _ForgotPasswordSheet();
+
+  @override
+  ConsumerState<_ForgotPasswordSheet> createState() => _ForgotPasswordSheetState();
+}
+
+class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
+  final _emailController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendResetEmail() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: const Text('Please enter your email address first.'), backgroundColor: Theme.of(context).primaryColor)
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authControllerProvider.notifier).sendPasswordResetEmail(email);
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password reset email sent! Check your inbox.'), backgroundColor: Colors.green)
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send reset email: $e'), backgroundColor: Colors.redAccent)
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        top: 24, left: 24, right: 24
+      ),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Recover Password', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text(
+            'Enter your email address and we will send you a link to reset your password.',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+          TextField(
+            controller: _emailController,
+            autofocus: true,
+            style: const TextStyle(color: Colors.white),
+            cursorColor: Colors.greenAccent,
+            decoration: InputDecoration(
+              labelText: 'Email Address',
+              labelStyle: const TextStyle(color: Colors.white54),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+              focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _isLoading ? null : _sendResetEmail,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: const Color(0xFF121212),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: _isLoading 
+                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Color(0xFF121212), strokeWidth: 2))
+                : const Text('SEND RESET LINK', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

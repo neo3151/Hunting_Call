@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import '../../../rating/domain/rating_model.dart';
+import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
 
 part 'user_profile.g.dart';
 

@@ -1,5 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firedart/firedart.dart' as fd;
+import 'package:hunting_calls_perfection/core/services/api_gateway.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
@@ -9,30 +8,18 @@ abstract class VersionCheckService {
 }
 
 class VersionCheckServiceImpl implements VersionCheckService {
-  final FirebaseFirestore? _firestore;
-  final fd.Firestore? _firedart;
-  final bool _isLinux;
+  final ApiGateway? _apiGateway;
 
   VersionCheckServiceImpl({
-    FirebaseFirestore? firestore,
-    fd.Firestore? firedart,
-    required bool isLinux,
-  })  : _firestore = firestore,
-        _firedart = firedart,
-        _isLinux = isLinux;
+    ApiGateway? apiGateway,
+  })  : _apiGateway = apiGateway;
 
   @override
   Future<String?> getMinVersion() async {
     try {
-      if (_isLinux) {
-        if (_firedart == null) return null;
-        final doc = await _firedart!.collection('config').document('app_v1').get();
-        return doc.map['min_version'] as String?;
-      } else {
-        if (_firestore == null) return null;
-        final doc = await _firestore!.collection('config').doc('app_v1').get();
-        return doc.data()?['min_version'] as String?;
-      }
+      if (_apiGateway == null) return null;
+      final data = await _apiGateway!.getDocument('config', 'app_v1');
+      return data?['min_version'] as String?;
     } catch (e) {
       AppLogger.d('VersionCheckService: Error fetching min_version: $e');
       return null;

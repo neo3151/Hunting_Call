@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:fpdart/fpdart.dart';
-import '../failures/analysis_failure.dart';
-import '../frequency_analyzer.dart';
-import '../audio_analysis_model.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/failures/analysis_failure.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
 
 /// Use case for analyzing audio characteristics
 /// 

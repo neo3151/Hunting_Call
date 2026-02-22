@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../../domain/world_info.dart';
+import 'package:hunting_calls_perfection/features/progress_map/domain/world_info.dart';
 
 /// Custom painter that renders the world map background, decorations,
 /// path connections, and ambient particles.

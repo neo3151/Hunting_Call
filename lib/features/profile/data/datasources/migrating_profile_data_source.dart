@@ -1,6 +1,6 @@
-import 'local_profile_data_source.dart';
-import 'secure_profile_data_source.dart';
-import '../../domain/entities/user_profile.dart';
+import 'package:hunting_calls_perfection/features/profile/data/datasources/local_profile_data_source.dart';
+import 'package:hunting_calls_perfection/features/profile/data/datasources/secure_profile_data_source.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 /// A [ProfileDataSource] that migrates data from [LocalProfileDataSource]

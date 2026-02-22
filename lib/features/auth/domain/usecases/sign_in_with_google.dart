@@ -1,6 +1,6 @@
-import '../entities/auth_user.dart';
-import '../repositories/auth_repository.dart';
-import '../../../../features/profile/domain/repositories/profile_repository.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/entities/auth_user.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
+import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
 
 class SignInWithGoogle {
   final AuthRepository authRepository;

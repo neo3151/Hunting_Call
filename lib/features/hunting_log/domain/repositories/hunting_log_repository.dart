@@ -1,4 +1,4 @@
-import '../hunting_log_entry.dart';
+import 'package:hunting_calls_perfection/features/hunting_log/domain/hunting_log_entry.dart';
 
 /// Abstract interface for hunting log operations.
 /// Lives in the domain layer — implementations go in data/.

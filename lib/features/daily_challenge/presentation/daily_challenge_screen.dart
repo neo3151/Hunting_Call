@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'controllers/daily_challenge_controller.dart';
-import '../../recording/presentation/recorder_page.dart';
-import 'widgets/challenge_card.dart';
-import 'widgets/leaderboard_preview.dart';
+import 'package:hunting_calls_perfection/features/daily_challenge/presentation/controllers/daily_challenge_controller.dart';
+import 'package:hunting_calls_perfection/features/recording/presentation/recorder_page.dart';
+import 'package:hunting_calls_perfection/features/daily_challenge/presentation/widgets/challenge_card.dart';
+import 'package:hunting_calls_perfection/features/daily_challenge/presentation/widgets/leaderboard_preview.dart';
 import 'package:hunting_calls_perfection/core/utils/animal_image_alignment.dart';
 
 class DailyChallengeScreen extends ConsumerWidget {
@@ -14,53 +14,94 @@ class DailyChallengeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final challengeCall = ref.watch(dailyChallengeProvider);
+    final challengeAsyncValue = ref.watch(dailyChallengeProvider);
 
-    // Handle null challenge (error case)
-    if (challengeCall == null) {
-      return Scaffold(
+    return challengeAsyncValue.when(
+      loading: () => const Scaffold(
         backgroundColor: Colors.black,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            'DAILY CHALLENGE',
-            style: GoogleFonts.oswald(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-              color: Colors.white,
+        body: Center(child: CircularProgressIndicator(color: Colors.greenAccent)),
+      ),
+      error: (err, stack) => _buildErrorScaffold(context),
+      data: (challengeCall) {
+        // Handle null challenge (error case returning from UseCase)
+        if (challengeCall == null) {
+          return _buildErrorScaffold(context);
+        }
+
+        return Scaffold(
+          backgroundColor: Colors.black,
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
             ),
-          ),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 64),
-              const SizedBox(height: 16),
-              Text(
-                "Unable to load today's challenge",
-                style: GoogleFonts.lato(color: Colors.white70, fontSize: 16),
+            title: Text(
+              'DAILY CHALLENGE',
+              style: GoogleFonts.oswald(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+                color: Colors.white,
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('GO BACK'),
+            ),
+            centerTitle: true,
+          ),
+          body: Stack(
+            children: [
+              // Background
+              Positioned.fill(
+                child: Semantics(
+                  label: 'Daily Challenge target: ${challengeCall.animalName}',
+                  image: true,
+                  child: Image.asset(
+                    challengeCall.imageUrl,
+                    fit: BoxFit.cover,
+                    alignment: AnimalImageAlignment.forImage(challengeCall.imageUrl),
+                    color: Colors.black87,
+                    colorBlendMode: BlendMode.darken,
+                  ),
+                ),
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 32),
+                      ChallengeCard(
+                        challengeCall: challengeCall,
+                        onStart: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => RecorderPage(
+                                userId: userId,
+                                preselectedAnimalId: challengeCall.id,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const Spacer(),
+                      const LeaderboardPreview(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
-        ),
-      );
-    }
+        );
+      },
+    );
+  }
 
+  Widget _buildErrorScaffold(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -78,50 +119,28 @@ class DailyChallengeScreen extends ConsumerWidget {
         ),
         centerTitle: true,
       ),
-      body: Stack(
-        children: [
-          // Background
-          Positioned.fill(
-            child: Image.asset(
-              challengeCall.imageUrl,
-              fit: BoxFit.cover,
-              alignment: AnimalImageAlignment.forImage(challengeCall.imageUrl),
-              color: Colors.black87,
-              colorBlendMode: BlendMode.darken,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 64),
+            const SizedBox(height: 16),
+            Text(
+              "Unable to load today's challenge",
+              style: GoogleFonts.lato(color: Colors.white70, fontSize: 16),
             ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 32),
-                  ChallengeCard(
-                    challengeCall: challengeCall,
-                    onStart: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => RecorderPage(
-                            userId: userId,
-                            preselectedAnimalId: challengeCall.id,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const Spacer(),
-                  const LeaderboardPreview(),
-                  const SizedBox(height: 24),
-                ],
-              ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('GO BACK'),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
+
 
   Widget _buildHeader() {
     final dateStr =

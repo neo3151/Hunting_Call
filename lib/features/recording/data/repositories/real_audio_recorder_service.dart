@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:record/record.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hunting_calls_perfection/core/services/simple_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import '../../domain/audio_recorder_service.dart';
+import 'package:hunting_calls_perfection/features/recording/domain/audio_recorder_service.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class RealAudioRecorderService implements AudioRecorderService {
@@ -36,12 +36,15 @@ class RealAudioRecorderService implements AudioRecorderService {
   
   // ============ INSTANCE VARIABLES ============
   
+  final ISimpleStorage _storage;
   AudioRecorder? _recorder;
   final StreamController<double> _amplitudeController = StreamController<double>.broadcast();
   StreamSubscription? _amplitudeSubscription;
   bool _isInitialized = false;
   String? _lastError;
   String? _currentPath;
+
+  RealAudioRecorderService(this._storage);
 
   @override
   String? get lastError => _lastError;
@@ -197,8 +200,7 @@ class RealAudioRecorderService implements AudioRecorderService {
         int deletedCount = 0;
 
         // Load settings to get cleanup frequency
-        final prefs = await SharedPreferences.getInstance();
-        final cleanupHours = prefs.getInt('app_settings_autoCleanupHours') ?? 24;
+        final cleanupHours = await _storage.getInt('app_settings_autoCleanupHours') ?? 24;
 
         if (cleanupHours <= 0) {
           AppLogger.d('RealAudioRecorder: Cleanup skipped. User has selected never to delete recordings.');

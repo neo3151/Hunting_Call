@@ -1,6 +1,6 @@
 import 'dart:async';
-import '../domain/repositories/auth_repository.dart';
-import '../domain/entities/auth_user.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
+import 'package:hunting_calls_perfection/features/auth/domain/entities/auth_user.dart';
 import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
 
 class MockAuthRepository implements AuthRepository {

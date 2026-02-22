@@ -1,9 +1,9 @@
 import 'dart:math';
 import 'package:fpdart/fpdart.dart';
-import '../entities/analysis_result.dart';
-import '../failures/analysis_failure.dart';
-import '../audio_analysis_model.dart';
-import '../../../library/data/reference_database.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/entities/analysis_result.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/failures/analysis_failure.dart';
+import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
+import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
 
 /// Parameters for score calculation
 class CalculateScoreParams {
