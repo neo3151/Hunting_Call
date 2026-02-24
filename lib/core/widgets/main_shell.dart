@@ -19,12 +19,14 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
+  late final PageController _pageController;
 
   late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
     _screens = [
       HomeScreen(userId: widget.userId),
       LibraryScreen(userId: widget.userId),
@@ -35,10 +37,65 @@ class _MainShellState extends State<MainShell> {
   }
 
   @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  void _onBottomNavTapped(int index) {
+    HapticFeedback.lightImpact();
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
+      endDrawer: Drawer(
+        backgroundColor: const Color(0xFF1A1A1A),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'MENU',
+                  style: GoogleFonts.oswald(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const Divider(color: Colors.white24),
+              ListTile(
+                leading: const Icon(Icons.settings, color: Colors.white70),
+                title: const Text('Settings', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  // Since we don't import settings screen here directly, we'll just switch the bottom nab to Profile tab for now,
+                  // or we can push the settings screen if imported.
+                  _onBottomNavTapped(4); // Profile tab usually has settings
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        physics: const BouncingScrollPhysics(),
         children: _screens,
       ),
       bottomNavigationBar: Container(
@@ -60,10 +117,7 @@ class _MainShellState extends State<MainShell> {
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
-          onTap: (index) {
-            HapticFeedback.lightImpact();
-            setState(() => _currentIndex = index);
-          },
+          onTap: _onBottomNavTapped,
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.transparent,
           elevation: 0,

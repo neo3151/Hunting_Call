@@ -166,30 +166,57 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildProfileHeader(UserProfile profile) {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.green.withValues(alpha: 0.2),
-                blurRadius: 20,
-                spreadRadius: 5,
-              )
-            ],
-          ),
-          child: const CircleAvatar(
-            radius: 50,
-            backgroundColor: Color(0xFF1A1A1A),
-            child: Icon(Icons.person, size: 50, color: Colors.white70),
-          ),
+        Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  )
+                ],
+              ),
+              child: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
+                  ? CircleAvatar(
+                      radius: 50,
+                      backgroundImage: NetworkImage(profile.avatarUrl!),
+                    )
+                  : const CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Color(0xFF1A1A1A),
+                      child: Icon(Icons.person, size: 50, color: Colors.white70),
+                    ),
+            ),
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.black54,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.edit, size: 20, color: Colors.white),
+                onPressed: () => _showEditProfileDialog(context, profile),
+                tooltip: 'Edit Profile',
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         Text(
-          profile.name.toUpperCase(),
+          (profile.nickname?.isNotEmpty == true ? profile.nickname! : profile.name).toUpperCase(),
           style: GoogleFonts.oswald(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.0),
         ),
+        if (profile.nickname?.isNotEmpty == true && profile.name != profile.nickname)
+          Text(
+            '(${profile.name})',
+            style: GoogleFonts.lato(color: Colors.white38, fontSize: 12),
+          ),
+        const SizedBox(height: 4),
         Text(
           'HANDLING SINCE ${DateFormat.yMMMd().format(profile.joinedDate).toUpperCase()}',
           style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
@@ -217,6 +244,92 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ],
       ],
+    );
+  }
+
+  void _showEditProfileDialog(BuildContext context, UserProfile profile) {
+    final nicknameController = TextEditingController(text: profile.nickname);
+    final avatarUrlController = TextEditingController(text: profile.avatarUrl);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1A1A1A),
+          title: Text(
+            'EDIT PROFILE',
+            style: GoogleFonts.oswald(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: nicknameController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Nickname',
+                    labelStyle: const TextStyle(color: Colors.white54),
+                    enabledBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white24),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: avatarUrlController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Avatar Image URL',
+                    labelStyle: const TextStyle(color: Colors.white54),
+                    enabledBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white24),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Note: Nicknames are revokable by moderators if they contain improper words.',
+                  style: GoogleFonts.lato(color: Colors.redAccent, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final newNickname = nicknameController.text.trim();
+                final newAvatarUrl = avatarUrlController.text.trim();
+                ref.read(profileNotifierProvider.notifier).updateProfile(
+                      nickname: newNickname.isEmpty ? null : newNickname,
+                      avatarUrl: newAvatarUrl.isEmpty ? null : newAvatarUrl,
+                    );
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: const Color(0xFF121212),
+              ),
+              child: const Text('SAVE'),
+            ),
+          ],
+        );
+      },
     );
   }
 

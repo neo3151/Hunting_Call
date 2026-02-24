@@ -65,6 +65,31 @@ class SettingsScreen extends ConsumerWidget {
                         children: [
                           _sectionTitle(context, 'APPEARANCE'),
                           _settingsTile(
+                            icon: Icons.brightness_6_outlined,
+                            title: 'Dark Mode',
+                            subtitle: 'Light, Dark, or System',
+                            trailing: SegmentedButton<ThemeMode>(
+                              segments: const [
+                                ButtonSegment(value: ThemeMode.system, label: Text('SYS', style: TextStyle(fontSize: 10))),
+                                ButtonSegment(value: ThemeMode.light, label: Text('LGT', style: TextStyle(fontSize: 10))),
+                                ButtonSegment(value: ThemeMode.dark, label: Text('DRK', style: TextStyle(fontSize: 10))),
+                              ],
+                              selected: {settings.themeMode},
+                              onSelectionChanged: (v) => notifier.setThemeMode(v.first),
+                              style: ButtonStyle(
+                                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                                  if (states.contains(WidgetState.selected)) {
+                                    return Theme.of(context).primaryColor.withValues(alpha: 0.3);
+                                  }
+                                  return Colors.white.withValues(alpha: 0.05);
+                                }),
+                                foregroundColor: WidgetStateProperty.all(Colors.white),
+                                side: WidgetStateProperty.all(const BorderSide(color: Colors.white24)),
+                              ),
+                            ),
+                          ),
+                          const Divider(color: Colors.white12),
+                          _settingsTile(
                             icon: Icons.palette_outlined,
                             title: 'App Theme',
                             subtitle: 'Choose your color palette',

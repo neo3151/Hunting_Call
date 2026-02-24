@@ -1,8 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
 
 /// Domain model for application settings.
 class AppSettings {
   final AppTheme theme;
+  final ThemeMode themeMode;
   final String distanceUnit; // 'imperial' | 'metric'
   final bool notificationsEnabled;
   final bool soundEffects;
@@ -12,6 +14,7 @@ class AppSettings {
 
   const AppSettings({
     this.theme = AppTheme.classic,
+    this.themeMode = ThemeMode.system,
     this.distanceUnit = 'imperial',
     this.notificationsEnabled = true,
     this.soundEffects = true,
@@ -22,6 +25,7 @@ class AppSettings {
 
   AppSettings copyWith({
     AppTheme? theme,
+    ThemeMode? themeMode,
     String? distanceUnit,
     bool? notificationsEnabled,
     bool? soundEffects,
@@ -31,6 +35,7 @@ class AppSettings {
   }) {
     return AppSettings(
       theme: theme ?? this.theme,
+      themeMode: themeMode ?? this.themeMode,
       distanceUnit: distanceUnit ?? this.distanceUnit,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       soundEffects: soundEffects ?? this.soundEffects,
@@ -42,6 +47,7 @@ class AppSettings {
 
   Map<String, dynamic> toMap() => {
         'theme': theme.name,
+        'themeMode': themeMode.name,
         'distanceUnit': distanceUnit,
         'notificationsEnabled': notificationsEnabled,
         'soundEffects': soundEffects,
@@ -55,6 +61,10 @@ class AppSettings {
       theme: AppTheme.values.firstWhere(
         (e) => e.name == map['theme'],
         orElse: () => map['darkMode'] == false ? AppTheme.classic : AppTheme.classic, // Fallback logic
+      ),
+      themeMode: ThemeMode.values.firstWhere(
+        (e) => e.name == map['themeMode'],
+        orElse: () => ThemeMode.system,
       ),
       distanceUnit: map['distanceUnit'] as String? ?? 'imperial',
       notificationsEnabled: map['notificationsEnabled'] as bool? ?? true,

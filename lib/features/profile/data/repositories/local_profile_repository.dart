@@ -128,4 +128,10 @@ class LocalProfileRepository implements ProfileRepository {
     }
     return validProfiles;
   }
+  @override
+  Future<void> updateProfileDetails(String userId, {String? nickname, String? avatarUrl}) async {
+    final profile = await dataSource.getProfile(userId);
+    final updated = profile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
+    await dataSource.saveProfile(updated);
+  }
 }

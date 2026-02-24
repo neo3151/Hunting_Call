@@ -8,6 +8,8 @@ class UserProfile {
   final String id;
   final String name;
   final String? email; // For matching Google accounts across sign-ins
+  final String? nickname;
+  final String? avatarUrl;
   final DateTime joinedDate;
   final int totalCalls;
   final double averageScore;
@@ -25,6 +27,8 @@ class UserProfile {
     required this.id,
     required this.name,
     this.email,
+    this.nickname,
+    this.avatarUrl,
     required this.joinedDate,
     this.totalCalls = 0,
     this.averageScore = 0.0,
@@ -50,7 +54,10 @@ class UserProfile {
   }
 
   UserProfile copyWith({
+    String? name,
     String? email,
+    String? nickname,
+    String? avatarUrl,
     int? totalCalls,
     double? averageScore,
     List<HistoryItem>? history,
@@ -65,8 +72,10 @@ class UserProfile {
   }) {
     return UserProfile(
       id: id,
-      name: name,
+      name: name ?? this.name,
       email: email ?? this.email,
+      nickname: nickname ?? this.nickname,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       joinedDate: joinedDate,
       totalCalls: totalCalls ?? this.totalCalls,
       averageScore: averageScore ?? this.averageScore,

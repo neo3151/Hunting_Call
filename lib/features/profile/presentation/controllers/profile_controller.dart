@@ -132,6 +132,31 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
+  /// Update the profile's nickname and avatar
+  Future<void> updateProfile({String? nickname, String? avatarUrl}) async {
+    final currentProfile = state.profile;
+    if (currentProfile == null) return;
+    
+    state = state.copyWith(error: null);
+    try {
+      await _repo.updateProfileDetails(currentProfile.id, nickname: nickname, avatarUrl: avatarUrl);
+      
+      // Update local state immediately for snappy UI
+      final updatedProfile = currentProfile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
+      state = state.copyWith(profile: updatedProfile);
+      
+      // Also update in allProfiles if it exists
+      final updatedAll = state.allProfiles.map((p) => p.id == updatedProfile.id ? updatedProfile : p).toList();
+      state = state.copyWith(allProfiles: updatedAll);
+      
+      // Optionally reload from repo to ensure sync
+      // await loadProfile(currentProfile.id);
+    } catch (e) {
+      AppLogger.d('ProfileNotifier: updateProfile failed: $e');
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
   /// Resets the profile state to its initial, unauthenticated state.
   void reset() {
     state = const ProfileState();

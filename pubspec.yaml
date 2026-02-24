@@ -1,7 +1,7 @@
 name: hunting_calls_perfection
-description: Outcall — the ultimate hunting call training app.
+description: OUTCALL — the ultimate hunting call training app.
 publish_to: 'none'
-version: 1.5.3+21
+version: 1.5.4+22
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

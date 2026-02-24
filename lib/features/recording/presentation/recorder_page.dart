@@ -145,10 +145,18 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     if (isProcessing) return;
     _autoStopTimer?.cancel();
     await HapticFeedback.selectionClick();
-    ref.read(recordingNotifierProvider.notifier).reset();
-    setState(() {
-      _amplitudeBuffer.clear();
-    });
+    
+    setState(() => isProcessing = true);
+    try {
+      await ref.read(recordingNotifierProvider.notifier).reset();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _amplitudeBuffer.clear();
+          isProcessing = false;
+        });
+      }
+    }
   }
 
   void _toggleRecording() async {

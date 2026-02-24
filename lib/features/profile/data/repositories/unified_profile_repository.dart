@@ -364,4 +364,43 @@ class UnifiedProfileRepository implements ProfileRepository {
       return [];
     }
   }
+  @override
+  Future<void> updateProfileDetails(String userId, {String? nickname, String? avatarUrl}) async {
+    // 1. Local backup if available
+    if (_localDataSource != null) {
+      try {
+        final localProfile = await _localDataSource!.getProfile(userId);
+        final updated = localProfile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
+        await _localDataSource!.saveProfile(updated);
+      } catch (e) {
+        AppLogger.d('⚠️ Failed to save local backup of profile details: $e');
+      }
+    }
+
+    if (userId == 'guest') return;
+
+    // 2. Cloud Update
+    try {
+      final updates = <String, dynamic>{};
+      if (nickname != null) updates['nickname'] = nickname;
+      if (avatarUrl != null) updates['avatarUrl'] = avatarUrl;
+      
+      if (updates.isNotEmpty) {
+        final doc = await _apiGateway.getDocument(_collectionPath, userId);
+        if (doc == null) {
+          await _apiGateway.setDocument(_collectionPath, userId, {
+            'id': userId,
+            'name': 'Hunter', // Fallback
+            'joinedDate': DateTime.now().toIso8601String(),
+            ...updates,
+          });
+        } else {
+          await _apiGateway.updateDocument(_collectionPath, userId, updates);
+        }
+      }
+    } catch (e) {
+      AppLogger.d('❌ ApiGateway: Error updating profile details: $e');
+      if (_localDataSource == null) rethrow; // If no local, throw
+    }
+  }
 }

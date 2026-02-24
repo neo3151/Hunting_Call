@@ -12,6 +12,7 @@ import 'package:hunting_calls_perfection/features/settings/presentation/settings
 import 'package:hunting_calls_perfection/features/leaderboard/presentation/global_leaderboard_screen.dart';
 import 'package:hunting_calls_perfection/core/services/remote_config/remote_config_service.dart';
 import 'package:hunting_calls_perfection/core/widgets/offline_banner.dart';
+import 'package:hunting_calls_perfection/core/utils/friendly_errors.dart';
 import 'package:hunting_calls_perfection/features/home/presentation/controllers/home_controller.dart';
 import 'package:hunting_calls_perfection/features/home/presentation/widgets/home_header.dart';
 import 'package:hunting_calls_perfection/features/home/presentation/widgets/daily_challenge_card.dart';
@@ -138,6 +139,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ─── Private Helpers ────────────────────────────────────────────────────
 
   Widget _buildErrorState(String errorMessage) {
+    final friendlyMessage = FriendlyErrorFormatter.format(errorMessage);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -160,7 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  errorMessage,
+                  friendlyMessage,
                   style:
                       const TextStyle(color: Colors.white54, fontSize: 12),
                   textAlign: TextAlign.center,

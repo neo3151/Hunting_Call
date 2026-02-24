@@ -13,13 +13,18 @@ import 'package:hunting_calls_perfection/features/profile/domain/repositories/pr
 import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
 import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
 
+import 'package:hunting_calls_perfection/features/home/domain/use_cases/get_daily_challenge_use_case.dart';
+import 'package:hunting_calls_perfection/features/home/domain/entities/daily_challenge.dart';
+
 class MockFrequencyAnalyzer extends Mock implements FrequencyAnalyzer {}
 class MockProfileRepository extends Mock implements ProfileRepository {}
+class MockGetDailyChallengeUseCase extends Mock implements GetDailyChallengeUseCase {}
 
 void main() {
   late RealRatingService ratingService;
   late MockFrequencyAnalyzer mockAnalyzer;
   late MockProfileRepository mockProfileRepository;
+  late MockGetDailyChallengeUseCase mockGetDailyChallengeUseCase;
   late Directory tempDir;
 
   setUp(() {
@@ -27,11 +32,17 @@ void main() {
     AppConfig.create(flavor: AppFlavor.free, appName: 'Hunting Call Test');
     mockAnalyzer = MockFrequencyAnalyzer();
     mockProfileRepository = MockProfileRepository();
+    mockGetDailyChallengeUseCase = MockGetDailyChallengeUseCase();
+    
+    // Default challenge mock
+    when(() => mockGetDailyChallengeUseCase.execute(any())).thenAnswer((_) async => null);
+
     ratingService = RealRatingService(
       analyzeUseCase: AnalyzeAudioUseCase(mockAnalyzer),
       calculateUseCase: const CalculateScoreUseCase(),
       analyzer: mockAnalyzer,
       profileRepository: mockProfileRepository,
+      getDailyChallengeUseCase: mockGetDailyChallengeUseCase,
     );
     
     // Inject mock data into ReferenceDatabase

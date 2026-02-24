@@ -157,8 +157,15 @@ class RecordingNotifier extends Notifier<RecordingState> {
   }
 
   /// Reset state
-  void reset() {
+  Future<void> reset() async {
     _stopTimer();
+    if (state.isRecording || state.isCountingDown) {
+      try {
+        await _stopUseCase.execute();
+      } catch (_) {
+        // Ignore errors during reset
+      }
+    }
     state = const RecordingState();
   }
 }

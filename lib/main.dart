@@ -6,7 +6,7 @@ import 'package:hunting_calls_perfection/main_common.dart';
 void main() {
   AppConfig.create(
     flavor: AppFlavor.free,
-    appName: 'Outcall',
+    appName: 'OUTCALL',
   );
   mainCommon();
 }

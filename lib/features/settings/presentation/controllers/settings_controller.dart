@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hunting_calls_perfection/di_providers.dart';
 import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
@@ -35,6 +36,10 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
 
   Future<void> setTheme(AppTheme theme) async {
     await updateSetting((s) => s.copyWith(theme: theme));
+  }
+
+  Future<void> setThemeMode(ThemeMode themeMode) async {
+    await updateSetting((s) => s.copyWith(themeMode: themeMode));
   }
 
   Future<void> setDistanceUnit(String value) async {

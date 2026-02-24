@@ -119,9 +119,10 @@ def main():
     msg = MIMEMultipart()
     msg["to"] = "benchmarkappsllc@gmail.com"
     msg["from"] = "benchmarkappsllc@gmail.com"
-    msg["subject"] = "complete sound library"
+    msg["subject"] = "Your OUTCALL PDF Collection"
     msg.attach(MIMEText(
-        "Attached: Complete Sound Library for Hunting Calls Perfection\n"
+        "To: neo@example.com\n\n"
+        "Attached: Complete Sound Library for OUTCALL\n"
         "76 calls across 4 categories (Waterfowl, Big Game, Predators, Land Birds)"
     ))
 

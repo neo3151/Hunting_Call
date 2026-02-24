@@ -168,13 +168,14 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
     // Watch the theme state so MaterialApp rebuilds on theme change
     ref.watch(themeNotifierProvider);
     final themeNotifier = ref.read(themeNotifierProvider.notifier);
+    final themeMode = ref.watch(themeModeProvider);
     
     return MaterialApp(
       title: AppConfig.instance.appName,
       debugShowCheckedModeBanner: false,
       theme: themeNotifier.lightTheme,
       darkTheme: themeNotifier.darkTheme,
-      themeMode: ThemeMode.system, // Auto-switch based on system settings
+      themeMode: themeMode, // Switch based on settings
       home: const SplashScreen(),
     );
   }
