@@ -1,48 +1,48 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
-import 'package:hunting_calls_perfection/features/auth/data/firebase_auth_repository.dart';
-import 'package:hunting_calls_perfection/features/auth/data/mock_auth_repository.dart';
+import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
+import 'package:outcall/features/auth/data/firebase_auth_repository.dart';
+import 'package:outcall/features/auth/data/mock_auth_repository.dart';
 
-import 'package:hunting_calls_perfection/features/recording/domain/audio_recorder_service.dart';
-import 'package:hunting_calls_perfection/features/recording/data/repositories/real_audio_recorder_service.dart';
-import 'package:hunting_calls_perfection/features/recording/data/repositories/mock_audio_recorder_service.dart';
+import 'package:outcall/features/recording/domain/audio_recorder_service.dart';
+import 'package:outcall/features/recording/data/repositories/real_audio_recorder_service.dart';
+import 'package:outcall/features/recording/data/repositories/mock_audio_recorder_service.dart';
 
 
-import 'package:hunting_calls_perfection/features/profile/data/datasources/local_profile_data_source.dart';
-import 'package:hunting_calls_perfection/features/profile/data/datasources/secure_profile_data_source.dart';
-import 'package:hunting_calls_perfection/features/profile/data/datasources/migrating_profile_data_source.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
-import 'package:hunting_calls_perfection/features/profile/data/repositories/local_profile_repository.dart'; // LocalProfileRepository
-import 'package:hunting_calls_perfection/features/profile/data/repositories/unified_profile_repository.dart';
+import 'package:outcall/features/profile/data/datasources/local_profile_data_source.dart';
+import 'package:outcall/features/profile/data/datasources/secure_profile_data_source.dart';
+import 'package:outcall/features/profile/data/datasources/migrating_profile_data_source.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/profile/data/repositories/local_profile_repository.dart'; // LocalProfileRepository
+import 'package:outcall/features/profile/data/repositories/unified_profile_repository.dart';
 
-import 'package:hunting_calls_perfection/features/leaderboard/domain/repositories/leaderboard_service.dart';
-import 'package:hunting_calls_perfection/features/leaderboard/data/unified_leaderboard_service.dart';
+import 'package:outcall/features/leaderboard/domain/repositories/leaderboard_service.dart';
+import 'package:outcall/features/leaderboard/data/unified_leaderboard_service.dart';
 
-import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
-import 'package:hunting_calls_perfection/features/analysis/data/comprehensive_audio_analyzer.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/providers.dart'; // Use case providers
+import 'package:outcall/features/analysis/domain/frequency_analyzer.dart';
+import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
+import 'package:outcall/features/analysis/domain/providers.dart'; // Use case providers
 
-import 'package:hunting_calls_perfection/features/rating/domain/rating_service.dart';
-import 'package:hunting_calls_perfection/features/analysis/data/real_rating_service.dart';
+import 'package:outcall/features/rating/domain/rating_service.dart';
+import 'package:outcall/features/analysis/data/real_rating_service.dart';
 
-import 'package:hunting_calls_perfection/features/hunting_log/domain/repositories/hunting_log_repository.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/data/local_hunting_log_repository.dart';
+import 'package:outcall/features/hunting_log/domain/repositories/hunting_log_repository.dart';
+import 'package:outcall/features/hunting_log/data/local_hunting_log_repository.dart';
 
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/daily_challenge_repository.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/data/unified_daily_challenge_service.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/providers.dart';
+import 'package:outcall/features/daily_challenge/domain/daily_challenge_repository.dart';
+import 'package:outcall/features/daily_challenge/data/unified_daily_challenge_service.dart';
+import 'package:outcall/features/daily_challenge/domain/providers.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firedart/firedart.dart' as fd;
-import 'package:hunting_calls_perfection/core/services/api_gateway.dart';
-import 'package:hunting_calls_perfection/core/services/simple_storage.dart';
-import 'package:hunting_calls_perfection/core/services/file_service.dart';
-import 'package:hunting_calls_perfection/core/services/version_check_service.dart';
-import 'package:hunting_calls_perfection/core/services/cloud_audio_service.dart';
+import 'package:outcall/core/services/api_gateway.dart';
+import 'package:outcall/core/services/simple_storage.dart';
+import 'package:outcall/core/services/file_service.dart';
+import 'package:outcall/core/services/version_check_service.dart';
+import 'package:outcall/core/services/cloud_audio_service.dart';
 
-// ─── Platform Environment ───────────────────────────────────────────────────
+// â”€â”€â”€ Platform Environment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Must be overridden with a [PlatformEnvironment] at app startup.
 final platformEnvironmentProvider = Provider<PlatformEnvironment>((ref) {
@@ -80,7 +80,7 @@ class PlatformEnvironment {
   });
 }
 
-// ─── Core Providers ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Core Providers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Provides the unified [ApiGateway].
 final apiGatewayProvider = Provider<ApiGateway?>((ref) {
@@ -101,7 +101,7 @@ final fileServiceProvider = Provider<FileService>((ref) {
   return FileServiceImpl();
 });
 
-// ─── Auth ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Provides the correct [AuthRepository] based on platform + Firebase state.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -114,7 +114,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return MockAuthRepository();
 });
 
-// ─── Recording ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Recording â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Provides Real or Mock [AudioRecorderService].
 final audioRecorderServiceProvider = Provider<AudioRecorderService>((ref) {
@@ -123,7 +123,7 @@ final audioRecorderServiceProvider = Provider<AudioRecorderService>((ref) {
   return RealAudioRecorderService(ref.watch(simpleStorageProvider));
 });
 
-// ─── Daily Challenge ────────────────────────────────────────────────────────
+// â”€â”€â”€ Daily Challenge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Provides the DailyChallengeRepository implementation
 final dailyChallengeRepositoryProvider = Provider<DailyChallengeRepository>((ref) {
@@ -133,7 +133,7 @@ final dailyChallengeRepositoryProvider = Provider<DailyChallengeRepository>((ref
   );
 });
 
-// ─── Profile ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Provides the local data source for profiles.
 final profileDataSourceProvider = Provider<ProfileDataSource>((ref) {
@@ -161,7 +161,7 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   );
 });
 
-// ─── Leaderboard ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Provides [LeaderboardService] if Firebase is available, null otherwise.
 final leaderboardServiceProvider = Provider<LeaderboardService?>((ref) {
@@ -170,7 +170,7 @@ final leaderboardServiceProvider = Provider<LeaderboardService?>((ref) {
   return UnifiedLeaderboardService(apiGateway);
 });
 
-// ─── Analysis & Rating ──────────────────────────────────────────────────────
+// â”€â”€â”€ Analysis & Rating â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Provides [FrequencyAnalyzer] implementation.
 final frequencyAnalyzerProvider = Provider<FrequencyAnalyzer>((ref) {
@@ -190,7 +190,7 @@ final ratingServiceProvider = Provider<RatingService>((ref) {
   );
 });
 
-// ─── Hunting Log ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Hunting Log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Provides [HuntingLogRepository].
 final huntingLogRepositoryProvider = Provider<HuntingLogRepository>((ref) {
