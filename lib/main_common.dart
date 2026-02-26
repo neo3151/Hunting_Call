@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +8,6 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:outcall/firebase_options.dart';
 import 'dart:io';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:outcall/injection_container.dart' as di;
 import 'package:outcall/di_providers.dart';
 import 'package:outcall/core/theme/theme_notifier.dart';
@@ -22,115 +20,114 @@ import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/widgets/global_error_view.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
-void mainCommon() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+Future<void> mainCommon() async {
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  
-  // Explicitly allow all orientations (important for tablets)
+
+  await _configurePlatform();
+  await ReferenceDatabase.init();
+
+  final firebaseReady = await _initFirebase();
+  _setupErrorHandling(firebaseReady);
+
+  // Initialize Firedart (desktop) + HuntingLog DB via injection_container
+  await di.init();
+
+  final env = await _createPlatformEnvironment(firebaseReady);
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        platformEnvironmentProvider.overrideWithValue(env),
+        AppConfig.provider.overrideWithValue(AppConfig.instance),
+      ],
+      child: const HuntingCallsApp(),
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Private helpers — extracted for readability, logic unchanged
+// ---------------------------------------------------------------------------
+
+/// Allow all orientations (important for tablets).
+Future<void> _configurePlatform() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-  
-  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
-  
-  // Initialize Reference Database
-  await ReferenceDatabase.init();
+  // NOTE: sqfliteFfiInit() is handled inside di.init() — no duplicate call here.
+}
 
-  // Initialize Firebase
-  bool firebaseReady = false;
+/// Initialize Firebase + App Check on mobile. Returns false on desktop or failure.
+Future<bool> _initFirebase() async {
+  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) return false;
+
   try {
-    // AppLogger.d("🔥 Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
-    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      
-      // Initialize App Check (Prevent database scraping/abuse)
-      await FirebaseAppCheck.instance.activate(
-        androidProvider: AndroidProvider.playIntegrity,
-      );
-      
-      firebaseReady = true;
-      // AppLogger.d("✅ Firebase: Initialized successfully. Apps count: ${Firebase.apps.length}");
-    } else {
-      // AppLogger.d("🐧 Firebase: Skipping official init on Linux (using Firedart).");
-    }
-
-  } catch (e, stackTrace) {
-      AppLogger.d("❌ Firebase: Initialization failed. Entering 'Off-Grid' mode.");
-      AppLogger.d('Error: $e');
-      AppLogger.d('Stack: $stackTrace');
-      AppLogger.d("Note: To enable Cloud Sync, add your google-services.json/GoogleService-Info.plist and run 'flutterfire configure'.");
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.playIntegrity,
+    );
+    return true;
+  } catch (e, st) {
+    AppLogger.e('Firebase init failed', e, st);
+    return false;
   }
-  
-  // Global Error Handling — route to Crashlytics if available
+}
+
+/// Wire up global error handlers, routing to Crashlytics when available.
+void _setupErrorHandling(bool firebaseReady) {
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    AppLogger.d('GLOBAL FLUTTER ERROR: ${details.exception}');
     if (firebaseReady && (Platform.isAndroid || Platform.isIOS)) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(details);
     }
   };
 
   ErrorWidget.builder = (FlutterErrorDetails details) {
-    // Send background analytics
     if (firebaseReady && (Platform.isAndroid || Platform.isIOS)) {
       FirebaseCrashlytics.instance.recordFlutterError(details);
     }
     return GlobalErrorView(details: details);
   };
 
-  // Catch async errors that escape the widget tree
   PlatformDispatcher.instance.onError = (error, stack) {
-    AppLogger.d('GLOBAL ASYNC ERROR: $error\n$stack');
+    AppLogger.e('Uncaught async error', error, stack);
     if (firebaseReady && (Platform.isAndroid || Platform.isIOS)) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     }
-    return true; // Prevent app crash
+    return true;
   };
+}
 
-  // Initialize Firedart (Linux only) + HuntingLog DB via injection_container
-  await di.init();
-  
-  final bool isDesktop = Platform.isLinux || Platform.isWindows || Platform.isMacOS;
+/// Build the [PlatformEnvironment], optionally initializing Firedart auth.
+Future<PlatformEnvironment> _createPlatformEnvironment(bool firebaseReady) async {
+  final prefs = await SharedPreferences.getInstance();
+  final isDesktop = Platform.isLinux || Platform.isWindows || Platform.isMacOS;
   AuthRepository? preInitAuthRepo;
+
   if (isDesktop && di.isFirebaseEnabled) {
     final firedartAuth = FiredartAuthRepository();
     await firedartAuth.initialize();
     preInitAuthRepo = firedartAuth;
-    // AppLogger.d("FiredartAuth: Repository created and initialized.");
   }
-  
-  // Create the platform environment for Riverpod DI
-  final sharedPreferences = await SharedPreferences.getInstance();
-  final env = PlatformEnvironment(
+
+  return PlatformEnvironment(
     isFirebaseEnabled: di.isFirebaseEnabled,
     isLinux: isDesktop,
     useMocks: false,
-    sharedPreferences: sharedPreferences,
+    sharedPreferences: prefs,
     preInitializedAuthRepo: preInitAuthRepo,
   );
-
-  // Background cleanup of old recordings
-  try {
-    // Access cleanup after ProviderScope is available — defer to post-frame
-  } catch (e) {
-    AppLogger.d('Startup: Cleanup failed: $e');
-  }
-
-  runApp(ProviderScope(
-    overrides: [
-      platformEnvironmentProvider.overrideWithValue(env),
-    ],
-    child: const HuntingCallsApp(),
-  ));
 }
+
+// ---------------------------------------------------------------------------
+// Root widget
+// ---------------------------------------------------------------------------
 
 class HuntingCallsApp extends ConsumerStatefulWidget {
   const HuntingCallsApp({super.key});
@@ -145,7 +142,6 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
   @override
   void initState() {
     super.initState();
-    // Defer cleanup to after the first frame renders
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_cleanupDone) {
         _cleanupDone = true;
@@ -165,19 +161,17 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch the theme state so MaterialApp rebuilds on theme change
     ref.watch(themeNotifierProvider);
     final themeNotifier = ref.read(themeNotifierProvider.notifier);
     final themeMode = ref.watch(themeModeProvider);
-    
+
     return MaterialApp(
       title: AppConfig.instance.appName,
       debugShowCheckedModeBanner: false,
       theme: themeNotifier.lightTheme,
       darkTheme: themeNotifier.darkTheme,
-      themeMode: themeMode, // Switch based on settings
+      themeMode: themeMode,
       home: const SplashScreen(),
     );
   }
 }
-

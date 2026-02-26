@@ -12,9 +12,9 @@ import 'package:outcall/features/analysis/domain/use_cases/calculate_score_use_c
 import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
 import 'package:outcall/features/library/domain/reference_call_model.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
-
-import 'package:outcall/features/home/domain/use_cases/get_daily_challenge_use_case.dart';
-import 'package:outcall/features/home/domain/entities/daily_challenge.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:outcall/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
+import 'package:outcall/features/daily_challenge/domain/failures/daily_challenge_failure.dart';
 
 class MockFrequencyAnalyzer extends Mock implements FrequencyAnalyzer {}
 class MockProfileRepository extends Mock implements ProfileRepository {}
@@ -35,7 +35,22 @@ void main() {
     mockGetDailyChallengeUseCase = MockGetDailyChallengeUseCase();
     
     // Default challenge mock
-    when(() => mockGetDailyChallengeUseCase.execute(any())).thenAnswer((_) async => null);
+    when(() => mockGetDailyChallengeUseCase.execute(now: any(named: 'now'))).thenAnswer(
+      (_) async => right<DailyChallengeFailure, ReferenceCall>(const ReferenceCall(
+        id: 'duck_mallard_greeting',
+        animalName: 'Mallard Duck',
+        callType: 'Greeting Call',
+        category: 'Waterfowl',
+        difficulty: 'Intermediate',
+        idealPitchHz: 460.3,
+        idealDurationSec: 2.95,
+        audioAssetPath: 'assets/audio/duck_mallard_greeting.wav',
+        scientificName: 'Anas platyrhynchos',
+        imageUrl: 'assets/images/waterfowl_hero.png',
+        tolerancePitch: 50,
+        toleranceDuration: 0.5,
+      )),
+    );
 
     ratingService = RealRatingService(
       analyzeUseCase: AnalyzeAudioUseCase(mockAnalyzer),

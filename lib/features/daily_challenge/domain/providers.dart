@@ -1,11 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/features/library/domain/providers.dart';
 import 'package:outcall/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
+import 'package:outcall/features/daily_challenge/data/unified_daily_challenge_service.dart';
 import 'package:outcall/features/daily_challenge/domain/daily_challenge_repository.dart';
+import 'package:outcall/di_providers.dart';
 
-/// Provider for the Daily Challenge Repository
+/// Provides the DailyChallengeRepository implementation.
 final dailyChallengeRepositoryProvider = Provider<DailyChallengeRepository>((ref) {
-  throw UnimplementedError('dailyChallengeRepositoryProvider must be overridden');
+  return UnifiedDailyChallengeService(
+    ref.watch(apiGatewayProvider),
+    ref.watch(simpleStorageProvider),
+  );
 });
 
 /// Provider for GetDailyChallengeUseCase

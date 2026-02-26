@@ -39,8 +39,8 @@ class UnifiedDailyChallengeService implements DailyChallengeRepository {
 
     // 2. Fallback to offline cache
     AppLogger.d('📱 Falling back to Offline Cache for Daily Challenge');
-    final cachedDate = _storage.getString(_cacheDateKey);
-    final cachedId = _storage.getString(_cacheKey);
+    final cachedDate = await _storage.getString(_cacheDateKey);
+    final cachedId = await _storage.getString(_cacheKey);
 
     // If we have a cached ID from today, use it.
     // If it's a different day, the cloud fetch failed, so we'll let it return null 

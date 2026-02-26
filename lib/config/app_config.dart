@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum AppFlavor { free, full }
 
@@ -29,11 +30,6 @@ class AppConfig {
     String? apiBaseUrl,
     String? storeUrl,
   }) {
-    if (_instance != null) {
-       // Allow re-initialization for testing or hot restart scenarios if needed, 
-       // but typically this runs once. 
-       // For now, we'll just overwrite it or ignore.
-    }
     _instance = AppConfig._internal(
       flavor: flavor,
       appName: appName,
@@ -41,7 +37,11 @@ class AppConfig {
       storeUrl: storeUrl,
     );
   }
-  
+
+  /// Riverpod provider — zero breakage for existing code.
+  /// New code can use `ref.watch(AppConfig.provider)` instead of `AppConfig.instance`.
+  static final provider = Provider<AppConfig>((ref) => AppConfig.instance);
+
   bool get isFree => flavor == AppFlavor.free;
   bool get isFull => flavor == AppFlavor.full;
 

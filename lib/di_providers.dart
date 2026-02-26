@@ -30,8 +30,6 @@ import 'package:outcall/features/analysis/data/real_rating_service.dart';
 import 'package:outcall/features/hunting_log/domain/repositories/hunting_log_repository.dart';
 import 'package:outcall/features/hunting_log/data/local_hunting_log_repository.dart';
 
-import 'package:outcall/features/daily_challenge/domain/daily_challenge_repository.dart';
-import 'package:outcall/features/daily_challenge/data/unified_daily_challenge_service.dart';
 import 'package:outcall/features/daily_challenge/domain/providers.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -124,14 +122,8 @@ final audioRecorderServiceProvider = Provider<AudioRecorderService>((ref) {
 });
 
 // â”€â”€â”€ Daily Challenge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-/// Provides the DailyChallengeRepository implementation
-final dailyChallengeRepositoryProvider = Provider<DailyChallengeRepository>((ref) {
-  return UnifiedDailyChallengeService(
-    ref.watch(apiGatewayProvider),
-    ref.watch(simpleStorageProvider),
-  );
-});
+// NOTE: dailyChallengeRepositoryProvider lives in
+// features/daily_challenge/domain/providers.dart
 
 // â”€â”€â”€ Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
