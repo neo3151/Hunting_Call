@@ -135,3 +135,6 @@ scripts/*.json
 credentials.json
 token.json
 **/client_secret_*.json
+
+# Firebase config (contains API keys — keep local only)
+google-services.json
