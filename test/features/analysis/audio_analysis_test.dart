@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
+import 'package:outcall/features/analysis/domain/audio_analysis_model.dart';
 
 void main() {
   group('AudioAnalysis Model', () {

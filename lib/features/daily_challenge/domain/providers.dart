@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/library/domain/providers.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/daily_challenge_repository.dart';
+import 'package:outcall/features/library/domain/providers.dart';
+import 'package:outcall/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
+import 'package:outcall/features/daily_challenge/domain/daily_challenge_repository.dart';
 
 /// Provider for the Daily Challenge Repository
 final dailyChallengeRepositoryProvider = Provider<DailyChallengeRepository>((ref) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
+import 'package:outcall/core/theme/app_theme.dart';
 
 /// Domain model for application settings.
 class AppSettings {

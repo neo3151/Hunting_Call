@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/presentation/controllers/daily_challenge_controller.dart';
-import 'package:hunting_calls_perfection/features/recording/presentation/recorder_page.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/presentation/widgets/challenge_card.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/presentation/widgets/leaderboard_preview.dart';
-import 'package:hunting_calls_perfection/core/utils/animal_image_alignment.dart';
+import 'package:outcall/features/daily_challenge/presentation/controllers/daily_challenge_controller.dart';
+import 'package:outcall/features/recording/presentation/recorder_page.dart';
+import 'package:outcall/features/daily_challenge/presentation/widgets/challenge_card.dart';
+import 'package:outcall/features/daily_challenge/presentation/widgets/leaderboard_preview.dart';
+import 'package:outcall/core/utils/animal_image_alignment.dart';
 
 class DailyChallengeScreen extends ConsumerWidget {
   final String userId;

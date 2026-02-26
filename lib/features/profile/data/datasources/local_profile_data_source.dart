@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:hunting_calls_perfection/core/services/simple_storage.dart';
+import 'package:outcall/core/services/simple_storage.dart';
 
-import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 abstract class ProfileDataSource {
   Future<UserProfile> getProfile(String userId);

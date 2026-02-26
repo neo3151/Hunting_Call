@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
-import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/achievement_service.dart';
-import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
-import 'package:hunting_calls_perfection/features/progress_map/presentation/progress_map_screen.dart';
-import 'package:hunting_calls_perfection/config/app_config.dart';
-import 'package:hunting_calls_perfection/core/widgets/upgrade_prompter.dart';
-import 'package:hunting_calls_perfection/core/widgets/offline_banner.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/profile/domain/achievement_service.dart';
+import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/features/progress_map/presentation/progress_map_screen.dart';
+import 'package:outcall/config/app_config.dart';
+import 'package:outcall/core/widgets/upgrade_prompter.dart';
+import 'package:outcall/core/widgets/offline_banner.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String userId;

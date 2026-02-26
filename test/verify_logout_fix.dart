@@ -2,11 +2,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
-import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:hunting_calls_perfection/features/auth/domain/usecases/sign_out.dart';
-import 'package:hunting_calls_perfection/features/auth/domain/usecases/get_auth_state_stream.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
+import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
+import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:outcall/features/auth/domain/usecases/sign_out.dart';
+import 'package:outcall/features/auth/domain/usecases/get_auth_state_stream.dart';
+import 'package:outcall/di_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Mocks

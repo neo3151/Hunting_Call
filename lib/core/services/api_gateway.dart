@@ -104,15 +104,8 @@ class FiredartApiGateway implements ApiGateway {
 
   @override
   Future<void> setDocument(String collection, String documentId, Map<String, dynamic> data) async {
-    // Firedart doesn't strictly have .set() like Firebase with merge options easily.
-    // It uses update() but we can check if it exists first, or just try to overwrite.
-    // Since firedart is limited, we simulate set by update/creating.
-    try {
-      await _firestore.collection(collection).document(documentId).update(data);
-    } catch (e) {
-      // If document doesn't exist, we might need to recreate it or use another method.
-      // But firedart often creates on update if used properly, or we can use another workaround if needed.
-    }
+    // Firedart DocumentReference supports .set() to create or overwrite.
+    await _firestore.collection(collection).document(documentId).set(data);
   }
 
   @override

@@ -1,6 +1,6 @@
-import 'package:hunting_calls_perfection/features/leaderboard/domain/leaderboard_entry.dart';
-import 'package:hunting_calls_perfection/features/leaderboard/domain/repositories/leaderboard_service.dart';
-import 'package:hunting_calls_perfection/core/services/api_gateway.dart';
+import 'package:outcall/features/leaderboard/domain/leaderboard_entry.dart';
+import 'package:outcall/features/leaderboard/domain/repositories/leaderboard_service.dart';
+import 'package:outcall/core/services/api_gateway.dart';
 
 class UnifiedLeaderboardService implements LeaderboardService {
   final ApiGateway _apiGateway;

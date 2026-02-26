@@ -7,15 +7,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:hunting_calls_perfection/features/recording/presentation/controllers/recording_controller.dart';
-import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
-import 'package:hunting_calls_perfection/features/rating/presentation/rating_screen.dart';
-import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/core/services/cloud_audio_service.dart';
-import 'package:hunting_calls_perfection/features/recording/presentation/widgets/live_visualizer.dart';
-import 'package:hunting_calls_perfection/features/recording/domain/visualization_settings.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/recording/presentation/controllers/recording_controller.dart';
+import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/features/rating/presentation/rating_screen.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/core/services/cloud_audio_service.dart';
+import 'package:outcall/features/recording/presentation/widgets/live_visualizer.dart';
+import 'package:outcall/features/recording/domain/visualization_settings.dart';
+import 'package:outcall/features/recording/presentation/call_selection_screen.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
   final String userId;
@@ -391,26 +392,69 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                   borderRadius: BorderRadius.circular(16),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: (isRecording || isCountingDown) ? null : () async {
+                          final newId = await Navigator.push<String>(
+                            context,
+                            MaterialPageRoute(builder: (_) => const CallSelectionScreen()),
+                          );
+                          if (newId != null && mounted) {
+                            ref.read(selectedCallIdProvider.notifier).state = newId;
+                          }
+                        },
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: selectedCallId,
-                          dropdownColor: const Color(0xFF1A1A1A),
-                          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
-                          hint: Text('Select Call to Practice', style: GoogleFonts.lato(color: Colors.white70)),
-                          onChanged: (isRecording || isCountingDown) ? null : (String? newValue) {
-                            if (newValue != null && !newValue.startsWith('header_')) {
-                              ref.read(selectedCallIdProvider.notifier).state = newValue;
-                            }
-                          },
-                          items: _buildDropdownItems(isRecording || isCountingDown),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                          ),
+                          child: Row(
+                            children: [
+                              ClipOval(
+                                child: Image.asset(
+                                  selectedCall.imageUrl,
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.photo, size: 20, color: Colors.white38),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      selectedCall.animalName,
+                                      style: GoogleFonts.oswald(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${selectedCall.category} • ${selectedCall.callType}',
+                                      style: GoogleFonts.lato(color: Colors.white70, fontSize: 13),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.chevron_right, color: Colors.white70),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -738,150 +782,6 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     );
   }
 
-  List<DropdownMenuItem<String>> _buildDropdownItems(bool isDisabled) {
-    final items = <DropdownMenuItem<String>>[];
-    final groups = <String, List<ReferenceCall>>{};
-    
-    final isPremium = ref.read(profileNotifierProvider).profile?.isPremium ?? false;
-    
-    // Group calls by category (only if not locked)
-    for (final call in ReferenceDatabase.calls) {
-      if (!ReferenceDatabase.isLocked(call.id, isPremium)) {
-        groups.putIfAbsent(call.category, () => []).add(call);
-      }
-    }
-    
-    // Sort categories (Waterfowl first, etc)
-    final sortedCategories = groups.keys.toList()..sort();
-    
-    for (final category in sortedCategories) {
-      // Category Header (Divider)
-      items.add(
-        DropdownMenuItem<String>(
-          enabled: false,
-          value: 'header_$category',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (items.isNotEmpty)
-                const Divider(color: Colors.white10, height: 1),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  children: [
-                    Icon(_getCategoryIcon(category), color: Theme.of(context).primaryColor, size: 14),
-                    const SizedBox(width: 8),
-                    Text(
-                      category.toUpperCase(),
-                      style: GoogleFonts.oswald(
-                        color: Theme.of(context).primaryColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-      
-      // Calls in this category
-      for (final call in groups[category]!) {
-        items.add(
-          DropdownMenuItem<String>(
-            value: call.id,
-            child: Row(
-              children: [
-                ClipOval(
-                  child: Semantics(
-                    label: 'Target animal: ${call.animalName}',
-                    image: true,
-                    child: Image.asset(
-                      call.imageUrl,
-                      width: 32,
-                      height: 32,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.photo, size: 16, color: Colors.white38),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        call.animalName,
-                        style: GoogleFonts.oswald(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        call.callType,
-                        style: GoogleFonts.lato(
-                          color: Colors.white70,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                _buildDifficultyBadge(call.difficulty),
-              ],
-            ),
-          ),
-        );
-      }
-    }
-    return items;
-  }
-
-  Widget _buildDifficultyBadge(String difficulty) {
-    Color color;
-    switch (difficulty.toLowerCase()) {
-      case 'easy': color = Theme.of(context).primaryColor; break;
-      case 'intermediate': color = const Color(0xFFFFB74D); break;
-      case 'pro': color = const Color(0xFFE57373); break;
-      default: color = Colors.white54;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        difficulty.substring(0, 1).toUpperCase(),
-        style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  IconData _getCategoryIcon(String category) {
-    switch (category.toLowerCase()) {
-      case 'waterfowl': return Icons.water;
-      case 'big game': return Icons.landscape;
-      case 'predators': return Icons.security;
-      case 'land birds': return Icons.forest;
-      default: return Icons.category;
-    }
-  }
 
   Widget _buildSmallIconButton({required VoidCallback onPressed, required IconData icon, required String label}) {
     return Column(

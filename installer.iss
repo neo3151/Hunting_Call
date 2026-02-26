@@ -11,9 +11,9 @@ OutputBaseFilename=OUTCALL_Installer_1.6.0
 PrivilegesRequired=lowest
 
 [Files]
-Source: "C:\Users\neo31\Hunting_Call\build\windows\x64\runner\Debug\OUTCALL.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\neo31\Hunting_Call\build\windows\x64\runner\Debug\*.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\neo31\Hunting_Call\build\windows\x64\runner\Debug\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\neo31\Hunting_Call\build\windows\x64\runner\Release\OUTCALL.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\neo31\Hunting_Call\build\windows\x64\runner\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\neo31\Hunting_Call\build\windows\x64\runner\Release\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\OUTCALL"; Filename: "{app}\OUTCALL.exe"

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/features/library/presentation/acoustic_spectrum_widget.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/library/presentation/acoustic_spectrum_widget.dart';
 
-import 'package:hunting_calls_perfection/features/recording/presentation/recorder_page.dart';
-import 'package:hunting_calls_perfection/features/leaderboard/presentation/leaderboard_screen.dart';
-import 'package:hunting_calls_perfection/config/app_config.dart';
+import 'package:outcall/features/recording/presentation/recorder_page.dart';
+import 'package:outcall/features/leaderboard/presentation/leaderboard_screen.dart';
+import 'package:outcall/config/app_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/core/widgets/upgrade_prompter.dart';
-import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:hunting_calls_perfection/core/services/audio_service.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
-import 'package:hunting_calls_perfection/core/utils/animal_image_alignment.dart';
+import 'package:outcall/core/widgets/upgrade_prompter.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/core/services/audio_service.dart';
+import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/animal_image_alignment.dart';
 
 
 class CallDetailScreen extends ConsumerStatefulWidget {

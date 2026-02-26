@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/rating/domain/rating_service.dart';
-import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/features/rating/domain/rating_service.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 /// State for rating/analysis operations
 class RatingState {

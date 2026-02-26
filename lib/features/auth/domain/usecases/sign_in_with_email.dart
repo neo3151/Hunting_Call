@@ -1,4 +1,4 @@
-import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
+import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
 
 class SignInWithEmail {
   final AuthRepository _repository;

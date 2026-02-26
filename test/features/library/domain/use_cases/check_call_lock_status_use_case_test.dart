@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
-import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
-import 'package:hunting_calls_perfection/config/freemium_config.dart';
-import 'package:hunting_calls_perfection/config/app_config.dart';
+import 'package:outcall/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/config/freemium_config.dart';
+import 'package:outcall/config/app_config.dart';
 
 void main() {
   late CheckCallLockStatusUseCase useCase;

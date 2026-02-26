@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/analysis/data/comprehensive_audio_analyzer.dart';
+import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

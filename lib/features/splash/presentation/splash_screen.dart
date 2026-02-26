@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:hunting_calls_perfection/features/auth/presentation/auth_wrapper.dart';
+import 'package:outcall/features/auth/presentation/auth_wrapper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:hunting_calls_perfection/core/services/remote_config/remote_config_service.dart';
-import 'package:hunting_calls_perfection/core/services/cloud_audio_service.dart';
+import 'package:outcall/core/services/remote_config/remote_config_service.dart';
+import 'package:outcall/core/services/cloud_audio_service.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});

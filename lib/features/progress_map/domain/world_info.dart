@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
 
 // ──────────────────────────────────────────────────────────
 //  WORLD INFO

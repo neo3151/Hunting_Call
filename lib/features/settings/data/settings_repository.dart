@@ -1,6 +1,6 @@
-import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
-import 'package:hunting_calls_perfection/core/services/simple_storage.dart';
-import 'package:hunting_calls_perfection/features/settings/domain/settings_model.dart';
+import 'package:outcall/core/theme/app_theme.dart';
+import 'package:outcall/core/services/simple_storage.dart';
+import 'package:outcall/features/settings/domain/settings_model.dart';
 
 /// Persists [AppSettings] using ISimpleStorage.
 class SettingsRepository {

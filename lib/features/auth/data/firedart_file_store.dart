@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:firedart/firedart.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 /// A persistent [TokenStore] implementation for Firedart on Linux/Desktop.
 /// Stores the authentication token in a JSON file.

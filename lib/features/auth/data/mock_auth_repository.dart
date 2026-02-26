@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
-import 'package:hunting_calls_perfection/features/auth/domain/entities/auth_user.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
+import 'package:outcall/features/auth/domain/entities/auth_user.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 class MockAuthRepository implements AuthRepository {
   final _controller = StreamController<AuthUser?>.broadcast();

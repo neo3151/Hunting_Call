@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
+import 'package:outcall/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:outcall/core/theme/app_theme.dart';
 
 class ThemeNotifier extends Notifier<AppTheme> {
   @override

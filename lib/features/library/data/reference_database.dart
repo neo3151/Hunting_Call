@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/config/app_config.dart';
-import 'package:hunting_calls_perfection/config/freemium_config.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/config/app_config.dart';
+import 'package:outcall/config/freemium_config.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 class ReferenceDatabase {
   static List<ReferenceCall> _calls = [];

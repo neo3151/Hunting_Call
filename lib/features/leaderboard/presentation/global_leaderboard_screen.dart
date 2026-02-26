@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/features/leaderboard/presentation/controllers/leaderboard_controller.dart';
-import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
-import 'package:hunting_calls_perfection/core/widgets/offline_banner.dart';
+import 'package:outcall/features/leaderboard/presentation/controllers/leaderboard_controller.dart';
+import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/core/widgets/offline_banner.dart';
 
 class GlobalLeaderboardScreen extends ConsumerWidget {
   const GlobalLeaderboardScreen({super.key});

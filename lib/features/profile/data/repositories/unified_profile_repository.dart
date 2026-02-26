@@ -1,9 +1,9 @@
-import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
-import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
-import 'package:hunting_calls_perfection/features/profile/data/datasources/local_profile_data_source.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
-import 'package:hunting_calls_perfection/core/services/api_gateway.dart';
+import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/profile/data/datasources/local_profile_data_source.dart';
+import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/services/api_gateway.dart';
 
 class UnifiedProfileRepository implements ProfileRepository {
   final ApiGateway _apiGateway;

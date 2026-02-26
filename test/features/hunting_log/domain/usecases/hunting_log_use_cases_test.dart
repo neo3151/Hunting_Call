@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/usecases/get_all_logs_use_case.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/usecases/add_log_use_case.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/usecases/delete_log_use_case.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/failures/hunting_log_failure.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/hunting_log_entry.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/repositories/hunting_log_repository.dart';
+import 'package:outcall/features/hunting_log/domain/usecases/get_all_logs_use_case.dart';
+import 'package:outcall/features/hunting_log/domain/usecases/add_log_use_case.dart';
+import 'package:outcall/features/hunting_log/domain/usecases/delete_log_use_case.dart';
+import 'package:outcall/features/hunting_log/domain/failures/hunting_log_failure.dart';
+import 'package:outcall/features/hunting_log/domain/hunting_log_entry.dart';
+import 'package:outcall/features/hunting_log/domain/repositories/hunting_log_repository.dart';
 
 // Mock repository for testing
 class MockHuntingLogRepository implements HuntingLogRepository {

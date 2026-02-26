@@ -7,19 +7,19 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hunting_calls_perfection/firebase_options.dart';
+import 'package:outcall/firebase_options.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:hunting_calls_perfection/injection_container.dart' as di;
-import 'package:hunting_calls_perfection/di_providers.dart';
-import 'package:hunting_calls_perfection/core/theme/theme_notifier.dart';
-import 'package:hunting_calls_perfection/features/splash/presentation/splash_screen.dart';
-import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
-import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
-import 'package:hunting_calls_perfection/features/auth/data/firedart_auth_repository.dart';
-import 'package:hunting_calls_perfection/config/app_config.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
-import 'package:hunting_calls_perfection/core/widgets/global_error_view.dart';
+import 'package:outcall/injection_container.dart' as di;
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/core/theme/theme_notifier.dart';
+import 'package:outcall/features/splash/presentation/splash_screen.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
+import 'package:outcall/features/auth/data/firedart_auth_repository.dart';
+import 'package:outcall/config/app_config.dart';
+import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/widgets/global_error_view.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void mainCommon() async {
@@ -46,7 +46,7 @@ void mainCommon() async {
   bool firebaseReady = false;
   try {
     // AppLogger.d("🔥 Firebase: Attempting initialization... Platform.isLinux=${Platform.isLinux}");
-    if (!Platform.isLinux) {
+    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
@@ -98,9 +98,9 @@ void mainCommon() async {
   // Initialize Firedart (Linux only) + HuntingLog DB via injection_container
   await di.init();
   
-  // Create and initialize the auth repository early (needs async init for session file)
+  final bool isDesktop = Platform.isLinux || Platform.isWindows || Platform.isMacOS;
   AuthRepository? preInitAuthRepo;
-  if (Platform.isLinux && di.isFirebaseEnabled) {
+  if (isDesktop && di.isFirebaseEnabled) {
     final firedartAuth = FiredartAuthRepository();
     await firedartAuth.initialize();
     preInitAuthRepo = firedartAuth;
@@ -111,7 +111,7 @@ void mainCommon() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   final env = PlatformEnvironment(
     isFirebaseEnabled: di.isFirebaseEnabled,
-    isLinux: Platform.isLinux,
+    isLinux: isDesktop,
     useMocks: false,
     sharedPreferences: sharedPreferences,
     preInitializedAuthRepo: preInitAuthRepo,

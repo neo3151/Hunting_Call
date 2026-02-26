@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
 
 void main() {
   group('RatingResult Model', () {

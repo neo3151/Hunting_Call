@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/recording/presentation/recorder_page.dart';
-import 'package:hunting_calls_perfection/features/progress_map/domain/world_info.dart';
-import 'package:hunting_calls_perfection/features/progress_map/presentation/controllers/progress_map_controller.dart';
-import 'package:hunting_calls_perfection/features/progress_map/presentation/widgets/world_map_painter.dart';
+import 'package:outcall/features/recording/presentation/recorder_page.dart';
+import 'package:outcall/features/progress_map/domain/world_info.dart';
+import 'package:outcall/features/progress_map/presentation/controllers/progress_map_controller.dart';
+import 'package:outcall/features/progress_map/presentation/widgets/world_map_painter.dart';
 
 // ──────────────────────────────────────────────────────────
 //  PROGRESS MAP SCREEN

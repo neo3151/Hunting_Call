@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/core/utils/animal_image_alignment.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/core/utils/animal_image_alignment.dart';
 
 /// Banner card showing today's daily challenge on the home screen.
 class DailyChallengeCard extends StatelessWidget {

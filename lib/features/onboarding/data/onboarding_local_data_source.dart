@@ -1,4 +1,4 @@
-import 'package:hunting_calls_perfection/core/services/simple_storage.dart';
+import 'package:outcall/core/services/simple_storage.dart';
 
 /// Data source for onboarding persistence.
 /// Wraps SharedPreferences access for the onboarding flag.

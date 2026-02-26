@@ -5,9 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/payment/data/payment_repository.dart';
-import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/features/payment/data/payment_repository.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 class UpgradePrompter {
   static void show(BuildContext context, {String featureName = 'This Feature'}) {

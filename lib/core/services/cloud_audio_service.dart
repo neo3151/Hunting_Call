@@ -3,8 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/config/freemium_config.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:http/http.dart' as http;
+import 'package:outcall/config/freemium_config.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 /// Service for resolving audio file paths.
 ///
@@ -32,7 +33,10 @@ class CloudAudioService {
   }
 
   /// Get the local cache path for a call's audio file
-  String _getCachePath(String callId, String assetPath) {
+  Future<String> _getCachePath(String callId, String assetPath) async {
+    if (_cacheDirectory == null) {
+      await init();
+    }
     final fileName = assetPath.split('/').last;
     return '${_cacheDirectory!.path}/$fileName';
   }
@@ -40,7 +44,7 @@ class CloudAudioService {
   /// Check if audio is already cached locally
   Future<bool> isAudioCached(String callId, String assetPath) async {
     if (isBundled(callId)) return true; // Bundled = always available
-    final cachePath = _getCachePath(callId, assetPath);
+    final cachePath = await _getCachePath(callId, assetPath);
     return File(cachePath).exists();
   }
 
@@ -55,7 +59,7 @@ class CloudAudioService {
     }
 
     // Paid calls: check cache first
-    final cachePath = _getCachePath(callId, assetPath);
+    final cachePath = await _getCachePath(callId, assetPath);
     if (await File(cachePath).exists()) {
       AppLogger.d('CloudAudioService: Serving $callId from cache');
       return AudioSource.file(cachePath);
@@ -65,9 +69,24 @@ class CloudAudioService {
     AppLogger.d('CloudAudioService: Downloading $callId from cloud...');
     try {
       final fileName = assetPath.split('/').last;
-      final ref = FirebaseStorage.instance.ref('$_storagePath/$fileName');
       final file = File(cachePath);
-      await ref.writeToFile(file);
+      
+      if (Platform.isWindows || Platform.isLinux) {
+        final bucket = 'hunting-call-perfection.firebasestorage.app';
+        final path = Uri.encodeComponent('$_storagePath/$fileName');
+        final url = 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$path?alt=media';
+        
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          await file.writeAsBytes(response.bodyBytes);
+        } else {
+          throw Exception('Failed to download audio: Http status ${response.statusCode}');
+        }
+      } else {
+        final ref = FirebaseStorage.instance.ref('$_storagePath/$fileName');
+        await ref.writeToFile(file);
+      }
+      
       AppLogger.d('CloudAudioService: Downloaded $callId (${await file.length()} bytes)');
       return AudioSource.file(cachePath);
     } catch (e) {
@@ -98,16 +117,31 @@ class CloudAudioService {
     }
 
     // Paid calls: download to cache if needed
-    final cachePath = _getCachePath(callId, assetPath);
+    final cachePath = await _getCachePath(callId, assetPath);
     if (await File(cachePath).exists()) {
       return cachePath;
     }
 
     // Download from cloud
     final fileName = assetPath.split('/').last;
-    final ref = FirebaseStorage.instance.ref('$_storagePath/$fileName');
     final file = File(cachePath);
-    await ref.writeToFile(file);
+    
+    if (Platform.isWindows || Platform.isLinux) {
+      final bucket = 'hunting-call-perfection.firebasestorage.app';
+      final path = Uri.encodeComponent('$_storagePath/$fileName');
+      final url = 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$path?alt=media';
+      
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        await file.writeAsBytes(response.bodyBytes);
+      } else {
+        throw Exception('Failed to download audio: Http status ${response.statusCode}');
+      }
+    } else {
+      final ref = FirebaseStorage.instance.ref('$_storagePath/$fileName');
+      await ref.writeToFile(file);
+    }
+    
     return cachePath;
   }
 

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/features/home/presentation/home_screen.dart';
-import 'package:hunting_calls_perfection/features/library/presentation/library_screen.dart';
-import 'package:hunting_calls_perfection/features/recording/presentation/recorder_page.dart';
-import 'package:hunting_calls_perfection/features/progress_map/presentation/progress_map_screen.dart';
-import 'package:hunting_calls_perfection/features/profile/presentation/profile_screen.dart';
+import 'package:outcall/features/home/presentation/home_screen.dart';
+import 'package:outcall/features/library/presentation/library_screen.dart';
+import 'package:outcall/features/recording/presentation/recorder_page.dart';
+import 'package:outcall/features/progress_map/presentation/progress_map_screen.dart';
+import 'package:outcall/features/profile/presentation/profile_screen.dart';
 
 /// Persistent bottom navigation shell that wraps all main screens.
 /// Matches the Play Store screenshot design with dark green + orange brand colors.

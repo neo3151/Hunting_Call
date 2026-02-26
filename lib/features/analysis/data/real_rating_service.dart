@@ -1,22 +1,22 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
-import 'package:hunting_calls_perfection/core/services/cloud_audio_service.dart';
-import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
-import 'package:hunting_calls_perfection/features/rating/domain/rating_service.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/use_cases/analyze_audio_use_case.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/use_cases/calculate_score_use_case.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
-import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
+import 'package:outcall/core/services/cloud_audio_service.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:outcall/features/rating/domain/rating_service.dart';
+import 'package:outcall/features/analysis/domain/audio_analysis_model.dart';
+import 'package:outcall/features/analysis/domain/frequency_analyzer.dart';
+import 'package:outcall/features/analysis/domain/use_cases/analyze_audio_use_case.dart';
+import 'package:outcall/features/analysis/domain/use_cases/calculate_score_use_case.dart';
+import 'package:outcall/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
 
-import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
-import 'package:hunting_calls_perfection/features/leaderboard/domain/repositories/leaderboard_service.dart';
-import 'package:hunting_calls_perfection/features/leaderboard/domain/leaderboard_entry.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/leaderboard/domain/repositories/leaderboard_service.dart';
+import 'package:outcall/features/leaderboard/domain/leaderboard_entry.dart';
 
-import 'package:hunting_calls_perfection/features/rating/domain/personality_feedback_service.dart';
+import 'package:outcall/features/rating/domain/personality_feedback_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 class RealRatingService implements RatingService {
   final AnalyzeAudioUseCase _analyzeUseCase;

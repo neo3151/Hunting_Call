@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/features/analysis/data/comprehensive_audio_analyzer.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/use_cases/calculate_score_use_case.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
+import 'package:outcall/features/analysis/domain/use_cases/calculate_score_use_case.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

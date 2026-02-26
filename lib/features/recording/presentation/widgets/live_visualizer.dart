@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:hunting_calls_perfection/features/recording/domain/visualization_settings.dart';
+import 'package:outcall/features/recording/domain/visualization_settings.dart';
 
 class LiveVisualizer extends StatelessWidget {
   final List<double> amplitudes;

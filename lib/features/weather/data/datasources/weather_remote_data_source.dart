@@ -2,8 +2,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:hunting_calls_perfection/features/weather/data/models/solunar_model.dart';
-import 'package:hunting_calls_perfection/features/weather/data/models/weather_model.dart';
+import 'package:outcall/features/weather/data/models/solunar_model.dart';
+import 'package:outcall/features/weather/data/models/weather_model.dart';
 
 abstract class WeatherRemoteDataSource {
   Future<WeatherModel> getCurrentWeather(double lat, double lon);

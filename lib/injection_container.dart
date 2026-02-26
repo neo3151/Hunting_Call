@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:hunting_calls_perfection/features/auth/data/firedart_file_store.dart';
-import 'package:hunting_calls_perfection/firebase_options.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/data/local_hunting_log_repository.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/features/auth/data/firedart_file_store.dart';
+import 'package:outcall/firebase_options.dart';
+import 'package:outcall/features/hunting_log/data/local_hunting_log_repository.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 /// Whether Firebase (or Firedart on Linux) is available.
 /// Set during [init] and read by [main_common.dart] to build [PlatformEnvironment].
@@ -34,7 +34,8 @@ Future<void> init({bool useMocks = false}) async {
   // Check if Firebase is actually initialized (has apps)
   isFirebaseEnabled = false;
   
-  if (Platform.isLinux) {
+  final bool isDesktop = Platform.isLinux || Platform.isWindows || Platform.isMacOS;
+  if (isDesktop) {
     try {
       const options = DefaultFirebaseOptions.windows; 
       final appDir = await getApplicationSupportDirectory();
@@ -47,10 +48,10 @@ Future<void> init({bool useMocks = false}) async {
       fd.FirebaseAuth.initialize(options.apiKey, FiredartFileStore(tokenFile.path));
       fd.Firestore.initialize(options.projectId);
       
-      // Auto-sign in anonymously on Linux if not already signed in 
+      // Auto-sign in anonymously on desktop if not already signed in 
       final auth = fd.FirebaseAuth.instance;
       if (!auth.isSignedIn) {
-        AppLogger.d('Firebase: Performing initial anonymous sign-in on Linux...');
+        AppLogger.d('Firebase: Performing initial anonymous sign-in on desktop...');
         await auth.signInAnonymously();
       }
       
@@ -65,7 +66,7 @@ Future<void> init({bool useMocks = false}) async {
       AppLogger.d('Firebase: Final startup sign-in check - isSignedIn: ${auth.isSignedIn}, userId: ${auth.userId}');
       
       isFirebaseEnabled = auth.isSignedIn;
-      AppLogger.d('Firebase: Firedart initialized with FileStore for Linux. isEnabled: $isFirebaseEnabled');
+      AppLogger.d('Firebase: Firedart initialized with FileStore for desktop. isEnabled: $isFirebaseEnabled');
     } catch (e) {
       AppLogger.d('Firebase: Firedart initialization failed: $e');
       isFirebaseEnabled = false;

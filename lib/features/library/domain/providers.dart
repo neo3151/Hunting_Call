@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/library/domain/use_cases/get_all_calls_use_case.dart';
-import 'package:hunting_calls_perfection/features/library/domain/use_cases/get_call_by_id_use_case.dart';
-import 'package:hunting_calls_perfection/features/library/domain/use_cases/filter_calls_use_case.dart';
-import 'package:hunting_calls_perfection/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
+import 'package:outcall/features/library/domain/use_cases/get_all_calls_use_case.dart';
+import 'package:outcall/features/library/domain/use_cases/get_call_by_id_use_case.dart';
+import 'package:outcall/features/library/domain/use_cases/filter_calls_use_case.dart';
+import 'package:outcall/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
 
 /// Provider for GetAllCallsUseCase
 final getAllCallsUseCaseProvider = Provider<GetAllCallsUseCase>((ref) {

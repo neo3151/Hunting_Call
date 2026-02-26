@@ -1,10 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
-import 'package:hunting_calls_perfection/features/library/domain/providers.dart';
-import 'package:hunting_calls_perfection/features/progress_map/domain/world_info.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/features/library/domain/providers.dart';
+import 'package:outcall/features/progress_map/domain/world_info.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 // ──────────────────────────────────────────────────────────
 //  STATE

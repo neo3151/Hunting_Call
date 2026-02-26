@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/entities/daily_challenge_stats.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/use_cases/update_daily_challenge_stats_use_case.dart';
+import 'package:outcall/features/profile/domain/entities/daily_challenge_stats.dart';
+import 'package:outcall/features/profile/domain/use_cases/update_daily_challenge_stats_use_case.dart';
 
 void main() {
   late UpdateDailyChallengeStatsUseCase useCase;

@@ -131,3 +131,7 @@ assets/audio/replacements/
 scripts/*.json
 !scripts/video_info*.json
 !scripts/requirements*.txt
+.env
+credentials.json
+token.json
+**/client_secret_*.json

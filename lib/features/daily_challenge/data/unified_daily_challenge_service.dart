@@ -1,7 +1,7 @@
-import 'package:hunting_calls_perfection/core/services/api_gateway.dart';
-import 'package:hunting_calls_perfection/core/services/simple_storage.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/daily_challenge_repository.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/core/services/api_gateway.dart';
+import 'package:outcall/core/services/simple_storage.dart';
+import 'package:outcall/features/daily_challenge/domain/daily_challenge_repository.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 class UnifiedDailyChallengeService implements DailyChallengeRepository {
   final ApiGateway? _apiGateway;

@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
-import 'package:hunting_calls_perfection/features/payment/domain/repositories/payment_repository.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/features/payment/domain/repositories/payment_repository.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
   return MockPaymentRepository(ref.read(profileRepositoryProvider));

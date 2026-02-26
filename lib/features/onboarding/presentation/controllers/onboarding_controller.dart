@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/onboarding/domain/providers.dart';
+import 'package:outcall/features/onboarding/domain/providers.dart';
 
 final onboardingProvider = AsyncNotifierProvider<OnboardingNotifier, bool>(() {
   return OnboardingNotifier();

@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:hunting_calls_perfection/core/widgets/connectivity_banner.dart';
+import 'package:outcall/core/widgets/connectivity_banner.dart';
 
 /// A wrapper widget that provides a tiled, blurred background pattern.
 /// This ensures a consistent "textured" look throughout the application.

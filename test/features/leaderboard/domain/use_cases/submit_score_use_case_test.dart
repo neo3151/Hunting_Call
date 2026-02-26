@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/leaderboard/domain/use_cases/submit_score_use_case.dart';
-import 'package:hunting_calls_perfection/features/leaderboard/domain/leaderboard_entry.dart';
-import 'package:hunting_calls_perfection/features/leaderboard/domain/failures/leaderboard_failure.dart';
+import 'package:outcall/features/leaderboard/domain/use_cases/submit_score_use_case.dart';
+import 'package:outcall/features/leaderboard/domain/leaderboard_entry.dart';
+import 'package:outcall/features/leaderboard/domain/failures/leaderboard_failure.dart';
 
 void main() {
   late SubmitScoreUseCase useCase;

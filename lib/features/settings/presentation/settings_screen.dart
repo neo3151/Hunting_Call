@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
-import 'package:hunting_calls_perfection/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/features/settings/presentation/controllers/settings_controller.dart';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:hunting_calls_perfection/features/settings/presentation/privacy_policy_screen.dart';
-import 'package:hunting_calls_perfection/core/theme/app_theme.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
+import 'package:outcall/core/theme/app_theme.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});

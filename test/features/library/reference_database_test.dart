@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
 
 void main() {
   group('ReferenceCall Model', () {

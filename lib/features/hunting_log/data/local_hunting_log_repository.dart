@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/hunting_log_entry.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/data/hunting_log_repository.dart';
+import 'package:outcall/features/hunting_log/domain/hunting_log_entry.dart';
+import 'package:outcall/features/hunting_log/data/hunting_log_repository.dart';
 
 class LocalHuntingLogRepository implements HuntingLogRepository {
   Database? _database;

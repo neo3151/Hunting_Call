@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:hunting_calls_perfection/core/services/simple_storage.dart';
+import 'package:outcall/core/services/simple_storage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hunting_calls_perfection/features/profile/data/datasources/local_profile_data_source.dart';
-import 'package:hunting_calls_perfection/features/profile/data/datasources/secure_profile_data_source.dart';
-import 'package:hunting_calls_perfection/features/profile/data/datasources/migrating_profile_data_source.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/entities/user_profile.dart';
-import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
+import 'package:outcall/features/profile/data/datasources/local_profile_data_source.dart';
+import 'package:outcall/features/profile/data/datasources/secure_profile_data_source.dart';
+import 'package:outcall/features/profile/data/datasources/migrating_profile_data_source.dart';
+import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
 
 class MockSecureStorage extends Mock implements FlutterSecureStorage {}
 class MockSimpleStorage extends Mock implements ISimpleStorage {}

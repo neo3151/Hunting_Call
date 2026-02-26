@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:hunting_calls_perfection/features/recording/domain/entities/recording.dart';
-import 'package:hunting_calls_perfection/features/recording/domain/failures/recording_failure.dart';
+import 'package:outcall/features/recording/domain/entities/recording.dart';
+import 'package:outcall/features/recording/domain/failures/recording_failure.dart';
 
 /// Repository interface for recording persistence
 /// 

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/library/domain/use_cases/filter_calls_use_case.dart';
-import 'package:hunting_calls_perfection/features/library/domain/failures/library_failure.dart';
-import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/library/domain/use_cases/filter_calls_use_case.dart';
+import 'package:outcall/features/library/domain/failures/library_failure.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
 
 void main() {
   late FilterCallsUseCase useCase;

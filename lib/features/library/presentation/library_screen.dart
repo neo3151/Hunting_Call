@@ -2,13 +2,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/features/library/domain/providers.dart';
-import 'package:hunting_calls_perfection/core/widgets/upgrade_prompter.dart';
-import 'package:hunting_calls_perfection/core/services/audio_service.dart';
-import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:hunting_calls_perfection/features/library/presentation/call_detail_screen.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/library/domain/providers.dart';
+import 'package:outcall/core/widgets/upgrade_prompter.dart';
+import 'package:outcall/core/services/audio_service.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/library/presentation/call_detail_screen.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final String? userId;

@@ -1,6 +1,6 @@
-import 'package:hunting_calls_perfection/features/auth/domain/entities/auth_user.dart';
-import 'package:hunting_calls_perfection/features/auth/domain/repositories/auth_repository.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/auth/domain/entities/auth_user.dart';
+import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
 
 class SignInWithGoogle {
   final AuthRepository authRepository;
@@ -23,7 +23,10 @@ class SignInWithGoogle {
     
     try {
       // Attempt to fetch existing profile
-      await profileRepository.getProfile(user.id);
+      final profile = await profileRepository.getProfile(user.id);
+      if (profile.id == 'guest' && user.id != 'guest') {
+        throw Exception('Profile not found, guest fallback returned');
+      }
     } catch (e) {
       // If retrieval fails (or returns guest fallback depending on implementation), create it.
       // Ideally getProfile throws or returns null if not found for strict logic, 

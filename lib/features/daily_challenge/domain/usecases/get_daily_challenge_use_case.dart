@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:intl/intl.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/features/library/domain/use_cases/get_all_calls_use_case.dart';
-import 'package:hunting_calls_perfection/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/failures/daily_challenge_failure.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/daily_challenge_repository.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/library/domain/use_cases/get_all_calls_use_case.dart';
+import 'package:outcall/features/library/domain/use_cases/check_call_lock_status_use_case.dart';
+import 'package:outcall/features/daily_challenge/domain/failures/daily_challenge_failure.dart';
+import 'package:outcall/features/daily_challenge/domain/daily_challenge_repository.dart';
 
 /// Use case: Get today's daily challenge call.
 /// 

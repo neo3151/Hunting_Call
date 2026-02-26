@@ -1,6 +1,6 @@
-import 'package:hunting_calls_perfection/core/services/api_gateway.dart';
+import 'package:outcall/core/services/api_gateway.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 abstract class VersionCheckService {
   Future<bool> isUpdateRequired();

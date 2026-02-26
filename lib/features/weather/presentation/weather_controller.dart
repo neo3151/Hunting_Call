@@ -1,13 +1,13 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:hunting_calls_perfection/features/weather/domain/weather_entities.dart';
-import 'package:hunting_calls_perfection/features/weather/domain/usecases/get_local_weather.dart';
-import 'package:hunting_calls_perfection/features/weather/domain/usecases/get_solunar_info.dart';
-import 'package:hunting_calls_perfection/features/weather/data/repositories/weather_repository_impl.dart';
-import 'package:hunting_calls_perfection/features/weather/data/datasources/weather_remote_data_source.dart';
-import 'package:hunting_calls_perfection/features/weather/domain/weather_repository.dart';
-import 'package:hunting_calls_perfection/features/weather/data/location_service.dart';
+import 'package:outcall/features/weather/domain/weather_entities.dart';
+import 'package:outcall/features/weather/domain/usecases/get_local_weather.dart';
+import 'package:outcall/features/weather/domain/usecases/get_solunar_info.dart';
+import 'package:outcall/features/weather/data/repositories/weather_repository_impl.dart';
+import 'package:outcall/features/weather/data/datasources/weather_remote_data_source.dart';
+import 'package:outcall/features/weather/domain/weather_repository.dart';
+import 'package:outcall/features/weather/data/location_service.dart';
 
 // --- Dependency Injection ---
 

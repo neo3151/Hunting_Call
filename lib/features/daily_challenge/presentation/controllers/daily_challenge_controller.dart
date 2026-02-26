@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/features/daily_challenge/domain/providers.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/daily_challenge/domain/providers.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 /// Provides the daily challenge call via Riverpod Future.
 /// Returns null if there's an error getting the challenge.

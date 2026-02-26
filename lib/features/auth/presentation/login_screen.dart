@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
-import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
 
-import 'package:hunting_calls_perfection/core/widgets/background_wrapper.dart';
-import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 
-import 'package:hunting_calls_perfection/features/settings/presentation/privacy_policy_screen.dart';
+import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});

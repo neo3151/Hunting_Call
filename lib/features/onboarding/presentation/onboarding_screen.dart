@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hunting_calls_perfection/features/onboarding/presentation/controllers/onboarding_controller.dart';
-import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:outcall/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});

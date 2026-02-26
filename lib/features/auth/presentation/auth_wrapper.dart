@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
-import 'package:hunting_calls_perfection/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:hunting_calls_perfection/features/onboarding/presentation/controllers/onboarding_controller.dart';
-import 'package:hunting_calls_perfection/features/auth/presentation/login_screen.dart';
-import 'package:hunting_calls_perfection/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:hunting_calls_perfection/features/onboarding/presentation/onboarding_screen.dart';
-import 'package:hunting_calls_perfection/core/widgets/main_shell.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:outcall/features/auth/presentation/login_screen.dart';
+import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:outcall/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:outcall/core/widgets/main_shell.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
-import 'package:hunting_calls_perfection/core/widgets/update_required_screen.dart';
+import 'package:outcall/core/widgets/update_required_screen.dart';
 
 /// Watches auth state and shows LoginScreen, OnboardingScreen, or HomeScreen.
 /// Profile creation is handled by LoginScreen - this only loads existing profiles.

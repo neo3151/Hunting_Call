@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/usecases/get_all_logs_use_case.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/usecases/add_log_use_case.dart';
-import 'package:hunting_calls_perfection/features/hunting_log/domain/usecases/delete_log_use_case.dart';
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/features/hunting_log/domain/usecases/get_all_logs_use_case.dart';
+import 'package:outcall/features/hunting_log/domain/usecases/add_log_use_case.dart';
+import 'package:outcall/features/hunting_log/domain/usecases/delete_log_use_case.dart';
 
 /// Provider for GetAllLogsUseCase
 final getAllLogsUseCaseProvider = Provider<GetAllLogsUseCase>((ref) {

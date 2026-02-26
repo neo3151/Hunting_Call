@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/auth/data/mock_auth_repository.dart';
+import 'package:outcall/features/auth/data/mock_auth_repository.dart';
 
 void main() {
   late MockAuthRepository authRepository;

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hunting_calls_perfection/injection_container.dart' as di;
+import 'package:outcall/injection_container.dart' as di;
 
 void main() {
   testWidgets('App initializes platform services without crashing', (WidgetTester tester) async {

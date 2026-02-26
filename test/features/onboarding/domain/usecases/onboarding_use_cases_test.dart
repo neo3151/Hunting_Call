@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/onboarding/domain/usecases/check_onboarding_status_use_case.dart';
-import 'package:hunting_calls_perfection/features/onboarding/domain/usecases/complete_onboarding_use_case.dart';
-import 'package:hunting_calls_perfection/features/onboarding/domain/failures/onboarding_failure.dart';
-import 'package:hunting_calls_perfection/features/onboarding/domain/onboarding_repository.dart';
+import 'package:outcall/features/onboarding/domain/usecases/check_onboarding_status_use_case.dart';
+import 'package:outcall/features/onboarding/domain/usecases/complete_onboarding_use_case.dart';
+import 'package:outcall/features/onboarding/domain/failures/onboarding_failure.dart';
+import 'package:outcall/features/onboarding/domain/onboarding_repository.dart';
 
 // Mock repository for testing
 class MockOnboardingRepository implements OnboardingRepository {

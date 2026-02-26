@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hunting_calls_perfection/features/recording/data/repositories/mock_audio_recorder_service.dart';
+import 'package:outcall/features/recording/data/repositories/mock_audio_recorder_service.dart';
 
 void main() {
   late MockAudioRecorderService recorder;

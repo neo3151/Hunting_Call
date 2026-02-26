@@ -2,19 +2,19 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:hunting_calls_perfection/features/library/data/reference_database.dart';
-import 'package:hunting_calls_perfection/config/app_config.dart';
-import 'package:hunting_calls_perfection/features/analysis/data/real_rating_service.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/frequency_analyzer.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/audio_analysis_model.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/use_cases/analyze_audio_use_case.dart';
-import 'package:hunting_calls_perfection/features/analysis/domain/use_cases/calculate_score_use_case.dart';
-import 'package:hunting_calls_perfection/features/profile/domain/repositories/profile_repository.dart';
-import 'package:hunting_calls_perfection/features/library/domain/reference_call_model.dart';
-import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/config/app_config.dart';
+import 'package:outcall/features/analysis/data/real_rating_service.dart';
+import 'package:outcall/features/analysis/domain/frequency_analyzer.dart';
+import 'package:outcall/features/analysis/domain/audio_analysis_model.dart';
+import 'package:outcall/features/analysis/domain/use_cases/analyze_audio_use_case.dart';
+import 'package:outcall/features/analysis/domain/use_cases/calculate_score_use_case.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
 
-import 'package:hunting_calls_perfection/features/home/domain/use_cases/get_daily_challenge_use_case.dart';
-import 'package:hunting_calls_perfection/features/home/domain/entities/daily_challenge.dart';
+import 'package:outcall/features/home/domain/use_cases/get_daily_challenge_use_case.dart';
+import 'package:outcall/features/home/domain/entities/daily_challenge.dart';
 
 class MockFrequencyAnalyzer extends Mock implements FrequencyAnalyzer {}
 class MockProfileRepository extends Mock implements ProfileRepository {}

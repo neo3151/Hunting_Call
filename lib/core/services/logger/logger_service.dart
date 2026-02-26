@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hunting_calls_perfection/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 final loggerServiceProvider = Provider<LoggerService>((ref) {
   return LoggerService();

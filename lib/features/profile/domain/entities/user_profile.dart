@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:hunting_calls_perfection/features/rating/domain/rating_model.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
 
 part 'user_profile.g.dart';
 
@@ -46,7 +46,7 @@ class UserProfile {
   factory UserProfile.guest() {
     return UserProfile(
       id: 'guest',
-      name: 'Guest Handler',
+      name: 'Guest Hunter',
       joinedDate: DateTime.now(),
       isPremium: false,
       isAlphaTester: false,

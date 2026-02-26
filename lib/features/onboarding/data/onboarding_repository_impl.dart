@@ -1,5 +1,5 @@
-import 'package:hunting_calls_perfection/features/onboarding/domain/onboarding_repository.dart';
-import 'package:hunting_calls_perfection/features/onboarding/data/onboarding_local_data_source.dart';
+import 'package:outcall/features/onboarding/domain/onboarding_repository.dart';
+import 'package:outcall/features/onboarding/data/onboarding_local_data_source.dart';
 
 /// Implementation of OnboardingRepository using local storage
 class OnboardingRepositoryImpl implements OnboardingRepository {

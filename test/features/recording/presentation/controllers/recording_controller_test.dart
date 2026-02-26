@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fpdart/fpdart.dart';
 
-import 'package:hunting_calls_perfection/features/recording/presentation/controllers/recording_controller.dart';
-import 'package:hunting_calls_perfection/features/recording/domain/use_cases/start_recording_use_case.dart';
-import 'package:hunting_calls_perfection/features/recording/domain/use_cases/stop_recording_use_case.dart';
-import 'package:hunting_calls_perfection/features/recording/domain/providers.dart';
-import 'package:hunting_calls_perfection/core/services/file_service.dart';
-import 'package:hunting_calls_perfection/core/services/logger/logger_service.dart';
-import 'package:hunting_calls_perfection/features/recording/domain/failures/recording_failure.dart';
-import 'package:hunting_calls_perfection/di_providers.dart';
+import 'package:outcall/features/recording/presentation/controllers/recording_controller.dart';
+import 'package:outcall/features/recording/domain/use_cases/start_recording_use_case.dart';
+import 'package:outcall/features/recording/domain/use_cases/stop_recording_use_case.dart';
+import 'package:outcall/features/recording/domain/providers.dart';
+import 'package:outcall/core/services/file_service.dart';
+import 'package:outcall/core/services/logger/logger_service.dart';
+import 'package:outcall/features/recording/domain/failures/recording_failure.dart';
+import 'package:outcall/di_providers.dart';
 
 // Mocks
 class MockStartRecordingUseCase extends Mock implements StartRecordingUseCase {}
