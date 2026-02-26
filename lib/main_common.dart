@@ -118,7 +118,7 @@ Future<PlatformEnvironment> _createPlatformEnvironment(bool firebaseReady) async
 
   return PlatformEnvironment(
     isFirebaseEnabled: di.isFirebaseEnabled,
-    isLinux: isDesktop,
+    isDesktop: isDesktop,
     useMocks: false,
     sharedPreferences: prefs,
     preInitializedAuthRepo: preInitAuthRepo,

@@ -26,6 +26,13 @@ Future<void> init({bool useMocks = false}) async {
   if (_isInitializing) return;
   _isInitializing = true;
 
+  // In test mode, skip all real platform services
+  if (useMocks) {
+    isFirebaseEnabled = false;
+    _isInitializing = false;
+    return;
+  }
+
   if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
@@ -74,7 +81,8 @@ Future<void> init({bool useMocks = false}) async {
   } else {
     try {
       isFirebaseEnabled = Firebase.apps.isNotEmpty;
-    } catch (_) {
+    } catch (e) {
+      AppLogger.d('Firebase apps check failed: $e');
       isFirebaseEnabled = false;
     }
   }

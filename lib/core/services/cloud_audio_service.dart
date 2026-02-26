@@ -96,7 +96,8 @@ class CloudAudioService {
         final strippedPath = assetPath.replaceFirst('assets/', '');
         await rootBundle.load('assets/$strippedPath');
         return AudioSource.asset(strippedPath);
-      } catch (_) {
+      } catch (e) {
+        AppLogger.d('CloudAudioService: Fallback asset load also failed for $callId: $e');
         rethrow;
       }
     }

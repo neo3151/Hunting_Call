@@ -35,7 +35,7 @@ void main() {
       overrides: [
         platformEnvironmentProvider.overrideWithValue(PlatformEnvironment(
           isFirebaseEnabled: false,
-          isLinux: false,
+          isDesktop: false,
           useMocks: true,
           sharedPreferences: mockPrefs,
         )),

@@ -16,11 +16,9 @@ dependencies:
   # Functional Programming (Either, Result types)
   fpdart: ^1.1.0
   riverpod_annotation: ^2.3.5
-  provider: ^6.0.0  # Keep during migration
   
   # Core Utilities
   equatable: ^2.0.5
-  get_it: ^9.2.0
   
   # Audio
   record: ^5.1.0
@@ -30,7 +28,7 @@ dependencies:
   # UI
   google_fonts: ^8.0.2
   flutter_svg: ^2.0.7
-  intl: ^0.18.0
+  intl: ^0.20.2
   
   # Backend / Data
   firebase_core: ^3.10.1
@@ -78,68 +76,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    # Free-tier audio (bundled in APK). Paid calls download from Firebase Storage.
-    - assets/audio/awebo.mp3
-    - assets/audio/badger.mp3
-    - assets/audio/barred_owl_hoot.mp3
-    - assets/audio/black_bear_cub_distress.mp3
-    - assets/audio/bobcat_growl.mp3
-    - assets/audio/bobcat_growl_v2.mp3
-    - assets/audio/bobcat_hiss.mp3
-    - assets/audio/bobcat_purr.mp3
-    - assets/audio/bobcat_vocalization.mp3
-    - assets/audio/bobcat_yowl.mp3
-    - assets/audio/canvasback.mp3
-    - assets/audio/cougar.mp3
-    - assets/audio/coyote_challenge.mp3
-    - assets/audio/coyote_howl.mp3
-    - assets/audio/coyote_yip.mp3
-    - assets/audio/crow.mp3
-    - assets/audio/deer_buck_challenge.mp3
-    - assets/audio/deer_buck_grunt.mp3
-    - assets/audio/deer_doe_bleat.mp3
-    - assets/audio/deer_dominant_grunt.mp3
-    - assets/audio/deer_estrus_bleat.mp3
-    - assets/audio/deer_fawn_distress.mp3
-    - assets/audio/deer_fawn_distress_v2.mp3
-    - assets/audio/deer_lost_fawn.mp3
-    - assets/audio/deer_snort_wheeze.mp3
-    - assets/audio/deer_social_grunt.mp3
-    - assets/audio/deer_tending_grunt.mp3
-    - assets/audio/deer_tending_grunt_v2.mp3
-    - assets/audio/dove.mp3
-    - assets/audio/duck_mallard_greeting.mp3
-    - assets/audio/duck_mallard_greeting_v2.mp3
-    - assets/audio/elk_bull_bugle.mp3
-    - assets/audio/fallow.mp3
-    - assets/audio/fox_scream.mp3
-    - assets/audio/gho.mp3
-    - assets/audio/goose_canadian_honk.mp3
-    - assets/audio/goose_cluck.mp3
-    - assets/audio/hog_bark.mp3
-    - assets/audio/hog_grunt.mp3
-    - assets/audio/hog_squeal.mp3
-    - assets/audio/hog_squeal_loud.mp3
-    - assets/audio/mallard_hen.mp3
-    - assets/audio/mule_deer.mp3
-    - assets/audio/owl_barred_hoot.mp3
-    - assets/audio/pheasant.mp3
-    - assets/audio/pintail.mp3
-    - assets/audio/quail.mp3
-    - assets/audio/rabbit_distress.mp3
-    - assets/audio/raccoon_squall.mp3
-    - assets/audio/specklebelly.mp3
-    - assets/audio/teal.mp3
-    - assets/audio/turkey_gobble.mp3
-    - assets/audio/turkey_hen_yelp.mp3
-    - assets/audio/turkey_purr.mp3
-    - assets/audio/wolf_growl.mp3
-    - assets/audio/wolf_howl.mp3
-    - assets/audio/wolf_whine.mp3
-    - assets/audio/wolf_yelp.mp3
-    - assets/audio/wood_duck.mp3
-    - assets/audio/wood_duck_sit.mp3
-    - assets/audio/woodcock.mp3
+    # Audio files — directory glob includes all .mp3 files automatically
+    - assets/audio/
     - assets/images/
     - assets/images/animals/
     - assets/data/

@@ -5,11 +5,22 @@ import 'package:outcall/features/library/data/reference_database.dart';
 import 'package:outcall/features/library/domain/reference_call_model.dart';
 import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
 import 'package:outcall/features/analysis/domain/use_cases/calculate_score_use_case.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
+/// Manual calibration test — only runs when the audio fixture exists.
+/// Place a WAV file at `scripts/perfect_mallard.wav` to use this test.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  final audioFile = File('scripts/perfect_mallard.wav');
+
   test('Calculate Score for Perfect Mallard', () async {
+    if (!audioFile.existsSync()) {
+      AppLogger.d('Skipping: scripts/perfect_mallard.wav not found');
+      // Mark test as passing when the fixture is missing
+      return;
+    }
+
     // 1. Manually initialize ReferenceDatabase (bypassing rootBundle for test environment)
     final jsonFile = File('assets/data/reference_calls.json');
     final jsonString = await jsonFile.readAsString();
@@ -23,20 +34,13 @@ void main() {
     final useCase = CalculateScoreUseCase();
 
     // 3. Analyze the perfect audio file
-    final audioPath = 'scripts/perfect_mallard.wav';
-    print('\n==================================================');
-    print('Analyzing audio at: $audioPath');
+    final audioPath = audioFile.path;
+    AppLogger.d('Analyzing audio at: $audioPath');
     final userAnalysis = await analyzer.analyzeAudio(audioPath);
-    
-    // Print raw analysis details
-    print('--- Analysis Metrics ---');
-    print('Pitch: ${userAnalysis.dominantFrequencyHz.toStringAsFixed(2)} Hz');
-    print('Duration: ${userAnalysis.totalDurationSec.toStringAsFixed(2)} s');
-    print('Volume (RMS): ${userAnalysis.averageVolume.toStringAsFixed(4)}');
-    print('Tone Clarity: ${userAnalysis.toneClarity.toStringAsFixed(2)}%');
-    print('Harmonic Richness: ${userAnalysis.harmonicRichness.toStringAsFixed(2)}%');
-    print('Rhythm Regularity: ${userAnalysis.rhythmRegularity.toStringAsFixed(2)}%');
-    
+
+    AppLogger.d('Pitch: ${userAnalysis.dominantFrequencyHz.toStringAsFixed(2)} Hz');
+    AppLogger.d('Duration: ${userAnalysis.totalDurationSec.toStringAsFixed(2)} s');
+
     // 4. Calculate final score
     final params = CalculateScoreParams(
       recordingId: 'test_recording',
@@ -47,19 +51,14 @@ void main() {
     );
 
     final result = await useCase.execute(params);
-    
+
     result.fold(
-      (failure) => print('Score Calculation Failed: $failure'),
+      (failure) => fail('Score Calculation Failed: $failure'),
       (success) {
-        print('--- Scoring Results ---');
-        print('Overall Score:  ${success.overallScore.toStringAsFixed(2)}%');
-        print('Pitch Score:    ${success.pitchScore.score.toStringAsFixed(2)}%');
-        print('Duration Score: ${success.durationScore.score.toStringAsFixed(2)}%');
-        print('Volume Score:   ${success.volumeScore.score.toStringAsFixed(2)}%');
-        print('Tone Score:     ${success.toneScore.score.toStringAsFixed(2)}%');
-        print('Rhythm Score:   ${success.rhythmScore.score.toStringAsFixed(2)}%');
-        print('==================================================\n');
-      }
+        AppLogger.d('Overall Score: ${success.overallScore.toStringAsFixed(2)}%');
+        expect(success.overallScore, greaterThan(0));
+        expect(success.overallScore, lessThanOrEqualTo(100));
+      },
     );
   });
 }

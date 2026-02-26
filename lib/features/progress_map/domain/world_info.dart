@@ -143,12 +143,12 @@ String getAnimalEmoji(String animalName) {
   if (lower.contains('deer') || lower.contains('whitetail') || lower.contains('mule') || lower.contains('fallow') || lower.contains('caribou') || lower.contains('pronghorn') || lower.contains('red stag')) return '🦌';
   if (lower.contains('turkey')) return '🦃';
   if (lower.contains('coyote') || lower.contains('wolf')) return '🐺';
+  if (lower.contains('bobcat') || lower.contains('cougar') || lower.contains('mountain lion') || lower.contains('puma')) return '🐆';
   if (lower.contains('goose')) return '🦆';
   if (lower.contains('owl')) return '🦉';
   if (lower.contains('moose')) return '🦌';
   if (lower.contains('bear')) return '🐻';
   if (lower.contains('fox')) return '🦊';
-  if (lower.contains('bobcat') || lower.contains('cougar') || lower.contains('mountain lion') || lower.contains('puma')) return '🐆';
   if (lower.contains('rabbit')) return '🐰';
   if (lower.contains('raccoon')) return '🦝';
   if (lower.contains('crow')) return '🐦‍⬛';

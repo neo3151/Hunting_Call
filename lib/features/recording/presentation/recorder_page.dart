@@ -12,11 +12,13 @@ import 'package:outcall/features/recording/presentation/controllers/recording_co
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/features/rating/presentation/rating_screen.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
-import 'package:outcall/features/library/domain/reference_call_model.dart';
+
 import 'package:outcall/core/services/cloud_audio_service.dart';
 import 'package:outcall/features/recording/presentation/widgets/live_visualizer.dart';
 import 'package:outcall/features/recording/domain/visualization_settings.dart';
 import 'package:outcall/features/recording/presentation/call_selection_screen.dart';
+import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/features/recording/presentation/widgets/recorder_widgets.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
   final String userId;
@@ -163,7 +165,6 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   void _toggleRecording() async {
     if (isProcessing) return;
     
-    debugPrint('🎙️ _toggleRecording called!');
     
     final notifier = ref.read(recordingNotifierProvider.notifier);
     final recordingState = ref.read(recordingNotifierProvider);
@@ -213,7 +214,6 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
           }
         }
         
-        debugPrint('🎙️ Starting recording with countdown...');
         await HapticFeedback.heavyImpact();
         
         // Clear buffer on start
@@ -243,8 +243,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         }
       }
     } catch (e, stackTrace) {
-      debugPrint('🔴 _toggleRecording error: $e');
-      debugPrint('🔴 Stack trace: $stackTrace');
+      AppLogger.d('Recording toggle error: $e\n$stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
@@ -463,109 +462,14 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               ),
               const SizedBox(height: 16),
               
-              // 2. LIVE VISUALIZER
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                    height: 140,
-                    decoration: BoxDecoration(
-                        color: Colors.black26, 
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white10),
-                    ),
-                    child: Stack(
-                        children: [
-                            // Optimized: Use StreamBuilder for high-frequency updates
-                            // This ensures only the visualizer rebuilds, not the whole page.
-                            StreamBuilder<double>(
-                              stream: ref.watch(amplitudeStreamProvider).whenData((v) => v).asData != null
-                                // ignore: deprecated_member_use
-                                ? ref.watch(amplitudeStreamProvider.stream)
-                                : const Stream<double>.empty(),
-                              builder: (context, snapshot) {
-                                // Update local buffer
-                                if (snapshot.hasData) {
-                                  _amplitudeBuffer.add(snapshot.data!);
-                                  if (_amplitudeBuffer.length > 100) {
-                                      _amplitudeBuffer.removeAt(0);
-                                  }
-                                }
-                                
-                                return LiveVisualizer(
-                                    amplitudes: List<double>.from(_amplitudeBuffer), // Create copy to force repaint
-                                    referencePattern: vizSettings.showReferenceOverlay ? selectedCall.waveform : null,
-                                    referenceSpectrogram: vizSettings.showReferenceOverlay ? selectedCall.spectrogram : null,
-                                    mode: vizSettings.mode,
-                                    color: (isRecording || isCountingDown) ? Colors.tealAccent : Colors.teal.withValues(alpha: 0.5),
-                                    isRecording: isRecording || isCountingDown,
-                                    referenceAvgAmplitude: _computeRefAvg(selectedCall.waveform),
-                                );
-                              }
-                            ),
-                            
-                            // Mode Toggles Overlay (Top Right)
-                            Positioned(
-                                top: 4,
-                                right: 4,
-                                child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                        // Mode Toggle
-                                        IconButton(
-                                            onPressed: () => ref.read(visualizationSettingsProvider.notifier).toggleMode(),
-                                            icon: Icon(
-                                                vizSettings.mode == VisualizationMode.waveform ? Icons.graphic_eq : Icons.bar_chart, 
-                                                color: Colors.white54, 
-                                                size: 18
-                                            ),
-                                            tooltip: 'Switch View',
-                                        ),
-                                        // Reference Overlay Toggle
-                                        IconButton(
-                                            onPressed: () => ref.read(visualizationSettingsProvider.notifier).toggleReferenceOverlay(),
-                                            icon: Icon(
-                                                Icons.layers, 
-                                                color: vizSettings.showReferenceOverlay ? Colors.orangeAccent : Colors.white54, 
-                                                size: 18
-                                            ),
-                                            tooltip: 'Toggle Reference',
-                                        ),
-                                    ],
-                                ),
-                            ),
-                            // Label Overlay (Top Left)
-                            Positioned(
-                                top: 8,
-                                left: 12,
-                                child: Text(
-                                    vizSettings.mode == VisualizationMode.waveform ? 'WAVEFORM' : 'SPECTRAL SYNC',
-                                    style: GoogleFonts.oswald(color: Colors.white24, fontSize: 10, letterSpacing: 1),
-                                ),
-                            ),
-                        ],
-                    ),
-                ),
-              ),
-              // Coaching Text Indicator
-              if (isRecording) Builder(
-                builder: (context) {
-                  final refAvg = _computeRefAvg(selectedCall.waveform);
-                  final feedback = _getCoachingFeedback(refAvg);
-                  if (feedback.text.isEmpty) return const SizedBox.shrink();
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      style: GoogleFonts.oswald(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2.0,
-                        color: feedback.color,
-                      ),
-                      child: Text(feedback.text),
-                    ),
-                  );
-                },
+              // 2. LIVE VISUALIZER + COACHING
+              RecorderVisualizerSection(
+                selectedCall: selectedCall,
+                amplitudeBuffer: _amplitudeBuffer,
+                isRecording: isRecording,
+                isCountingDown: isCountingDown,
+                computeRefAvg: _computeRefAvg,
+                getCoachingFeedback: _getCoachingFeedback,
               ),
 
               const SizedBox(height: 24),
@@ -596,138 +500,27 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                     const SizedBox(width: 80),
 
                   // Mic button with decorative rings
-                  SizedBox(
-                    width: 150,
-                    height: 150,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Outer decorative ring
-                        if (!isRecording && !isCountingDown && !isProcessing)
-                          Container(
-                            width: 150,
-                            height: 150,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        // Inner decorative ring
-                        if (!isRecording && !isCountingDown && !isProcessing)
-                          Container(
-                            width: 125,
-                            height: 125,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Theme.of(context).primaryColor.withValues(alpha: 0.25),
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        if (isRecording)
-                          ScaleTransition(
-                            scale: _pulseAnimation,
-                            child: Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.red.withValues(alpha: 0.3), width: 4),
-                              ),
-                            ),
-                          ),
-                        if (isCountingDown)
-                          Container(
-                            width: 150,
-                            height: 150,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 3),
-                            ),
-                          ),
-                        // THE ACTUAL BUTTON
-                        SizedBox(
-                          width: 90,
-                          height: 90,
-                          child: ElevatedButton(
-                            onPressed: (isCountingDown || isProcessing) ? null : () {
-                              debugPrint('🎙️ RECORD BUTTON PRESSED!');
-                              _toggleRecording();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              padding: EdgeInsets.zero,
-                              backgroundColor: isProcessing
-                                  ? Colors.grey.withValues(alpha: 0.8)
-                                  : isRecording 
-                                      ? Colors.red.withValues(alpha: 0.8) 
-                                      : isCountingDown 
-                                          ? Colors.orange.withValues(alpha: 0.8)
-                                          : Theme.of(context).primaryColor,
-                              elevation: 8,
-                              shadowColor: (isProcessing ? Colors.grey : isRecording ? Colors.red : Theme.of(context).primaryColor).withValues(alpha: 0.4),
-                              side: BorderSide(color: Colors.white.withValues(alpha: 0.2), width: 2),
-                            ),
-                            child: isProcessing
-                                ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
-                                : isCountingDown
-                                    ? Text(
-                                        '${recordingState.countdownValue}',
-                                        style: GoogleFonts.oswald(
-                                          fontSize: 48,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Icon(
-                                        isRecording ? Icons.stop : Icons.mic,
-                                        color: Colors.white,
-                                        size: 36,
-                                      ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  RecorderMicButton(
+                    isRecording: isRecording,
+                    isCountingDown: isCountingDown,
+                    isProcessing: isProcessing,
+                    countdownValue: recordingState.countdownValue ?? 0,
+                    pulseAnimation: _pulseAnimation,
+                    onPressed: _toggleRecording,
                   ),
                   const SizedBox(width: 80),
                 ],
               ),
               const SizedBox(height: 24),
               if (isRecording)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.circle, color: Colors.red, size: 12),
-                      const SizedBox(width: 8),
-                      Text(
-                        _formatDuration(recordingState.recordDuration),
-                        style: GoogleFonts.oswald(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ],
-                  ),
+                RecordingTimerBadge(
+                  formattedDuration: _formatDuration(recordingState.recordDuration),
                 ),
 
               const SizedBox(height: 8),
               // TAP TO RECORD
               TextButton(
                 onPressed: (isCountingDown || isProcessing) ? null : () {
-                  debugPrint('🎙️ TEXT BUTTON PRESSED!');
                   _toggleRecording();
                 },
                 child: Text(

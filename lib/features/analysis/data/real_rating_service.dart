@@ -109,7 +109,7 @@ class RealRatingService implements RatingService {
           refAnalysis = await analyzer.analyzeAudio(refFilePath);
           _refCache[animalType] = refAnalysis;
           
-          try { await File(refFilePath).delete(); } catch (_) {}
+          try { await File(refFilePath).delete(); } catch (e) { AppLogger.d('Temp ref file cleanup failed: $e'); }
         } catch (e) {
           AppLogger.d('Reference Analysis Error: $e');
         }

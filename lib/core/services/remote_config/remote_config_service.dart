@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 /// Provider for the RemoteConfigService
 final remoteConfigServiceProvider = Provider<RemoteConfigService>((ref) {
@@ -36,7 +37,7 @@ class RemoteConfigService {
       await _remoteConfig!.fetchAndActivate();
     } catch (e) {
       // If fetching fails (e.g., no internet), it will safely use the defaults
-      print('Remote Config fetch failed: $e');
+      AppLogger.d('Remote Config fetch failed: $e');
     }
   }
 

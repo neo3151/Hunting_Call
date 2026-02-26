@@ -1,23 +1,23 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:share_plus/share_plus.dart';
-import 'dart:io' show Platform, File, Process;
-import 'package:path_provider/path_provider.dart';
+
+
 import 'package:outcall/features/rating/presentation/controllers/rating_controller.dart';
-import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+
 import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/library/domain/providers.dart';
-import 'package:outcall/config/app_config.dart';
-import 'package:outcall/core/widgets/upgrade_prompter.dart';
+
 import 'package:outcall/features/rating/presentation/widgets/waveform_overlay.dart';
-import 'package:outcall/features/rating/domain/personality_feedback_service.dart';
-import 'package:outcall/features/leaderboard/presentation/leaderboard_screen.dart';
+
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
+import 'package:outcall/features/rating/presentation/widgets/rating_feedback_widgets.dart';
+import 'package:outcall/features/rating/presentation/widgets/rating_analytics_widgets.dart';
+import 'package:outcall/features/rating/presentation/widgets/rating_action_buttons.dart';
 
 class RatingScreen extends ConsumerStatefulWidget {
   final String audioPath;
@@ -268,16 +268,16 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                             style: GoogleFonts.lato(fontSize: 16, color: Colors.white70),
                           ),
                           const SizedBox(height: 40),
-                          _buildGuidanceCard(
+                          const GuidanceCard(
                             icon: Icons.volume_mute,
                             title: 'QUIETER ENVIRONMENT',
-                            sub: 'Move away from wind or loud machinery.',
+                            subtitle: 'Move away from wind or loud machinery.',
                           ),
                           const SizedBox(height: 12),
-                          _buildGuidanceCard(
+                          const GuidanceCard(
                             icon: Icons.settings_voice,
                             title: 'CLOSER MIC',
-                            sub: 'Hold the device closer to your mouth.',
+                            subtitle: 'Hold the device closer to your mouth.',
                           ),
                           const SizedBox(height: 48),
                           SizedBox(
@@ -316,11 +316,11 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                           primary: false,
                           padding: EdgeInsets.fromLTRB(20, topPadding, 20, 80),
                           children: [
-                            _tryRender(() => _buildOverallProficiency(result.score), 'Proficiency'),
+                            _tryRender(() => OverallProficiency(score: result.score), 'Proficiency'),
                             const SizedBox(height: 40),
-                            _tryRender(() => _buildAIFeedback(result.feedback), 'Feedback'),
+                            _tryRender(() => AIFeedbackCard(feedback: result.feedback), 'Feedback'),
                             const SizedBox(height: 16),
-                            _tryRender(() => _buildPersonalityFeedback(result.score), 'Personality'),
+                            _tryRender(() => PersonalityFeedbackCard(score: result.score), 'Personality'),
                             const SizedBox(height: 32),
                             _tryRender(() => _buildPitchComparison(result), 'Pitch Comparison'),
                             const SizedBox(height: 24),
@@ -334,17 +334,17 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                                 isReferencePlaying: _isRefPlaying,
                               ),
                             const SizedBox(height: 24),
-                            _tryRender(() => _buildProBreakdown(result), 'Pro Breakdown'),
+                            _tryRender(() => ProBreakdown(result: result), 'Pro Breakdown'),
                             const SizedBox(height: 16),
-                            _tryRender(() => _buildPrimaryFlaw(result), 'Primary Flaw'),
+                            _tryRender(() => PrimaryFlawCard(result: result), 'Primary Flaw'),
                             const SizedBox(height: 24),
                             _tryRender(() => _buildDetailedMetrics(result), 'Metrics'),
                             const SizedBox(height: 40),
-                            _tryRender(() => _buildComprehensiveAnalytics(result), 'Analytics'),
+                            _tryRender(() => ComprehensiveAnalyticsSection(result: result), 'Analytics'),
                             const SizedBox(height: 40),
-                            _tryRender(() => _buildTipSection(), 'Tip'),
+                            _tryRender(() => const RatingTipSection(), 'Tip'),
                             const SizedBox(height: 32),
-                            _buildActionButtons(result),
+                            RatingActionButtons(result: result, audioPath: widget.audioPath, animalId: widget.animalId),
                           ],
                         ),
                       ),
@@ -365,138 +365,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     }
   }
 
-  Widget _buildOverallProficiency(dynamic score) {
-    final double s = _toSafe(score).clamp(0, 100);
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              width: 180,
-              height: 180,
-              child: CircularProgressIndicator(
-                value: s / 100,
-                strokeWidth: 10,
-                color: const Color(0xFF5FF7B6),
-                backgroundColor: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
-            Text('${s.toInt()}%', style: GoogleFonts.oswald(fontSize: 64, fontWeight: FontWeight.bold, color: Colors.white)),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text('OVERALL PROFICIENCY', style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white60, fontWeight: FontWeight.w500)),
-      ],
-    );
-  }
 
-  Widget _buildAIFeedback(String feedback) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.auto_awesome, color: Color(0xFF5FF7B6), size: 14),
-              const SizedBox(width: 8),
-              Text('AI FEEDBACK', style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(feedback, textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 14, color: Colors.white.withValues(alpha: 0.9), height: 1.5)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPersonalityFeedback(dynamic score) {
-    final double s = _toSafe(score).clamp(0, 100);
-    final String personalityMessage = PersonalityFeedbackService.getFeedback(s);
-    
-    // Color varies by score
-    Color borderColor;
-    Color iconColor;
-    if (s >= 85) {
-      borderColor = const Color(0xFFFFD700); // Gold
-      iconColor = const Color(0xFFFFD700);
-    } else if (s >= 65) {
-      borderColor = const Color(0xFF5FF7B6); // Green
-      iconColor = const Color(0xFF5FF7B6);
-    } else if (s >= 50) {
-      borderColor = Colors.orangeAccent;
-      iconColor = Colors.orangeAccent;
-    } else {
-      borderColor = Colors.redAccent;
-      iconColor = Colors.redAccent;
-    }
-
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 800),
-      curve: Curves.elasticOut,
-      tween: Tween(begin: 0.0, end: 1.0),
-      builder: (context, scale, child) {
-        return Transform.scale(
-          scale: 0.8 + (0.2 * scale),
-          child: Opacity(
-            opacity: scale.clamp(0.0, 1.0),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: borderColor.withValues(alpha: 0.5), width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: borderColor.withValues(alpha: 0.2 * scale),
-                    blurRadius: 15,
-                    spreadRadius: 2,
-                  )
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.bolt, color: iconColor, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        'REALITY CHECK', 
-                        style: GoogleFonts.oswald(
-                          fontSize: 11, 
-                          letterSpacing: 1.5, 
-                          color: iconColor, 
-                          fontWeight: FontWeight.bold
-                        )
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    personalityMessage, 
-                    textAlign: TextAlign.center, 
-                    style: GoogleFonts.lato(
-                      fontSize: 14, 
-                      color: Colors.white.withValues(alpha: 0.95), 
-                      height: 1.5,
-                      fontWeight: FontWeight.w500,
-                    )
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildPitchComparison(RatingResult result) {
     final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
@@ -561,7 +430,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   color: const Color(0xFF5FF7B6).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('Within tolerance ✓', style: GoogleFonts.lato(fontSize: 10, color: const Color(0xFF5FF7B6), fontWeight: FontWeight.w600)),
+                child: Text('Within tolerance âœ“', style: GoogleFonts.lato(fontSize: 10, color: const Color(0xFF5FF7B6), fontWeight: FontWeight.w600)),
               ),
             ],
           ),
@@ -660,114 +529,9 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     );
   }
 
-  Widget _buildProBreakdown(RatingResult result) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(width: 3, height: 14, decoration: const BoxDecoration(color: Color(0xFF5FF7B6), borderRadius: BorderRadius.all(Radius.circular(2)))),
-            const SizedBox(width: 8),
-            Text('PRO BREAKDOWN', style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildProMetricCard('PITCH', result.metrics['score_pitch'] ?? 0, Icons.music_note),
-            _buildProMetricCard('TIMBRE', result.metrics['score_timbre'] ?? 0, Icons.flare),
-            _buildProMetricCard('RHYTHM', result.metrics['score_rhythm'] ?? 0, Icons.speed),
-            _buildProMetricCard('AIR', result.metrics['score_duration'] ?? 0, Icons.air),
-          ],
-        ),
-      ],
-    );
-  }
 
-  Widget _buildProMetricCard(String label, dynamic score, IconData icon) {
-    final double s = _toSafe(score).clamp(0, 100);
-    final Color color = s >= 80 ? const Color(0xFF5FF7B6) : (s >= 50 ? Colors.orangeAccent : Colors.redAccent);
-    
-    return Container(
-      width: (MediaQuery.of(context).size.width - 60) / 4,
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(height: 8),
-          Text(label, style: GoogleFonts.oswald(fontSize: 9, color: Colors.white60, letterSpacing: 1)),
-          const SizedBox(height: 4),
-          Text('${s.toInt()}%', style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildPrimaryFlaw(RatingResult result) {
-    final scores = {
-      'pitch': _toSafe(result.metrics['score_pitch']),
-      'timbre': _toSafe(result.metrics['score_timbre']),
-      'rhythm': _toSafe(result.metrics['score_rhythm']),
-      'duration': _toSafe(result.metrics['score_duration']),
-    };
 
-    final worst = scores.entries.reduce((a, b) => a.value < b.value ? a : b);
-    
-    if (worst.value >= 85) return const SizedBox.shrink();
-
-    String flawTitle = '';
-    String flawDesc = '';
-
-    switch (worst.key) {
-      case 'pitch':
-        flawTitle = 'PITCH DEVIATION';
-        flawDesc = "You're missing the target frequency. Practice your vocal control.";
-        break;
-      case 'timbre':
-        flawTitle = 'TONAL INACCURACY';
-        flawDesc = "The 'color' of your sound doesn't match the reference. Check your mouth position.";
-        break;
-      case 'rhythm':
-        flawTitle = 'UNSTABLE RHYTHM';
-        flawDesc = 'Your breathing or cadence is inconsistent. Focus on a steady flow.';
-        break;
-      case 'duration':
-        flawTitle = 'AIR MANAGEMENT';
-        flawDesc = 'Your calls are either too long or too short. Manage your breath better.';
-        break;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.redAccent.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: Colors.redAccent, size: 24),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('PRIMARY FLAW: $flawTitle', style: GoogleFonts.oswald(fontSize: 12, color: Colors.redAccent, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                const SizedBox(height: 4),
-                Text(flawDesc, style: GoogleFonts.lato(fontSize: 11, color: Colors.white70)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildDetailedMetrics(RatingResult result) {
     final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
@@ -818,346 +582,10 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     );
   }
 
-  Widget _buildComprehensiveAnalytics(RatingResult result) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(width: 3, height: 14, decoration: const BoxDecoration(color: Color(0xFF5FF7B6), borderRadius: BorderRadius.all(Radius.circular(2)))),
-            const SizedBox(width: 8),
-            Text('COMPREHENSIVE ANALYTICS', style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        const SizedBox(height: 20),
-        _buildAnalyticsSection('VOLUME ANALYSIS', Icons.volume_up, [
-          _buildAnalyticsCard('Average Volume', result.metrics['avg_volume'] ?? 65.0),
-          _buildAnalyticsCard('Peak Volume', result.metrics['peak_volume'] ?? 82.0),
-          _buildAnalyticsCard('Consistency', result.metrics['consistency'] ?? 78.0),
-        ]),
-        const SizedBox(height: 12),
-        _buildAnalyticsSection('TONE ANALYSIS', Icons.tune, [
-          _buildAnalyticsCard('Tone Clarity', result.metrics['tone_clarity'] ?? 85.0),
-          _buildAnalyticsCard('Harmonic Richness', result.metrics['harmonic_richness'] ?? 72.0),
-          _buildAnalyticsCard('Call Quality', result.metrics['call_quality'] ?? 88.0),
-        ]),
-        const SizedBox(height: 12),
-        _buildAnalyticsSection('TIMBRE ANALYSIS', Icons.waves, [
-          _buildAnalyticsCard('Brightness', result.metrics['brightness'] ?? 55.0),
-          _buildAnalyticsCard('Warmth', result.metrics['warmth'] ?? 68.0),
-          _buildAnalyticsCard('Nasality', result.metrics['nasality'] ?? 42.0),
-        ]),
-        const SizedBox(height: 12),
-        _buildAnalyticsSection('RHYTHM ANALYSIS', Icons.timeline, [
-          _buildAnalyticsCard('Tempo', null),
-          _buildAnalyticsCard('Regularity', null),
-        ], isNotPulsed: true),
-      ],
-    );
-  }
-
-  Widget _buildAnalyticsSection(String title, IconData icon, List<Widget> cards, {bool isNotPulsed = false}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: const Color(0xFF5FF7B6), size: 14),
-              const SizedBox(width: 8),
-              Text(title, style: GoogleFonts.oswald(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 1)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (isNotPulsed)
-            Column(
-              children: [
-                Row(
-                  children: cards.map((c) => Expanded(child: Padding(padding: const EdgeInsets.only(right: 8), child: c))).toList(),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text('Not a pulsed call', textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 10, color: Colors.white24, fontStyle: FontStyle.italic)),
-                ),
-              ],
-            )
-          else
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(children: cards.map((c) => Padding(padding: const EdgeInsets.only(right: 8), child: c)).toList()),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnalyticsCard(String label, double? value) {
-    final safeValue = value != null && value.isFinite ? value.clamp(0, 100) : null;
-    Color getColor(num? v) {
-      if (v == null) return Colors.white24;
-      if (v >= 80) return const Color(0xFF5FF7B6);
-      if (v >= 60) return const Color(0xFFB8E986);
-      return const Color(0xFFFFB74D);
-    }
-    
-    return Container(
-      width: 100,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: GoogleFonts.lato(fontSize: 9, color: Colors.white38, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          Text(
-            safeValue != null ? '${safeValue.toStringAsFixed(1)} %' : '--',
-            style: GoogleFonts.oswald(fontSize: 18, color: getColor(safeValue), fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          if (safeValue != null)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: safeValue / 100,
-                minHeight: 3,
-                backgroundColor: Colors.white.withValues(alpha: 0.1),
-                color: getColor(safeValue),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTipSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF5FF7B6).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF5FF7B6).withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.lightbulb_outline, color: Color(0xFF5FF7B6), size: 18),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Tip: These analytics help you understand the complete quality of your call, not just pitch and duration. Practice improving each dimension!',
-              style: GoogleFonts.lato(fontSize: 11, color: Colors.white70, height: 1.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(RatingResult? result) {
-    final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
-    final callResult = getCallUseCase.execute(widget.animalId);
-    
-    return callResult.fold(
-      (failure) => ElevatedButton(
-        onPressed: () => Navigator.of(context).pop(),
-        child: Text('GO BACK', style: GoogleFonts.oswald()),
-      ),
-      (animal) {
-        final bool showLeaderboard = AppConfig.instance.allowLeaderboard ||
-            (ref.watch(profileNotifierProvider).profile?.isPremium ?? false);
-
-        final Widget leaderboardButton;
-        if (showLeaderboard) {
-          leaderboardButton = SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => LeaderboardScreen(
-                      animalId: widget.animalId,
-                      animalName: animal.animalName,
-                    ),
-                  ),
-                );
-              },
-              icon: Icon(Icons.emoji_events_outlined, color: Theme.of(context).primaryColor),
-              label: Text('VIEW GLOBAL RANKINGS', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          );
-        } else {
-          leaderboardButton = SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => UpgradePrompter.show(context, featureName: 'Global Leaderboards'),
-              icon: const Icon(Icons.lock_outline, color: Colors.white38),
-              label: Text('GLOBAL RANKINGS (LOCKED)', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white38,
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          );
-        }
-
-        return Column(
-          children: [
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.refresh_rounded),
-                label: Text('TRY AGAIN', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5FF7B6),
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  if (result != null) {
-                    final scoreStr = result.score.toInt().toString();
-                    final text = 'I just scored $scoreStr% on the ${animal.animalName} call in OUTCALL! Think you can beat me? 🦌🦆';
-                    
-                    if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-                      try {
-                        final downloadsDir = await getDownloadsDirectory();
-                        if (downloadsDir != null) {
-                          final fileName = 'outcall_recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
-                          final destPath = '${downloadsDir.path}/$fileName';
-                          await File(widget.audioPath).copy(destPath);
-                          
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Saved to Downloads: $fileName (Opening folder...)'),
-                                backgroundColor: const Color(0xFF5FF7B6),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          }
-                          
-                          // Reveal the file in the file manager
-                          if (Platform.isLinux) {
-                             await Process.run('xdg-open', [downloadsDir.path]);
-                          } else if (Platform.isWindows) {
-                             await Process.run('explorer.exe', ['/select,', destPath]);
-                          } else if (Platform.isMacOS) {
-                             await Process.run('open', ['-R', destPath]);
-                          }
-
-                        }
-                      } catch (e) {
-                         if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error saving file: $e'),
-                                backgroundColor: Colors.redAccent,
-                              ),
-                            );
-                          }
-                      }
-                    } else {
-                      await Share.shareXFiles(
-                        [XFile(widget.audioPath)],
-                        text: text,
-                      );
-                    }
-                  }
-                },
-                icon: const Icon(Icons.share, color: Colors.white),
-                label: Text('SAVE / SHARE RECORDING', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            leaderboardButton,
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white70,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: Text('DONE & RETURN TO CAMP', style: GoogleFonts.oswald(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5)),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   double _toSafe(dynamic val) {
     if (val == null) return 0.0;
     if (val is num) return val.isFinite ? val.toDouble() : 0.0;
     return double.tryParse(val.toString()) ?? 0.0;
   }
-
-  Widget _buildGuidanceCard({required IconData icon, required String title, required String sub}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF5FF7B6), size: 24),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: GoogleFonts.oswald(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                const SizedBox(height: 2),
-                Text(sub, style: GoogleFonts.lato(fontSize: 12, color: Colors.white60)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
+

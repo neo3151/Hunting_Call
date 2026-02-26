@@ -63,7 +63,7 @@ final versionCheckServiceProvider = Provider<VersionCheckService>((ref) {
 /// Must be overridden in [ProviderScope] before the app runs.
 class PlatformEnvironment {
   final bool isFirebaseEnabled;
-  final bool isLinux;
+  final bool isDesktop;
   final bool useMocks;
   final SharedPreferences sharedPreferences;
   /// Pre-initialized auth repository (e.g. FiredartAuthRepository on Linux)
@@ -71,7 +71,7 @@ class PlatformEnvironment {
 
   const PlatformEnvironment({
     required this.isFirebaseEnabled,
-    required this.isLinux,
+    required this.isDesktop,
     required this.useMocks,
     required this.sharedPreferences,
     this.preInitializedAuthRepo,
@@ -84,7 +84,7 @@ class PlatformEnvironment {
 final apiGatewayProvider = Provider<ApiGateway?>((ref) {
   final env = ref.watch(platformEnvironmentProvider);
   if (!env.isFirebaseEnabled) return null;
-  if (env.isLinux) return FiredartApiGateway(fd.Firestore.instance);
+  if (env.isDesktop) return FiredartApiGateway(fd.Firestore.instance);
   return FirebaseApiGateway(FirebaseFirestore.instance);
 });
 

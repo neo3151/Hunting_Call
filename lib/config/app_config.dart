@@ -49,4 +49,7 @@ class AppConfig {
   bool get allowMap => isFull;
   bool get allowSocial => isFull;
   bool get allowLeaderboard => isFull;
+
+  // Constants
+  static const supportEmail = 'BenchmarkAppsLLC@gmail.com';
 }

@@ -7,6 +7,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -86,12 +87,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     try {
       final remoteConfig = RemoteConfigService(FirebaseRemoteConfig.instance);
       await remoteConfig.initialize();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.d('RemoteConfig init skipped: $e');
+    }
 
     try {
       final cloudAudio = ref.read(cloudAudioServiceProvider);
       await cloudAudio.init();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.d('CloudAudioService init skipped: $e');
+    }
   }
 
   @override

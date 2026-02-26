@@ -57,7 +57,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '654995904748',
     projectId: 'hunting-call-perfection',
     storageBucket: 'hunting-call-perfection.firebasestorage.app',
-    iosBundleId: 'com.example.huntingCallsPerfection',
+    iosBundleId: 'com.neo3151.huntingcalls',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
