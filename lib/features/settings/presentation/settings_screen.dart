@@ -284,11 +284,19 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                           ),
                           const Divider(color: Colors.white12),
-                          _settingsTile(
-                            icon: Icons.info_outline,
-                            title: 'App Version',
-                            subtitle: '1.5.1 (Build 17)',
-                            trailing: const SizedBox.shrink(),
+                          FutureBuilder<PackageInfo>(
+                            future: PackageInfo.fromPlatform(),
+                            builder: (context, snapshot) {
+                              final version = snapshot.hasData
+                                  ? '${snapshot.data!.version} (Build ${snapshot.data!.buildNumber})'
+                                  : 'Loading...';
+                              return _settingsTile(
+                                icon: Icons.info_outline,
+                                title: 'App Version',
+                                subtitle: version,
+                                trailing: const SizedBox.shrink(),
+                              );
+                            },
                           ),
                           const SizedBox(height: 24),
 
