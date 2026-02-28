@@ -32,6 +32,8 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
 
   @override
   void dispose() {
+    // Stop audio playback when leaving the detail screen
+    ref.read(audioServiceProvider).stop();
     super.dispose();
   }
 
@@ -61,10 +63,13 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
       backgroundColor: const Color(0xFF121212),
       body: Container(
         color: const Color(0xFF121212),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          physics: const BouncingScrollPhysics(),
-          children: [
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: ListView(
+              padding: EdgeInsets.zero,
+              physics: const BouncingScrollPhysics(),
+              children: [
             // Header Image
             Stack(
               children: [
@@ -289,6 +294,8 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
               ),
             ),
           ],
+        ),
+        ),
         ),
       ),
     );

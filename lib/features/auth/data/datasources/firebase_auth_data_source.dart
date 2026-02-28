@@ -19,7 +19,7 @@ class FirebaseAuthDataSource implements AuthRemoteDataSource {
     // Only create GoogleSignIn on platforms that support it (Android/iOS).
     // On Windows/Linux/macOS, we use signInWithProvider instead.
     if (_isGoogleSignInSupported) {
-      _googleSignIn = googleSignIn ?? GoogleSignIn();
+      _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
     }
   }
 
@@ -66,18 +66,30 @@ class FirebaseAuthDataSource implements AuthRemoteDataSource {
     }
   }
 
+  static bool _googleSignInInitialized = false;
+
   /// Mobile Google Sign-In via the google_sign_in plugin.
   Future<AuthUserModel> _signInWithGoogleMobile() async {
-    final GoogleSignInAccount? googleUser = await _googleSignIn!.signIn();
+    if (!_googleSignInInitialized) {
+      try {
+        await _googleSignIn!.initialize();
+      } catch (_) {}
+      _googleSignInInitialized = true;
+    }
+
+    final GoogleSignInAccount? googleUser = await _googleSignIn!.authenticate(scopeHint: ['email', 'profile']);
     
     if (googleUser == null) {
       throw Exception('Google Sign-In aborted by user');
     }
 
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+    final authClient = googleUser.authorizationClient;
+    final authz = await authClient.authorizationForScopes(['email', 'profile']) ??
+                  await authClient.authorizeScopes(['email', 'profile']);
 
     final OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
+      accessToken: authz.accessToken,
       idToken: googleAuth.idToken,
     );
 

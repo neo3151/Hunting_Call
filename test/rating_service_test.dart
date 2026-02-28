@@ -12,6 +12,7 @@ import 'package:outcall/features/analysis/domain/use_cases/calculate_score_use_c
 import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
 import 'package:outcall/features/library/domain/reference_call_model.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:outcall/features/profile/domain/entities/user_profile.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:outcall/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
 import 'package:outcall/features/daily_challenge/domain/failures/daily_challenge_failure.dart';
@@ -115,6 +116,10 @@ void main() {
     registerFallbackValue(RatingResult(score: 0, feedback: '', pitchHz: 0, metrics: {}));
     when(() => mockProfileRepository.saveResultForUser(any(), any(), any()))
         .thenAnswer((_) async => {});
+    // Mock getProfile for rolling average lookup
+    when(() => mockProfileRepository.getProfile(any())).thenAnswer(
+      (_) async => UserProfile(id: 'user1', name: 'Test', joinedDate: DateTime.now()),
+    );
   });
 
   tearDown(() {
@@ -179,6 +184,7 @@ void main() {
         isPulsedCall: false,
         callQualityScore: 100.0,
         noiseLevel: 0.0,
+        mfccCoefficients: const [],
         waveform: List.filled(100, 0.5),
       ));
 

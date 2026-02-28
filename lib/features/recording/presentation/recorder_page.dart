@@ -14,7 +14,6 @@ import 'package:outcall/features/rating/presentation/rating_screen.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
 
 import 'package:outcall/core/services/cloud_audio_service.dart';
-import 'package:outcall/features/recording/presentation/widgets/live_visualizer.dart';
 import 'package:outcall/features/recording/domain/visualization_settings.dart';
 import 'package:outcall/features/recording/presentation/call_selection_screen.dart';
 import 'package:outcall/core/utils/app_logger.dart';
@@ -40,7 +39,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
 
   // New: Amplitude buffer for smooth visualization
   final List<double> _amplitudeBuffer = [];
-  StreamSubscription<double>? _amplitudeSubscription;
+  ProviderSubscription<AsyncValue<double>>? _amplitudeSubscription;
 
   @override
   void initState() {
@@ -49,15 +48,15 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     // Initialize selected call
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.preselectedAnimalId != null) {
-        ref.read(selectedCallIdProvider.notifier).state = widget.preselectedAnimalId!;
+        ref.read(selectedCallIdProvider.notifier).setCallId(widget.preselectedAnimalId!);
       } else {
         final isPremium = ref.read(profileNotifierProvider).profile?.isPremium ?? false;
         final availableCalls = ReferenceDatabase.calls.where((c) => !ReferenceDatabase.isLocked(c.id, isPremium)).toList();
         
         if (availableCalls.isNotEmpty) {
-           ref.read(selectedCallIdProvider.notifier).state = availableCalls.first.id;
+           ref.read(selectedCallIdProvider.notifier).setCallId(availableCalls.first.id);
         } else {
-           ref.read(selectedCallIdProvider.notifier).state = ReferenceDatabase.calls.first.id;
+           ref.read(selectedCallIdProvider.notifier).setCallId(ReferenceDatabase.calls.first.id);
          }
       }
     });
@@ -73,11 +72,10 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     });
 
     // Subscribe to amplitude stream
-    // ignore: deprecated_member_use
-    _amplitudeSubscription = ref.read(amplitudeStreamProvider.stream).listen((amp) {
-      if (mounted) {
+    _amplitudeSubscription = ref.listenManual(amplitudeStreamProvider, (prev, next) {
+      if (next.hasValue && next.value != null && mounted) {
         setState(() {
-          _amplitudeBuffer.add(amp);
+          _amplitudeBuffer.add(next.value!);
           // Keep buffer size manageable (approx 5 seconds of history at 50ms intervals = 100 samples)
           if (_amplitudeBuffer.length > 100) {
             _amplitudeBuffer.removeAt(0);
@@ -91,7 +89,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   void dispose() {
     _autoStopTimer?.cancel();
     _playerCompleteSubscription?.cancel();
-    _amplitudeSubscription?.cancel();
+    _amplitudeSubscription?.close();
     _audioPlayer.dispose();
     _pulseController.dispose();
     super.dispose();
@@ -366,8 +364,6 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     final isRecording = recordingState.isRecording;
     final isCountingDown = recordingState.isCountingDown;
     
-    // New: Watch visualization settings
-    final vizSettings = ref.watch(visualizationSettingsProvider);
     final selectedCall = ReferenceDatabase.getById(selectedCallId);
 
     return BackgroundWrapper(
@@ -400,7 +396,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                             MaterialPageRoute(builder: (_) => const CallSelectionScreen()),
                           );
                           if (newId != null && mounted) {
-                            ref.read(selectedCallIdProvider.notifier).state = newId;
+                            ref.read(selectedCallIdProvider.notifier).setCallId(newId);
                           }
                         },
                         borderRadius: BorderRadius.circular(16),

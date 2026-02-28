@@ -9,8 +9,9 @@ class GoogleUserInfo {
   GoogleUserInfo({this.email, this.displayName});
 }
 
-class GoogleUserInfoNotifier extends StateNotifier<GoogleUserInfo?> {
-  GoogleUserInfoNotifier() : super(null);
+class GoogleUserInfoNotifier extends Notifier<GoogleUserInfo?> {
+  @override
+  GoogleUserInfo? build() => null;
 
   void setUserInfo(String? email, String? displayName) {
     state = GoogleUserInfo(email: email, displayName: displayName);
@@ -21,6 +22,4 @@ class GoogleUserInfoNotifier extends StateNotifier<GoogleUserInfo?> {
   }
 }
 
-final googleUserInfoProvider = StateNotifierProvider<GoogleUserInfoNotifier, GoogleUserInfo?>((ref) {
-  return GoogleUserInfoNotifier();
-});
+final googleUserInfoProvider = NotifierProvider<GoogleUserInfoNotifier, GoogleUserInfo?>(GoogleUserInfoNotifier.new);

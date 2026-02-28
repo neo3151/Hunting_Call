@@ -9,6 +9,7 @@ import 'package:outcall/core/services/audio_service.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/library/presentation/call_detail_screen.dart';
 import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/widgets/background_wrapper.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final String? userId;
@@ -21,6 +22,15 @@ class LibraryScreen extends ConsumerStatefulWidget {
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String _searchQuery = '';
   final List<String> _categories = ['All', 'Waterfowl', 'Big Game', 'Predators', 'Land Birds'];
+
+  @override
+  void dispose() {
+    // Attempt to stop audio when the entire library screen is closed
+    try {
+      ref.read(audioServiceProvider).stop();
+    } catch (_) {}
+    super.dispose();
+  }
 
   Future<void> _togglePlayback(ReferenceCall call) async {
     final profile = ref.read(profileNotifierProvider).profile;
@@ -119,7 +129,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text('CALL LIBRARY', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+          title: Text('CALL LIBRARY', style: GoogleFonts.oswald(
+              fontWeight: FontWeight.bold, 
+              letterSpacing: 1.5,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+            )),
           backgroundColor: Colors.transparent,
           elevation: 0,
           bottom: PreferredSize(
@@ -131,13 +145,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: TextField(
                     onChanged: (val) => setState(() => _searchQuery = val),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87),
                     decoration: InputDecoration(
                       hintText: 'Search calls...',
-                      hintStyle: const TextStyle(color: Colors.white54),
-                      prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                      hintStyle: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.black54),
+                      prefixIcon: Icon(Icons.search, color: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.black54),
                       filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.1),
+                      fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide.none,
@@ -151,7 +165,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   isScrollable: true,
                   indicatorColor: Theme.of(context).primaryColor,
                   labelColor: Theme.of(context).primaryColor,
-                  unselectedLabelColor: Colors.white54,
+                  unselectedLabelColor: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.black54,
                   labelStyle: GoogleFonts.oswald(fontWeight: FontWeight.bold),
                   tabs: _categories.map((cat) => Tab(text: cat.toUpperCase())).toList(),
                 ),
@@ -159,22 +173,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ),
           ),
         ),
-        body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/forest_background.png'),
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-              colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
-            ),
-          ),
+        body: BackgroundWrapper(
           child: SafeArea(
             top: false,
             child: TabBarView(
               children: _categories.map((category) {
                 final filtered = _getFilteredCalls(category);
+                final isDark = Theme.of(context).brightness == Brightness.dark;
                 if (filtered.isEmpty) {
-                  return const Center(child: Text('No calls found', style: TextStyle(color: Colors.white54)));
+                  return Center(child: Text('No calls found', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)));
                 }
                 return ListView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 220, 16, 16),
@@ -201,6 +208,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   Widget _buildCallCard(ReferenceCall call, bool isPlaying, bool isLocked) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -215,17 +223,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: isLocked
-                      ? Colors.black.withValues(alpha: 0.3)
+                      ? (isDark ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.1))
                       : isPlaying 
                           ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
-                          : Colors.white.withValues(alpha: 0.05),
+                          : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isLocked
-                        ? Colors.white.withValues(alpha: 0.05)
+                        ? (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05))
                         : isPlaying 
                             ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
-                            : Colors.white.withValues(alpha: 0.1),
+                            : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
                   ),
                 ),
               child: Column(
@@ -243,7 +251,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                             Text(
                               call.animalName,
                               style: GoogleFonts.oswald(
-                                color: Colors.white,
+                                color: isDark ? Colors.white : Colors.black87,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -251,7 +259,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                             Text(
                               call.callType,
                               style: TextStyle(
-                                color: isLocked ? Colors.white38 : Colors.white70,
+                                color: isLocked ? (isDark ? Colors.white38 : Colors.black38) : (isDark ? Colors.white70 : Colors.black54),
                                 fontSize: 14,
                               ),
                             ),
@@ -266,7 +274,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     const SizedBox(height: 12),
                     Text(
                       call.description,
-                      style: const TextStyle(color: Colors.white54, fontSize: 13, fontStyle: FontStyle.italic),
+                      style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 13, fontStyle: FontStyle.italic),
                     ),
                   ],
                   const SizedBox(height: 12),
@@ -279,7 +287,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       const Spacer(),
                       // Learn More Indicator
                       if (call.proTips.isNotEmpty)
-                        const Icon(Icons.info_outline, size: 16, color: Colors.white30),
+                        Icon(Icons.info_outline, size: 16, color: isDark ? Colors.white30 : Colors.black26),
                     ],
                   ),
                 ],
@@ -315,23 +323,25 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   Widget _buildMetricChip(IconData icon, String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: Colors.white70),
+          Icon(icon, size: 12, color: isDark ? Colors.white70 : Colors.black54),
           const SizedBox(width: 4),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+          Text(label, style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 11)),
         ],
       ),
     );
   }
   Widget _buildPlayButton(ReferenceCall call, bool isPlaying, bool isLocked) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: () => _togglePlayback(call),
       child: Icon(
@@ -339,8 +349,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ? Icons.lock_outline 
             : isPlaying ? Icons.stop_circle_rounded : Icons.play_circle_filled_rounded,
         color: isLocked
-            ? Colors.white24
-            : isPlaying ? Theme.of(context).primaryColor : Colors.white70,
+            ? (isDark ? Colors.white24 : Colors.black26)
+            : isPlaying ? Theme.of(context).primaryColor : (isDark ? Colors.white70 : Colors.black54),
         size: 40,
       ),
     );

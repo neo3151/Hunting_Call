@@ -184,7 +184,7 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.notificationsEnabled,
                               onChanged: notifier.setNotificationsEnabled,
-                              activeColor: Theme.of(context).primaryColor,
+                              activeThumbColor: Theme.of(context).primaryColor,
                             ),
                           ),
                           const Divider(color: Colors.white12),
@@ -197,7 +197,7 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.soundEffects,
                               onChanged: notifier.setSoundEffects,
-                              activeColor: Theme.of(context).primaryColor,
+                              activeThumbColor: Theme.of(context).primaryColor,
                             ),
                           ),
                           const Divider(color: Colors.white12),
@@ -208,7 +208,7 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: Switch(
                               value: settings.hapticFeedback,
                               onChanged: notifier.setHapticFeedback,
-                              activeColor: Theme.of(context).primaryColor,
+                              activeThumbColor: Theme.of(context).primaryColor,
                             ),
                           ),
                           const Divider(color: Colors.white12),

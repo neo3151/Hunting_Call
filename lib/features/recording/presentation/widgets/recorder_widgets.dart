@@ -43,14 +43,11 @@ class RecorderVisualizerSection extends ConsumerWidget {
             ),
             child: Stack(
               children: [
-                StreamBuilder<double>(
-                  stream: ref.watch(amplitudeStreamProvider).whenData((v) => v).asData != null
-                      // ignore: deprecated_member_use
-                      ? ref.watch(amplitudeStreamProvider.stream)
-                      : const Stream<double>.empty(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      amplitudeBuffer.add(snapshot.data!);
+                Builder(
+                  builder: (context) {
+                    final ampState = ref.watch(amplitudeStreamProvider);
+                    if (ampState.hasValue && ampState.value != null) {
+                      amplitudeBuffer.add(ampState.value!);
                       if (amplitudeBuffer.length > 100) {
                         amplitudeBuffer.removeAt(0);
                       }
@@ -241,8 +238,8 @@ class RecorderMicButton extends StatelessWidget {
                   ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
                   : isCountingDown
                       ? Text(
-                          '$countdownValue',
-                          style: GoogleFonts.oswald(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white),
+                          countdownValue == 0 ? 'GO' : '$countdownValue',
+                          style: GoogleFonts.oswald(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white),
                         )
                       : Icon(isRecording ? Icons.stop : Icons.mic, color: Colors.white, size: 36),
             ),

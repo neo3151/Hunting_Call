@@ -28,8 +28,7 @@ class WeatherScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(right: 16.0),
             child: TextButton(
               onPressed: () {
-                ref.read(temperatureUnitProvider.notifier).state = 
-                  unit == TemperatureUnit.celsius ? TemperatureUnit.fahrenheit : TemperatureUnit.celsius;
+                ref.read(temperatureUnitProvider.notifier).toggleUnit();
               },
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,

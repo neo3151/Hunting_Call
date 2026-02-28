@@ -42,6 +42,9 @@ class AudioAnalysis {
   final double callQualityScore; // 0-100, overall technical quality
   final double noiseLevel; // 0-100, background noise estimate
   
+  /// MFCC coefficients for timbre comparison (typically 13 values)
+  final List<double> mfccCoefficients;
+  
   /// Visualization
   final List<double> waveform; // Normalized amplitudes for display
   
@@ -70,6 +73,7 @@ class AudioAnalysis {
     required this.isPulsedCall,
     required this.callQualityScore,
     required this.noiseLevel,
+    required this.mfccCoefficients,
     required this.waveform,
   });
 
@@ -107,6 +111,7 @@ class AudioAnalysis {
       isPulsedCall: false,
       callQualityScore: 50.0,
       noiseLevel: 20.0,
+      mfccCoefficients: const [],
       waveform: List.filled(100, 0.1),
     );
   }

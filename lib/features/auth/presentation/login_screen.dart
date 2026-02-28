@@ -735,23 +735,44 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Recover Password', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          const Text(
-            'Enter your email address and we will send you a link to reset your password.',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
+          Text(
+            'RECOVER PASSWORD', 
+            style: GoogleFonts.oswald(
+              color: Colors.white, 
+              fontSize: 24, 
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+            )
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Enter your email address and we will send you a secure link to reset your password.',
+            style: GoogleFonts.lato(
+              color: Colors.white70, 
+              fontSize: 14,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 24),
           TextField(
             controller: _emailController,
             autofocus: true,
-            style: const TextStyle(color: Colors.white),
-            cursorColor: Colors.greenAccent,
+            style: GoogleFonts.lato(color: Colors.white, fontSize: 16),
+            cursorColor: Theme.of(context).primaryColor,
             decoration: InputDecoration(
               labelText: 'Email Address',
-              labelStyle: const TextStyle(color: Colors.white54),
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
-              focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+              labelStyle: GoogleFonts.lato(color: Colors.white54, fontSize: 14),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15))
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2)
+              ),
+              filled: true,
+              fillColor: Colors.white.withValues(alpha: 0.05),
+              prefixIcon: const Icon(Icons.email_outlined, color: Colors.white54),
             ),
           ),
           const SizedBox(height: 24),
@@ -760,11 +781,20 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: const Color(0xFF121212),
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
             ),
             child: _isLoading 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Color(0xFF121212), strokeWidth: 2))
-                : const Text('SEND RESET LINK', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Color(0xFF121212), strokeWidth: 2.5))
+                : Text(
+                    'SEND RESET LINK', 
+                    style: GoogleFonts.oswald(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    )
+                  ),
           ),
         ],
       ),

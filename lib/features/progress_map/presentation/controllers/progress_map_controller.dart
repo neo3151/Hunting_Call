@@ -43,7 +43,7 @@ class ProgressMapState {
 //  CONTROLLER
 // ──────────────────────────────────────────────────────────
 
-class ProgressMapNotifier extends AutoDisposeNotifier<ProgressMapState> {
+class ProgressMapNotifier extends Notifier<ProgressMapState> {
   @override
   ProgressMapState build() {
     return const ProgressMapState();
@@ -152,9 +152,7 @@ class ProgressMapNotifier extends AutoDisposeNotifier<ProgressMapState> {
 }
 
 final progressMapNotifierProvider =
-    AutoDisposeNotifierProvider<ProgressMapNotifier, ProgressMapState>(() {
-  return ProgressMapNotifier();
-});
+    NotifierProvider.autoDispose<ProgressMapNotifier, ProgressMapState>(ProgressMapNotifier.new);
 
 // ──────────────────────────────────────────────────────────
 //  HELPER

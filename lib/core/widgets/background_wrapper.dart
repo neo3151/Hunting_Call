@@ -52,7 +52,9 @@ class BackgroundWrapper extends StatelessWidget {
         // Overlay for readability
         Positioned.fill(
           child: Container(
-            color: Colors.black.withValues(alpha: overlayOpacity),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withValues(alpha: overlayOpacity)
+                : Colors.white.withValues(alpha: overlayOpacity),
           ),
         ),
         

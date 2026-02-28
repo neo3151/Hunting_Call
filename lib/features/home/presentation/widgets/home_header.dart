@@ -19,6 +19,7 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
       child: BackdropFilter(
@@ -26,10 +27,10 @@ class HomeHeader extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A).withValues(alpha: 0.4),
+            color: isDark ? const Color(0xFF1A1A1A).withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.6),
             borderRadius:
                 const BorderRadius.vertical(bottom: Radius.circular(32)),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -40,7 +41,7 @@ class HomeHeader extends StatelessWidget {
                   children: [
                     Text('WELCOME BACK,',
                         style: GoogleFonts.oswald(
-                            color: Colors.white70,
+                            color: isDark ? Colors.white70 : Colors.black54,
                             fontSize: 28,
                             fontWeight: FontWeight.w300,
                             letterSpacing: 1.0)),
@@ -50,7 +51,7 @@ class HomeHeader extends StatelessWidget {
                         style: GoogleFonts.oswald(
                             fontSize: 48,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: isDark ? Colors.white : Colors.black87,
                             height: 1.1)),
                   ],
                 ),
@@ -60,9 +61,9 @@ class HomeHeader extends StatelessWidget {
                 children: [
                   _buildCloudBadge(),
                   const SizedBox(width: 8),
-                  _buildSettingsButton(),
+                  _buildSettingsButton(isDark),
                   const SizedBox(width: 8),
-                  _buildSignOutButton(context),
+                  _buildSignOutButton(context, isDark),
                 ],
               ),
             ],
@@ -108,24 +109,24 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsButton() {
+  Widget _buildSettingsButton(bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
         shape: BoxShape.circle,
       ),
       child: IconButton(
         onPressed: onSettings,
-        icon: const Icon(Icons.settings_outlined, color: Colors.white70, size: 22),
+        icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white70 : Colors.black54, size: 22),
         tooltip: 'Settings',
       ),
     );
   }
 
-  Widget _buildSignOutButton(BuildContext context) {
+  Widget _buildSignOutButton(BuildContext context, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
         shape: BoxShape.circle,
       ),
       child: IconButton(
@@ -133,18 +134,18 @@ class HomeHeader extends StatelessWidget {
           final confirmed = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: const Color(0xFF1A1A1A),
+              backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
               title: Text('Sign Out?',
-                  style: GoogleFonts.oswald(color: Colors.white)),
-              content: const Text(
+                  style: GoogleFonts.oswald(color: isDark ? Colors.white : Colors.black87)),
+              content: Text(
                 'Are you sure you want to sign out?',
-                style: TextStyle(color: Colors.white70),
+                style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('CANCEL',
-                      style: TextStyle(color: Colors.white54)),
+                  child: Text('CANCEL',
+                      style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
@@ -160,7 +161,7 @@ class HomeHeader extends StatelessWidget {
             onSignOut();
           }
         },
-        icon: const Icon(Icons.logout, color: Colors.white70),
+        icon: Icon(Icons.logout, color: isDark ? Colors.white70 : Colors.black54),
         tooltip: 'Sign Out',
       ),
     );

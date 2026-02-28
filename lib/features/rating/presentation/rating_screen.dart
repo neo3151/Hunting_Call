@@ -307,11 +307,14 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   )
                 : result == null
                     ? const Center(child: CircularProgressIndicator(color: Color(0xFF5FF7B6)))
-                    : Scrollbar(
-                        controller: _scrollController,
-                        thumbVisibility: true,
-                        trackVisibility: true,
-                        child: ListView(
+                    : Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: Scrollbar(
+                            controller: _scrollController,
+                            thumbVisibility: true,
+                            trackVisibility: true,
+                            child: ListView(
                           controller: _scrollController,
                           primary: false,
                           padding: EdgeInsets.fromLTRB(20, topPadding, 20, 80),
@@ -348,6 +351,8 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                           ],
                         ),
                       ),
+                    ),
+                  ),
       ),
     );
   }

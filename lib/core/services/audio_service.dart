@@ -94,6 +94,9 @@ final audioServiceProvider = Provider<AudioService>((ref) {
 });
 
 /// State provider for reactive UI updates when playback changes
-final currentlyPlayingIdProvider = StateProvider<String?>((ref) {
-  return null;
-});
+class CurrentlyPlayingIdNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+}
+
+final currentlyPlayingIdProvider = NotifierProvider<CurrentlyPlayingIdNotifier, String?>(CurrentlyPlayingIdNotifier.new);

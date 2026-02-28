@@ -59,16 +59,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         final shouldExit = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFF1A1A1A),
-            title: Text('Exit App?', style: GoogleFonts.oswald(color: Colors.white)),
-            content: Text('Are you sure you want to leave the Hunt?', style: GoogleFonts.lato(color: Colors.white70)),
+            backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+            title: Text('Exit App?', style: GoogleFonts.oswald(color: isDark ? Colors.white : Colors.black87)),
+            content: Text('Are you sure you want to leave the Hunt?', style: GoogleFonts.lato(color: isDark ? Colors.white70 : Colors.black54)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+                child: Text('CANCEL', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
@@ -103,10 +104,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           const OfflineBanner(),
                           Expanded(
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 600),
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 8),
                                   _buildDailyChallenge(context, activeUserId),
@@ -118,7 +122,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         style: GoogleFonts.oswald(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white70)),
+                                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54)),
                                     const SizedBox(height: 16),
                                     RecentActivityCard(
                                         historyItem:
@@ -127,6 +131,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ],
                               ),
                             ),
+                          ),
+                          ),
                           ),
                         ],
                       ),
@@ -140,6 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildErrorState(String errorMessage) {
     final friendlyMessage = FriendlyErrorFormatter.format(errorMessage);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -154,7 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Text(
                   "Couldn't load your profile",
                   style: GoogleFonts.oswald(
-                    color: Colors.white,
+                    color: isDark ? Colors.white : Colors.black87,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -164,7 +171,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Text(
                   friendlyMessage,
                   style:
-                      const TextStyle(color: Colors.white54, fontSize: 12),
+                      TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -179,7 +186,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             label: const Text('Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: const Color(0xFF121212),
+              foregroundColor: isDark ? const Color(0xFF121212) : Colors.white,
             ),
           ),
           const SizedBox(height: 12),

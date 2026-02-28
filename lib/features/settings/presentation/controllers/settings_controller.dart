@@ -23,7 +23,7 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   }
 
   Future<void> updateSetting(AppSettings Function(AppSettings) updater) async {
-    final current = state.valueOrNull ?? const AppSettings();
+    final current = state.value ?? const AppSettings();
     final updated = updater(current);
     state = AsyncValue.data(updated);
 
@@ -74,6 +74,4 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
 }
 
 final settingsNotifierProvider =
-    AsyncNotifierProvider<SettingsNotifier, AppSettings>(() {
-  return SettingsNotifier();
-});
+    AsyncNotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);

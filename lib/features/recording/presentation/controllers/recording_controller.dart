@@ -170,14 +170,19 @@ class RecordingNotifier extends Notifier<RecordingState> {
   }
 }
 
-final recordingNotifierProvider = NotifierProvider<RecordingNotifier, RecordingState>(() {
-  return RecordingNotifier();
-});
+final recordingNotifierProvider = NotifierProvider<RecordingNotifier, RecordingState>(RecordingNotifier.new);
 
 /// State for the selected call
-final selectedCallIdProvider = StateProvider<String>((ref) {
-  return ReferenceDatabase.calls.isNotEmpty ? ReferenceDatabase.calls.first.id : 'unknown';
-});
+class SelectedCallIdNotifier extends Notifier<String> {
+  @override
+  String build() => ReferenceDatabase.calls.isNotEmpty ? ReferenceDatabase.calls.first.id : 'unknown';
+
+  void setCallId(String id) {
+    state = id;
+  }
+}
+
+final selectedCallIdProvider = NotifierProvider<SelectedCallIdNotifier, String>(SelectedCallIdNotifier.new);
 
 /// Stream of amplitude changes for visualization
 final amplitudeStreamProvider = StreamProvider<double>((ref) {

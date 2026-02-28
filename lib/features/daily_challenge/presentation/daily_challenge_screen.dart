@@ -64,11 +64,14 @@ class DailyChallengeScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildHeader(),
                       const SizedBox(height: 32),
@@ -91,6 +94,8 @@ class DailyChallengeScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+              ),
+              ),
               ),
             ],
           ),

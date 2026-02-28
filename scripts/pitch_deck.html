@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outcall Beta - Exclusive Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f1011;
+            --surface-color: #1a1c1e;
+            --accent-green: #4ade80;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.6;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(30,35,40,0.8) 0%, rgba(15,16,17,1) 100%);
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Elements */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        h1, h2, h3 {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        h1 span {
+            color: var(--accent-green);
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: var(--accent-green);
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(74, 222, 128, 0.2);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: rgba(248, 250, 252, 0.9);
+        }
+
+        .highlight-text {
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 2rem;
+        }
+
+        .feature-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 3px solid var(--accent-green);
+            padding: 24px;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .feature-box h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .feature-box p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 0;
+        }
+
+        .signature {
+            margin-top: 4rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 2rem;
+        }
+
+        .signature h3 {
+            color: var(--accent-green);
+            margin-bottom: 0.2rem;
+            font-size: 1.4rem;
+        }
+
+        .signature p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Ambient glowing orbs in background */
+        .glow-orb-1 {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(74,222,128,0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        .glow-orb-2 {
+            position: absolute;
+            bottom: -50px;
+            left: -150px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+        }
+
+        .call-to-action {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(74, 222, 128, 0.05);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 12px;
+        }
+
+        .call-to-action h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="glow-orb-1"></div>
+        <div class="glow-orb-2"></div>
+        
+        <div class="content-wrapper">
+            <h1>Out<span>Call</span></h1>
+            <div class="subtitle">Master the Art of the Hunt.</div>
+
+            <div class="glass-panel">
+                <p>Hey there,</p>
+                
+                <p>If you're reading this, it's because we respect your expertise in the field and the community you've built. We aren't sending this to everyone.</p>
+
+                <p>We’re a small team of developers and hunters who got tired of the same old "guess and check" method of practicing our calls in the truck on the way to the blind. You listen to a master track, you blow your call, and you *hope* you hit the right pitch and cadence.</p>
+
+                <p>We decided to fix that. We built <span class="highlight-text">Outcall</span>.</p>
+            </div>
+
+            <h2>What is Outcall?</h2>
+            <div class="glass-panel" style="padding: 24px;">
+                <p style="margin-bottom: 0;">Outcall is a premium mobile application that uses live audio frequency analysis to grade and score your hunting call techniques in real-time. It’s a digital coach in your pocket, replacing guesswork with hard acoustic data.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <h3>Real-Time Spectrograms</h3>
+                    <p>Visually see where your pitch and duration differ from the master reference call on the screen.</p>
+                </div>
+                <div class="feature-box">
+                    <h3>Master Library</h3>
+                    <p>Built-in, high-fidelity reference tracks covering waterfowl, predator, and big game.</p>
+                </div>
+                <div class="feature-box">
+                    <h3>Hunter Profiles</h3>
+                    <p>Track your progression, save your high scores, and see your improvement over the off-season.</p>
+                </div>
+                <div class="feature-box">
+                    <h3>Off-Grid Capable</h3>
+                    <p>Designed for the field. Outcall's core analysis engine works completely offline. No cell service needed.</p>
+                </div>
+            </div>
+
+            <div class="call-to-action">
+                <h3>Exclusive Beta Access</h3>
+                <p style="margin-bottom: 0;">We are currently in a closed Beta phase. If you are interested in getting hands-on with the app before it hits the public, reply to this email. We’d love to get you an unlocked TestFlight/APK build and hear your raw, unfiltered feedback.</p>
+            </div>
+
+            <div class="signature">
+                <h3>The Outcall Team</h3>
+                <p>Built by hunters, for hunters.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

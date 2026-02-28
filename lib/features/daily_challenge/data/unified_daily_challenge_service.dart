@@ -20,7 +20,10 @@ class UnifiedDailyChallengeService implements DailyChallengeRepository {
     // 1. Try to fetch from Cloud
     if (_apiGateway != null) {
       try {
-        final docData = await _apiGateway!.getDocument('config', 'daily_challenge');
+        final docData = await _apiGateway!
+            .getDocument('config', 'daily_challenge')
+            .timeout(const Duration(seconds: 3));
+            
         if (docData != null && docData.containsKey('callId')) {
           final String callId = docData['callId'] as String;
           
@@ -32,7 +35,7 @@ class UnifiedDailyChallengeService implements DailyChallengeRepository {
           return callId;
         }
       } catch (e) {
-        AppLogger.d('⚠️ Failed to fetch Daily Challenge from Cloud: $e');
+        AppLogger.d('⚠️ Failed to fetch Daily Challenge from Cloud (or timed out): $e');
         // Let it fall through to cache
       }
     }

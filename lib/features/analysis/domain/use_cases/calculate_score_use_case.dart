@@ -70,7 +70,7 @@ class CalculateScoreUseCase {
     );
     
     final durationScore = _calculateDurationScore(
-      params.userAnalysis.totalDurationSec,
+      params.userAnalysis.activeDurationSec, // Use active (trimmed) duration, not file length
       reference.idealDurationSec,
       reference.toleranceDuration,
     );
@@ -193,11 +193,12 @@ class CalculateScoreUseCase {
   
   /// Calculate tone quality score
   /// Compares brightness, warmth, and nasality against reference
+  /// When MFCC data is available, blends MFCC cosine similarity (60%) with tonal metrics (40%)
   ToneScore _calculateToneScore(
     AudioAnalysis userAnalysis,
     AudioAnalysis? referenceAnalysis,
   ) {
-    double score = 100.0;
+    double toneMetricScore = 100.0;
     
     if (referenceAnalysis != null) {
       final brightnessDiff = (userAnalysis.brightness - referenceAnalysis.brightness).abs();
@@ -209,21 +210,51 @@ class CalculateScoreUseCase {
       final warmthPenalty = warmthDiff > 10 ? (warmthDiff - 10) * 1.5 : 0.0;
       final nasalityPenalty = nasalityDiff > 10 ? (nasalityDiff - 10) * 2.5 : 0.0;
       
-      score = max(0, 100 - (brightnessPenalty + warmthPenalty + nasalityPenalty));
+      toneMetricScore = max(0, 100 - (brightnessPenalty + warmthPenalty + nasalityPenalty));
     } else {
       // Fallback: use the highest of clarity or harmonics. 
       // Mathematical pure signals lack SNR 'clarity' but have perfect harmonics.
       // Because FFT energy distribution naturally caps pure harmonics around 80%,
       // we apply a 1.25x buffer so a perfectly executed call can hit 100%.
-      score = min(100.0, max(userAnalysis.toneClarity, userAnalysis.harmonicRichness) * 1.25);
+      toneMetricScore = min(100.0, max(userAnalysis.toneClarity, userAnalysis.harmonicRichness) * 1.25);
+    }
+    
+    // MFCC-based timbre comparison (cosine similarity)
+    double finalScore = toneMetricScore;
+    if (referenceAnalysis != null &&
+        userAnalysis.mfccCoefficients.isNotEmpty &&
+        referenceAnalysis.mfccCoefficients.isNotEmpty &&
+        userAnalysis.mfccCoefficients.length == referenceAnalysis.mfccCoefficients.length) {
+      final mfccScore = _calculateMFCCScore(
+        userAnalysis.mfccCoefficients,
+        referenceAnalysis.mfccCoefficients,
+      );
+      // Blend: MFCC 60%, existing tonal metrics 40%
+      finalScore = mfccScore * 0.6 + toneMetricScore * 0.4;
     }
     
     return ToneScore(
-      score: score,
+      score: finalScore,
       brightness: userAnalysis.brightness,
       warmth: userAnalysis.warmth,
       nasality: userAnalysis.nasality,
     );
+  }
+  
+  /// Calculate MFCC cosine similarity score (0-100)
+  double _calculateMFCCScore(List<double> userMFCC, List<double> refMFCC) {
+    double dotProduct = 0.0;
+    double normA = 0.0;
+    double normB = 0.0;
+    for (int i = 0; i < userMFCC.length; i++) {
+      dotProduct += userMFCC[i] * refMFCC[i];
+      normA += userMFCC[i] * userMFCC[i];
+      normB += refMFCC[i] * refMFCC[i];
+    }
+    if (normA == 0 || normB == 0) return 50.0;
+    final cosineSim = dotProduct / (sqrt(normA) * sqrt(normB));
+    // cosineSim ranges from -1 to 1; map to 0-100
+    return ((cosineSim + 1.0) / 2.0 * 100.0).clamp(0.0, 100.0);
   }
   
   /// Calculate rhythm and stability score

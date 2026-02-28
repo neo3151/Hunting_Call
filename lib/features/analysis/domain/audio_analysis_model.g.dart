@@ -42,6 +42,9 @@ AudioAnalysis _$AudioAnalysisFromJson(Map<String, dynamic> json) =>
       isPulsedCall: json['isPulsedCall'] as bool,
       callQualityScore: (json['callQualityScore'] as num).toDouble(),
       noiseLevel: (json['noiseLevel'] as num).toDouble(),
+      mfccCoefficients: (json['mfccCoefficients'] as List<dynamic>)
+          .map((e) => (e as num).toDouble())
+          .toList(),
       waveform: (json['waveform'] as List<dynamic>)
           .map((e) => (e as num).toDouble())
           .toList(),
@@ -73,5 +76,6 @@ Map<String, dynamic> _$AudioAnalysisToJson(AudioAnalysis instance) =>
       'isPulsedCall': instance.isPulsedCall,
       'callQualityScore': instance.callQualityScore,
       'noiseLevel': instance.noiseLevel,
+      'mfccCoefficients': instance.mfccCoefficients,
       'waveform': instance.waveform,
     };

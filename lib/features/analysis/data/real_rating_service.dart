@@ -139,6 +139,24 @@ class RealRatingService implements RatingService {
       final rhythmScore = analysisResult.rhythmScore.score;
       final durationScore = analysisResult.durationScore.score;
       final detectedPitch = analysisResult.pitchScore.actualHz;
+      final rawScore = analysisResult.overallScore;
+      
+      // Rolling average: blend current score with up to 2 previous attempts for this animal
+      double displayScore = rawScore;
+      try {
+        final profile = await profileRepository.getProfile(userId);
+        final recentForAnimal = profile.history
+            .where((h) => h.animalId == animalType)
+            .take(2) // last 2 prior attempts (current hasn't been saved yet)
+            .map((h) => h.result.score)
+            .toList();
+        if (recentForAnimal.isNotEmpty) {
+          final allScores = [rawScore, ...recentForAnimal];
+          displayScore = allScores.reduce((a, b) => a + b) / allScores.length;
+        }
+      } catch (e) {
+        AppLogger.d('Rolling average lookup failed, using raw score: $e');
+      }
       
       String technicalFeedback = '';
       final bool pitchIsGood = pitchScore >= 85;
@@ -163,7 +181,7 @@ class RealRatingService implements RatingService {
       });
 
       final result = RatingResult(
-        score: analysisResult.overallScore,
+        score: displayScore,
         feedback: '$technicalFeedback $personalityCritique',
         pitchHz: analysisResult.pitchScore.actualHz,
         metrics: {
@@ -174,6 +192,7 @@ class RealRatingService implements RatingService {
           'score_timbre': timbreScore,
           'score_rhythm': rhythmScore,
           'score_duration': durationScore,
+          'rawScore': rawScore,
           'avg_volume': userAnalysis.averageVolume * 100,
           'peak_volume': userAnalysis.peakVolume * 100,
           'consistency': userAnalysis.volumeConsistency,

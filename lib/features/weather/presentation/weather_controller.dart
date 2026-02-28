@@ -49,18 +49,16 @@ class WeatherState {
   }
 }
 
-final weatherControllerProvider = StateNotifierProvider<WeatherController, WeatherState>((ref) {
-  return WeatherController(ref);
-});
+final weatherControllerProvider = NotifierProvider<WeatherController, WeatherState>(WeatherController.new);
 
-class WeatherController extends StateNotifier<WeatherState> {
-  final Ref ref;
-  
-  WeatherController(this.ref) : super(WeatherState(
-    weather: const AsyncValue.loading(),
-    solunar: const AsyncValue.loading(),
-  )) {
-    loadData();
+class WeatherController extends Notifier<WeatherState> {
+  @override
+  WeatherState build() {
+    Future.microtask(loadData);
+    return WeatherState(
+      weather: const AsyncValue.loading(),
+      solunar: const AsyncValue.loading(),
+    );
   }
 
   Future<void> loadData() async {

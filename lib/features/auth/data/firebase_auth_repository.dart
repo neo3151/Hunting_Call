@@ -66,16 +66,21 @@ class FirebaseAuthRepository implements AuthRepository {
       
       if (Platform.isAndroid || Platform.isIOS) {
         // Use native Google Sign-In for mobile to avoid redirect issues
-        final GoogleSignIn googleSignIn = GoogleSignIn(
-          scopes: ['email', 'profile'],
-        );
+        final GoogleSignIn googleSignIn = GoogleSignIn.instance;
+        try {
+          await googleSignIn.initialize();
+        } catch (_) {}
         
-        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+        final GoogleSignInAccount? googleUser = await googleSignIn.authenticate(scopeHint: ['email', 'profile']);
         if (googleUser == null) throw Exception('Google Sign-In canceled by user');
         
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+        final authClient = googleUser.authorizationClient;
+        final authz = await authClient.authorizationForScopes(['email', 'profile']) ?? 
+                      await authClient.authorizeScopes(['email', 'profile']);
+        
         final OAuthCredential credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
+          accessToken: authz.accessToken,
           idToken: googleAuth.idToken,
         );
         

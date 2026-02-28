@@ -82,14 +82,18 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         samples[i] = sample / 32768.0;
       }
 
+      // Calibrate adaptive noise floor from the recording
+      final noiseFloor = _calibrateNoiseFloor(samples, sampleRate);
+
       // Perform analyses (using static helpers)
-      final pitchAnalysis = _analyzePitch(samples, sampleRate);
+      final pitchAnalysis = _analyzePitch(samples, sampleRate, noiseFloor);
       final volumeAnalysis = _analyzeVolume(samples);
       final toneAnalysis = _analyzeTone(samples, sampleRate);
       final timbreAnalysis = _analyzeTimbre(samples, sampleRate);
-      final durationAnalysis = _analyzeDuration(samples, sampleRate, totalDuration);
-      final rhythmAnalysis = _analyzeRhythm(samples, sampleRate);
+      final durationAnalysis = _analyzeDuration(samples, sampleRate, totalDuration, noiseFloor);
+      final rhythmAnalysis = _analyzeRhythm(samples, sampleRate, noiseFloor);
       final quality = _assessQuality(samples, sampleRate);
+      final mfccs = _extractMFCCs(samples, sampleRate);
       
       // Generate waveform (expensive, do in isolate)
       final waveform = _extractWaveform(samples, 100);
@@ -132,14 +136,45 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         callQualityScore: quality['score']!,
         noiseLevel: quality['noise']!,
         
+        // Timbre - MFCC
+        mfccCoefficients: mfccs,
+        
         // Visualization
         waveform: waveform,
         pitchTrack: pitchAnalysis['pitchTrack'] as List<double>,
       );
   }
 
+  /// Calibrate adaptive noise floor from the quietest frames in the recording.
+  /// Returns the RMS energy of the bottom 10% of frames.
+  static double _calibrateNoiseFloor(Float64List samples, int sampleRate) {
+    const frameDuration = 0.05; // 50ms frames
+    final frameSize = (sampleRate * frameDuration).toInt();
+    final frameCount = samples.length ~/ frameSize;
+    if (frameCount == 0) return 0.005;
+
+    final List<double> frameEnergies = [];
+    for (int i = 0; i < frameCount; i++) {
+      final start = i * frameSize;
+      double sum = 0.0;
+      for (int j = start; j < start + frameSize && j < samples.length; j++) {
+        sum += samples[j] * samples[j];
+      }
+      frameEnergies.add(sqrt(sum / frameSize));
+    }
+
+    frameEnergies.sort();
+    final bottomCount = max(1, (frameEnergies.length * 0.10).ceil());
+    double floorSum = 0.0;
+    for (int i = 0; i < bottomCount; i++) {
+      floorSum += frameEnergies[i];
+    }
+    // Clamp to minimum of 0.005 to avoid zero-floor on dead silence
+    return max(0.005, floorSum / bottomCount);
+  }
+
   /// Analyze pitch characteristics
-  static Map<String, dynamic> _analyzePitch(Float64List samples, int sampleRate) {
+  static Map<String, dynamic> _analyzePitch(Float64List samples, int sampleRate, double noiseFloor) {
     const chunkSize = 4096;
     final chunks = samples.length ~/ chunkSize;
     
@@ -153,13 +188,13 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       
       if (chunk.length < chunkSize) continue;
       
-      // Calculate chunk energy - skip if too quiet
+      // Calculate chunk energy - skip if below adaptive noise floor
       double energy = 0.0;
       for (var s in chunk) {
         energy += s * s;
       }
       energy = sqrt(energy / chunkSize);
-      if (energy < 0.01) continue; // Skip near-silent chunks
+      if (energy < noiseFloor * 1.5) continue; // Adaptive threshold
       
       // Apply window
       final windowed = Float64List(chunkSize);
@@ -184,14 +219,27 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       }
       
       if (peaks.isNotEmpty) {
-        // Preference for fundamental: 
-        // If we find a peak that is at least 30% of maxMag but at a lower frequency, 
-        // it might be the fundamental.
-        peaks.sort((a, b) => a.key.compareTo(b.key)); // Sort by frequency
+        // Boost peaks in the 80-400 Hz fundamental band (deer/turkey range)
+        // This makes the system prefer biological fundamentals over harmonics
+        final boostedPeaks = peaks.map((p) {
+          final freq = fft.frequency(p.key, sampleRate.toDouble());
+          final boost = (freq >= 80 && freq <= 400) ? 1.5 : 1.0;
+          return MapEntry(p.key, p.value * boost);
+        }).toList();
+        
+        // Recalculate maxMag with boosted values
+        double boostedMax = 0.0;
+        for (var p in boostedPeaks) {
+          if (p.value > boostedMax) boostedMax = p.value;
+        }
+        
+        // Preference for fundamental:
+        // Sort by frequency, pick lowest peak above 30% of boosted max
+        boostedPeaks.sort((a, b) => a.key.compareTo(b.key));
         
         int selectedIdx = -1;
-        for (var peak in peaks) {
-          if (peak.value > maxMag * 0.3) {
+        for (var peak in boostedPeaks) {
+          if (peak.value > boostedMax * 0.3) {
             selectedIdx = peak.key;
             break;
           }
@@ -417,13 +465,9 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Analyze duration characteristics
-  static Map<String, double> _analyzeDuration(Float64List samples, int sampleRate, double totalDuration) {
-    // Calculate energy threshold for silence detection
-    double threshold = 0.0;
-    for (var sample in samples) {
-      threshold += sample.abs();
-    }
-    threshold = (threshold / samples.length) * 0.3; // 30% of average
+  static Map<String, double> _analyzeDuration(Float64List samples, int sampleRate, double totalDuration, double noiseFloor) {
+    // Use adaptive noise floor for silence detection (2× floor for margin)
+    final threshold = noiseFloor * 2.0;
     
     int activeCount = 0;
     for (var sample in samples) {
@@ -440,7 +484,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   }
 
   /// Analyze rhythm characteristics
-  static Map<String, dynamic> _analyzeRhythm(Float64List samples, int sampleRate) {
+  static Map<String, dynamic> _analyzeRhythm(Float64List samples, int sampleRate, double noiseFloor) {
     // Simple onset detection using energy spikes
     const windowSize = 2205; // ~0.05 sec
     final List<double> energy = [];
@@ -453,10 +497,10 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       energy.add(sqrt(sum / windowSize));
     }
     
-    // Find peaks (onsets)
+    // Find peaks (onsets) — ensure threshold stays above adaptive noise floor
     final List<double> pulseTimes = [];
     final double avgEnergy = energy.reduce((a, b) => a + b) / energy.length;
-    final double threshold = avgEnergy * 1.5;
+    final double threshold = max(avgEnergy * 1.5, noiseFloor * 3.0);
     
     for (int i = 1; i < energy.length - 1; i++) {
       if (energy[i] > threshold &&
@@ -521,6 +565,87 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
 
   static double _hanningWindow(int n, int N) {
     return 0.5 * (1 - cos(2 * pi * n / (N - 1)));
+  }
+
+  /// Extract Mel-Frequency Cepstral Coefficients (MFCC) for timbre comparison.
+  /// Returns averaged MFCC vector across all frames.
+  static List<double> _extractMFCCs(Float64List samples, int sampleRate, {int numCoeffs = 13, int numFilters = 26}) {
+    const frameLen = 0.025; // 25ms frames
+    const frameHop = 0.010; // 10ms hop
+    final frameSamples = (sampleRate * frameLen).toInt();
+    final hopSamples = (sampleRate * frameHop).toInt();
+    // Round up to next power-of-2 for FFT
+    int fftSize = 1;
+    while (fftSize < frameSamples) { fftSize <<= 1; }
+
+    final int numFrames = (samples.length - frameSamples) ~/ hopSamples + 1;
+    if (numFrames <= 0) return List.filled(numCoeffs, 0.0);
+
+    // Pre-compute Mel filter bank
+    double hzToMel(double hz) => 2595.0 * log(1.0 + hz / 700.0) / ln10;
+    double melToHz(double mel) => 700.0 * (pow(10.0, mel / 2595.0) - 1.0);
+
+    final double lowMel = hzToMel(80.0);
+    final double highMel = hzToMel(sampleRate / 2.0);
+    final List<double> melPoints = List.generate(
+      numFilters + 2,
+      (i) => melToHz(lowMel + (highMel - lowMel) * i / (numFilters + 1)),
+    );
+    final List<int> binPoints = melPoints
+      .map((hz) => ((hz / sampleRate) * fftSize).floor().clamp(0, fftSize ~/ 2))
+      .toList();
+
+    // Accumulate MFCCs across frames
+    final List<double> mfccSum = List.filled(numCoeffs, 0.0);
+    final fft = FFT(fftSize);
+
+    for (int f = 0; f < numFrames; f++) {
+      final offset = f * hopSamples;
+      final windowed = Float64List(fftSize);
+      for (int j = 0; j < frameSamples && (offset + j) < samples.length; j++) {
+        windowed[j] = samples[offset + j] * _hanningWindow(j, frameSamples);
+      }
+
+      final freq = fft.realFft(windowed);
+      final magnitudes = freq.magnitudes();
+
+      // Apply Mel filter banks
+      final List<double> filterEnergies = List.filled(numFilters, 0.0);
+      for (int m = 0; m < numFilters; m++) {
+        final int startBin = binPoints[m];
+        final int centerBin = binPoints[m + 1];
+        final int endBin = binPoints[m + 2];
+
+        for (int k = startBin; k < centerBin && k < magnitudes.length; k++) {
+          final weight = (centerBin > startBin) ? (k - startBin) / (centerBin - startBin) : 0.0;
+          filterEnergies[m] += magnitudes[k] * weight;
+        }
+        for (int k = centerBin; k < endBin && k < magnitudes.length; k++) {
+          final weight = (endBin > centerBin) ? (endBin - k) / (endBin - centerBin) : 0.0;
+          filterEnergies[m] += magnitudes[k] * weight;
+        }
+      }
+
+      // Log energies (with floor to avoid log(0))
+      for (int m = 0; m < numFilters; m++) {
+        filterEnergies[m] = log(max(filterEnergies[m], 1e-10));
+      }
+
+      // DCT Type-II to get cepstral coefficients
+      for (int c = 0; c < numCoeffs; c++) {
+        double sum = 0.0;
+        for (int m = 0; m < numFilters; m++) {
+          sum += filterEnergies[m] * cos(pi * c * (m + 0.5) / numFilters);
+        }
+        mfccSum[c] += sum;
+      }
+    }
+
+    // Average across frames
+    for (int c = 0; c < numCoeffs; c++) {
+      mfccSum[c] /= numFrames;
+    }
+    return mfccSum;
   }
 
   /// Extract a downsampled waveform for visualization

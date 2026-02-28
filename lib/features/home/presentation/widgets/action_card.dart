@@ -19,6 +19,8 @@ class ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
@@ -28,9 +30,9 @@ class ActionCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,7 +47,7 @@ class ActionCard extends StatelessWidget {
                     style: GoogleFonts.lato(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white)),
+                        color: isDark ? Colors.white : Colors.black87)),
               ],
             ),
           ),
