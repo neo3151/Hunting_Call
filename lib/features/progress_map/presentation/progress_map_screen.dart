@@ -147,13 +147,15 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                   color: Colors.black26,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: IconButton(
-                  icon: Icon(Icons.arrow_back,
-                      color: AppColors.of(context).textPrimary, size: 20),
-                  onPressed: () => Navigator.pop(context),
-                  padding: const EdgeInsets.all(6),
-                  constraints: const BoxConstraints(),
-                ),
+                child: Navigator.canPop(context)
+                  ? IconButton(
+                      icon: Icon(Icons.arrow_back,
+                          color: AppColors.of(context).textPrimary, size: 20),
+                      onPressed: () => Navigator.pop(context),
+                      padding: const EdgeInsets.all(6),
+                      constraints: const BoxConstraints(),
+                    )
+                  : const SizedBox(width: 32),
               ),
               const SizedBox(width: 12),
               Expanded(
