@@ -74,7 +74,7 @@ class DailyChallengeScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildHeader(),
+                      _buildHeader(context),
                       const SizedBox(height: 32),
                       ChallengeCard(
                         challengeCall: challengeCall,
@@ -90,7 +90,7 @@ class DailyChallengeScreen extends ConsumerWidget {
                         },
                       ),
                       const Spacer(),
-                      const LeaderboardPreview(),
+                      LeaderboardPreview(animalId: challengeCall.id),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -149,7 +149,8 @@ class DailyChallengeScreen extends ConsumerWidget {
 
 
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final palette = AppColors.of(context);
     final dateStr =
         DateFormat('MMMM d, yyyy').format(DateTime.now()).toUpperCase();
     return Column(
@@ -158,7 +159,7 @@ class DailyChallengeScreen extends ConsumerWidget {
         Text(
           dateStr,
           style: GoogleFonts.lato(
-            color: Colors.white54,
+            color: palette.textTertiary,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
             fontSize: 12,
@@ -168,7 +169,7 @@ class DailyChallengeScreen extends ConsumerWidget {
         Text(
           'CALL OF THE DAY',
           style: GoogleFonts.oswald(
-            color: Colors.white,
+            color: palette.textPrimary,
             fontWeight: FontWeight.bold,
             fontSize: 32,
             letterSpacing: 1.5,

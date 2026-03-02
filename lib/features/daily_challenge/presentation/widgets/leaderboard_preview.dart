@@ -1,35 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:outcall/features/leaderboard/data/mock_leaderboard_data.dart';
 import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/features/leaderboard/domain/leaderboard_entry.dart'
+    as lb;
+import 'package:outcall/di_providers.dart';
 
 /// Compact leaderboard preview showing top 3 daily leaders.
-class LeaderboardPreview extends StatelessWidget {
-  const LeaderboardPreview({super.key});
+/// Uses real Firestore data via the leaderboard service provider.
+class LeaderboardPreview extends ConsumerWidget {
+  final String animalId;
+
+  const LeaderboardPreview({super.key, required this.animalId});
 
   @override
-  Widget build(BuildContext context) {
-    final leaders = LeaderboardService.getDailyLeaders();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'DAILY LEADERS',
-          style: GoogleFonts.oswald(
-            color: AppColors.of(context).textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...leaders.take(3).map((entry) =>
-            _buildLeaderItem(context, entry.rank, entry.username, '${entry.score.toInt()}%')),
-      ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final palette = AppColors.of(context);
+    final leaderboardService = ref.watch(leaderboardServiceProvider);
+
+    return StreamBuilder<List<lb.LeaderboardEntry>>(
+      stream: leaderboardService?.getTopScores(animalId) ??
+          Stream.value(<lb.LeaderboardEntry>[]),
+      builder: (context, snapshot) {
+        final leaders = snapshot.data ?? [];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'DAILY LEADERS',
+              style: GoogleFonts.oswald(
+                color: palette.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (leaders.isEmpty)
+              Text(
+                'No scores yet — be the first!',
+                style: GoogleFonts.lato(
+                  color: palette.textTertiary,
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                ),
+              )
+            else
+              ...leaders.take(3).toList().asMap().entries.map((entry) {
+                final rank = entry.key + 1;
+                final leader = entry.value;
+                return _buildLeaderItem(
+                  context,
+                  rank,
+                  leader.userName,
+                  '${leader.score.toInt()}%',
+                );
+              }),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildLeaderItem(BuildContext context, int rank, String name, String score) {
+  Widget _buildLeaderItem(
+      BuildContext context, int rank, String name, String score) {
     final palette = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -43,7 +78,8 @@ class LeaderboardPreview extends StatelessWidget {
           const SizedBox(width: 16),
           Text(
             name,
-            style: GoogleFonts.lato(color: palette.textSecondary, fontSize: 14),
+            style:
+                GoogleFonts.lato(color: palette.textSecondary, fontSize: 14),
           ),
           const Spacer(),
           Text(
