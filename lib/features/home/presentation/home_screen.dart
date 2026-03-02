@@ -17,6 +17,9 @@ import 'package:outcall/features/home/presentation/controllers/home_controller.d
 import 'package:outcall/features/home/presentation/widgets/home_header.dart';
 import 'package:outcall/features/home/presentation/widgets/daily_challenge_card.dart';
 import 'package:outcall/features/home/presentation/widgets/recent_activity_card.dart';
+import 'package:outcall/core/widgets/staggered_fade_slide.dart';
+import 'package:outcall/core/utils/page_transitions.dart';
+import 'package:outcall/features/profile/presentation/history_dashboard_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -86,20 +89,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 8),
-                                  _buildDailyChallenge(context, activeUserId),
+                                  StaggeredFadeSlide(
+                                    index: 0,
+                                    child: _buildDailyChallenge(context, activeUserId),
+                                  ),
                                   const SizedBox(height: 24),
-                                  _buildActionGrid(context, activeUserId),
+                                  StaggeredFadeSlide(
+                                    index: 1,
+                                    child: _buildActionGrid(context, activeUserId),
+                                  ),
                                   const SizedBox(height: 32),
                                   if (homeState.mostRecentActivity != null) ...[
-                                    Text('RECENT HUNTS',
-                                        style: GoogleFonts.oswald(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54)),
+                                    StaggeredFadeSlide(
+                                      index: 2,
+                                      child: Text('RECENT HUNTS',
+                                          style: GoogleFonts.oswald(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54)),
+                                    ),
                                     const SizedBox(height: 16),
-                                    RecentActivityCard(
-                                        historyItem:
-                                            homeState.mostRecentActivity!),
+                                    StaggeredFadeSlide(
+                                      index: 3,
+                                      child: RecentActivityCard(
+                                          historyItem:
+                                              homeState.mostRecentActivity!),
+                                    ),
                                   ],
                                 ],
                               ),
@@ -225,8 +240,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 title: 'Quick\nPractice',
                 subtitle: 'Start a session now',
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) => RecorderPage(userId: activeUserId)),
+                  SlideUpRoute(
+                      page: RecorderPage(userId: activeUserId)),
                 ),
               ),
             ),
@@ -239,8 +254,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 title: 'Daily\nChallenge',
                 subtitle: 'Compete for top scores',
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) => DailyChallengeScreen(userId: activeUserId)),
+                  FadeScaleRoute(
+                      page: DailyChallengeScreen(userId: activeUserId)),
                 ),
               ),
             ),
@@ -281,7 +296,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             const SizedBox(width: 16),
-            const Expanded(child: SizedBox.shrink()), // Placeholder for symmetry
+            Expanded(
+              child: _buildQuickActionCard(
+                icon: Icons.bar_chart_rounded,
+                iconColor: const Color(0xFF5FF7B6),
+                title: 'Practice\nHistory',
+                subtitle: 'Track your progress',
+                onTap: () => Navigator.of(context).push(
+                  SlideRoute(page: const HistoryDashboardScreen()),
+                ),
+              ),
+            ),
           ],
         ),
       ],
