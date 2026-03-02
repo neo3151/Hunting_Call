@@ -102,35 +102,19 @@ class SettingsScreen extends ConsumerWidget {
                               segments: [
                                 ButtonSegment(
                                   value: AppTheme.classic,
-                                  label: Row(mainAxisSize: MainAxisSize.min, children: [
-                                    Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFFF8C00), shape: BoxShape.circle)),
-                                    const SizedBox(width: 4),
-                                    const Text('ORA', style: TextStyle(fontSize: 10)),
-                                  ]),
+                                  label: Container(width: 16, height: 16, decoration: const BoxDecoration(color: Color(0xFFFF8C00), shape: BoxShape.circle)),
                                 ),
                                 ButtonSegment(
                                   value: AppTheme.midnight,
-                                  label: Row(mainAxisSize: MainAxisSize.min, children: [
-                                    Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFF3A86FF), shape: BoxShape.circle)),
-                                    const SizedBox(width: 4),
-                                    const Text('BLU', style: TextStyle(fontSize: 10)),
-                                  ]),
+                                  label: Container(width: 16, height: 16, decoration: const BoxDecoration(color: Color(0xFF3A86FF), shape: BoxShape.circle)),
                                 ),
                                 ButtonSegment(
                                   value: AppTheme.forest,
-                                  label: Row(mainAxisSize: MainAxisSize.min, children: [
-                                    Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFF2ECC71), shape: BoxShape.circle)),
-                                    const SizedBox(width: 4),
-                                    const Text('GRN', style: TextStyle(fontSize: 10)),
-                                  ]),
+                                  label: Container(width: 16, height: 16, decoration: const BoxDecoration(color: Color(0xFF2ECC71), shape: BoxShape.circle)),
                                 ),
                                 ButtonSegment(
                                   value: AppTheme.hunter,
-                                  label: Row(mainAxisSize: MainAxisSize.min, children: [
-                                    Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFE74C3C), shape: BoxShape.circle)),
-                                    const SizedBox(width: 4),
-                                    const Text('RED', style: TextStyle(fontSize: 10)),
-                                  ]),
+                                  label: Container(width: 16, height: 16, decoration: const BoxDecoration(color: Color(0xFFE74C3C), shape: BoxShape.circle)),
                                 ),
                               ],
                               selected: {settings.theme},
