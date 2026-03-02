@@ -19,7 +19,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsAsync = ref.watch(settingsNotifierProvider);
     final colors = AppColors.of(context);
-    final isDark = AppColors.isDark(context);
+
 
     return Scaffold(
       body: BackgroundWrapper(

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Reusable glassmorphic action card for home screen navigation.
 class ActionCard extends StatelessWidget {
@@ -19,20 +20,23 @@ class ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final palette = AppColors.of(context);
     
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: InkWell(
+        child: Semantics(
+          label: title,
+          button: true,
+          child: InkWell(
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+              color: palette.cardOverlay,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
+              border: Border.all(color: palette.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +51,7 @@ class ActionCard extends StatelessWidget {
                     style: GoogleFonts.lato(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87)),
+                        color: palette.textPrimary)),
               ],
             ),
           ),

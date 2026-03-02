@@ -11,7 +11,7 @@ class RecentActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final palette = AppColors.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: BackdropFilter(
@@ -19,9 +19,9 @@ class RecentActivityCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.of(context).border : Colors.black.withValues(alpha: 0.05),
+            color: palette.cardOverlay,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isDark ? AppColors.of(context).border : Colors.black.withValues(alpha: 0.1)),
+            border: Border.all(color: palette.border),
           ),
           child: Row(
             children: [
@@ -47,13 +47,13 @@ class RecentActivityCard extends StatelessWidget {
                 children: [
                   Text(historyItem.animalId.toUpperCase(),
                       style: TextStyle(
-                          fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                          fontWeight: FontWeight.bold, color: palette.textPrimary)),
                   Text('Last Session',
-                      style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 12)),
+                      style: TextStyle(color: palette.textSecondary, fontSize: 12)),
                 ],
               ),
               const Spacer(),
-              Icon(Icons.chevron_right, color: isDark ? Colors.white54 : Colors.black54),
+              Icon(Icons.chevron_right, color: palette.textTertiary),
             ],
           ),
         ),

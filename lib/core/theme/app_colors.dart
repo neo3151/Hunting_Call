@@ -8,7 +8,7 @@ class AppColors {
   AppColors._(); // prevent instantiation
 
   // ─── Theme-aware helper ───────────────────────────────────────────────────
-  static _AppColorPalette of(BuildContext context) {
+  static AppColorPalette of(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? _darkPalette
         : _lightPalette;
@@ -38,7 +38,7 @@ class AppColors {
   }
 
   // ─── Palettes ─────────────────────────────────────────────────────────────
-  static const _darkPalette = _AppColorPalette(
+  static const _darkPalette = AppColorPalette(
     background: Color(0xFF121212),
     surface: Color(0xFF1A1A1A),
     surfaceLight: Color(0xFF2A2D33),
@@ -54,7 +54,7 @@ class AppColors {
     cardOverlay: Color(0x0DFFFFFF), // white 5%
   );
 
-  static const _lightPalette = _AppColorPalette(
+  static const _lightPalette = AppColorPalette(
     background: Color(0xFFF9F9F9),
     surface: Color(0xFFFFFFFF),
     surfaceLight: Color(0xFFF0F0F0),
@@ -82,7 +82,7 @@ class AppColors {
 }
 
 /// A palette of colors that adapts to light/dark mode.
-class _AppColorPalette {
+class AppColorPalette {
   final Color background;
   final Color surface;
   final Color surfaceLight;
@@ -97,7 +97,7 @@ class _AppColorPalette {
   final Color iconSubtle;
   final Color cardOverlay;
 
-  const _AppColorPalette({
+  const AppColorPalette({
     required this.background,
     required this.surface,
     required this.surfaceLight,

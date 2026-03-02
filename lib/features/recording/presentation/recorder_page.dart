@@ -15,7 +15,7 @@ import 'package:outcall/features/rating/presentation/rating_screen.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
 
 import 'package:outcall/core/services/cloud_audio_service.dart';
-import 'package:outcall/features/recording/domain/visualization_settings.dart';
+
 import 'package:outcall/features/recording/presentation/call_selection_screen.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_widgets.dart';

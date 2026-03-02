@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Header bar for the home screen showing welcome text and cloud/sign-out controls.
 class HomeHeader extends StatelessWidget {
@@ -19,7 +20,8 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final palette = AppColors.of(context);
+    final isDark = AppColors.isDark(context);
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
       child: BackdropFilter(
@@ -27,10 +29,10 @@ class HomeHeader extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1A1A).withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.6),
+            color: isDark ? palette.surface.withValues(alpha: 0.4) : palette.surface.withValues(alpha: 0.6),
             borderRadius:
                 const BorderRadius.vertical(bottom: Radius.circular(32)),
-            border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
+            border: Border.all(color: palette.border),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -41,7 +43,7 @@ class HomeHeader extends StatelessWidget {
                   children: [
                     Text('WELCOME BACK,',
                         style: GoogleFonts.oswald(
-                            color: isDark ? Colors.white70 : Colors.black54,
+                            color: palette.textSecondary,
                             fontSize: 28,
                             fontWeight: FontWeight.w300,
                             letterSpacing: 1.0)),
@@ -51,7 +53,7 @@ class HomeHeader extends StatelessWidget {
                         style: GoogleFonts.oswald(
                             fontSize: 48,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
+                            color: palette.textPrimary,
                             height: 1.1)),
                   ],
                 ),
@@ -61,9 +63,9 @@ class HomeHeader extends StatelessWidget {
                 children: [
                   _buildCloudBadge(),
                   const SizedBox(width: 8),
-                  _buildSettingsButton(isDark),
+                  _buildSettingsButton(palette),
                   const SizedBox(width: 8),
-                  _buildSignOutButton(context, isDark),
+                  _buildSignOutButton(context, palette),
                 ],
               ),
             ],
@@ -109,24 +111,24 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsButton(bool isDark) {
+  Widget _buildSettingsButton(AppColorPalette palette) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+        color: palette.cardOverlay,
         shape: BoxShape.circle,
       ),
       child: IconButton(
         onPressed: onSettings,
-        icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white70 : Colors.black54, size: 22),
+        icon: Icon(Icons.settings_outlined, color: palette.icon, size: 22),
         tooltip: 'Settings',
       ),
     );
   }
 
-  Widget _buildSignOutButton(BuildContext context, bool isDark) {
+  Widget _buildSignOutButton(BuildContext context, AppColorPalette palette) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+        color: palette.cardOverlay,
         shape: BoxShape.circle,
       ),
       child: IconButton(
@@ -134,18 +136,18 @@ class HomeHeader extends StatelessWidget {
           final confirmed = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+              backgroundColor: palette.surface,
               title: Text('Sign Out?',
-                  style: GoogleFonts.oswald(color: isDark ? Colors.white : Colors.black87)),
+                  style: GoogleFonts.oswald(color: palette.textPrimary)),
               content: Text(
                 'Are you sure you want to sign out?',
-                style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                style: TextStyle(color: palette.textSecondary),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
                   child: Text('CANCEL',
-                      style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
+                      style: TextStyle(color: palette.textTertiary)),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
@@ -161,7 +163,7 @@ class HomeHeader extends StatelessWidget {
             onSignOut();
           }
         },
-        icon: Icon(Icons.logout, color: isDark ? Colors.white70 : Colors.black54),
+        icon: Icon(Icons.logout, color: palette.icon),
         tooltip: 'Sign Out',
       ),
     );
