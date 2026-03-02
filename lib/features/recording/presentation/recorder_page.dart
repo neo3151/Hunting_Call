@@ -362,7 +362,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               _buildGlassButton(
                 onPressed: (isRecording || isCountingDown || isProcessing) ? null : _playReferenceSound,
                 icon: isPlayingReference ? Icons.stop_circle_outlined : Icons.volume_up_rounded,
-                label: isPlayingReference ? 'STOP REFERENCE' : 'HEAR SAMPLE',
+                label: isPlayingReference ? S.of(context).tapToStop : S.of(context).listenReference,
               ),
               
               const SizedBox(height: 24),
@@ -378,20 +378,24 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                       child: _buildSmallIconButton(
                         onPressed: _resetRecording,
                         icon: Icons.refresh_rounded,
-                        label: 'RESET',
+                        label: S.of(context).resetRecording,
                       ),
                     )
                   else
                     const SizedBox(width: 80),
 
                   // Mic button with decorative rings
-                  RecorderMicButton(
+                  Semantics(
+                    button: true,
+                    label: isRecording ? S.of(context).tapToStop : S.of(context).tapToRecord,
+                    child: RecorderMicButton(
                     isRecording: isRecording,
                     isCountingDown: isCountingDown,
                     isProcessing: isProcessing,
                     countdownValue: recordingState.countdownValue ?? 0,
                     pulseAnimation: _pulseAnimation,
                     onPressed: _toggleRecording,
+                  ),
                   ),
                   const SizedBox(width: 80),
                 ],

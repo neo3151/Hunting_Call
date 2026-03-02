@@ -153,7 +153,9 @@ class HistoryDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildStatCard(AppColorPalette palette, String label, String value, IconData icon, Color color) {
-    return Container(
+    return Semantics(
+      label: '$label: $value',
+      child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: palette.surfaceLight,
@@ -168,6 +170,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(label, style: GoogleFonts.lato(fontSize: 9, color: palette.textSubtle, fontWeight: FontWeight.bold, letterSpacing: 1)),
         ],
+      ),
       ),
     );
   }

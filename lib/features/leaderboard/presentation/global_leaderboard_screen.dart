@@ -80,7 +80,9 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                         final rank = index + 1;
                         final isTop3 = rank <= 3;
 
-                        return ListTile(
+                        return Semantics(
+                          label: '${user.name}, ${user.averageScore.toStringAsFixed(1)} percent, ${user.totalCalls} calls',
+                          child: ListTile(
                           leading: _buildRankBadge(rank),
                           title: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -114,6 +116,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                               const Text('%', style: TextStyle(color: Colors.white30, fontSize: 12)),
                             ],
                           ),
+                        ),
                         );
                       },
                     );
