@@ -31,64 +31,67 @@ class OverallProficiency extends StatelessWidget {
       tierColor = Colors.redAccent;
     }
 
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 1200),
-      curve: Curves.easeOutCubic,
-      tween: Tween(begin: 0.0, end: s),
-      builder: (context, animatedScore, _) {
-        return Column(
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                // Glow effect
-                Container(
-                  width: 190,
-                  height: 190,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: tierColor.withValues(alpha: 0.15 * (animatedScore / 100)),
-                        blurRadius: 30,
-                        spreadRadius: 5,
-                      ),
-                    ],
+    return Semantics(
+      label: 'Overall proficiency: ${s.toInt()} percent',
+      child: TweenAnimationBuilder<double>(
+        duration: const Duration(milliseconds: 1200),
+        curve: Curves.easeOutCubic,
+        tween: Tween(begin: 0.0, end: s),
+        builder: (context, animatedScore, _) {
+          return Column(
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Glow effect
+                  Container(
+                    width: 190,
+                    height: 190,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: tierColor.withValues(alpha: 0.15 * (animatedScore / 100)),
+                          blurRadius: 30,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: 180,
-                  height: 180,
-                  child: CircularProgressIndicator(
-                    value: animatedScore / 100,
-                    strokeWidth: 10,
-                    color: tierColor,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  SizedBox(
+                    width: 180,
+                    height: 180,
+                    child: CircularProgressIndicator(
+                      value: animatedScore / 100,
+                      strokeWidth: 10,
+                      color: tierColor,
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    ),
                   ),
-                ),
-                Text(
-                  '${animatedScore.toInt()}%',
-                  style: GoogleFonts.oswald(
-                    fontSize: 64,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  Text(
+                    '${animatedScore.toInt()}%',
+                    style: GoogleFonts.oswald(
+                      fontSize: 64,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'OVERALL PROFICIENCY',
-              style: GoogleFonts.oswald(
-                fontSize: 11,
-                letterSpacing: 1.5,
-                color: Colors.white60,
-                fontWeight: FontWeight.w500,
+                ],
               ),
-            ),
-          ],
-        );
-      },
+              const SizedBox(height: 16),
+              Text(
+                'OVERALL PROFICIENCY',
+                style: GoogleFonts.oswald(
+                  fontSize: 11,
+                  letterSpacing: 1.5,
+                  color: Colors.white60,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -101,7 +104,9 @@ class AIFeedbackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Semantics(
+      label: 'AI Feedback: $feedback',
+      child: Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.4),
@@ -121,6 +126,7 @@ class AIFeedbackCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(feedback, textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 14, color: Colors.white.withValues(alpha: 0.9), height: 1.5)),
         ],
+      ),
       ),
     );
   }
@@ -235,7 +241,9 @@ class ProBreakdown extends StatelessWidget {
     final double s = _toSafe(score).clamp(0, 100);
     final Color color = s >= 80 ? const Color(0xFF5FF7B6) : (s >= 50 ? Colors.orangeAccent : Colors.redAccent);
 
-    return Container(
+    return Semantics(
+      label: '$label: ${s.toInt()} percent',
+      child: Container(
       width: (MediaQuery.of(context).size.width - 60) / 4,
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
@@ -251,6 +259,7 @@ class ProBreakdown extends StatelessWidget {
           const SizedBox(height: 4),
           Text('${s.toInt()}%', style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
         ],
+      ),
       ),
     );
   }
