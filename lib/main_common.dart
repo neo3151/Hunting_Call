@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,6 +20,7 @@ import 'package:outcall/config/app_config.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/widgets/global_error_view.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 Future<void> mainCommon() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -183,6 +185,13 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
       theme: themeNotifier.lightTheme,
       darkTheme: themeNotifier.darkTheme,
       themeMode: themeMode,
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: S.supportedLocales,
       home: const SplashScreen(),
     );
   }

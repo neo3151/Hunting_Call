@@ -1,0 +1,209 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2026-03-02T10:35:00Z",
+
+  "appName": "OUTCALL",
+  "@appName": { "description": "App title" },
+
+  "settings": "SETTINGS",
+  "appearance": "APPEARANCE",
+  "preferences": "PREFERENCES",
+  "audioAndHaptics": "AUDIO & HAPTICS",
+  "account": "ACCOUNT",
+  "about": "ABOUT",
+  "darkMode": "Dark Mode",
+  "darkModeSubtitle": "Light, Dark, or System",
+  "appTheme": "App Theme",
+  "appThemeSubtitle": "Choose your color palette",
+  "distanceUnit": "Distance Unit",
+  "distanceUnitImperial": "Imperial (yards, °F)",
+  "distanceUnitMetric": "Metric (meters, °C)",
+  "notifications": "Notifications",
+  "notificationsSubtitle": "Daily challenge reminders",
+  "soundEffects": "Sound Effects",
+  "soundEffectsSubtitle": "UI sounds and feedback",
+  "hapticFeedback": "Haptic Feedback",
+  "hapticFeedbackSubtitle": "Vibration on interactions",
+  "privacyPolicy": "Privacy Policy",
+  "termsOfService": "Terms of Service",
+  "version": "Version",
+  "signOut": "Sign Out",
+  "deleteAccount": "Delete Account",
+
+  "homeGreeting": "Welcome back, {name}",
+  "@homeGreeting": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "dailyChallenge": "DAILY CHALLENGE",
+  "dailyChallengeSubtitle": "New call every day",
+  "startPracticing": "START PRACTICING",
+  "startPracticingSubtitle": "Record & get scored",
+  "globalRankings": "Global\nRankings",
+  "globalRankingsSubtitle": "Compete worldwide",
+  "globalRankingsOffline": "Rankings\nOffline",
+  "globalRankingsOfflineSubtitle": "Coming back soon",
+  "globalRankingsMaintenanceMsg": "Global Rankings is currently undergoing maintenance.",
+  "practiceHistory": "Practice\nHistory",
+  "practiceHistorySubtitle": "Track your progress",
+  "recentHunts": "RECENT HUNTS",
+  "noRecordingsYet": "No recordings yet",
+  "startFirstHunt": "Start your first hunt! 🎯",
+
+  "overallProficiency": "OVERALL PROFICIENCY",
+  "overallProficiencyLabel": "Overall proficiency: {score} percent",
+  "@overallProficiencyLabel": {
+    "placeholders": {
+      "score": { "type": "int" }
+    }
+  },
+  "aiFeedback": "AI FEEDBACK",
+  "aiFeedbackLabel": "AI Feedback: {feedback}",
+  "@aiFeedbackLabel": {
+    "placeholders": {
+      "feedback": { "type": "String" }
+    }
+  },
+  "tryAgain": "TRY AGAIN",
+  "saveShareRecording": "SAVE / SHARE RECORDING",
+  "viewGlobalRankings": "VIEW GLOBAL RANKINGS",
+  "globalRankingsLocked": "GLOBAL RANKINGS (LOCKED)",
+  "doneReturnToCamp": "DONE & RETURN TO CAMP",
+  "pitch": "PITCH",
+  "timbre": "TIMBRE",
+  "rhythm": "RHYTHM",
+  "air": "AIR",
+  "metricLabel": "{metric}: {score} percent",
+  "@metricLabel": {
+    "placeholders": {
+      "metric": { "type": "String" },
+      "score": { "type": "int" }
+    }
+  },
+  "realityCheck": "REALITY CHECK",
+  "primaryFlaw": "PRIMARY FLAW",
+
+  "challengeStreak": "🔥 {days}-Day Streak",
+  "@challengeStreak": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "daysRemaining": "{days} days left",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "startChallenge": "Start Today's Challenge",
+  "challengeCompleted": "Challenge Completed!",
+
+  "totalSessions": "Total Sessions",
+  "averageScore": "Average Score",
+  "bestScore": "Best Score",
+  "scoreTrend": "Score Trend",
+  "challengeStreakTitle": "Challenge Streak",
+  "currentStreak": "Current",
+  "longestStreak": "Longest",
+  "animalBreakdown": "PER-ANIMAL BREAKDOWN",
+  "sessions": "{count} sessions",
+  "@sessions": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bestLabel": "Best: {score}%",
+  "@bestLabel": {
+    "placeholders": {
+      "score": { "type": "int" }
+    }
+  },
+
+  "recording": "Recording...",
+  "tapToRecord": "Tap to Record",
+  "tapToStop": "Tap to Stop",
+  "analyzing": "Analyzing your call...",
+  "selectAnimal": "Select Animal",
+  "searchAnimals": "Search animals...",
+  "noAnimalsFound": "No animals found",
+
+  "scoreShareText": "I scored {score}% on {animal} in OUTCALL! 🎯 Can you beat me?",
+  "@scoreShareText": {
+    "placeholders": {
+      "score": { "type": "int" },
+      "animal": { "type": "String" }
+    }
+  },
+
+  "achievementUnlocked": "Achievement Unlocked!",
+  "achievementFirstBlood": "First Blood",
+  "achievementFirstBloodDesc": "Record your very first animal call.",
+  "achievementGettingStarted": "Getting Started",
+  "achievementGettingStartedDesc": "Complete 10 recordings.",
+  "achievementDedicatedHunter": "Dedicated Hunter",
+  "achievementDedicatedHunterDesc": "Complete 25 recordings.",
+  "achievementMarathonHunter": "Marathon Hunter",
+  "achievementMarathonHunterDesc": "Complete 50 recordings.",
+  "achievementCenturion": "Centurion",
+  "achievementCenturionDesc": "Complete 100 recordings. You're obsessed.",
+  "achievementLivingLegend": "Living Legend",
+  "achievementLivingLegendDesc": "Complete 250 recordings. Touch grass.",
+  "achievementBronzeHunter": "Bronze Hunter",
+  "achievementBronzeHunterDesc": "Score 70% or higher on any call.",
+  "achievementSilverHunter": "Silver Hunter",
+  "achievementSilverHunterDesc": "Score 80% or higher on any call.",
+  "achievementGoldHunter": "Gold Hunter",
+  "achievementGoldHunterDesc": "Score 90% or higher on any call.",
+  "achievementMasterCaller": "Master Caller",
+  "achievementMasterCallerDesc": "Score 95% or higher. Near perfection.",
+  "achievementPerfectionist": "The Perfectionist",
+  "achievementPerfectionistDesc": "Score 99% or higher. Are you even human?",
+  "achievementReliableShot": "Reliable Shot",
+  "achievementReliableShotDesc": "Score 80%+ on 5 different recordings.",
+  "achievementSharpshooter": "Sharpshooter",
+  "achievementSharpshooterDesc": "Score 90%+ on 10 different recordings.",
+  "achievementEliteAverage": "Elite Average",
+  "achievementEliteAverageDesc": "Maintain an overall average score of 85+.",
+  "achievementExplorer": "Explorer",
+  "achievementExplorerDesc": "Practice 3 different species.",
+  "achievementDiversePicker": "Diverse Picker",
+  "achievementDiversePickerDesc": "Practice 5 different species.",
+  "achievementWildlifeExpert": "Wildlife Expert",
+  "achievementWildlifeExpertDesc": "Practice 10 different species.",
+  "achievementCallCollector": "Call Collector",
+  "achievementCallCollectorDesc": "Practice 15 different unique call types.",
+  "achievementChallenger": "Challenger",
+  "achievementChallengerDesc": "Complete your first daily challenge.",
+  "achievementThreePeat": "Three-Peat",
+  "achievementThreePeatDesc": "Achieve a 3-day challenge streak.",
+  "achievementWeeklyWarrior": "Weekly Warrior",
+  "achievementWeeklyWarriorDesc": "Achieve a 7-day challenge streak.",
+  "achievementTwoWeekTerror": "Two-Week Terror",
+  "achievementTwoWeekTerrorDesc": "Maintain a 14-day challenge streak.",
+  "achievementMonthlyMonster": "Monthly Monster",
+  "achievementMonthlyMonsterDesc": "30-day challenge streak. Absolutely unhinged.",
+  "achievementChallengeVeteran": "Challenge Veteran",
+  "achievementChallengeVeteranDesc": "Complete 25 daily challenges total.",
+  "achievementSpecialist": "Specialist",
+  "achievementSpecialistDesc": "Score 85%+ three times on the same call.",
+  "achievementMasterOfOne": "Master of One",
+  "achievementMasterOfOneDesc": "Score 90%+ five times on the same call.",
+  "achievementNightOwl": "Night Owl",
+  "achievementNightOwlDesc": "Practice between midnight and 5 AM. Sleep is overrated.",
+  "achievementEarlyBird": "Early Bird",
+  "achievementEarlyBirdDesc": "Practice before 6 AM. The deer are still sleeping.",
+  "achievementComebackKid": "Comeback Kid",
+  "achievementComebackKidDesc": "Score below 40%, then score above 85% on the same call.",
+  "achievementSpeedDemon": "Speed Demon",
+  "achievementSpeedDemonDesc": "Complete 5 recordings in a single day.",
+  "achievementTheGrinder": "The Grinder",
+  "achievementTheGrinderDesc": "Complete 10 recordings in a single day. Respect.",
+
+  "offlineMode": "Offline Mode",
+  "offlineBanner": "You're offline — some features may be limited.",
+  "backOnline": "Back online! Welcome back.",
+
+  "premiumRequired": "Premium Feature",
+  "upgradeToPremium": "Upgrade to unlock this feature."
+}

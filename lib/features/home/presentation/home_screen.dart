@@ -20,6 +20,7 @@ import 'package:outcall/features/home/presentation/widgets/recent_activity_card.
 import 'package:outcall/core/widgets/staggered_fade_slide.dart';
 import 'package:outcall/core/utils/page_transitions.dart';
 import 'package:outcall/features/profile/presentation/history_dashboard_screen.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -102,7 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   if (homeState.mostRecentActivity != null) ...[
                                     StaggeredFadeSlide(
                                       index: 2,
-                                      child: Text('RECENT HUNTS',
+                                      child: Text(S.of(context).recentHunts,
                                           style: GoogleFonts.oswald(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
@@ -238,7 +239,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 icon: Icons.mic,
                 iconColor: Theme.of(context).primaryColor,
                 title: 'Quick\nPractice',
-                subtitle: 'Start a session now',
+                subtitle: S.of(context).startPracticingSubtitle,
                 onTap: () => Navigator.of(context).push(
                   SlideUpRoute(
                       page: RecorderPage(userId: activeUserId)),
@@ -288,7 +289,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Global Rankings is currently undergoing maintenance.'),
+                        content: Text(S.of(context).globalRankingsMaintenanceMsg),
                         backgroundColor: Theme.of(context).primaryColor,
                       ),
                     );
@@ -300,8 +301,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: _buildQuickActionCard(
                 icon: Icons.bar_chart_rounded,
                 iconColor: const Color(0xFF5FF7B6),
-                title: 'Practice\nHistory',
-                subtitle: 'Track your progress',
+                title: S.of(context).practiceHistory,
+                subtitle: S.of(context).practiceHistorySubtitle,
                 onTap: () => Navigator.of(context).push(
                   SlideRoute(page: const HistoryDashboardScreen()),
                 ),
