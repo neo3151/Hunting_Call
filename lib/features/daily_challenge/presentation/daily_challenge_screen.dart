@@ -8,6 +8,8 @@ import 'package:outcall/features/daily_challenge/presentation/widgets/challenge_
 import 'package:outcall/features/daily_challenge/presentation/widgets/leaderboard_preview.dart';
 import 'package:outcall/core/utils/animal_image_alignment.dart';
 import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/features/daily_challenge/domain/seasonal_theme.dart';
+import 'package:outcall/core/utils/page_transitions.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 
 class DailyChallengeScreen extends ConsumerWidget {
@@ -76,6 +78,35 @@ class DailyChallengeScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildHeader(context),
+                      // Seasonal theme banner
+                      if (SeasonalThemeService.hasActiveTheme) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF5FF7B6).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF5FF7B6).withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(SeasonalThemeService.activeTheme!.emoji, style: const TextStyle(fontSize: 20)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(SeasonalThemeService.activeTheme!.name,
+                                        style: GoogleFonts.oswald(color: const Color(0xFF5FF7B6), fontSize: 13, fontWeight: FontWeight.bold)),
+                                    Text('${SeasonalThemeService.activeTheme!.daysRemaining} days left',
+                                        style: GoogleFonts.lato(color: AppColors.of(context).textSubtle, fontSize: 11)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 32),
                       Builder(builder: (context) {
                         // Count today's reps from profile history
@@ -95,8 +126,8 @@ class DailyChallengeScreen extends ConsumerWidget {
                           currentStreak: currentStreak,
                           onStart: () {
                             Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => RecorderPage(
+                              SlideUpRoute(
+                                page: RecorderPage(
                                   userId: userId,
                                   preselectedAnimalId: challengeCall.id,
                                 ),
