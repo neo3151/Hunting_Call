@@ -10,6 +10,7 @@ import 'package:outcall/features/library/domain/providers.dart';
 import 'package:outcall/config/app_config.dart';
 import 'package:outcall/core/widgets/upgrade_prompter.dart';
 import 'package:outcall/features/leaderboard/presentation/leaderboard_screen.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 /// Action buttons at the bottom of the rating screen:
 /// Try Again, Save/Share, Leaderboard, Done.
@@ -33,7 +34,7 @@ class RatingActionButtons extends ConsumerWidget {
     return callResult.fold(
       (failure) => ElevatedButton(
         onPressed: () => Navigator.of(context).pop(),
-        child: Text('GO BACK', style: GoogleFonts.oswald()),
+        child: Text(S.of(context).goBack, style: GoogleFonts.oswald()),
       ),
       (animal) {
         final bool showLeaderboard = AppConfig.instance.allowLeaderboard ||
@@ -47,7 +48,7 @@ class RatingActionButtons extends ConsumerWidget {
               child: ElevatedButton.icon(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.refresh_rounded),
-                label: Text('TRY AGAIN', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                label: Text(S.of(context).tryAgain, style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF5FF7B6),
                   foregroundColor: Colors.black,
@@ -64,7 +65,7 @@ class RatingActionButtons extends ConsumerWidget {
               child: OutlinedButton.icon(
                 onPressed: () => _handleShare(context, animal.animalName),
                 icon: const Icon(Icons.share, color: Colors.white),
-                label: Text('SAVE / SHARE RECORDING', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                label: Text(S.of(context).saveShareRecording, style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
@@ -91,7 +92,7 @@ class RatingActionButtons extends ConsumerWidget {
                   foregroundColor: Colors.white70,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: Text('DONE & RETURN TO CAMP', style: GoogleFonts.oswald(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5)),
+                child: Text(S.of(context).doneReturnToCamp, style: GoogleFonts.oswald(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5)),
               ),
             ),
           ],
@@ -111,7 +112,7 @@ class RatingActionButtons extends ConsumerWidget {
             ));
           },
           icon: Icon(Icons.emoji_events_outlined, color: Theme.of(context).primaryColor),
-          label: Text('VIEW GLOBAL RANKINGS', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+          label: Text(S.of(context).viewGlobalRankings, style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.white,
             side: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
@@ -127,7 +128,7 @@ class RatingActionButtons extends ConsumerWidget {
       child: OutlinedButton.icon(
         onPressed: () => UpgradePrompter.show(context, featureName: 'Global Leaderboards'),
         icon: const Icon(Icons.lock_outline, color: Colors.white38),
-        label: Text('GLOBAL RANKINGS (LOCKED)', style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+        label: Text(S.of(context).globalRankingsLocked, style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.white38,
           side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),

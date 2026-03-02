@@ -414,10 +414,10 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                 },
                 child: Text(
                   isCountingDown 
-                      ? 'GET READY...' 
+                      ? S.of(context).getReady 
                       : isRecording 
-                          ? 'RECORDING IN PROGRESS' 
-                          : 'TAP TO RECORD',
+                          ? S.of(context).recordingInProgress 
+                          : S.of(context).tapToRecord,
                   style: GoogleFonts.oswald(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -429,7 +429,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
               if (!isRecording && !isCountingDown && !isProcessing) ...[
                 const SizedBox(height: 6),
                 Text(
-                  'Match the reference call above to improve your score',
+                  S.of(context).matchReferenceHint,
                   style: GoogleFonts.lato(
                     fontSize: 12,
                     color: AppColors.of(context).textSubtle,

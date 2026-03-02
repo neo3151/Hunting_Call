@@ -522,13 +522,13 @@ abstract class S {
   /// No description provided for @tapToRecord.
   ///
   /// In en, this message translates to:
-  /// **'Tap to Record'**
+  /// **'TAP TO RECORD'**
   String get tapToRecord;
 
   /// No description provided for @tapToStop.
   ///
   /// In en, this message translates to:
-  /// **'Tap to Stop'**
+  /// **'STOP REFERENCE'**
   String get tapToStop;
 
   /// No description provided for @analyzing.
@@ -1076,6 +1076,96 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No profile data'**
   String get noProfileData;
+
+  /// No description provided for @getReady.
+  ///
+  /// In en, this message translates to:
+  /// **'GET READY...'**
+  String get getReady;
+
+  /// No description provided for @recordingInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'RECORDING IN PROGRESS'**
+  String get recordingInProgress;
+
+  /// No description provided for @matchReferenceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Match the reference call above to improve your score'**
+  String get matchReferenceHint;
+
+  /// No description provided for @goBack.
+  ///
+  /// In en, this message translates to:
+  /// **'GO BACK'**
+  String get goBack;
+
+  /// No description provided for @savedToDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to Downloads: {fileName} (Opening folder...)'**
+  String savedToDownloads(String fileName);
+
+  /// No description provided for @errorSavingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving file: {error}'**
+  String errorSavingFile(String error);
+
+  /// No description provided for @shareScoreText.
+  ///
+  /// In en, this message translates to:
+  /// **'I just scored {score}% on the {animal} call in OUTCALL! Think you can beat me? 🦌🦆'**
+  String shareScoreText(String score, String animal);
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT CATEGORY'**
+  String get selectCategory;
+
+  /// No description provided for @selectCall.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT CALL'**
+  String get selectCall;
+
+  /// No description provided for @achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'ACHIEVEMENTS'**
+  String get achievements;
+
+  /// No description provided for @unlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'{earned} / {total} Unlocked'**
+  String unlocked(int earned, int total);
+
+  /// No description provided for @moreToUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} more to unlock'**
+  String moreToUnlock(int count);
+
+  /// No description provided for @startRecordingForAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Start recording to earn achievements!'**
+  String get startRecordingForAchievements;
+
+  /// No description provided for @allAchievementsEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve earned every achievement. Legend.'**
+  String get allAchievementsEarned;
+
+  /// No description provided for @trackYourProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your progress'**
+  String get trackYourProgress;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

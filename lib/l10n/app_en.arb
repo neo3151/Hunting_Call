@@ -237,5 +237,58 @@
     }
   },
   "latest": "Latest",
-  "noProfileData": "No profile data"
+  "noProfileData": "No profile data",
+
+  "getReady": "GET READY...",
+  "recordingInProgress": "RECORDING IN PROGRESS",
+  "tapToRecord": "TAP TO RECORD",
+  "tapToStop": "STOP REFERENCE",
+  "matchReferenceHint": "Match the reference call above to improve your score",
+
+  "tryAgain": "TRY AGAIN",
+  "saveShareRecording": "SAVE / SHARE RECORDING",
+  "viewGlobalRankings": "VIEW GLOBAL RANKINGS",
+  "globalRankingsLocked": "GLOBAL RANKINGS (LOCKED)",
+  "doneReturnToCamp": "DONE & RETURN TO CAMP",
+  "goBack": "GO BACK",
+  "savedToDownloads": "Saved to Downloads: {fileName} (Opening folder...)",
+  "@savedToDownloads": {
+    "placeholders": {
+      "fileName": { "type": "String" }
+    }
+  },
+  "errorSavingFile": "Error saving file: {error}",
+  "@errorSavingFile": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "shareScoreText": "I just scored {score}% on the {animal} call in OUTCALL! Think you can beat me? 🦌🦆",
+  "@shareScoreText": {
+    "placeholders": {
+      "score": { "type": "String" },
+      "animal": { "type": "String" }
+    }
+  },
+
+  "selectCategory": "SELECT CATEGORY",
+  "selectCall": "SELECT CALL",
+
+  "achievements": "ACHIEVEMENTS",
+  "unlocked": "{earned} / {total} Unlocked",
+  "@unlocked": {
+    "placeholders": {
+      "earned": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "moreToUnlock": "{count} more to unlock",
+  "@moreToUnlock": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "startRecordingForAchievements": "Start recording to earn achievements!",
+  "allAchievementsEarned": "You've earned every achievement. Legend.",
+  "trackYourProgress": "Track your progress"
 }

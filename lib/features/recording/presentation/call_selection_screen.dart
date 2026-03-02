@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 class CallSelectionScreen extends ConsumerStatefulWidget {
   const CallSelectionScreen({super.key});
@@ -36,7 +37,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
             },
           ),
           title: Text(
-            _selectedCategory == null ? 'SELECT CATEGORY' : 'SELECT CALL',
+            _selectedCategory == null ? S.of(context).selectCategory : S.of(context).selectCall,
             style: GoogleFonts.oswald(
               fontWeight: FontWeight.bold,
               letterSpacing: 1.5,
@@ -80,7 +81,10 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Material(
                 color: Colors.transparent,
-                child: InkWell(
+                child: Semantics(
+                  button: true,
+                  label: category,
+                  child: InkWell(
                   onTap: () => setState(() => _selectedCategory = category),
                   child: Container(
                     decoration: BoxDecoration(
@@ -118,6 +122,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                     ),
                   ),
                 ),
+                ),
               ),
             ),
           );
@@ -143,7 +148,9 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
             borderRadius: BorderRadius.circular(16),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Material(
+              child: Semantics(
+                label: '${call.animalName}, ${call.callType}, ${call.difficulty}${isLocked ? ", locked" : ""}',
+                child: Material(
                 color: Colors.transparent,
                 child: ListTile(
                   onTap: isLocked ? null : () => Navigator.pop(context, call.id),
@@ -202,6 +209,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                   trailing: _buildDifficultyBadge(call.difficulty),
                   enabled: !isLocked,
                 ),
+              ),
               ),
             ),
           ),

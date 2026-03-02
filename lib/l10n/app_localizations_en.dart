@@ -239,10 +239,10 @@ class SEn extends S {
   String get recording => 'Recording...';
 
   @override
-  String get tapToRecord => 'Tap to Record';
+  String get tapToRecord => 'TAP TO RECORD';
 
   @override
-  String get tapToStop => 'Tap to Stop';
+  String get tapToStop => 'STOP REFERENCE';
 
   @override
   String get analyzing => 'Analyzing your call...';
@@ -542,4 +542,62 @@ class SEn extends S {
 
   @override
   String get noProfileData => 'No profile data';
+
+  @override
+  String get getReady => 'GET READY...';
+
+  @override
+  String get recordingInProgress => 'RECORDING IN PROGRESS';
+
+  @override
+  String get matchReferenceHint =>
+      'Match the reference call above to improve your score';
+
+  @override
+  String get goBack => 'GO BACK';
+
+  @override
+  String savedToDownloads(String fileName) {
+    return 'Saved to Downloads: $fileName (Opening folder...)';
+  }
+
+  @override
+  String errorSavingFile(String error) {
+    return 'Error saving file: $error';
+  }
+
+  @override
+  String shareScoreText(String score, String animal) {
+    return 'I just scored $score% on the $animal call in OUTCALL! Think you can beat me? 🦌🦆';
+  }
+
+  @override
+  String get selectCategory => 'SELECT CATEGORY';
+
+  @override
+  String get selectCall => 'SELECT CALL';
+
+  @override
+  String get achievements => 'ACHIEVEMENTS';
+
+  @override
+  String unlocked(int earned, int total) {
+    return '$earned / $total Unlocked';
+  }
+
+  @override
+  String moreToUnlock(int count) {
+    return '$count more to unlock';
+  }
+
+  @override
+  String get startRecordingForAchievements =>
+      'Start recording to earn achievements!';
+
+  @override
+  String get allAchievementsEarned =>
+      'You\'ve earned every achievement. Legend.';
+
+  @override
+  String get trackYourProgress => 'Track your progress';
 }
