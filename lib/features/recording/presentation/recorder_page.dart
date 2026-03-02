@@ -19,6 +19,7 @@ import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_widgets.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_dialogs.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_coaching.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
   final String userId;
@@ -259,7 +260,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text('RECORD CALL', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+          title: Text(S.of(context).recordCall, style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),

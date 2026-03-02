@@ -484,4 +484,62 @@ class SEn extends S {
 
   @override
   String get upgradeToPremium => 'Upgrade to unlock this feature.';
+
+  @override
+  String get globalRankingsTitle => 'GLOBAL RANKINGS';
+
+  @override
+  String get noGlobalRankingsYet => 'No global rankings yet.';
+
+  @override
+  String get completeCallsToGetRanked => 'Complete calls to get ranked!';
+
+  @override
+  String callsTotal(int count) {
+    return '$count calls total';
+  }
+
+  @override
+  String get recordCall => 'RECORD CALL';
+
+  @override
+  String get listenReference => 'Listen to Reference';
+
+  @override
+  String get startRecording => 'Start Recording';
+
+  @override
+  String get resetRecording => 'Reset';
+
+  @override
+  String get analyzeCall => 'Analyze Call';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get continueAsGuest => 'Continue as Guest';
+
+  @override
+  String get signInWithGoogle => 'Sign in with Google';
+
+  @override
+  String get signInWithApple => 'Sign in with Apple';
+
+  @override
+  String get speciesBreakdown => 'SPECIES BREAKDOWN';
+
+  @override
+  String get recentTrend => 'RECENT TREND';
+
+  @override
+  String sessionsAgo(int count) {
+    return '$count sessions ago';
+  }
+
+  @override
+  String get latest => 'Latest';
+
+  @override
+  String get noProfileData => 'No profile data';
 }

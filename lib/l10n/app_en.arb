@@ -205,5 +205,37 @@
   "backOnline": "Back online! Welcome back.",
 
   "premiumRequired": "Premium Feature",
-  "upgradeToPremium": "Upgrade to unlock this feature."
+  "upgradeToPremium": "Upgrade to unlock this feature.",
+
+  "globalRankingsTitle": "GLOBAL RANKINGS",
+  "noGlobalRankingsYet": "No global rankings yet.",
+  "completeCallsToGetRanked": "Complete calls to get ranked!",
+  "callsTotal": "{count} calls total",
+  "@callsTotal": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "recordCall": "RECORD CALL",
+  "listenReference": "Listen to Reference",
+  "startRecording": "Start Recording",
+  "resetRecording": "Reset",
+  "analyzeCall": "Analyze Call",
+
+  "signIn": "Sign In",
+  "continueAsGuest": "Continue as Guest",
+  "signInWithGoogle": "Sign in with Google",
+  "signInWithApple": "Sign in with Apple",
+
+  "speciesBreakdown": "SPECIES BREAKDOWN",
+  "recentTrend": "RECENT TREND",
+  "sessionsAgo": "{count} sessions ago",
+  "@sessionsAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "latest": "Latest",
+  "noProfileData": "No profile data"
 }

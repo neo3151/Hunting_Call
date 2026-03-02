@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 /// Full-screen achievement celebration overlay with confetti and animations.
 ///
@@ -178,7 +179,7 @@ class _AchievementDialogState extends State<_AchievementDialog>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '🏆 ACHIEVEMENT UNLOCKED',
+                        '🏆 ${S.of(context).achievementUnlocked.toUpperCase()}',
                         style: GoogleFonts.oswald(
                           color: const Color(0xFF5FF7B6),
                           fontSize: 14,

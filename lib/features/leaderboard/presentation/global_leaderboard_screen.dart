@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/features/leaderboard/presentation/controllers/leaderboard_controller.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/core/widgets/offline_banner.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 class GlobalLeaderboardScreen extends ConsumerWidget {
   const GlobalLeaderboardScreen({super.key});
@@ -28,7 +29,7 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'GLOBAL RANKINGS',
+                      S.of(context).globalRankingsTitle,
                       style: GoogleFonts.oswald(
                         color: Colors.white,
                         fontSize: 24,
@@ -57,13 +58,13 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                             const Icon(Icons.public_off, color: Colors.white24, size: 64),
                             const SizedBox(height: 16),
                             Text(
-                              'No global rankings yet.',
+                              S.of(context).noGlobalRankingsYet,
                               style: GoogleFonts.oswald(fontSize: 20, color: Colors.white54),
                             ),
                             const SizedBox(height: 8),
-                            const Text(
-                              'Complete calls to get ranked!',
-                              style: TextStyle(color: Colors.white38),
+                            Text(
+                              S.of(context).completeCallsToGetRanked,
+                              style: const TextStyle(color: Colors.white38),
                             ),
                           ],
                         ),

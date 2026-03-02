@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:typed_data';
+import 'package:outcall/l10n/app_localizations.dart';
 
 /// Generates a shareable score card image and shares it via system share sheet.
 class ScoreShareCard extends StatelessWidget {
@@ -32,7 +33,7 @@ class ScoreShareCard extends StatelessWidget {
       
       await Share.shareXFiles(
         [XFile.fromData(bytes, mimeType: 'image/png', name: 'outcall_score.png')],
-        text: 'I scored ${score.toInt()}% on $animalName in OUTCALL! 🎯 Can you beat me?',
+        text: S.of(context).scoreShareText(score.toInt(), animalName),
       );
     } catch (e) {
       if (context.mounted) {

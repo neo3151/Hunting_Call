@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/core/services/connectivity/connectivity_provider.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 class OfflineBanner extends ConsumerWidget {
   const OfflineBanner({super.key});
@@ -26,7 +27,7 @@ class OfflineBanner extends ConsumerWidget {
             const Icon(Icons.cloud_off, color: Colors.white, size: 16),
             const SizedBox(width: 8),
             Text(
-              'Offline Mode',
+              S.of(context).offlineMode,
               style: GoogleFonts.lato(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,

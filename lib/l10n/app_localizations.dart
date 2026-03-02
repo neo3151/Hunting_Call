@@ -968,6 +968,114 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Upgrade to unlock this feature.'**
   String get upgradeToPremium;
+
+  /// No description provided for @globalRankingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'GLOBAL RANKINGS'**
+  String get globalRankingsTitle;
+
+  /// No description provided for @noGlobalRankingsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No global rankings yet.'**
+  String get noGlobalRankingsYet;
+
+  /// No description provided for @completeCallsToGetRanked.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete calls to get ranked!'**
+  String get completeCallsToGetRanked;
+
+  /// No description provided for @callsTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} calls total'**
+  String callsTotal(int count);
+
+  /// No description provided for @recordCall.
+  ///
+  /// In en, this message translates to:
+  /// **'RECORD CALL'**
+  String get recordCall;
+
+  /// No description provided for @listenReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to Reference'**
+  String get listenReference;
+
+  /// No description provided for @startRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Recording'**
+  String get startRecording;
+
+  /// No description provided for @resetRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get resetRecording;
+
+  /// No description provided for @analyzeCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze Call'**
+  String get analyzeCall;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signIn;
+
+  /// No description provided for @continueAsGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as Guest'**
+  String get continueAsGuest;
+
+  /// No description provided for @signInWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get signInWithGoogle;
+
+  /// No description provided for @signInWithApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple'**
+  String get signInWithApple;
+
+  /// No description provided for @speciesBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'SPECIES BREAKDOWN'**
+  String get speciesBreakdown;
+
+  /// No description provided for @recentTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'RECENT TREND'**
+  String get recentTrend;
+
+  /// No description provided for @sessionsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sessions ago'**
+  String sessionsAgo(int count);
+
+  /// No description provided for @latest.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest'**
+  String get latest;
+
+  /// No description provided for @noProfileData.
+  ///
+  /// In en, this message translates to:
+  /// **'No profile data'**
+  String get noProfileData;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
