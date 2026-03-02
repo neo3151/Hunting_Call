@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Glassmorphic card displaying the daily challenge animal, metrics, and start button.
 class ChallengeCard extends StatelessWidget {
@@ -22,15 +23,15 @@ class ChallengeCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: AppColors.of(context).cardOverlay,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            border: Border.all(color: AppColors.of(context).border),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withValues(alpha: 0.1),
-                Colors.white.withValues(alpha: 0.05),
+                Colors.white.withValues(alpha: 0.08),
+                Colors.white.withValues(alpha: 0.03),
               ],
             ),
           ),
@@ -52,17 +53,17 @@ class ChallengeCard extends StatelessWidget {
               Text(
                 challengeCall.animalName,
                 style: GoogleFonts.oswald(
-                  color: Colors.white,
+                  color: AppColors.of(context).textPrimary,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
                 challengeCall.callType,
-                style: GoogleFonts.lato(color: Colors.white60, fontSize: 14),
+                style: GoogleFonts.lato(color: AppColors.of(context).textSecondary, fontSize: 14),
               ),
               const SizedBox(height: 32),
-              _buildMetricStats(),
+              _buildMetricStats(context),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
@@ -91,25 +92,25 @@ class ChallengeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMetricStats() {
+  Widget _buildMetricStats(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildStatItem(
+        _buildStatItem(context,
             'DIFFICULTY', challengeCall.difficulty.toUpperCase(), Colors.orangeAccent),
-        _buildStatItem('REPS', '0/3', Colors.white70),
-        _buildStatItem('REWARD', '+500 XP', const Color(0xFF5FF7B6)),
+        _buildStatItem(context, 'REPS', '0/3', AppColors.of(context).textSecondary),
+        _buildStatItem(context, 'REWARD', '+500 XP', const Color(0xFF5FF7B6)),
       ],
     );
   }
 
-  Widget _buildStatItem(String label, String value, Color color) {
+  Widget _buildStatItem(BuildContext context, String label, String value, Color color) {
     return Column(
       children: [
         Text(
           label,
           style: GoogleFonts.lato(
-              color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold),
+              color: AppColors.of(context).textSubtle, fontSize: 10, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(

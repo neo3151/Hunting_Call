@@ -2,6 +2,8 @@
 description: Update Obsidian notes with current project status after completing a significant task
 ---
 
+// turbo-all
+
 # Update Obsidian Notes
 
 Run this workflow at the end of any significant task (feature completion, major refactor, bug fix session, etc.) to keep Obsidian notes in sync with actual project state.

@@ -7,6 +7,7 @@ import 'package:outcall/features/recording/presentation/recorder_page.dart';
 import 'package:outcall/features/daily_challenge/presentation/widgets/challenge_card.dart';
 import 'package:outcall/features/daily_challenge/presentation/widgets/leaderboard_preview.dart';
 import 'package:outcall/core/utils/animal_image_alignment.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class DailyChallengeScreen extends ConsumerWidget {
   final String userId;
@@ -17,9 +18,9 @@ class DailyChallengeScreen extends ConsumerWidget {
     final challengeAsyncValue = ref.watch(dailyChallengeProvider);
 
     return challengeAsyncValue.when(
-      loading: () => const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator(color: Colors.greenAccent)),
+      loading: () => Scaffold(
+        backgroundColor: AppColors.of(context).background,
+        body: Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor)),
       ),
       error: (err, stack) => _buildErrorScaffold(context),
       data: (challengeCall) {
@@ -29,13 +30,13 @@ class DailyChallengeScreen extends ConsumerWidget {
         }
 
         return Scaffold(
-          backgroundColor: Colors.black,
+          backgroundColor: AppColors.of(context).background,
           extendBodyBehindAppBar: true,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
+              icon: Icon(Icons.close, color: AppColors.of(context).textPrimary),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
@@ -43,7 +44,7 @@ class DailyChallengeScreen extends ConsumerWidget {
               style: GoogleFonts.oswald(
                 fontWeight: FontWeight.bold,
                 letterSpacing: 2,
-                color: Colors.white,
+                color: AppColors.of(context).textPrimary,
               ),
             ),
             centerTitle: true,
@@ -105,13 +106,14 @@ class DailyChallengeScreen extends ConsumerWidget {
   }
 
   Widget _buildErrorScaffold(BuildContext context) {
+    final palette = AppColors.of(context);
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: palette.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: Icon(Icons.close, color: palette.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -119,7 +121,7 @@ class DailyChallengeScreen extends ConsumerWidget {
           style: GoogleFonts.oswald(
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
-            color: Colors.white,
+            color: palette.textPrimary,
           ),
         ),
         centerTitle: true,
@@ -132,7 +134,7 @@ class DailyChallengeScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               "Unable to load today's challenge",
-              style: GoogleFonts.lato(color: Colors.white70, fontSize: 16),
+              style: GoogleFonts.lato(color: palette.textSecondary, fontSize: 16),
             ),
             const SizedBox(height: 24),
             ElevatedButton(

@@ -12,6 +12,7 @@ import 'package:outcall/features/profile/presentation/controllers/profile_contro
 import 'package:outcall/core/services/audio_service.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/animal_image_alignment.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class CallDetailScreen extends ConsumerStatefulWidget {
   final ReferenceCall call;
@@ -67,15 +68,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     final profile = ref.watch(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark
-        ? const Color(0xFF121212)
-        : Theme.of(context).scaffoldBackgroundColor;
-    final textColor = isDark ? Colors.white : Colors.black87;
-    final subtextColor = isDark ? Colors.white70 : Colors.black54;
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.1)
-        : Colors.black.withValues(alpha: 0.1);
+    final palette = AppColors.of(context);
 
     return PopScope(
       canPop: true,
@@ -83,9 +76,9 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
         if (didPop) _audioService?.stop();
       },
       child: Scaffold(
-        backgroundColor: bgColor,
+        backgroundColor: palette.background,
         body: Container(
-          color: bgColor,
+          color: palette.background,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
@@ -119,7 +112,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.transparent,
-                                bgColor.withValues(alpha: 0.8)
+                                palette.background.withValues(alpha: 0.8)
                               ],
                             ),
                           ),
@@ -130,7 +123,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                         left: 10,
                         child: IconButton(
                           icon: Icon(Icons.arrow_back_ios_new,
-                              color: isDark ? Colors.white : Colors.black87),
+                              color: palette.textPrimary),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
@@ -144,7 +137,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 2,
-                              color: textColor),
+                              color: palette.textPrimary),
                         ),
                       ),
                     ],
@@ -166,13 +159,13 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                   widget.call.animalName,
                                   style: GoogleFonts.oswald(
                                       fontSize: 32,
-                                      color: textColor,
+                                      color: palette.textPrimary,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 Text(
                                   widget.call.scientificName,
-                                  style: const TextStyle(
-                                      color: Colors.white54,
+                                  style: TextStyle(
+                                      color: palette.textTertiary,
                                       fontSize: 16,
                                       fontStyle: FontStyle.italic),
                                 ),
@@ -215,9 +208,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                             const SizedBox(width: 12),
                             Container(
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.1)
-                                    : Colors.black.withValues(alpha: 0.05),
+                                color: palette.cardOverlay,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: IconButton(
@@ -230,8 +221,8 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                     ),
                                   );
                                 },
-                                icon: const Icon(Icons.mic,
-                                    color: Colors.white70),
+                                icon: Icon(Icons.mic,
+                                    color: palette.textSecondary),
                                 tooltip: 'Start Practice',
                               ),
                             ),
@@ -273,7 +264,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                 label:
                                     const Text('VIEW GLOBAL EXPERT RANKINGS'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.white70,
+                                  foregroundColor: palette.textSecondary,
                                   side: BorderSide(
                                       color: Colors.orangeAccent
                                           .withValues(alpha: 0.3)),
@@ -294,12 +285,12 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                   UpgradePrompter.show(context,
                                       featureName: 'Global Leaderboards');
                                 },
-                                icon: const Icon(Icons.lock_outline,
-                                    color: Colors.white38),
+                                icon: Icon(Icons.lock_outline,
+                                    color: palette.textSubtle),
                                 label: const Text('GLOBAL RANKINGS (LOCKED)'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.white38,
-                                  side: BorderSide(color: borderColor),
+                                  foregroundColor: palette.textSubtle,
+                                  side: BorderSide(color: palette.border),
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
@@ -342,7 +333,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                         Text(
                           widget.call.description,
                           style: TextStyle(
-                              color: subtextColor, fontSize: 16, height: 1.6),
+                              color: palette.textSecondary, fontSize: 16, height: 1.6),
                         ),
 
                         const SizedBox(height: 30),
@@ -375,33 +366,28 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   }
 
   Widget _metricCard(String label, String value, IconData icon) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
+    final palette = AppColors.of(context);
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: dark
-              ? Colors.white.withValues(alpha: 0.05)
-              : Colors.black.withValues(alpha: 0.05),
+          color: palette.cardOverlay,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-              color: dark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.1)),
+          border: Border.all(color: palette.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: dark ? Colors.white38 : Colors.black38, size: 20),
+            Icon(icon, color: palette.textSubtle, size: 20),
             const SizedBox(height: 12),
             Text(value,
                 style: TextStyle(
-                    color: dark ? Colors.white : Colors.black87,
+                    color: palette.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold)),
             Text(label,
                 style: TextStyle(
-                    color: dark ? Colors.white38 : Colors.black38,
+                    color: palette.textSubtle,
                     fontSize: 10)),
           ],
         ),
@@ -410,7 +396,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   }
 
   Widget _buildProTipsCard() {
-    final dark = Theme.of(context).brightness == Brightness.dark;
+    final palette = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -430,7 +416,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
               Text(
                 'FIELD PRO TIPS',
                 style: GoogleFonts.oswald(
-                    color: dark ? Colors.white : Colors.black87,
+                    color: palette.textPrimary,
                     fontWeight: FontWeight.bold),
               ),
             ],
@@ -439,7 +425,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
           Text(
             widget.call.proTips,
             style: TextStyle(
-                color: dark ? Colors.white70 : Colors.black54,
+                color: palette.textSecondary,
                 fontSize: 15,
                 height: 1.5),
           ),

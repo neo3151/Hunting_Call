@@ -10,6 +10,7 @@ import 'package:outcall/features/profile/presentation/controllers/profile_contro
 import 'package:outcall/features/library/presentation/call_detail_screen.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final String? userId;
@@ -143,9 +144,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 style: GoogleFonts.oswald(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.5,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black87,
+                  color: AppColors.of(context).textPrimary,
                 )),
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -160,26 +159,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     child: TextField(
                       onChanged: (val) => setState(() => _searchQuery = val),
                       style: TextStyle(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black87),
+                          color: AppColors.of(context).textPrimary),
                       decoration: InputDecoration(
                         hintText: 'Search calls...',
                         hintStyle: TextStyle(
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white54
-                                    : Colors.black54),
+                            color: AppColors.of(context).textTertiary),
                         prefixIcon: Icon(Icons.search,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white54
-                                    : Colors.black54),
+                            color: AppColors.of(context).textTertiary),
                         filled: true,
-                        fillColor:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white.withValues(alpha: 0.1)
-                                : Colors.black.withValues(alpha: 0.05),
+                        fillColor: AppColors.of(context).cardOverlay,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30),
                           borderSide: BorderSide.none,
@@ -193,10 +181,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     isScrollable: true,
                     indicatorColor: Theme.of(context).primaryColor,
                     labelColor: Theme.of(context).primaryColor,
-                    unselectedLabelColor:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white54
-                            : Colors.black54,
+                    unselectedLabelColor: AppColors.of(context).textTertiary,
                     labelStyle: GoogleFonts.oswald(fontWeight: FontWeight.bold),
                     tabs: _categories
                         .map((cat) => Tab(text: cat.toUpperCase()))
@@ -212,14 +197,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               child: TabBarView(
                 children: _categories.map((category) {
                   final filtered = _getFilteredCalls(category);
-                  final isDark =
-                      Theme.of(context).brightness == Brightness.dark;
+                  final palette = AppColors.of(context);
                   if (filtered.isEmpty) {
                     return Center(
                         child: Text('No calls found',
                             style: TextStyle(
-                                color:
-                                    isDark ? Colors.white54 : Colors.black54)));
+                                color: palette.textTertiary)));
                   }
                   return ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 220, 16, 16),
@@ -247,7 +230,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   Widget _buildCallCard(ReferenceCall call, bool isPlaying, bool isLocked) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final palette = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -262,27 +245,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isLocked
-                    ? (isDark
-                        ? Colors.black.withValues(alpha: 0.3)
-                        : Colors.black.withValues(alpha: 0.1))
+                    ? Colors.black.withValues(alpha: 0.2)
                     : isPlaying
                         ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
-                        : (isDark
-                            ? Colors.white.withValues(alpha: 0.05)
-                            : Colors.black.withValues(alpha: 0.05)),
+                        : palette.cardOverlay,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isLocked
-                      ? (isDark
-                          ? Colors.white.withValues(alpha: 0.05)
-                          : Colors.black.withValues(alpha: 0.05))
+                      ? palette.cardOverlay
                       : isPlaying
                           ? Theme.of(context)
                               .primaryColor
                               .withValues(alpha: 0.5)
-                          : (isDark
-                              ? Colors.white.withValues(alpha: 0.1)
-                              : Colors.black.withValues(alpha: 0.1)),
+                          : palette.border,
                 ),
               ),
               child: Column(
@@ -300,7 +275,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                             Text(
                               call.animalName,
                               style: GoogleFonts.oswald(
-                                color: isDark ? Colors.white : Colors.black87,
+                              color: palette.textPrimary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -309,10 +284,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               call.callType,
                               style: TextStyle(
                                 color: isLocked
-                                    ? (isDark ? Colors.white38 : Colors.black38)
-                                    : (isDark
-                                        ? Colors.white70
-                                        : Colors.black54),
+                                    ? palette.textSubtle
+                                    : palette.textSecondary,
                                 fontSize: 14,
                               ),
                             ),
@@ -328,7 +301,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     Text(
                       call.description,
                       style: TextStyle(
-                          color: isDark ? Colors.white54 : Colors.black54,
+                          color: palette.textTertiary,
                           fontSize: 13,
                           fontStyle: FontStyle.italic),
                     ),
@@ -347,7 +320,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       if (call.proTips.isNotEmpty)
                         Icon(Icons.info_outline,
                             size: 16,
-                            color: isDark ? Colors.white30 : Colors.black26),
+                            color: palette.textSubtle),
                     ],
                   ),
                 ],
@@ -372,7 +345,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         color = const Color(0xFFE57373);
         break;
       default:
-        color = Colors.white54;
+        color = AppColors.of(context).textTertiary;
     }
 
     return Container(
@@ -391,23 +364,21 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   Widget _buildMetricChip(IconData icon, String label) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final palette = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.1)
-            : Colors.black.withValues(alpha: 0.05),
+        color: palette.cardOverlay,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: isDark ? Colors.white70 : Colors.black54),
+          Icon(icon, size: 12, color: palette.textSecondary),
           const SizedBox(width: 4),
           Text(label,
               style: TextStyle(
-                  color: isDark ? Colors.white70 : Colors.black54,
+                  color: palette.textSecondary,
                   fontSize: 11)),
         ],
       ),
@@ -415,7 +386,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   Widget _buildPlayButton(ReferenceCall call, bool isPlaying, bool isLocked) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final palette = AppColors.of(context);
     return InkWell(
       onTap: () => _togglePlayback(call),
       child: Icon(
@@ -425,10 +396,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ? Icons.stop_circle_rounded
                 : Icons.play_circle_filled_rounded,
         color: isLocked
-            ? (isDark ? Colors.white24 : Colors.black26)
+            ? palette.textSubtle
             : isPlaying
                 ? Theme.of(context).primaryColor
-                : (isDark ? Colors.white70 : Colors.black54),
+                : palette.textSecondary,
         size: 40,
       ),
     );
