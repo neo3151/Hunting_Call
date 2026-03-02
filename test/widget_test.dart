@@ -10,5 +10,5 @@ void main() {
 
     // Verify init completed without errors
     expect(di.isFirebaseEnabled, isFalse); // No Firebase in test env
-  });
+  }, timeout: const Timeout(Duration(seconds: 10)));
 }

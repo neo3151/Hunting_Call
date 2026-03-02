@@ -178,7 +178,7 @@ class RatingActionButtons extends ConsumerWidget {
         }
       }
     } else {
-      await Share.shareXFiles([XFile(audioPath)], text: text);
+      await SharePlus.instance.share(ShareParams(files: [XFile(audioPath)], text: text));
     }
   }
 }

@@ -70,7 +70,7 @@ Future<bool> _initFirebase() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     await FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.playIntegrity,
+      providerAndroid: const AndroidPlayIntegrityProvider(),
     );
     return true;
   } catch (e, st) {
