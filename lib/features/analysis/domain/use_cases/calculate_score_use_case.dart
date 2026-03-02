@@ -57,8 +57,8 @@ class CalculateScoreUseCase {
         pitchScore: PitchScore(score: 0, actualHz: 0, idealHz: reference.idealPitchHz, deviation: 0),
         volumeScore: volumeScore,
         durationScore: DurationScore(score: 0, actualSec: params.userAnalysis.totalDurationSec, idealSec: reference.idealDurationSec, deviation: 0),
-        toneScore: ToneScore(score: 0, brightness: 0, warmth: 0, nasality: 0),
-        rhythmScore: RhythmScore(score: 0, stability: 0, regularity: 0, tempo: 0),
+        toneScore: const ToneScore(score: 0, brightness: 0, warmth: 0, nasality: 0),
+        rhythmScore: const RhythmScore(score: 0, stability: 0, regularity: 0, tempo: 0),
         analyzedAt: DateTime.now(),
       ));
     }
@@ -100,7 +100,7 @@ class CalculateScoreUseCase {
     // on extremely pure (synthesized) signals that might confuse the SNR calculation.
     double noisePenalty = 0.0;
     if (params.userAnalysis.toneClarity < 25.0 && params.userAnalysis.harmonicRichness < 25.0) {
-      double lowestMetric = min(params.userAnalysis.toneClarity, params.userAnalysis.harmonicRichness);
+      final lowestMetric = min(params.userAnalysis.toneClarity, params.userAnalysis.harmonicRichness);
       noisePenalty = (25.0 - lowestMetric) * 2.0; // Aggressive scale
     }
     

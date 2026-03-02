@@ -72,7 +72,7 @@ class CloudAudioService {
       final file = File(cachePath);
       
       if (Platform.isWindows || Platform.isLinux) {
-        final bucket = 'hunting-call-perfection.firebasestorage.app';
+        const bucket = 'hunting-call-perfection.firebasestorage.app';
         final path = Uri.encodeComponent('$_storagePath/$fileName');
         final url = 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$path?alt=media';
         
@@ -128,7 +128,7 @@ class CloudAudioService {
     final file = File(cachePath);
     
     if (Platform.isWindows || Platform.isLinux) {
-      final bucket = 'hunting-call-perfection.firebasestorage.app';
+      const bucket = 'hunting-call-perfection.firebasestorage.app';
       final path = Uri.encodeComponent('$_storagePath/$fileName');
       final url = 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$path?alt=media';
       

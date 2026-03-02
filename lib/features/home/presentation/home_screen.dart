@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
@@ -49,8 +48,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         !homeState.isLoading) {
       return Scaffold(
         body: BackgroundWrapper(
-          child: SafeArea(
-            child: const DashboardSkeleton(),
+          child: const SafeArea(
+            child: DashboardSkeleton(),
           ),
         ),
       );

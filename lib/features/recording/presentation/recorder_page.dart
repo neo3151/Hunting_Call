@@ -13,12 +13,12 @@ import 'package:outcall/features/recording/presentation/controllers/recording_co
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/features/rating/presentation/rating_screen.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
-
 import 'package:outcall/core/services/cloud_audio_service.dart';
-
 import 'package:outcall/features/recording/presentation/call_selection_screen.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_widgets.dart';
+import 'package:outcall/features/recording/presentation/widgets/recorder_dialogs.dart';
+import 'package:outcall/features/recording/presentation/widgets/recorder_coaching.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
   final String userId;
@@ -102,44 +102,9 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  /// Compute average amplitude from reference waveform for coaching zone
-  double _computeRefAvg(List<double>? waveform) {
-    if (waveform == null || waveform.isEmpty) return 0.0;
-    double sum = 0;
-    int count = 0;
-    for (final v in waveform) {
-      if (v > 0.05) {
-        sum += v;
-        count++;
-      }
-    }
-    return count > 0 ? sum / count : 0.0;
-  }
-
-  /// Get coaching feedback based on current amplitude vs reference target
-  ({String text, Color color}) _getCoachingFeedback(double refAvg) {
-    if (_amplitudeBuffer.isEmpty || refAvg < 0.05) {
-      return (text: '', color: Colors.transparent);
-    }
-    // Use the average of last 10 samples for stable feedback
-    final recent = _amplitudeBuffer.length > 10
-        ? _amplitudeBuffer.sublist(_amplitudeBuffer.length - 10)
-        : _amplitudeBuffer;
-    final currentAvg = recent.fold<double>(0.0, (a, b) => a + b) / recent.length;
-    
-    if (currentAvg < 0.02) return (text: '', color: Colors.transparent); // Silence
-    
-    final zoneLow = refAvg * 0.5;
-    final zoneHigh = refAvg * 1.5;
-    
-    if (currentAvg >= zoneLow && currentAvg <= zoneHigh) {
-      return (text: '🎯 IN RANGE', color: const Color(0xFF5FF7B6));
-    } else if (currentAvg < zoneLow) {
-      return (text: '🔇 TOO QUIET', color: const Color(0xFFFFD54F));
-    } else {
-      return (text: '📢 TOO LOUD', color: const Color(0xFFFF5252));
-    }
-  }
+  // Coaching logic delegated to recorder_coaching.dart
+  double _computeRefAvg(List<double>? waveform) => computeReferenceAverage(waveform);
+  ({String text, Color color}) _getCoachingFeedback(double refAvg) => getCoachingFeedback(_amplitudeBuffer, refAvg);
 
   bool isProcessing = false;
 
@@ -204,11 +169,11 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
           if (permissionStatus.isDenied) {
             final granted = await Permission.microphone.request();
             if (!granted.isGranted) {
-              if (mounted) _showPermissionDeniedDialog();
+              if (mounted) showMicPermissionDeniedDialog(context, onGranted: _toggleRecording);
               return;
             }
           } else if (permissionStatus.isPermanentlyDenied) {
-            if (mounted) _showPermissionSettingsDialog();
+            if (mounted) showMicPermissionSettingsDialog(context);
             return;
           }
         }
@@ -251,85 +216,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     }
   }
 
-  void _showPermissionDeniedDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.of(context).surface,
-        title: Row(
-          children: [
-            const Icon(Icons.mic_off, color: Colors.orangeAccent),
-            const SizedBox(width: 12),
-            Text('Microphone Access', style: GoogleFonts.oswald(color: AppColors.of(context).textPrimary)),
-          ],
-        ),
-        content: Text(
-          'We need microphone access to record your hunting calls. This helps us analyze your technique and provide scoring.',
-          style: TextStyle(color: AppColors.of(context).textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Not Now', style: TextStyle(color: AppColors.of(context).textTertiary)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final granted = await Permission.microphone.request();
-              if (granted.isGranted) {
-                _toggleRecording();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: AppColors.of(context).background,
-            ),
-            child: const Text('Allow'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showPermissionSettingsDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.of(context).surface,
-        title: Row(
-          children: [
-            const Icon(Icons.settings, color: Colors.orangeAccent),
-            const SizedBox(width: 12),
-            Text('Permission Required', style: GoogleFonts.oswald(color: AppColors.of(context).textPrimary)),
-          ],
-        ),
-        content: Text(
-          'Microphone access is disabled in system settings. Please enable it to record hunting calls.',
-          style: TextStyle(color: AppColors.of(context).textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: AppColors.of(context).textTertiary)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final navigator = Navigator.of(context);
-              await openAppSettings();
-              if (mounted) navigator.pop();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: AppColors.of(context).background,
-            ),
-            child: const Text('Open Settings'),
-          ),
-        ],
-      ),
-    );
-  }
+  // Permission dialogs delegated to recorder_dialogs.dart
 
 
   Future<void> _playReferenceSound() async {

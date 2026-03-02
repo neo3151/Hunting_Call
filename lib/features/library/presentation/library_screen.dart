@@ -42,11 +42,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     super.dispose();
   }
 
-  Future<bool> _onWillPop() async {
-    _audioService?.stop();
-    return true;
-  }
-
   Future<void> _togglePlayback(ReferenceCall call) async {
     final profile = ref.read(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
