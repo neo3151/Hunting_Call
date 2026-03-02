@@ -7,15 +7,20 @@ import 'package:outcall/core/theme/app_colors.dart';
 class ChallengeCard extends StatelessWidget {
   final dynamic challengeCall;
   final VoidCallback onStart;
+  final int todayReps;
+  final int currentStreak;
 
   const ChallengeCard({
     super.key,
     required this.challengeCall,
     required this.onStart,
+    this.todayReps = 0,
+    this.currentStreak = 0,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isComplete = todayReps >= 3;
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -46,8 +51,10 @@ class ChallengeCard extends StatelessWidget {
                   border: Border.all(
                       color: const Color(0xFF5FF7B6).withValues(alpha: 0.4)),
                 ),
-                child: const Icon(Icons.record_voice_over,
-                    color: Color(0xFF5FF7B6), size: 40),
+                child: Icon(
+                    isComplete ? Icons.check_rounded : Icons.record_voice_over,
+                    color: const Color(0xFF5FF7B6),
+                    size: 40),
               ),
               const SizedBox(height: 24),
               Text(
@@ -62,22 +69,35 @@ class ChallengeCard extends StatelessWidget {
                 challengeCall.callType,
                 style: GoogleFonts.lato(color: AppColors.of(context).textSecondary, fontSize: 14),
               ),
+              if (currentStreak > 0) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '🔥 $currentStreak day streak',
+                  style: GoogleFonts.lato(
+                    color: Colors.orangeAccent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
               const SizedBox(height: 32),
               _buildMetricStats(context),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: onStart,
+                  onPressed: isComplete ? null : onStart,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF5FF7B6),
+                    backgroundColor: isComplete
+                        ? AppColors.of(context).surfaceLight
+                        : const Color(0xFF5FF7B6),
                     foregroundColor: Colors.black87,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(
-                    'START CHALLENGE',
+                    isComplete ? 'CHALLENGE COMPLETE ✓' : 'START CHALLENGE',
                     style: GoogleFonts.oswald(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
@@ -93,12 +113,15 @@ class ChallengeCard extends StatelessWidget {
   }
 
   Widget _buildMetricStats(BuildContext context) {
+    final repsColor = todayReps >= 3
+        ? const Color(0xFF5FF7B6)
+        : AppColors.of(context).textSecondary;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _buildStatItem(context,
             'DIFFICULTY', challengeCall.difficulty.toUpperCase(), Colors.orangeAccent),
-        _buildStatItem(context, 'REPS', '0/3', AppColors.of(context).textSecondary),
+        _buildStatItem(context, 'REPS', '$todayReps/3', repsColor),
         _buildStatItem(context, 'REWARD', '+500 XP', const Color(0xFF5FF7B6)),
       ],
     );

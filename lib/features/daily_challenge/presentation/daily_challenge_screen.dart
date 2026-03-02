@@ -8,6 +8,7 @@ import 'package:outcall/features/daily_challenge/presentation/widgets/challenge_
 import 'package:outcall/features/daily_challenge/presentation/widgets/leaderboard_preview.dart';
 import 'package:outcall/core/utils/animal_image_alignment.dart';
 import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 
 class DailyChallengeScreen extends ConsumerWidget {
   final String userId;
@@ -76,19 +77,34 @@ class DailyChallengeScreen extends ConsumerWidget {
                     children: [
                       _buildHeader(context),
                       const SizedBox(height: 32),
-                      ChallengeCard(
-                        challengeCall: challengeCall,
-                        onStart: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => RecorderPage(
-                                userId: userId,
-                                preselectedAnimalId: challengeCall.id,
+                      Builder(builder: (context) {
+                        // Count today's reps from profile history
+                        final profile = ref.watch(profileNotifierProvider).profile;
+                        final today = DateTime.now();
+                        final todayReps = profile?.history.where((h) {
+                          return h.animalId == challengeCall.id &&
+                              h.timestamp.year == today.year &&
+                              h.timestamp.month == today.month &&
+                              h.timestamp.day == today.day;
+                        }).length ?? 0;
+                        final currentStreak = profile?.currentStreak ?? 0;
+
+                        return ChallengeCard(
+                          challengeCall: challengeCall,
+                          todayReps: todayReps,
+                          currentStreak: currentStreak,
+                          onStart: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => RecorderPage(
+                                  userId: userId,
+                                  preselectedAnimalId: challengeCall.id,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                            );
+                          },
+                        );
+                      }),
                       const Spacer(),
                       LeaderboardPreview(animalId: challengeCall.id),
                       const SizedBox(height: 24),
