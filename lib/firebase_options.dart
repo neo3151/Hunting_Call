@@ -44,7 +44,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBHJwRjQq0nUA7LRrQL80XJ-spZGWsOwLs',
+    apiKey: 'AIzaSyDoDSM6rJO4VLdfYzQKSrybRS7rSQ84Lbg',
     appId: '1:654995904748:android:97999200e4dd9deb82adc9',
     messagingSenderId: '654995904748',
     projectId: 'hunting-call-perfection',
@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBBhl5DK29N22yB5jonMr4Is60YfZrRWCQ',
+    apiKey: 'AIzaSyCWoSv27Cu_AOYP3hLia92vSS59pz9CTsY',
     appId: '1:654995904748:ios:fc05c8c866caf70682adc9',
     messagingSenderId: '654995904748',
     projectId: 'hunting-call-perfection',
@@ -61,7 +61,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyC7zcpxfRV13kHdI6yUzIKzDxWcgWm-EFQ',
+    apiKey: 'AIzaSyBGJiaNDKA879CepT1Ymgp2pkBB_pm_FZs',
     appId: '1:654995904748:web:5079119d9b07508082adc9',
     messagingSenderId: '654995904748',
     projectId: 'hunting-call-perfection',
