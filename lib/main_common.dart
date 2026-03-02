@@ -70,11 +70,14 @@ Future<bool> _initFirebase() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    await FirebaseAppCheck.instance.activate(
-      providerAndroid: kDebugMode
-          ? const AndroidDebugProvider()
-          : const AndroidPlayIntegrityProvider(),
-    );
+    // Skip App Check in debug mode — Play Integrity only works on
+    // release builds, and the debug provider requires manual token
+    // registration in Firebase Console.
+    if (!kDebugMode) {
+      await FirebaseAppCheck.instance.activate(
+        providerAndroid: const AndroidPlayIntegrityProvider(),
+      );
+    }
     return true;
   } catch (e, st) {
     AppLogger.e('Firebase init failed', e, st);
