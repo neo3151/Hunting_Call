@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/widgets/connectivity_banner.dart';
 
 /// A wrapper widget that provides a tiled, blurred background pattern.

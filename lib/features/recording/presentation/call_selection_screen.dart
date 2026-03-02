@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
@@ -25,7 +26,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: AppColors.of(context).textPrimary),
             onPressed: () {
               if (_selectedCategory != null) {
                 setState(() => _selectedCategory = null);
@@ -39,7 +40,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
             style: GoogleFonts.oswald(
               fontWeight: FontWeight.bold,
               letterSpacing: 1.5,
-              color: Colors.white,
+              color: AppColors.of(context).textPrimary,
             ),
           ),
           centerTitle: true,
@@ -83,7 +84,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                   onTap: () => setState(() => _selectedCategory = category),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: AppColors.of(context).border,
                       border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -108,7 +109,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                           style: GoogleFonts.oswald(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.of(context).textPrimary,
                             letterSpacing: 1.2,
                           ),
                           textAlign: TextAlign.center,
@@ -146,10 +147,10 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                 color: Colors.transparent,
                 child: ListTile(
                   onTap: isLocked ? null : () => Navigator.pop(context, call.id),
-                  tileColor: Colors.white.withValues(alpha: 0.05),
+                  tileColor: AppColors.of(context).cardOverlay,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                    side: BorderSide(color: AppColors.of(context).border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   leading: Stack(
@@ -163,8 +164,8 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                           errorBuilder: (context, error, stackTrace) => Container(
                             width: 48,
                             height: 48,
-                            color: Colors.white10,
-                            child: const Icon(Icons.image, color: Colors.white54),
+                            color: AppColors.of(context).divider,
+                            child: Icon(Icons.image, color: AppColors.of(context).textTertiary),
                           ),
                         ),
                       ),

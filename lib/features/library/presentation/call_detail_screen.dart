@@ -13,7 +13,6 @@ import 'package:outcall/core/services/audio_service.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/animal_image_alignment.dart';
 
-
 class CallDetailScreen extends ConsumerStatefulWidget {
   final ReferenceCall call;
   final String userId;
@@ -25,28 +24,37 @@ class CallDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
+  AudioService? _audioService;
+
   @override
   void initState() {
     super.initState();
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _audioService = ref.read(audioServiceProvider);
+  }
+
+  @override
   void dispose() {
-    // Stop audio playback when leaving the detail screen
-    ref.read(audioServiceProvider).stop();
+    _audioService?.stop();
     super.dispose();
   }
 
   Future<void> _togglePlayback() async {
     final audioService = ref.read(audioServiceProvider);
-    
+
     try {
       await audioService.play(widget.call.id, widget.call.audioAssetPath);
       if (mounted) setState(() {}); // Trigger rebuild
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not play audio: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Could not play audio: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -59,243 +67,300 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     final profile = ref.watch(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      body: Container(
-        color: const Color(0xFF121212),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: ListView(
-              padding: EdgeInsets.zero,
-              physics: const BouncingScrollPhysics(),
-              children: [
-            // Header Image
-            Stack(
-              children: [
-                Hero(
-                  tag: 'animal_${widget.call.id}',
-                  child: Semantics(
-                    label: 'Detailed photo of ${widget.call.animalName}',
-                    image: true,
-                    child: Image.asset(
-                      widget.call.imageUrl,
-                      width: double.infinity,
-                      height: 350,
-                      fit: BoxFit.cover,
-                      alignment: AnimalImageAlignment.forImage(widget.call.imageUrl),
-                    ),
-                  ),
-                ),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, const Color(0xFF121212).withValues(alpha: 0.8)],
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 10,
-                  left: 10,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                  child: Text(
-                    widget.call.callType.toUpperCase(),
-                    style: GoogleFonts.oswald(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                      color: Colors.white
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark
+        ? const Color(0xFF121212)
+        : Theme.of(context).scaffoldBackgroundColor;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white70 : Colors.black54;
+    final cardColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.black.withValues(alpha: 0.1);
+
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _audioService?.stop();
+      },
+      child: Scaffold(
+        backgroundColor: bgColor,
+        body: Container(
+          color: bgColor,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: ListView(
+                padding: EdgeInsets.zero,
+                physics: const BouncingScrollPhysics(),
                 children: [
-                  // Names Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Header Image
+                  Stack(
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.call.animalName,
-                            style: GoogleFonts.oswald(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold),
+                      Hero(
+                        tag: 'animal_${widget.call.id}',
+                        child: Semantics(
+                          label: 'Detailed photo of ${widget.call.animalName}',
+                          image: true,
+                          child: Image.asset(
+                            widget.call.imageUrl,
+                            width: double.infinity,
+                            height: 350,
+                            fit: BoxFit.cover,
+                            alignment: AnimalImageAlignment.forImage(
+                                widget.call.imageUrl),
                           ),
-                          Text(
-                            widget.call.scientificName,
-                            style: const TextStyle(color: Colors.white54, fontSize: 16, fontStyle: FontStyle.italic),
-                          ),
-                        ],
+                        ),
                       ),
-                      _buildDifficultyBadge(widget.call.difficulty),
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                bgColor.withValues(alpha: 0.8)
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: MediaQuery.of(context).padding.top + 10,
+                        left: 10,
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_back_ios_new,
+                              color: isDark ? Colors.white : Colors.black87),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 20,
+                        left: 20,
+                        right: 20,
+                        child: Text(
+                          widget.call.callType.toUpperCase(),
+                          style: GoogleFonts.oswald(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2,
+                              color: textColor),
+                        ),
+                      ),
                     ],
                   ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Action Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _togglePlayback,
-                          icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
-                          label: Text(
-                            isPlaying ? 'STOP REFERENCE' : 'LISTEN TO REFERENCE',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
+
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Names Section
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.call.animalName,
+                                  style: GoogleFonts.oswald(
+                                      fontSize: 32,
+                                      color: textColor,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  widget.call.scientificName,
+                                  style: const TextStyle(
+                                      color: Colors.white54,
+                                      fontSize: 16,
+                                      fontStyle: FontStyle.italic),
+                                ),
+                              ],
+                            ),
+                            _buildDifficultyBadge(widget.call.difficulty),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+
+                        const SizedBox(height: 30),
+
+                        // Action Row
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _togglePlayback,
+                                icon: Icon(isPlaying
+                                    ? Icons.stop_rounded
+                                    : Icons.play_arrow_rounded),
+                                label: Text(
+                                  isPlaying
+                                      ? 'STOP REFERENCE'
+                                      : 'LISTEN TO REFERENCE',
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                  foregroundColor: Colors.black,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.1)
+                                    : Colors.black.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => RecorderPage(
+                                          userId: widget.userId,
+                                          preselectedAnimalId: widget.call.id),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.mic,
+                                    color: Colors.white70),
+                                tooltip: 'Start Practice',
+                              ),
+                            ),
+                          ],
                         ),
-                        child: IconButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => RecorderPage(
-                                  userId: widget.userId, 
-                                  preselectedAnimalId: widget.call.id
+
+                        const SizedBox(height: 12),
+
+                        // Leaderboard Action
+                        // Check premium status (need to get it first)
+                        // BuildContext is available, so we can use Consumer or ref if we convert to ConsumerWidget.
+                        // Current class is StatefulWidget. We should probably convert to ConsumerStatefulWidget to access ref easily,
+                        // OR use a Consumer widget wrapper in the build method.
+
+                        // Let's use Consumer since converting the whole class is more invasive.
+                        // Leaderboard Action
+                        // Leaderboard Action
+                        Builder(builder: (context) {
+                          final showLeaderboard =
+                              AppConfig.instance.allowLeaderboard || isPremium;
+
+                          if (showLeaderboard) {
+                            return SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => LeaderboardScreen(
+                                        animalId: widget.call.id,
+                                        animalName: widget.call.animalName,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.emoji_events_outlined,
+                                    color: Colors.orangeAccent),
+                                label:
+                                    const Text('VIEW GLOBAL EXPERT RANKINGS'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white70,
+                                  side: BorderSide(
+                                      color: Colors.orangeAccent
+                                          .withValues(alpha: 0.3)),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
                                 ),
                               ),
                             );
-                          },
-                          icon: const Icon(Icons.mic, color: Colors.white70),
-                          tooltip: 'Start Practice',
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Leaderboard Action
-                  // Check premium status (need to get it first)
-                  // BuildContext is available, so we can use Consumer or ref if we convert to ConsumerWidget.
-                  // Current class is StatefulWidget. We should probably convert to ConsumerStatefulWidget to access ref easily,
-                  // OR use a Consumer widget wrapper in the build method.
-                  
-                  // Let's use Consumer since converting the whole class is more invasive.
-                  // Leaderboard Action
-                  // Leaderboard Action
-                  Builder(
-                    builder: (context) {
-                      final showLeaderboard = AppConfig.instance.allowLeaderboard || isPremium;
-
-                      if (showLeaderboard) {
-                        return SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => LeaderboardScreen(
-                                    animalId: widget.call.id,
-                                    animalName: widget.call.animalName,
-                                  ),
+                          } else {
+                            return SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  AppLogger.d(
+                                      '🔒 Locked Leaderboard clicked. Showing prompt...');
+                                  UpgradePrompter.show(context,
+                                      featureName: 'Global Leaderboards');
+                                },
+                                icon: const Icon(Icons.lock_outline,
+                                    color: Colors.white38),
+                                label: const Text('GLOBAL RANKINGS (LOCKED)'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white38,
+                                  side: BorderSide(color: borderColor),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.emoji_events_outlined, color: Colors.orangeAccent),
-                            label: const Text('VIEW GLOBAL EXPERT RANKINGS'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white70,
-                              side: BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.3)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        );
-                      } else {
-                        return SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              AppLogger.d('🔒 Locked Leaderboard clicked. Showing prompt...');
-                              UpgradePrompter.show(context, featureName: 'Global Leaderboards');
-                            },
-                            icon: const Icon(Icons.lock_outline, color: Colors.white38),
-                            label: const Text('GLOBAL RANKINGS (LOCKED)'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white38,
-                              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        );
-                      }
-                    }
+                              ),
+                            );
+                          }
+                        }),
+
+                        const SizedBox(height: 40),
+
+                        // Bioacoustic Data Section
+                        _sectionHeader('ACOUSTIC SIGNATURE'),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            _metricCard(
+                                'DOMINANT PITCH',
+                                '${widget.call.idealPitchHz.toInt()} Hz',
+                                Icons.graphic_eq),
+                            const SizedBox(width: 12),
+                            _metricCard(
+                                'DURATION',
+                                '${widget.call.idealDurationSec} Sec',
+                                Icons.timer_outlined),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        AcousticSpectrumWidget(
+                          pitchHz: widget.call.idealPitchHz,
+                          durationSec: widget.call.idealDurationSec,
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        // Description
+                        _sectionHeader('NATURAL HISTORY'),
+                        const SizedBox(height: 12),
+                        Text(
+                          widget.call.description,
+                          style: TextStyle(
+                              color: subtextColor, fontSize: 16, height: 1.6),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        // Pro Tips Card
+                        if (widget.call.proTips.isNotEmpty) _buildProTipsCard(),
+
+                        const SizedBox(height: 50),
+                      ],
+                    ),
                   ),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // Bioacoustic Data Section
-                  _sectionHeader('ACOUSTIC SIGNATURE'),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _metricCard('DOMINANT PITCH', '${widget.call.idealPitchHz.toInt()} Hz', Icons.graphic_eq),
-                      const SizedBox(width: 12),
-                      _metricCard('DURATION', '${widget.call.idealDurationSec} Sec', Icons.timer_outlined),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  AcousticSpectrumWidget(
-                    pitchHz: widget.call.idealPitchHz,
-                    durationSec: widget.call.idealDurationSec,
-                  ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Description
-                  _sectionHeader('NATURAL HISTORY'),
-                  const SizedBox(height: 12),
-                  Text(
-                    widget.call.description,
-                    style: const TextStyle(color: Colors.white70, fontSize: 16, height: 1.6),
-                  ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Pro Tips Card
-                  if (widget.call.proTips.isNotEmpty) _buildProTipsCard(),
-                  
-                  const SizedBox(height: 50),
                 ],
               ),
             ),
-          ],
-        ),
-        ),
+          ),
         ),
       ),
     );
@@ -304,26 +369,43 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   Widget _sectionHeader(String title) {
     return Text(
       title,
-      style: GoogleFonts.oswald(color: Theme.of(context).primaryColor, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+      style: GoogleFonts.oswald(
+          color: Theme.of(context).primaryColor,
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2),
     );
   }
 
   Widget _metricCard(String label, String value, IconData icon) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: dark
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(
+              color: dark
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: Colors.white38, size: 20),
+            Icon(icon, color: dark ? Colors.white38 : Colors.black38, size: 20),
             const SizedBox(height: 12),
-            Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+            Text(value,
+                style: TextStyle(
+                    color: dark ? Colors.white : Colors.black87,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold)),
+            Text(label,
+                style: TextStyle(
+                    color: dark ? Colors.white38 : Colors.black38,
+                    fontSize: 10)),
           ],
         ),
       ),
@@ -331,30 +413,38 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   }
 
   Widget _buildProTipsCard() {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
+        border: Border.all(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.tips_and_updates_rounded, color: Theme.of(context).primaryColor),
+              Icon(Icons.tips_and_updates_rounded,
+                  color: Theme.of(context).primaryColor),
               const SizedBox(width: 12),
               Text(
                 'FIELD PRO TIPS',
-                style: GoogleFonts.oswald(color: Colors.white, fontWeight: FontWeight.bold),
+                style: GoogleFonts.oswald(
+                    color: dark ? Colors.white : Colors.black87,
+                    fontWeight: FontWeight.bold),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             widget.call.proTips,
-            style: const TextStyle(color: Colors.white70, fontSize: 15, height: 1.5),
+            style: TextStyle(
+                color: dark ? Colors.white70 : Colors.black54,
+                fontSize: 15,
+                height: 1.5),
           ),
         ],
       ),
@@ -364,10 +454,17 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   Widget _buildDifficultyBadge(String difficulty) {
     Color color;
     switch (difficulty.toLowerCase()) {
-      case 'easy': color = Theme.of(context).primaryColor; break;
-      case 'intermediate': color = const Color(0xFFFFB74D); break;
-      case 'pro': color = const Color(0xFFE57373); break;
-      default: color = Colors.white54;
+      case 'easy':
+        color = Theme.of(context).primaryColor;
+        break;
+      case 'intermediate':
+        color = const Color(0xFFFFB74D);
+        break;
+      case 'pro':
+        color = const Color(0xFFE57373);
+        break;
+      default:
+        color = Colors.white54;
     }
 
     return Container(
@@ -379,7 +476,8 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
       ),
       child: Text(
         difficulty.toUpperCase(),
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+        style:
+            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
       ),
     );
   }

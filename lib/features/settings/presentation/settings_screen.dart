@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
 import 'package:outcall/core/theme/app_theme.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,6 +18,8 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsAsync = ref.watch(settingsNotifierProvider);
+    final colors = AppColors.of(context);
+    final isDark = AppColors.isDark(context);
 
     return Scaffold(
       body: BackgroundWrapper(
@@ -29,14 +32,14 @@ class SettingsScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      icon: Icon(Icons.arrow_back, color: colors.textPrimary),
                       onPressed: () => Navigator.pop(context),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'SETTINGS',
                       style: GoogleFonts.oswald(
-                        color: Colors.white,
+                        color: colors.textPrimary,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
@@ -53,7 +56,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   error: (e, _) => Center(
                     child: Text('Error: $e',
-                        style: const TextStyle(color: Colors.white70)),
+                        style: TextStyle(color: colors.textSecondary)),
                   ),
                   data: (settings) {
                     final notifier =
@@ -65,6 +68,7 @@ class SettingsScreen extends ConsumerWidget {
                         children: [
                           _sectionTitle(context, 'APPEARANCE'),
                           _settingsTile(
+                            context: context,
                             icon: Icons.brightness_6_outlined,
                             title: 'Dark Mode',
                             subtitle: 'Light, Dark, or System',
@@ -81,36 +85,37 @@ class SettingsScreen extends ConsumerWidget {
                                   if (states.contains(WidgetState.selected)) {
                                     return Theme.of(context).primaryColor.withValues(alpha: 0.3);
                                   }
-                                  return Colors.white.withValues(alpha: 0.05);
+                                  return colors.cardOverlay;
                                 }),
-                                foregroundColor: WidgetStateProperty.all(Colors.white),
-                                side: WidgetStateProperty.all(const BorderSide(color: Colors.white24)),
+                                foregroundColor: WidgetStateProperty.all(colors.textPrimary),
+                                side: WidgetStateProperty.all(BorderSide(color: colors.border)),
                               ),
                             ),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
                           _settingsTile(
+                            context: context,
                             icon: Icons.palette_outlined,
                             title: 'App Theme',
                             subtitle: 'Choose your color palette',
                             trailing: SegmentedButton<AppTheme>(
-                              segments: [
-                                const ButtonSegment(
+                              segments: const [
+                                ButtonSegment(
                                   value: AppTheme.classic,
                                   icon: Icon(Icons.circle, color: Color(0xFFFF8C00), size: 14),
                                   label: Text('ORA', style: TextStyle(fontSize: 10)),
                                 ),
-                                const ButtonSegment(
+                                ButtonSegment(
                                   value: AppTheme.midnight,
                                   icon: Icon(Icons.circle, color: Color(0xFF3A86FF), size: 14),
                                   label: Text('BLU', style: TextStyle(fontSize: 10)),
                                 ),
-                                const ButtonSegment(
+                                ButtonSegment(
                                   value: AppTheme.forest,
                                   icon: Icon(Icons.circle, color: Color(0xFF2ECC71), size: 14),
                                   label: Text('GRN', style: TextStyle(fontSize: 10)),
                                 ),
-                                const ButtonSegment(
+                                ButtonSegment(
                                   value: AppTheme.hunter,
                                   icon: Icon(Icons.circle, color: Color(0xFFE74C3C), size: 14),
                                   label: Text('RED', style: TextStyle(fontSize: 10)),
@@ -127,19 +132,20 @@ class SettingsScreen extends ConsumerWidget {
                                     return Theme.of(context).primaryColor
                                         .withValues(alpha: 0.3);
                                   }
-                                  return Colors.white.withValues(alpha: 0.05);
+                                  return colors.cardOverlay;
                                 }),
                                 foregroundColor:
-                                    WidgetStateProperty.all(Colors.white),
+                                    WidgetStateProperty.all(colors.textPrimary),
                                 side: WidgetStateProperty.all(
-                                    const BorderSide(color: Colors.white24)),
+                                    BorderSide(color: colors.border)),
                               ),
                             ),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
 
                           _sectionTitle(context, 'PREFERENCES'),
                           _settingsTile(
+                            context: context,
                             icon: Icons.straighten,
                             title: 'Distance Unit',
                             subtitle: settings.distanceUnit == 'imperial'
@@ -167,17 +173,18 @@ class SettingsScreen extends ConsumerWidget {
                                     return Theme.of(context).primaryColor
                                         .withValues(alpha: 0.3);
                                   }
-                                  return Colors.white.withValues(alpha: 0.05);
+                                  return colors.cardOverlay;
                                 }),
                                 foregroundColor:
-                                    WidgetStateProperty.all(Colors.white),
+                                    WidgetStateProperty.all(colors.textPrimary),
                                 side: WidgetStateProperty.all(
-                                    const BorderSide(color: Colors.white24)),
+                                    BorderSide(color: colors.border)),
                               ),
                             ),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
                           _settingsTile(
+                            context: context,
                             icon: Icons.notifications_outlined,
                             title: 'Notifications',
                             subtitle: 'Daily challenge reminders',
@@ -187,10 +194,11 @@ class SettingsScreen extends ConsumerWidget {
                               activeThumbColor: Theme.of(context).primaryColor,
                             ),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
 
                           _sectionTitle(context, 'AUDIO & HAPTICS'),
                           _settingsTile(
+                            context: context,
                             icon: Icons.volume_up_outlined,
                             title: 'Sound Effects',
                             subtitle: 'UI interaction sounds',
@@ -200,8 +208,9 @@ class SettingsScreen extends ConsumerWidget {
                               activeThumbColor: Theme.of(context).primaryColor,
                             ),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
                           _settingsTile(
+                            context: context,
                             icon: Icons.vibration,
                             title: 'Haptic Feedback',
                             subtitle: 'Vibration on interactions',
@@ -211,10 +220,11 @@ class SettingsScreen extends ConsumerWidget {
                               activeThumbColor: Theme.of(context).primaryColor,
                             ),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
 
                           _sectionTitle(context, 'PERFORMANCE & STORAGE'),
                           _settingsTile(
+                            context: context,
                             icon: Icons.high_quality,
                             title: 'Image Quality',
                             subtitle: 'Lower quality saves memory',
@@ -231,51 +241,54 @@ class SettingsScreen extends ConsumerWidget {
                                   if (states.contains(WidgetState.selected)) {
                                     return Theme.of(context).primaryColor.withValues(alpha: 0.3);
                                   }
-                                  return Colors.white.withValues(alpha: 0.05);
+                                  return colors.cardOverlay;
                                 }),
-                                foregroundColor: WidgetStateProperty.all(Colors.white),
-                                side: WidgetStateProperty.all(const BorderSide(color: Colors.white24)),
+                                foregroundColor: WidgetStateProperty.all(colors.textPrimary),
+                                side: WidgetStateProperty.all(BorderSide(color: colors.border)),
                               ),
                             ),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
                           _settingsTile(
+                            context: context,
                             icon: Icons.cleaning_services,
                             title: 'Audio Cleanup',
                             subtitle: 'Auto-delete old recordings',
                             trailing: DropdownButton<int>(
                               value: settings.autoCleanupHours,
-                              dropdownColor: const Color(0xFF1A1A1A),
+                              dropdownColor: colors.surface,
                               underline: const SizedBox.shrink(),
-                              items: const [
-                                DropdownMenuItem(value: 0, child: Text('Never', style: TextStyle(color: Colors.white, fontSize: 13))),
-                                DropdownMenuItem(value: 1, child: Text('1h', style: TextStyle(color: Colors.white, fontSize: 13))),
-                                DropdownMenuItem(value: 6, child: Text('6h', style: TextStyle(color: Colors.white, fontSize: 13))),
-                                DropdownMenuItem(value: 24, child: Text('24h', style: TextStyle(color: Colors.white, fontSize: 13))),
-                                DropdownMenuItem(value: 168, child: Text('7d', style: TextStyle(color: Colors.white, fontSize: 13))),
+                              items: [
+                                DropdownMenuItem(value: 0, child: Text('Never', style: TextStyle(color: colors.textPrimary, fontSize: 13))),
+                                DropdownMenuItem(value: 1, child: Text('1h', style: TextStyle(color: colors.textPrimary, fontSize: 13))),
+                                DropdownMenuItem(value: 6, child: Text('6h', style: TextStyle(color: colors.textPrimary, fontSize: 13))),
+                                DropdownMenuItem(value: 24, child: Text('24h', style: TextStyle(color: colors.textPrimary, fontSize: 13))),
+                                DropdownMenuItem(value: 168, child: Text('7d', style: TextStyle(color: colors.textPrimary, fontSize: 13))),
                               ],
                               onChanged: (v) => v != null ? notifier.setAutoCleanupHours(v) : null,
                             ),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
 
                           _sectionTitle(context, 'FEEDBACK & SUPPORT'),
                           _settingsTile(
+                            context: context,
                             icon: Icons.bug_report_outlined,
                             title: 'Send Feedback',
                             subtitle: 'Report a bug or suggest a feature',
-                            trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+                            trailing: Icon(Icons.chevron_right, color: colors.iconSubtle),
                             onTap: () => _sendFeedbackEmail(context, ref),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
 
                           _sectionTitle(context, 'ABOUT'),
                           _settingsTile(
+                            context: context,
                             icon: Icons.shield_outlined,
                             title: 'Privacy Policy',
                             subtitle: 'How we handle your data',
-                            trailing: const Icon(Icons.chevron_right,
-                                color: Colors.white38),
+                            trailing: Icon(Icons.chevron_right,
+                                color: colors.iconSubtle),
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -283,7 +296,7 @@ class SettingsScreen extends ConsumerWidget {
                                       const PrivacyPolicyScreen()),
                             ),
                           ),
-                          const Divider(color: Colors.white12),
+                          Divider(color: colors.divider),
                           FutureBuilder<PackageInfo>(
                             future: PackageInfo.fromPlatform(),
                             builder: (context, snapshot) {
@@ -291,6 +304,7 @@ class SettingsScreen extends ConsumerWidget {
                                   ? '${snapshot.data!.version} (Build ${snapshot.data!.buildNumber})'
                                   : 'Loading...';
                               return _settingsTile(
+                                context: context,
                                 icon: Icons.info_outline,
                                 title: 'App Version',
                                 subtitle: version,
@@ -307,23 +321,22 @@ class SettingsScreen extends ConsumerWidget {
                                 final confirmed = await showDialog<bool>(
                                   context: context,
                                   builder: (ctx) => AlertDialog(
-                                    backgroundColor:
-                                        const Color(0xFF1A1A1A),
+                                    backgroundColor: colors.surface,
                                     title: Text('Reset Settings?',
                                         style: GoogleFonts.oswald(
-                                            color: Colors.white)),
-                                    content: const Text(
+                                            color: colors.textPrimary)),
+                                    content: Text(
                                       'This will restore all settings to their defaults.',
                                       style:
-                                          TextStyle(color: Colors.white70),
+                                          TextStyle(color: colors.textSecondary),
                                     ),
                                     actions: [
                                       TextButton(
                                         onPressed: () =>
                                             Navigator.pop(ctx, false),
-                                        child: const Text('CANCEL',
+                                        child: Text('CANCEL',
                                             style: TextStyle(
-                                                color: Colors.white54)),
+                                                color: colors.textTertiary)),
                                       ),
                                       TextButton(
                                         onPressed: () =>
@@ -341,11 +354,11 @@ class SettingsScreen extends ConsumerWidget {
                                   await notifier.resetToDefaults();
                                 }
                               },
-                              icon: const Icon(Icons.restore,
-                                  color: Colors.white38, size: 18),
+                              icon: Icon(Icons.restore,
+                                  color: colors.iconSubtle, size: 18),
                               label: Text('Reset to Defaults',
                                   style: GoogleFonts.lato(
-                                      color: Colors.white38,
+                                      color: colors.textSubtle,
                                       fontSize: 13)),
                             ),
                           ),
@@ -379,20 +392,20 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _settingsTile({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
     required Widget trailing,
     VoidCallback? onTap,
   }) {
+    final colors = AppColors.of(context);
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Reserve space for icon (40) + gap (16) = 56px
-            // Give trailing at most 55% of remaining width
             final maxTrailingWidth = (constraints.maxWidth - 56) * 0.55;
             return Row(
               children: [
@@ -400,10 +413,10 @@ class SettingsScreen extends ConsumerWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: colors.cardOverlay,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: Colors.white54, size: 20),
+                  child: Icon(icon, color: colors.textTertiary, size: 20),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -412,13 +425,13 @@ class SettingsScreen extends ConsumerWidget {
                     children: [
                       Text(title,
                           style: GoogleFonts.lato(
-                              color: Colors.white,
+                              color: colors.textPrimary,
                               fontSize: 15,
                               fontWeight: FontWeight.w600)),
                       const SizedBox(height: 2),
                       Text(subtitle,
                           style: GoogleFonts.lato(
-                              color: Colors.white38, fontSize: 12)),
+                              color: colors.textSubtle, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -456,13 +469,11 @@ class SettingsScreen extends ConsumerWidget {
     }
 
     final String appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
-    // Optionally grab user ID if they are logged in.
     final profileState = ref.read(profileNotifierProvider);
     final String userId = profileState.profile?.id ?? 'Not logged in';
 
     final String body = '''
 Please describe the issue or feedback below:
-
 
 
 ========================
@@ -476,7 +487,7 @@ User ID: $userId
 
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'support@huntingcalls.app', // Placeholder, developer can update this later
+      path: 'support@huntingcalls.app',
       queryParameters: {
         'subject': 'Outcall Alpha Feedback - $appVersion',
         'body': body,

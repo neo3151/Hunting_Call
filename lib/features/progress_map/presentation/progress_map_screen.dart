@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/features/recording/presentation/recorder_page.dart';
@@ -79,7 +80,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                           const SizedBox(height: 16),
                           Text('Loading world...',
                               style: GoogleFonts.pressStart2p(
-                                  color: Colors.white38, fontSize: 8)),
+                                  color: AppColors.of(context).textSubtle, fontSize: 8)),
                         ],
                       ),
                     )
@@ -87,7 +88,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                       ? Center(
                           child: Text('No calls found',
                               style: GoogleFonts.oswald(
-                                  color: Colors.white54)))
+                                  color: AppColors.of(context).textTertiary)))
                       : _buildWorldMap(mapState),
             ),
             if (mapState.selectedNode != null)
@@ -147,8 +148,8 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back,
-                      color: Colors.white, size: 20),
+                  icon: Icon(Icons.arrow_back,
+                      color: AppColors.of(context).textPrimary, size: 20),
                   onPressed: () => Navigator.pop(context),
                   padding: const EdgeInsets.all(6),
                   constraints: const BoxConstraints(),
@@ -178,7 +179,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                         Text(
                           world.subtitle.toUpperCase(),
                           style: GoogleFonts.pressStart2p(
-                              color: Colors.white38, fontSize: 6),
+                              color: AppColors.of(context).textSubtle, fontSize: 6),
                         ),
                       ],
                     ),
@@ -186,7 +187,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                     Text(
                       world.name,
                       style: GoogleFonts.pressStart2p(
-                        color: Colors.white,
+                        color: AppColors.of(context).textPrimary,
                         fontSize: 13,
                         height: 1.2,
                         shadows: [
@@ -314,12 +315,12 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                     : null,
                 color: selected
                     ? null
-                    : Colors.white.withValues(alpha: 0.05),
+                    : AppColors.of(context).cardOverlay,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: selected
                       ? w.accentColor.withValues(alpha: 0.6)
-                      : Colors.white.withValues(alpha: 0.1),
+                      : AppColors.of(context).border,
                   width: selected ? 1.5 : 1,
                 ),
                 boxShadow: selected
@@ -441,7 +442,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
         child: Text(
           'START',
           style: GoogleFonts.pressStart2p(
-            color: Colors.white,
+            color: AppColors.of(context).textPrimary,
             fontSize: 7,
             shadows: [const Shadow(color: Colors.black, blurRadius: 2)],
           ),
@@ -572,8 +573,8 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.lock,
-                          color: Colors.white24, size: 16),
+                      Icon(Icons.lock,
+                          color: AppColors.of(context).border, size: 16),
                       Text(
                         '${node.index}',
                         style: GoogleFonts.pressStart2p(
@@ -599,8 +600,8 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                           color: const Color(0xFF4CAF50),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Icon(Icons.check,
-                            color: Colors.white, size: 8),
+                        child: Icon(Icons.check,
+                            color: AppColors.of(context).textPrimary, size: 8),
                       ),
                     ],
                   )
@@ -729,7 +730,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                 Text(
                   node.call.animalName,
                   style: GoogleFonts.oswald(
-                    color: Colors.white,
+                    color: AppColors.of(context).textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -737,7 +738,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                 Text(
                   node.call.callType,
                   style: GoogleFonts.lato(
-                      color: Colors.white54, fontSize: 12),
+                      color: AppColors.of(context).textTertiary, fontSize: 12),
                 ),
                 if (node.bestScore != null) ...[
                   const SizedBox(height: 4),
@@ -798,8 +799,8 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                       offset: Offset(0, 2)),
                 ],
               ),
-              child: const Icon(Icons.play_arrow_rounded,
-                  color: Colors.white, size: 30),
+              child: Icon(Icons.play_arrow_rounded,
+                  color: AppColors.of(context).textPrimary, size: 30),
             ),
           ),
         ],

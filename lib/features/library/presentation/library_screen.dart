@@ -21,27 +21,42 @@ class LibraryScreen extends ConsumerStatefulWidget {
 
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String _searchQuery = '';
-  final List<String> _categories = ['All', 'Waterfowl', 'Big Game', 'Predators', 'Land Birds'];
+  final List<String> _categories = [
+    'All',
+    'Waterfowl',
+    'Big Game',
+    'Predators',
+    'Land Birds'
+  ];
+  AudioService? _audioService;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _audioService = ref.read(audioServiceProvider);
+  }
 
   @override
   void dispose() {
-    // Attempt to stop audio when the entire library screen is closed
-    try {
-      ref.read(audioServiceProvider).stop();
-    } catch (_) {}
+    _audioService?.stop();
     super.dispose();
+  }
+
+  Future<bool> _onWillPop() async {
+    _audioService?.stop();
+    return true;
   }
 
   Future<void> _togglePlayback(ReferenceCall call) async {
     final profile = ref.read(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
     final checkLockUseCase = ref.read(checkCallLockStatusUseCaseProvider);
-    
+
     final lockResult = checkLockUseCase.execute(
       callId: call.id,
       isUserPremium: isPremium,
     );
-    
+
     final isLocked = lockResult.fold(
       (failure) => true, // Default to locked on error
       (locked) => locked,
@@ -53,16 +68,18 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       }
       return;
     }
-    
+
     final audioService = ref.read(audioServiceProvider);
-    
+
     try {
       await audioService.play(call.id, call.audioAssetPath);
       if (mounted) setState(() {}); // Trigger rebuild
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not play audio: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Could not play audio: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -72,12 +89,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final profile = ref.read(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
     final checkLockUseCase = ref.read(checkCallLockStatusUseCaseProvider);
-    
+
     final lockResult = checkLockUseCase.execute(
       callId: call.id,
       isUserPremium: isPremium,
     );
-    
+
     final isLocked = lockResult.fold(
       (failure) => true, // Default to locked on error
       (locked) => locked,
@@ -87,26 +104,24 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       UpgradePrompter.show(context, featureName: 'This Call');
       return;
     }
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CallDetailScreen(
-          call: call, 
-          userId: widget.userId ?? 'anonymous'
-        ),
+        builder: (context) =>
+            CallDetailScreen(call: call, userId: widget.userId ?? 'anonymous'),
       ),
     );
   }
 
   List<ReferenceCall> _getFilteredCalls(String category) {
     final filterUseCase = ref.read(filterCallsUseCaseProvider);
-    
+
     final result = filterUseCase.execute(
       category: category,
       searchQuery: _searchQuery,
     );
-    
+
     return result.fold(
       (failure) {
         // Log the error but return empty list to avoid breaking UI
@@ -127,80 +142,109 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     return DefaultTabController(
       length: _categories.length,
       child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: Text('CALL LIBRARY', style: GoogleFonts.oswald(
-              fontWeight: FontWeight.bold, 
-              letterSpacing: 1.5,
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
-            )),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(100),
-            child: Column(
-              children: [
-                // Search Bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: TextField(
-                    onChanged: (val) => setState(() => _searchQuery = val),
-                    style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87),
-                    decoration: InputDecoration(
-                      hintText: 'Search calls...',
-                      hintStyle: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.black54),
-                      prefixIcon: Icon(Icons.search, color: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.black54),
-                      filled: true,
-                      fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            title: Text('CALL LIBRARY',
+                style: GoogleFonts.oswald(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                )),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(100),
+              child: Column(
+                children: [
+                  // Search Bar
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: TextField(
+                      onChanged: (val) => setState(() => _searchQuery = val),
+                      style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black87),
+                      decoration: InputDecoration(
+                        hintText: 'Search calls...',
+                        hintStyle: TextStyle(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white54
+                                    : Colors.black54),
+                        prefixIcon: Icon(Icons.search,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white54
+                                    : Colors.black54),
+                        filled: true,
+                        fillColor:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     ),
                   ),
-                ),
-                // Tabs
-                TabBar(
-                  isScrollable: true,
-                  indicatorColor: Theme.of(context).primaryColor,
-                  labelColor: Theme.of(context).primaryColor,
-                  unselectedLabelColor: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.black54,
-                  labelStyle: GoogleFonts.oswald(fontWeight: FontWeight.bold),
-                  tabs: _categories.map((cat) => Tab(text: cat.toUpperCase())).toList(),
-                ),
-              ],
+                  // Tabs
+                  TabBar(
+                    isScrollable: true,
+                    indicatorColor: Theme.of(context).primaryColor,
+                    labelColor: Theme.of(context).primaryColor,
+                    unselectedLabelColor:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white54
+                            : Colors.black54,
+                    labelStyle: GoogleFonts.oswald(fontWeight: FontWeight.bold),
+                    tabs: _categories
+                        .map((cat) => Tab(text: cat.toUpperCase()))
+                        .toList(),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        body: BackgroundWrapper(
-          child: SafeArea(
-            top: false,
-            child: TabBarView(
-              children: _categories.map((category) {
-                final filtered = _getFilteredCalls(category);
-                final isDark = Theme.of(context).brightness == Brightness.dark;
-                if (filtered.isEmpty) {
-                  return Center(child: Text('No calls found', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)));
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 220, 16, 16),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final call = filtered[index];
-                    final isPlaying = currentlyPlayingId == call.id;
-                    
-                    final checkLockUseCase = ref.read(checkCallLockStatusUseCaseProvider);
-                    final lockResult = checkLockUseCase.execute(
-                      callId: call.id,
-                      isUserPremium: isPremium,
-                    );
-                    final isLocked = lockResult.getOrElse((l) => true);
-                    return _buildCallCard(call, isPlaying, isLocked);
-                  },
-                );
-              }).toList(),
-            ),
+          body: BackgroundWrapper(
+            child: SafeArea(
+              top: false,
+              child: TabBarView(
+                children: _categories.map((category) {
+                  final filtered = _getFilteredCalls(category);
+                  final isDark =
+                      Theme.of(context).brightness == Brightness.dark;
+                  if (filtered.isEmpty) {
+                    return Center(
+                        child: Text('No calls found',
+                            style: TextStyle(
+                                color:
+                                    isDark ? Colors.white54 : Colors.black54)));
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 220, 16, 16),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final call = filtered[index];
+                      final isPlaying = currentlyPlayingId == call.id;
+
+                      final checkLockUseCase =
+                          ref.read(checkCallLockStatusUseCaseProvider);
+                      final lockResult = checkLockUseCase.execute(
+                        callId: call.id,
+                        isUserPremium: isPremium,
+                      );
+                      final isLocked = lockResult.getOrElse((l) => true);
+                      return _buildCallCard(call, isPlaying, isLocked);
+                    },
+                  );
+                }).toList(),
+              ),
           ),
         ),
       ),
@@ -221,27 +265,37 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
+              decoration: BoxDecoration(
+                color: isLocked
+                    ? (isDark
+                        ? Colors.black.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.1))
+                    : isPlaying
+                        ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.black.withValues(alpha: 0.05)),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
                   color: isLocked
-                      ? (isDark ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.1))
-                      : isPlaying 
-                          ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
-                          : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isLocked
-                        ? (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05))
-                        : isPlaying 
-                            ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
-                            : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
-                  ),
+                      ? (isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.05))
+                      : isPlaying
+                          ? Theme.of(context)
+                              .primaryColor
+                              .withValues(alpha: 0.5)
+                          : (isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.black.withValues(alpha: 0.1)),
                 ),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                        _buildPlayButton(call, isPlaying, isLocked),
+                      _buildPlayButton(call, isPlaying, isLocked),
                       const SizedBox(width: 16),
                       // Names
                       Expanded(
@@ -259,7 +313,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                             Text(
                               call.callType,
                               style: TextStyle(
-                                color: isLocked ? (isDark ? Colors.white38 : Colors.black38) : (isDark ? Colors.white70 : Colors.black54),
+                                color: isLocked
+                                    ? (isDark ? Colors.white38 : Colors.black38)
+                                    : (isDark
+                                        ? Colors.white70
+                                        : Colors.black54),
                                 fontSize: 14,
                               ),
                             ),
@@ -274,20 +332,27 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     const SizedBox(height: 12),
                     Text(
                       call.description,
-                      style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 13, fontStyle: FontStyle.italic),
+                      style: TextStyle(
+                          color: isDark ? Colors.white54 : Colors.black54,
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic),
                     ),
                   ],
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _buildMetricChip(Icons.music_note, '${call.idealPitchHz.toInt()} Hz'),
+                      _buildMetricChip(
+                          Icons.music_note, '${call.idealPitchHz.toInt()} Hz'),
                       const SizedBox(width: 8),
-                      _buildMetricChip(Icons.timer_outlined, '${call.idealDurationSec}s'),
+                      _buildMetricChip(
+                          Icons.timer_outlined, '${call.idealDurationSec}s'),
                       const SizedBox(width: 8),
                       const Spacer(),
                       // Learn More Indicator
                       if (call.proTips.isNotEmpty)
-                        Icon(Icons.info_outline, size: 16, color: isDark ? Colors.white30 : Colors.black26),
+                        Icon(Icons.info_outline,
+                            size: 16,
+                            color: isDark ? Colors.white30 : Colors.black26),
                     ],
                   ),
                 ],
@@ -302,10 +367,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Widget _buildDifficultyBadge(String difficulty) {
     Color color;
     switch (difficulty.toLowerCase()) {
-      case 'easy': color = Theme.of(context).primaryColor; break;
-      case 'intermediate': color = const Color(0xFFFFB74D); break;
-      case 'pro': color = const Color(0xFFE57373); break;
-      default: color = Colors.white54;
+      case 'easy':
+        color = Theme.of(context).primaryColor;
+        break;
+      case 'intermediate':
+        color = const Color(0xFFFFB74D);
+        break;
+      case 'pro':
+        color = const Color(0xFFE57373);
+        break;
+      default:
+        color = Colors.white54;
     }
 
     return Container(
@@ -317,7 +389,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ),
       child: Text(
         difficulty.toUpperCase(),
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+        style:
+            TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -327,7 +400,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.1)
+            : Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -335,22 +410,30 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         children: [
           Icon(icon, size: 12, color: isDark ? Colors.white70 : Colors.black54),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 11)),
+          Text(label,
+              style: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.black54,
+                  fontSize: 11)),
         ],
       ),
     );
   }
+
   Widget _buildPlayButton(ReferenceCall call, bool isPlaying, bool isLocked) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: () => _togglePlayback(call),
       child: Icon(
-        isLocked 
-            ? Icons.lock_outline 
-            : isPlaying ? Icons.stop_circle_rounded : Icons.play_circle_filled_rounded,
+        isLocked
+            ? Icons.lock_outline
+            : isPlaying
+                ? Icons.stop_circle_rounded
+                : Icons.play_circle_filled_rounded,
         color: isLocked
             ? (isDark ? Colors.white24 : Colors.black26)
-            : isPlaying ? Theme.of(context).primaryColor : (isDark ? Colors.white70 : Colors.black54),
+            : isPlaying
+                ? Theme.of(context).primaryColor
+                : (isDark ? Colors.white70 : Colors.black54),
         size: 40,
       ),
     );

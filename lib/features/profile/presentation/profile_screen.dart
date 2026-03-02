@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -50,9 +51,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             const OfflineBanner(),
             Expanded(
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                  ? Center(child: CircularProgressIndicator(color: AppColors.of(context).textPrimary))
                   : profile == null
-                      ? const Center(child: Text('Profile not found.', style: TextStyle(color: Colors.white70)))
+                      ? Center(child: Text('Profile not found.', style: TextStyle(color: AppColors.of(context).textSecondary)))
                       : SingleChildScrollView(
                           padding: const EdgeInsets.all(24),
                           child: Column(
@@ -84,11 +85,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 MaterialPageRoute(builder: (_) => ProgressMapScreen(userId: widget.userId)),
                               );
                             },
-                            icon: const Icon(Icons.map_outlined, color: Colors.white70),
+                            icon: Icon(Icons.map_outlined, color: AppColors.of(context).textSecondary),
                             label: const Text('VIEW FIELD MAP'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
-                              side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                              side: BorderSide(color: AppColors.of(context).border),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                           ),
@@ -98,11 +99,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () => UpgradePrompter.show(context, featureName: 'Field Map'),
-                            icon: const Icon(Icons.lock_outline, color: Colors.white38),
+                            icon: Icon(Icons.lock_outline, color: AppColors.of(context).textSubtle),
                             label: const Text('FIELD MAP (LOCKED)'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white38,
-                              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                              side: BorderSide(color: AppColors.of(context).border),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                           ),
@@ -173,7 +174,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                border: Border.all(color: AppColors.of(context).border, width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.green.withValues(alpha: 0.2),
@@ -187,10 +188,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       radius: 50,
                       backgroundImage: NetworkImage(profile.avatarUrl!),
                     )
-                  : const CircleAvatar(
+                  : CircleAvatar(
                       radius: 50,
-                      backgroundColor: Color(0xFF1A1A1A),
-                      child: Icon(Icons.person, size: 50, color: Colors.white70),
+                      backgroundColor: AppColors.of(context).surface,
+                      child: Icon(Icons.person, size: 50, color: AppColors.of(context).textSecondary),
                     ),
             ),
             Container(
@@ -199,7 +200,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: const Icon(Icons.edit, size: 20, color: Colors.white),
+                icon: Icon(Icons.edit, size: 20, color: AppColors.of(context).textPrimary),
                 onPressed: () => _showEditProfileDialog(context, profile),
                 tooltip: 'Edit Profile',
               ),
@@ -209,17 +210,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 16),
         Text(
           (profile.nickname?.isNotEmpty == true ? profile.nickname! : profile.name).toUpperCase(),
-          style: GoogleFonts.oswald(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.0),
+          style: GoogleFonts.oswald(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.of(context).textPrimary, letterSpacing: 1.0),
         ),
         if (profile.nickname?.isNotEmpty == true && profile.name != profile.nickname)
           Text(
             '(${profile.name})',
-            style: GoogleFonts.lato(color: Colors.white38, fontSize: 12),
+            style: GoogleFonts.lato(color: AppColors.of(context).textSubtle, fontSize: 12),
           ),
         const SizedBox(height: 4),
         Text(
           'HANDLING SINCE ${DateFormat.yMMMd().format(profile.joinedDate).toUpperCase()}',
-          style: GoogleFonts.lato(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+          style: GoogleFonts.lato(color: AppColors.of(context).textTertiary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
         if (profile.isAlphaTester) ...[
           const SizedBox(height: 12),
@@ -255,11 +256,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF1A1A1A),
+          backgroundColor: AppColors.of(context).surface,
           title: Text(
             'EDIT PROFILE',
             style: GoogleFonts.oswald(
-              color: Colors.white,
+              color: AppColors.of(context).textPrimary,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.0,
             ),
@@ -271,12 +272,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 TextField(
                   controller: nicknameController,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: AppColors.of(context).textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Nickname',
-                    labelStyle: const TextStyle(color: Colors.white54),
-                    enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
+                    labelStyle: TextStyle(color: AppColors.of(context).textTertiary),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.of(context).border),
                     ),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Theme.of(context).primaryColor),
@@ -286,12 +287,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: avatarUrlController,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: AppColors.of(context).textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Avatar Image URL',
-                    labelStyle: const TextStyle(color: Colors.white54),
-                    enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
+                    labelStyle: TextStyle(color: AppColors.of(context).textTertiary),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.of(context).border),
                     ),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Theme.of(context).primaryColor),
@@ -309,7 +310,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+              child: Text('CANCEL', style: TextStyle(color: AppColors.of(context).textTertiary)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -323,7 +324,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: const Color(0xFF121212),
+                foregroundColor: AppColors.of(context).background,
               ),
               child: const Text('SAVE'),
             ),
@@ -351,17 +352,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: AppColors.of(context).cardOverlay,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: AppColors.of(context).border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: Colors.white54, size: 20),
+              Icon(icon, color: AppColors.of(context).textTertiary, size: 20),
               const SizedBox(height: 12),
-              Text(value, style: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-              Text(label, style: GoogleFonts.lato(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.bold)),
+              Text(value, style: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.of(context).textPrimary)),
+              Text(label, style: GoogleFonts.lato(fontSize: 10, color: AppColors.of(context).textSubtle, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
@@ -380,7 +381,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             width: 60,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: AppColors.of(context).cardOverlay,
               shape: BoxShape.circle,
               border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
             ),
@@ -389,7 +390,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 8),
           Text(
             achievement.name,
-            style: GoogleFonts.lato(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.bold),
+            style: GoogleFonts.lato(fontSize: 10, color: AppColors.of(context).textSecondary, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -410,9 +411,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: AppColors.of(context).cardOverlay,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              border: Border.all(color: AppColors.of(context).border),
             ),
             child: Row(
               children: [
@@ -434,12 +435,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(call.animalName.toUpperCase(), style: GoogleFonts.oswald(color: Colors.white, fontWeight: FontWeight.bold)),
-                      Text(DateFormat.yMMMd().add_jm().format(item.timestamp).toUpperCase(), style: GoogleFonts.lato(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(call.animalName.toUpperCase(), style: GoogleFonts.oswald(color: AppColors.of(context).textPrimary, fontWeight: FontWeight.bold)),
+                      Text(DateFormat.yMMMd().add_jm().format(item.timestamp).toUpperCase(), style: GoogleFonts.lato(color: AppColors.of(context).textSubtle, fontSize: 10, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: Colors.white12),
+                Icon(Icons.chevron_right, color: AppColors.of(context).divider),
               ],
             ),
           ),
@@ -453,15 +454,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(40),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.02),
+        color: AppColors.of(context).cardOverlay,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: AppColors.of(context).divider),
       ),
       child: Column(
         children: [
-          const Icon(Icons.mic_none, color: Colors.white10, size: 48),
+          Icon(Icons.mic_none, color: AppColors.of(context).divider, size: 48),
           const SizedBox(height: 16),
-          Text('NO HUNTS RECORDED YET', style: GoogleFonts.oswald(color: Colors.white24, fontWeight: FontWeight.bold)),
+          Text('NO HUNTS RECORDED YET', style: GoogleFonts.oswald(color: AppColors.of(context).border, fontWeight: FontWeight.bold)),
         ],
       ),
     );

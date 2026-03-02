@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -20,7 +21,7 @@ class LeaderboardScreen extends ConsumerWidget {
     final scoresAsync = ref.watch(leaderboardScoresProvider(animalId));
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: AppColors.of(context).background,
       appBar: AppBar(
         backgroundColor: const Color(0xFF1B5E20),
         title: Text(
@@ -30,23 +31,23 @@ class LeaderboardScreen extends ConsumerWidget {
       ),
       body: scoresAsync.when(
         loading: () => const ListSkeleton(),
-        error: (error, stack) => Center(child: Text('Error: $error', style: const TextStyle(color: Colors.white70))),
+        error: (error, stack) => Center(child: Text('Error: $error', style: TextStyle(color: AppColors.of(context).textSecondary))),
         data: (scores) {
           if (scores.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.emoji_events_outlined, color: Colors.white24, size: 64),
+                  Icon(Icons.emoji_events_outlined, color: AppColors.of(context).border, size: 64),
                   const SizedBox(height: 16),
                   Text(
                     'No experts yet.',
-                    style: GoogleFonts.oswald(fontSize: 20, color: Colors.white54),
+                    style: GoogleFonts.oswald(fontSize: 20, color: AppColors.of(context).textTertiary),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                   Text(
                     'Be the first to score high!',
-                    style: TextStyle(color: Colors.white38),
+                    style: TextStyle(color: AppColors.of(context).textSubtle),
                   ),
                 ],
               ),
@@ -56,19 +57,19 @@ class LeaderboardScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: scores.length,
-            separatorBuilder: (context, index) => const Divider(color: Colors.white10),
+            separatorBuilder: (context, index) => Divider(color: AppColors.of(context).divider),
             itemBuilder: (context, index) {
               final entry = scores[index];
               final isTop3 = index < 3;
               
               return ListTile(
-                leading: _buildRankBadge(index + 1),
+                leading: _buildRankBadge(context, index + 1),
                 title: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       entry.userName,
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.of(context).textPrimary),
                     ),
                     if (entry.isAlphaTester) ...[
                       const SizedBox(width: 4),
@@ -78,7 +79,7 @@ class LeaderboardScreen extends ConsumerWidget {
                 ),
                 subtitle: Text(
                   DateFormat.yMMMd().format(entry.timestamp),
-                  style: const TextStyle(color: Colors.white38, fontSize: 12),
+                  style: TextStyle(color: AppColors.of(context).textSubtle, fontSize: 12),
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -103,7 +104,7 @@ class LeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRankBadge(int rank) {
+  Widget _buildRankBadge(BuildContext context, int rank) {
     Color bgColor;
     Color textColor = Colors.white;
 
@@ -120,7 +121,7 @@ class LeaderboardScreen extends ConsumerWidget {
         bgColor = const Color(0xFFCD7F32); // Bronze
         break;
       default:
-        bgColor = Colors.white.withValues(alpha: 0.1);
+        bgColor = AppColors.of(context).border;
     }
 
     return Container(

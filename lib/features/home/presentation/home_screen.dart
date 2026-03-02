@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/widgets/skeleton_loader.dart';
 import 'package:outcall/features/recording/presentation/recorder_page.dart';
 import 'package:outcall/features/daily_challenge/presentation/daily_challenge_screen.dart';
@@ -55,34 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final shouldExit = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-            title: Text('Exit App?', style: GoogleFonts.oswald(color: isDark ? Colors.white : Colors.black87)),
-            content: Text('Are you sure you want to leave the Hunt?', style: GoogleFonts.lato(color: isDark ? Colors.white70 : Colors.black54)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text('CANCEL', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text('EXIT', style: TextStyle(color: Theme.of(context).primaryColor)),
-              ),
-            ],
-          ),
-        );
-        if (shouldExit == true) {
-          SystemNavigator.pop();
-        }
-      },
-      child: Scaffold(
+    return Scaffold(
         body: BackgroundWrapper(
           child: SafeArea(
             child: homeState.isLoading
@@ -138,7 +112,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
           ),
         ),
-      ),
     );
   }
 
@@ -203,7 +176,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Text(
               'Contact Support',
               style:
-                  GoogleFonts.lato(color: Colors.white38, fontSize: 12),
+                  GoogleFonts.lato(color: AppColors.of(context).textSubtle, fontSize: 12),
             ),
           ),
         ],
@@ -219,7 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         borderRadius: BorderRadius.circular(20),
         child: Container(
           height: 180,
-          color: Colors.white.withValues(alpha: 0.1),
+          color: AppColors.of(context).cardOverlay,
           child: const Center(
             child: CircularProgressIndicator(color: Colors.greenAccent),
           ),
@@ -332,9 +305,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A).withValues(alpha: 0.6),
+              color: AppColors.of(context).surface.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: Border.all(color: AppColors.of(context).border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -359,7 +332,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: GoogleFonts.oswald(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.of(context).textPrimary,
                     height: 1.2,
                   ),
                 ),
@@ -369,7 +342,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.lato(
                     fontSize: 11,
-                    color: Colors.white54,
+                    color: AppColors.of(context).textTertiary,
                   ),
                 ),
               ],

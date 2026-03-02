@@ -6,6 +6,7 @@ import 'package:outcall/features/library/presentation/library_screen.dart';
 import 'package:outcall/features/recording/presentation/recorder_page.dart';
 import 'package:outcall/features/progress_map/presentation/progress_map_screen.dart';
 import 'package:outcall/features/profile/presentation/profile_screen.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Persistent bottom navigation shell that wraps all main screens.
 /// Matches the Play Store screenshot design with dark green + orange brand colors.
@@ -59,9 +60,41 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final colors = AppColors.of(context);
+    final isDark = AppColors.isDark(context);
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          _onBottomNavTapped(0);
+        } else {
+          final shouldExit = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+              title: Text('Exit App?', style: GoogleFonts.oswald(color: colors.textPrimary)),
+              content: Text('Are you sure you want to leave the Hunt?', style: GoogleFonts.lato(color: colors.textSecondary)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('CANCEL', style: TextStyle(color: colors.textTertiary)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text('EXIT', style: TextStyle(color: Theme.of(context).primaryColor)),
+                ),
+              ],
+            ),
+          );
+          if (shouldExit == true) {
+            SystemNavigator.pop();
+          }
+        }
+      },
+      child: Scaffold(
       endDrawer: Drawer(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: colors.surface,
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -71,20 +104,18 @@ class _MainShellState extends State<MainShell> {
                 child: Text(
                   'MENU',
                   style: GoogleFonts.oswald(
-                    color: Colors.white,
+                    color: colors.textPrimary,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              const Divider(color: Colors.white24),
+              Divider(color: colors.divider),
               ListTile(
-                leading: const Icon(Icons.settings, color: Colors.white70),
-                title: const Text('Settings', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.settings, color: colors.icon),
+                title: Text('Settings', style: TextStyle(color: colors.textPrimary)),
                 onTap: () {
                   Navigator.pop(context); // Close drawer
-                  // Since we don't import settings screen here directly, we'll just switch the bottom nab to Profile tab for now,
-                  // or we can push the settings screen if imported.
                   _onBottomNavTapped(4); // Profile tab usually has settings
                 },
               ),
@@ -100,16 +131,16 @@ class _MainShellState extends State<MainShell> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF121212),
+          color: isDark ? const Color(0xFF121212) : Colors.white,
           border: Border(
             top: BorderSide(
-              color: Colors.white.withValues(alpha: 0.08),
+              color: colors.border,
               width: 1,
             ),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.4),
+              color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -122,12 +153,12 @@ class _MainShellState extends State<MainShell> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           selectedIconTheme: IconThemeData(color: Theme.of(context).primaryColor),
-          unselectedIconTheme: const IconThemeData(color: Colors.white54),
-          selectedItemColor: Colors.white, // Makes the letters crisp and readable
-          unselectedItemColor: Colors.white54,
+          unselectedIconTheme: IconThemeData(color: colors.textTertiary),
+          selectedItemColor: colors.textPrimary,
+          unselectedItemColor: colors.textTertiary,
           selectedLabelStyle: GoogleFonts.oswald(
             fontSize: 11,
-            color: Colors.white,
+            color: colors.textPrimary,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
           ),
@@ -168,6 +199,7 @@ class _MainShellState extends State<MainShell> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

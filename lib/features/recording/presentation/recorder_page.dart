@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -255,22 +256,22 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: AppColors.of(context).surface,
         title: Row(
           children: [
             const Icon(Icons.mic_off, color: Colors.orangeAccent),
             const SizedBox(width: 12),
-            Text('Microphone Access', style: GoogleFonts.oswald(color: Colors.white)),
+            Text('Microphone Access', style: GoogleFonts.oswald(color: AppColors.of(context).textPrimary)),
           ],
         ),
-        content: const Text(
+        content: Text(
           'We need microphone access to record your hunting calls. This helps us analyze your technique and provide scoring.',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: AppColors.of(context).textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Not Now', style: TextStyle(color: Colors.white54)),
+            child: Text('Not Now', style: TextStyle(color: AppColors.of(context).textTertiary)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -282,7 +283,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: const Color(0xFF121212),
+              foregroundColor: AppColors.of(context).background,
             ),
             child: const Text('Allow'),
           ),
@@ -296,22 +297,22 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: AppColors.of(context).surface,
         title: Row(
           children: [
             const Icon(Icons.settings, color: Colors.orangeAccent),
             const SizedBox(width: 12),
-            Text('Permission Required', style: GoogleFonts.oswald(color: Colors.white)),
+            Text('Permission Required', style: GoogleFonts.oswald(color: AppColors.of(context).textPrimary)),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Microphone access is disabled in system settings. Please enable it to record hunting calls.',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: AppColors.of(context).textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: Text('Cancel', style: TextStyle(color: AppColors.of(context).textTertiary)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -321,7 +322,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: const Color(0xFF121212),
+              foregroundColor: AppColors.of(context).background,
             ),
             child: const Text('Open Settings'),
           ),
@@ -403,9 +404,9 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: AppColors.of(context).border,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                            border: Border.all(color: AppColors.of(context).border),
                           ),
                           child: Row(
                             children: [
@@ -419,10 +420,10 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                                     width: 40,
                                     height: 40,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.1),
+                                      color: AppColors.of(context).border,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.photo, size: 20, color: Colors.white38),
+                                    child: Icon(Icons.photo, size: 20, color: AppColors.of(context).textSubtle),
                                   ),
                                 ),
                               ),
@@ -436,18 +437,18 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                                       selectedCall.animalName,
                                       style: GoogleFonts.oswald(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: AppColors.of(context).textPrimary,
                                         fontSize: 16,
                                       ),
                                     ),
                                     Text(
                                       '${selectedCall.category} • ${selectedCall.callType}',
-                                      style: GoogleFonts.lato(color: Colors.white70, fontSize: 13),
+                                      style: GoogleFonts.lato(color: AppColors.of(context).textSecondary, fontSize: 13),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.chevron_right, color: Colors.white70),
+                              Icon(Icons.chevron_right, color: AppColors.of(context).textSecondary),
                             ],
                           ),
                         ),
@@ -539,7 +540,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                   'Match the reference call above to improve your score',
                   style: GoogleFonts.lato(
                     fontSize: 12,
-                    color: Colors.white38,
+                    color: AppColors.of(context).textSubtle,
                   ),
                 ),
               ],
@@ -559,12 +560,12 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: TextButton.icon(
           onPressed: onPressed,
-          icon: Icon(icon, color: Colors.white70, size: 20),
-          label: Text(label, style: GoogleFonts.lato(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+          icon: Icon(icon, color: AppColors.of(context).textSecondary, size: 20),
+          label: Text(label, style: GoogleFonts.lato(color: AppColors.of(context).textPrimary, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
           style: TextButton.styleFrom(
-            backgroundColor: Colors.white.withValues(alpha: 0.05),
+            backgroundColor: AppColors.of(context).cardOverlay,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            side: BorderSide(color: AppColors.of(context).border),
           ),
         ),
       ),
@@ -582,13 +583,13 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: AppColors.of(context).border,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: AppColors.of(context).border),
               ),
               child: IconButton(
                 onPressed: onPressed,
-                icon: Icon(icon, color: Colors.white70, size: 20),
+                icon: Icon(icon, color: AppColors.of(context).textSecondary, size: 20),
                 visualDensity: VisualDensity.compact,
               ),
             ),
