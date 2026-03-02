@@ -18,6 +18,9 @@ import 'package:outcall/core/services/cloud_audio_service.dart';
 import 'package:outcall/features/rating/presentation/widgets/rating_feedback_widgets.dart';
 import 'package:outcall/features/rating/presentation/widgets/rating_analytics_widgets.dart';
 import 'package:outcall/features/rating/presentation/widgets/rating_action_buttons.dart';
+import 'package:outcall/core/widgets/achievement_overlay.dart';
+import 'package:outcall/features/profile/domain/achievement_service.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 
 class RatingScreen extends ConsumerStatefulWidget {
   final String audioPath;
@@ -137,6 +140,36 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     }
   }
 
+  /// Check for newly earned achievements after analysis and show celebration overlays.
+  void _checkForAchievements() {
+    final profile = ref.read(profileNotifierProvider).profile;
+    if (profile == null) return;
+
+    final newIds = AchievementService.getNewAchievementIds(
+      profile,
+      profile.achievements,
+    );
+
+    if (newIds.isEmpty) return;
+
+    // Show each new achievement with staggered delay
+    for (int i = 0; i < newIds.length; i++) {
+      final achievement = AchievementService.achievements.firstWhere(
+        (a) => a.id == newIds[i],
+      );
+      Future.delayed(Duration(milliseconds: 800 + (i * 3500)), () {
+        if (mounted) {
+          AchievementOverlay.show(
+            context,
+            name: achievement.name,
+            icon: achievement.icon,
+            description: achievement.description,
+          );
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Listen for completion to trigger haptics
@@ -144,6 +177,8 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       if (previous?.isAnalyzing == true && next.isAnalyzing == false) {
         if (next.result != null) {
           _triggerResultHaptics(next.result);
+          // Check for achievement unlocks
+          _checkForAchievements();
         } else if (next.error != null) {
           HapticFeedback.vibrate();
         }

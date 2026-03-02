@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/rating/domain/personality_feedback_service.dart';
 
-/// Overall proficiency ring widget.
+/// Overall proficiency ring widget with animated count-up.
 class OverallProficiency extends StatelessWidget {
   final dynamic score;
 
@@ -18,27 +18,77 @@ class OverallProficiency extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double s = _toSafe(score).clamp(0, 100);
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
+
+    // Tier-based glow color
+    final Color tierColor;
+    if (s >= 90) {
+      tierColor = const Color(0xFFFFD700); // Gold
+    } else if (s >= 75) {
+      tierColor = const Color(0xFF5FF7B6); // Green
+    } else if (s >= 50) {
+      tierColor = Colors.orangeAccent;
+    } else {
+      tierColor = Colors.redAccent;
+    }
+
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 1200),
+      curve: Curves.easeOutCubic,
+      tween: Tween(begin: 0.0, end: s),
+      builder: (context, animatedScore, _) {
+        return Column(
           children: [
-            SizedBox(
-              width: 180,
-              height: 180,
-              child: CircularProgressIndicator(
-                value: s / 100,
-                strokeWidth: 10,
-                color: const Color(0xFF5FF7B6),
-                backgroundColor: Colors.white.withValues(alpha: 0.1),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // Glow effect
+                Container(
+                  width: 190,
+                  height: 190,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: tierColor.withValues(alpha: 0.15 * (animatedScore / 100)),
+                        blurRadius: 30,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 180,
+                  height: 180,
+                  child: CircularProgressIndicator(
+                    value: animatedScore / 100,
+                    strokeWidth: 10,
+                    color: tierColor,
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+                Text(
+                  '${animatedScore.toInt()}%',
+                  style: GoogleFonts.oswald(
+                    fontSize: 64,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'OVERALL PROFICIENCY',
+              style: GoogleFonts.oswald(
+                fontSize: 11,
+                letterSpacing: 1.5,
+                color: Colors.white60,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            Text('${s.toInt()}%', style: GoogleFonts.oswald(fontSize: 64, fontWeight: FontWeight.bold, color: Colors.white)),
           ],
-        ),
-        const SizedBox(height: 16),
-        Text('OVERALL PROFICIENCY', style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white60, fontWeight: FontWeight.w500)),
-      ],
+        );
+      },
     );
   }
 }
