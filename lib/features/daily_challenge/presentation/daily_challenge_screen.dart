@@ -11,6 +11,7 @@ import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/features/daily_challenge/domain/seasonal_theme.dart';
 import 'package:outcall/core/utils/page_transitions.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 class DailyChallengeScreen extends ConsumerWidget {
   final String userId;
@@ -43,7 +44,7 @@ class DailyChallengeScreen extends ConsumerWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'DAILY CHALLENGE',
+              S.of(context).dailyChallenge,
               style: GoogleFonts.oswald(
                 fontWeight: FontWeight.bold,
                 letterSpacing: 2,
@@ -98,7 +99,7 @@ class DailyChallengeScreen extends ConsumerWidget {
                                   children: [
                                     Text(SeasonalThemeService.activeTheme!.name,
                                         style: GoogleFonts.oswald(color: const Color(0xFF5FF7B6), fontSize: 13, fontWeight: FontWeight.bold)),
-                                    Text('${SeasonalThemeService.activeTheme!.daysRemaining} days left',
+                                    Text(S.of(context).daysRemaining(SeasonalThemeService.activeTheme!.daysRemaining),
                                         style: GoogleFonts.lato(color: AppColors.of(context).textSubtle, fontSize: 11)),
                                   ],
                                 ),

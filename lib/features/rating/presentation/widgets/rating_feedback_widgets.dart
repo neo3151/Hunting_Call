@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/features/rating/domain/personality_feedback_service.dart';
 
 /// Overall proficiency ring widget with animated count-up.
@@ -32,7 +33,7 @@ class OverallProficiency extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'Overall proficiency: ${s.toInt()} percent',
+      label: S.of(context).overallProficiencyLabel(s.toInt()),
       child: TweenAnimationBuilder<double>(
         duration: const Duration(milliseconds: 1200),
         curve: Curves.easeOutCubic,
@@ -80,7 +81,7 @@ class OverallProficiency extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'OVERALL PROFICIENCY',
+                S.of(context).overallProficiency,
                 style: GoogleFonts.oswald(
                   fontSize: 11,
                   letterSpacing: 1.5,
@@ -105,7 +106,7 @@ class AIFeedbackCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'AI Feedback: $feedback',
+      label: S.of(context).aiFeedbackLabel(feedback),
       child: Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -120,7 +121,7 @@ class AIFeedbackCard extends StatelessWidget {
             children: [
               const Icon(Icons.auto_awesome, color: Color(0xFF5FF7B6), size: 14),
               const SizedBox(width: 8),
-              Text('AI FEEDBACK', style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
+              Text(S.of(context).aiFeedback, style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 16),
@@ -242,7 +243,7 @@ class ProBreakdown extends StatelessWidget {
     final Color color = s >= 80 ? const Color(0xFF5FF7B6) : (s >= 50 ? Colors.orangeAccent : Colors.redAccent);
 
     return Semantics(
-      label: '$label: ${s.toInt()} percent',
+      label: S.of(context).metricLabel(label, s.toInt()),
       child: Container(
       width: (MediaQuery.of(context).size.width - 60) / 4,
       padding: const EdgeInsets.symmetric(vertical: 12),

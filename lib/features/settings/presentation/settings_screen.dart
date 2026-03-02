@@ -11,6 +11,7 @@ import 'package:outcall/features/profile/presentation/controllers/profile_contro
 import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
 import 'package:outcall/core/theme/app_theme.dart';
 import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -66,12 +67,12 @@ class SettingsScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _sectionTitle(context, 'APPEARANCE'),
+                          _sectionTitle(context, S.of(context).appearance),
                           _settingsTile(
                             context: context,
                             icon: Icons.brightness_6_outlined,
-                            title: 'Dark Mode',
-                            subtitle: 'Light, Dark, or System',
+                            title: S.of(context).darkMode,
+                            subtitle: S.of(context).darkModeSubtitle,
                             trailing: SegmentedButton<ThemeMode>(
                               segments: const [
                                 ButtonSegment(value: ThemeMode.system, label: Text('SYS', style: TextStyle(fontSize: 10))),
@@ -96,8 +97,8 @@ class SettingsScreen extends ConsumerWidget {
                           _settingsTile(
                             context: context,
                             icon: Icons.palette_outlined,
-                            title: 'App Theme',
-                            subtitle: 'Choose your color palette',
+                            title: S.of(context).appTheme,
+                            subtitle: S.of(context).appThemeSubtitle,
                             trailing: SegmentedButton<AppTheme>(
                               segments: [
                                 ButtonSegment(
@@ -140,14 +141,14 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           Divider(color: colors.divider),
 
-                          _sectionTitle(context, 'PREFERENCES'),
+                          _sectionTitle(context, S.of(context).preferences),
                           _settingsTile(
                             context: context,
                             icon: Icons.straighten,
-                            title: 'Distance Unit',
+                            title: S.of(context).distanceUnit,
                             subtitle: settings.distanceUnit == 'imperial'
-                                ? 'Imperial (yards, °F)'
-                                : 'Metric (meters, °C)',
+                                ? S.of(context).distanceUnitImperial
+                                : S.of(context).distanceUnitMetric,
                             trailing: SegmentedButton<String>(
                               segments: const [
                                 ButtonSegment(
@@ -183,8 +184,8 @@ class SettingsScreen extends ConsumerWidget {
                           _settingsTile(
                             context: context,
                             icon: Icons.notifications_outlined,
-                            title: 'Notifications',
-                            subtitle: 'Daily challenge reminders',
+                            title: S.of(context).notifications,
+                            subtitle: S.of(context).notificationsSubtitle,
                             trailing: Switch(
                               value: settings.notificationsEnabled,
                               onChanged: notifier.setNotificationsEnabled,
@@ -193,12 +194,12 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           Divider(color: colors.divider),
 
-                          _sectionTitle(context, 'AUDIO & HAPTICS'),
+                          _sectionTitle(context, S.of(context).audioAndHaptics),
                           _settingsTile(
                             context: context,
                             icon: Icons.volume_up_outlined,
-                            title: 'Sound Effects',
-                            subtitle: 'UI interaction sounds',
+                            title: S.of(context).soundEffects,
+                            subtitle: S.of(context).soundEffectsSubtitle,
                             trailing: Switch(
                               value: settings.soundEffects,
                               onChanged: notifier.setSoundEffects,
@@ -209,8 +210,8 @@ class SettingsScreen extends ConsumerWidget {
                           _settingsTile(
                             context: context,
                             icon: Icons.vibration,
-                            title: 'Haptic Feedback',
-                            subtitle: 'Vibration on interactions',
+                            title: S.of(context).hapticFeedback,
+                            subtitle: S.of(context).hapticFeedbackSubtitle,
                             trailing: Switch(
                               value: settings.hapticFeedback,
                               onChanged: notifier.setHapticFeedback,

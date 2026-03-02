@@ -5,6 +5,7 @@ import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/widgets/staggered_fade_slide.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 /// Practice history dashboard with stats, per-animal breakdown, and score trend.
 class HistoryDashboardScreen extends ConsumerWidget {
@@ -36,10 +37,10 @@ class HistoryDashboardScreen extends ConsumerWidget {
             children: [
               Icon(Icons.bar_chart_rounded, size: 64, color: palette.textSubtle),
               const SizedBox(height: 16),
-              Text('No recordings yet',
+              Text(S.of(context).noRecordingsYet,
                   style: GoogleFonts.oswald(fontSize: 20, color: palette.textPrimary, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text('Start practicing to see your stats here!',
+              Text(S.of(context).startFirstHunt,
                   style: GoogleFonts.lato(color: palette.textSecondary, fontSize: 14)),
             ],
           ),
@@ -96,7 +97,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
               // Per-animal breakdown
               StaggeredFadeSlide(
                 index: 3,
-                child: _buildSectionHeader(palette, 'SPECIES BREAKDOWN'),
+                child: _buildSectionHeader(palette, S.of(context).animalBreakdown),
               ),
               const SizedBox(height: 12),
               ...animalStats.asMap().entries.map((entry) {
@@ -142,11 +143,11 @@ class HistoryDashboardScreen extends ConsumerWidget {
   Widget _buildSummaryRow(BuildContext context, AppColorPalette palette, int total, double avg, double best) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard(palette, 'SESSIONS', '$total', Icons.mic, const Color(0xFF5FF7B6))),
+        Expanded(child: _buildStatCard(palette, S.of(context).totalSessions, '$total', Icons.mic, const Color(0xFF5FF7B6))),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(palette, 'AVG SCORE', '${avg.toInt()}%', Icons.speed, Colors.orangeAccent)),
+        Expanded(child: _buildStatCard(palette, S.of(context).averageScore, '${avg.toInt()}%', Icons.speed, Colors.orangeAccent)),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(palette, 'BEST', '${best.toInt()}%', Icons.emoji_events, const Color(0xFFFFD700))),
+        Expanded(child: _buildStatCard(palette, S.of(context).bestScore, '${best.toInt()}%', Icons.emoji_events, const Color(0xFFFFD700))),
       ],
     );
   }
@@ -226,7 +227,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Daily Challenge Streak',
+                Text(S.of(context).challengeStreakTitle,
                     style: GoogleFonts.oswald(fontSize: 16, fontWeight: FontWeight.bold, color: palette.textPrimary)),
                 const SizedBox(height: 4),
                 Text('${profile.currentStreak} day current  •  ${profile.longestStreak} day best',
