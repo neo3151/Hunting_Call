@@ -20,6 +20,7 @@ import 'package:outcall/features/home/presentation/widgets/recent_activity_card.
 import 'package:outcall/core/widgets/staggered_fade_slide.dart';
 import 'package:outcall/core/utils/page_transitions.dart';
 import 'package:outcall/features/profile/presentation/history_dashboard_screen.dart';
+import 'package:outcall/features/profile/presentation/achievements_screen.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -305,6 +306,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 subtitle: S.of(context).practiceHistorySubtitle,
                 onTap: () => Navigator.of(context).push(
                   SlideRoute(page: const HistoryDashboardScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildQuickActionCard(
+                icon: Icons.emoji_events_rounded,
+                iconColor: const Color(0xFFFFD700),
+                title: 'Achievements',
+                subtitle: 'Track your progress',
+                onTap: () => Navigator.of(context).push(
+                  SlideRoute(page: const AchievementsScreen()),
                 ),
               ),
             ),
