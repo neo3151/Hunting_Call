@@ -118,6 +118,7 @@ class SettingsScreen extends ConsumerWidget {
                                 ),
                               ],
                               selected: {settings.theme},
+                              showSelectedIcon: false,
                               onSelectionChanged: (v) =>
                                   notifier.setTheme(v.first),
                               style: ButtonStyle(
