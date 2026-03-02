@@ -26,6 +26,7 @@ class CallDetailScreen extends ConsumerStatefulWidget {
 
 class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   AudioService? _audioService;
+  bool _isDownloading = false;
 
   @override
   void initState() {
@@ -48,10 +49,12 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     final audioService = ref.read(audioServiceProvider);
 
     try {
+      setState(() => _isDownloading = true);
       await audioService.play(widget.call.id, widget.call.audioAssetPath);
-      if (mounted) setState(() {}); // Trigger rebuild
+      if (mounted) setState(() => _isDownloading = false);
     } catch (e) {
       if (mounted) {
+        setState(() => _isDownloading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text('Could not play audio: $e'),
@@ -187,9 +190,11 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                     ? Icons.stop_rounded
                                     : Icons.play_arrow_rounded),
                                 label: Text(
-                                  isPlaying
-                                      ? 'STOP REFERENCE'
-                                      : 'LISTEN TO REFERENCE',
+                                  _isDownloading
+                                      ? 'DOWNLOADING...'
+                                      : isPlaying
+                                          ? 'STOP REFERENCE'
+                                          : 'LISTEN TO REFERENCE',
                                   style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold),
