@@ -67,9 +67,16 @@ Future<bool> _initFirebase() async {
   if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) return false;
 
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    // On Android, let google-services.json auto-configure Firebase
+    // so the correct appId is used for both .dev and production packages.
+    // Other platforms need explicit options.
+    if (Platform.isAndroid) {
+      await Firebase.initializeApp();
+    } else {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
     // Skip App Check in debug mode — Play Integrity only works on
     // release builds, and the debug provider requires manual token
     // registration in Firebase Console.
