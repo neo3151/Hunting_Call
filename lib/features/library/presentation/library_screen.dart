@@ -11,6 +11,7 @@ import 'package:outcall/features/library/presentation/call_detail_screen.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/main_common.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final String? userId;
@@ -20,10 +21,11 @@ class LibraryScreen extends ConsumerStatefulWidget {
   ConsumerState<LibraryScreen> createState() => _LibraryScreenState();
 }
 
-class _LibraryScreenState extends ConsumerState<LibraryScreen> {
+class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
   String _searchQuery = '';
   final List<String> _categories = [
     'All',
+    'Favorites',
     'Waterfowl',
     'Big Game',
     'Predators',
@@ -35,12 +37,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _audioService = ref.read(audioServiceProvider);
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _audioService?.stop();
     super.dispose();
+  }
+
+  @override
+  void didPushNext() {
+    _audioService?.stop();
   }
 
   Future<void> _togglePlayback(ReferenceCall call) async {
@@ -114,7 +123,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final filterUseCase = ref.read(filterCallsUseCaseProvider);
 
     final result = filterUseCase.execute(
-      category: category,
+      category: category == 'Favorites' ? 'All' : category,
       searchQuery: _searchQuery,
     );
 
@@ -124,7 +133,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         AppLogger.d('Library filter error: ${failure.message}');
         return <ReferenceCall>[];
       },
-      (calls) => calls,
+      (calls) {
+        if (category == 'Favorites') {
+          final profile = ref.read(profileNotifierProvider).profile;
+          final favorites = profile?.favoriteCallIds ?? [];
+          return calls.where((c) => favorites.contains(c.id)).toList();
+        }
+        return calls;
+      },
     );
   }
 
@@ -233,8 +249,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final palette = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () => _navigateToDetail(call),
+      child: Semantics(
+        button: true,
+        label: 'View details for ${call.animalName} ${call.callType}',
+        child: InkWell(
+          onTap: () => _navigateToDetail(call),
         borderRadius: BorderRadius.circular(16),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
@@ -294,6 +313,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       ),
                       // Difficulty Badge
                       _buildDifficultyBadge(call.difficulty),
+                      const SizedBox(width: 8),
+                      // Favorite button
+                      _buildFavoriteButton(call),
                     ],
                   ),
                   if (call.description.isNotEmpty) ...[
@@ -327,6 +349,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ),
             ),
           ),
+         ),
         ),
       ),
     );
@@ -385,10 +408,34 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
+  Widget _buildFavoriteButton(ReferenceCall call) {
+    final profileState = ref.watch(profileNotifierProvider);
+    final favorites = profileState.profile?.favoriteCallIds ?? [];
+    final isFavorite = favorites.contains(call.id);
+
+    return Semantics(
+      button: true,
+      label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+      child: InkWell(
+        onTap: () {
+          ref.read(profileNotifierProvider.notifier).toggleFavorite(call.id);
+        },
+        child: Icon(
+          isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+          color: isFavorite ? Colors.redAccent : AppColors.of(context).textTertiary,
+          size: 24,
+        ),
+      ),
+    );
+  }
+
   Widget _buildPlayButton(ReferenceCall call, bool isPlaying, bool isLocked) {
     final palette = AppColors.of(context);
-    return InkWell(
-      onTap: () => _togglePlayback(call),
+    return Semantics(
+      button: true,
+      label: isPlaying ? 'Stop playback' : 'Play ${call.animalName} audio',
+      child: InkWell(
+        onTap: () => _togglePlayback(call),
       child: Icon(
         isLocked
             ? Icons.lock_outline
@@ -402,6 +449,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 : palette.textSecondary,
         size: 40,
       ),
+    ),
     );
   }
 }

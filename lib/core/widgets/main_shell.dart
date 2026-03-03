@@ -29,7 +29,10 @@ class _MainShellState extends State<MainShell> {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
     _screens = [
-      HomeScreen(userId: widget.userId),
+      HomeScreen(
+        userId: widget.userId,
+        onNavigateTab: _onBottomNavTapped,
+      ),
       LibraryScreen(userId: widget.userId),
       RecorderPage(userId: widget.userId),
       ProgressMapScreen(userId: widget.userId),

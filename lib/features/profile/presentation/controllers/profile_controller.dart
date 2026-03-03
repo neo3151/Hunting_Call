@@ -157,6 +157,38 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
+  /// Toggles the favorite status of a call
+  Future<void> toggleFavorite(String callId) async {
+    final currentProfile = state.profile;
+    if (currentProfile == null) return;
+
+    final currentFavorites = List<String>.from(currentProfile.favoriteCallIds);
+    final isFavorite = currentFavorites.contains(callId);
+    
+    // Toggle locally for instant UI update
+    if (isFavorite) {
+      currentFavorites.remove(callId);
+    } else {
+      currentFavorites.add(callId);
+    }
+    
+    final updatedProfile = currentProfile.copyWith(favoriteCallIds: currentFavorites);
+    state = state.copyWith(profile: updatedProfile);
+    
+    // Update allProfiles list
+    final updatedAll = state.allProfiles.map((p) => p.id == updatedProfile.id ? updatedProfile : p).toList();
+    state = state.copyWith(allProfiles: updatedAll);
+
+    // Persist
+    try {
+      await _repo.toggleFavoriteCall(currentProfile.id, callId, !isFavorite);
+    } catch (e) {
+      AppLogger.d('ProfileNotifier: toggleFavorite failed: $e');
+      state = state.copyWith(error: e.toString());
+      // Optionally rollback here if needed
+    }
+  }
+
   /// Resets the profile state to its initial, unauthenticated state.
   void reset() {
     state = const ProfileState();

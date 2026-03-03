@@ -31,9 +31,11 @@ void showMicPermissionDeniedDialog(BuildContext context, {VoidCallback? onGrante
         ElevatedButton(
           onPressed: () async {
             Navigator.pop(ctx);
-            final granted = await Permission.microphone.request();
-            if (granted.isGranted) {
+            final status = await Permission.microphone.request();
+            if (status.isGranted) {
               onGranted?.call();
+            } else if (status.isPermanentlyDenied) {
+              await openAppSettings();
             }
           },
           style: ElevatedButton.styleFrom(

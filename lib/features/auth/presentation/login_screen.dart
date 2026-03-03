@@ -127,12 +127,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } catch (e) {
         AppLogger.d('❌ Email login failed: $e');
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(
-               content: Text('Login failed: ${e.toString().contains('invalid-credential') ? 'Invalid email or password.' : e}'), 
-               backgroundColor: Colors.redAccent
-             )
-           );
+          if (e.toString().contains('invalid-credential') || e.toString().contains('user-not-found')) {
+             ScaffoldMessenger.of(context).showSnackBar(
+               SnackBar(
+                 content: const Text('Account not found or invalid password.'),
+                 backgroundColor: Colors.redAccent,
+                 duration: const Duration(seconds: 6),
+                 action: SnackBarAction(
+                   label: 'CREATE PROFILE',
+                   textColor: Colors.white,
+                   onPressed: () => _createNewProfile(),
+                 ),
+               )
+             );
+          } else {
+             ScaffoldMessenger.of(context).showSnackBar(
+               SnackBar(
+                 content: Text('Login failed: $e'), 
+                 backgroundColor: Colors.redAccent
+               )
+             );
+          }
         }
       }
     }

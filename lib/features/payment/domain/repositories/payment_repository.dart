@@ -3,7 +3,7 @@
 abstract class PaymentRepository {
   /// Initiates a purchase flow for the Premium entitlement.
   /// Returns true if successful, false otherwise.
-  Future<bool> purchasePremium(String userId);
+  Future<bool> purchasePremium(String userId, {required String productId});
 
   /// Restores purchases (checks store for existing entitlements).
   Future<bool> restorePurchases(String userId);

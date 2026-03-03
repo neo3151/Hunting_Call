@@ -7,8 +7,9 @@ class PurchasePremium {
   PurchasePremium({required this.repository});
 
   /// Returns true if the purchase was successful.
-  Future<bool> call(String userId) async {
-    return repository.purchasePremium(userId);
+  /// Returns true if the purchase was successful.
+  Future<bool> call(String userId, {required String productId}) async {
+    return repository.purchasePremium(userId, productId: productId);
   }
 }
 

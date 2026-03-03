@@ -21,7 +21,9 @@ import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/widgets/global_error_view.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:outcall/l10n/app_localizations.dart';
-import 'package:outcall/core/services/revenuecat_service.dart';
+// removed revenuecat
+
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 
 Future<void> mainCommon() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -33,8 +35,7 @@ Future<void> mainCommon() async {
   final firebaseReady = await _initFirebase();
   _setupErrorHandling(firebaseReady);
 
-  // Initialize RevenueCat (mobile only — skips on desktop)
-  await RevenueCatService().init();
+  // removed revenuecat
 
   // Initialize Firedart (desktop) + HuntingLog DB via injection_container
   await di.init();
@@ -196,6 +197,7 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: S.supportedLocales,
+      navigatorObservers: [routeObserver],
       home: const SplashScreen(),
     );
   }

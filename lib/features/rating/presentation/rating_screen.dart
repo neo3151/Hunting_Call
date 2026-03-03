@@ -39,6 +39,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   
   bool _isUserPlaying = false;
   bool _isRefPlaying = false;
+  bool _isReviewing = true;
 
   @override
   void dispose() {
@@ -62,14 +63,22 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Clear any previous results and start analysis
+      // Clear any previous results but wait for user to start analysis
       ref.read(ratingNotifierProvider.notifier).reset();
-      ref.read(ratingNotifierProvider.notifier).analyzeCall(
-        widget.userId, 
-        widget.audioPath, 
-        widget.animalId,
-      );
     });
+  }
+
+  void _startAnalysis() {
+    if (_isUserPlaying) {
+      _userPlayer.stop();
+      setState(() => _isUserPlaying = false);
+    }
+    setState(() => _isReviewing = false);
+    ref.read(ratingNotifierProvider.notifier).analyzeCall(
+      widget.userId, 
+      widget.audioPath, 
+      widget.animalId,
+    );
   }
 
   Future<void> _toggleUserPlayback() async {
@@ -237,9 +246,11 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
             colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
           ),
         ),
-        child: isLoading
-            ? Center(
-                child: Column(
+        child: _isReviewing
+            ? _buildReviewState()
+            : isLoading
+                ? Center(
+                    child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(
@@ -388,6 +399,87 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                       ),
                     ),
                   ),
+      ),
+    );
+  }
+
+  Widget _buildReviewState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF5FF7B6).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.headphones_rounded, color: Color(0xFF5FF7B6), size: 64),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              'REVIEW RECORDING',
+              style: GoogleFonts.oswald(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Listen to your call before submitting it for AI analysis.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.lato(fontSize: 16, color: Colors.white70),
+            ),
+            const SizedBox(height: 48),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FloatingActionButton.large(
+                  heroTag: 'play_user_audio_btn',
+                  onPressed: _toggleUserPlayback,
+                  backgroundColor: _isUserPlaying ? Colors.white : const Color(0xFF5FF7B6),
+                  child: Icon(
+                    _isUserPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                    color: Colors.black,
+                    size: 40,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _isUserPlaying ? 'PLAYING...' : 'PLAY AUDIO',
+              style: GoogleFonts.oswald(fontSize: 12, color: Colors.white54, letterSpacing: 1),
+            ),
+            const SizedBox(height: 48),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _startAnalysis,
+                icon: const Icon(Icons.analytics_rounded),
+                label: Text('SCORE MY CALL', style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white70,
+              ),
+              child: const Text('DISCARD & RETRY'),
+            ),
+          ],
+        ),
       ),
     );
   }

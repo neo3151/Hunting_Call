@@ -132,24 +132,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildWelcomePage() {
     return _buildPage(
       icon: Icons.multitrack_audio_rounded,
-      title: 'Master Your\nCraft',
-      description: 'Your goal: Record, analyze, and perfect your animal calls with expert feedback and real-time scoring.',
+      title: 'Master Hunting\nCalls',
+      description: 'Learn to call 50+ animals with high-quality reference audio and live visual feedback.',
     );
   }
 
   Widget _buildHowItWorksPage() {
     return _buildPage(
-      icon: Icons.graphic_eq,
-      title: 'Quick Demo',
-      description: '1. Select a call\n2. Listen to the pro reference\n3. Record your attempt\n4. Get instant AI score and hints',
+      icon: Icons.trending_up_rounded,
+      title: 'Track Your\nProgress',
+      description: 'Score your accuracy against the reference call and level up your hunter profile.',
     );
   }
 
   Widget _buildExplorePage() {
     return _buildPage(
-      icon: Icons.explore_rounded,
-      title: 'Your Hunt\nBegins',
-      description: 'Access 50+ calls, track progress, and improve your technique instantly.',
+      icon: Icons.emoji_events_rounded,
+      title: 'Compete\nDaily',
+      description: 'Join the daily challenge, earn XP, and climb the leaderboard against hunters worldwide.',
     );
   }
 

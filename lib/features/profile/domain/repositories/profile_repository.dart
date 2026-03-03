@@ -12,4 +12,5 @@ abstract class ProfileRepository {
   Future<void> setPremiumStatus(String userId, bool isPremium);
   Future<List<UserProfile>> getTopGlobalUsers({int limit = 50});
   Future<void> updateProfileDetails(String userId, {String? nickname, String? avatarUrl});
+  Future<void> toggleFavoriteCall(String userId, String callId, bool isFavorite);
 }

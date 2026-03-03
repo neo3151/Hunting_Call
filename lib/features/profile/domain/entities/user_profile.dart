@@ -15,6 +15,7 @@ class UserProfile {
   final double averageScore;
   final List<HistoryItem> history;
   final List<String> achievements;
+  final List<String> favoriteCallIds;
   final int dailyChallengesCompleted;
   final DateTime? lastDailyChallengeDate;
   final int currentStreak;
@@ -37,6 +38,7 @@ class UserProfile {
     this.averageScore = 0.0,
     this.history = const [],
     this.achievements = const [],
+    this.favoriteCallIds = const [],
     this.dailyChallengesCompleted = 0,
     this.lastDailyChallengeDate,
     this.currentStreak = 0,
@@ -69,6 +71,7 @@ class UserProfile {
     double? averageScore,
     List<HistoryItem>? history,
     List<String>? achievements,
+    List<String>? favoriteCallIds,
     int? dailyChallengesCompleted,
     DateTime? lastDailyChallengeDate,
     int? currentStreak,
@@ -91,6 +94,7 @@ class UserProfile {
       averageScore: averageScore ?? this.averageScore,
       history: history ?? this.history,
       achievements: achievements ?? this.achievements,
+      favoriteCallIds: favoriteCallIds ?? this.favoriteCallIds,
       dailyChallengesCompleted: dailyChallengesCompleted ?? this.dailyChallengesCompleted,
       lastDailyChallengeDate: lastDailyChallengeDate ?? this.lastDailyChallengeDate,
       currentStreak: currentStreak ?? this.currentStreak,

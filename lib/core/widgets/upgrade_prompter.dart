@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/features/payment/data/payment_repository.dart';
+import 'package:outcall/features/payment/presentation/paywall_screen.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 
@@ -60,56 +61,12 @@ class UpgradePrompter {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        // MOCK PURCHASE FLOW
-                        final profile = ref.read(profileNotifierProvider).profile;
-                        if (profile == null) return;
-                        
-                        // Show loading or just await
-                        // For better UX, we could use a stateful widget / dedicated dialog,
-                        // but for now let's just create a quick loading effect if possible,
-                        // or just await.
-                        
-                        final scaffold = ScaffoldMessenger.of(context);
-                        final navigator = Navigator.of(context);
-                        
-                        try {
-                          // Remove invisible processing snackbar
-                          // scaffold.showSnackBar(...) 
-                          
-                          final success = await ref.read(paymentRepositoryProvider).purchasePremium(profile.id);
-                          
-                          if (success) {
-                            // 1. Reload profile first (State Update)
-                            await ref.read(profileNotifierProvider.notifier).loadProfile(profile.id);
-                            
-                            if (context.mounted) {
-                               // 2. Close Dialog (Make UI visible)
-                               navigator.pop(); 
-                               
-                               // 3. Show Success SnackBar (on the underlying screen)
-                               scaffold.showSnackBar(const SnackBar(
-                                 content: Text('✅ Purchase Successful! Pro features unlocked.'),
-                                 backgroundColor: Colors.green,
-                                 duration: Duration(seconds: 2),
-                               ));
-                            }
-                          } else {
-                             if (context.mounted) {
-                               // For error, we can keep dialog open or close it. 
-                               // Let's typically keep it open so they can retry?
-                               // But if SnackBar is hidden, we must close or use dialog content.
-                               // For now, let's close and show error.
-                               navigator.pop();
-                               scaffold.showSnackBar(const SnackBar(
-                                 content: Text('❌ Purchase failed. Please try again.'),
-                                 backgroundColor: Colors.red,
-                               ));
-                             }
-                          }
-                        } catch (e) {
-                           AppLogger.d('Purchase error: $e');
-                        }
+                      onPressed: () {
+                        Navigator.pop(context); // Close dialog
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const PaywallScreen()),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFFD700),
