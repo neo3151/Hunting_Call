@@ -52,7 +52,7 @@ service cloud.firestore {
     //   - LIST  : Restricted — getAllProfiles() should be moved to
     //             a Cloud Function for admin use. Currently allowed
     //             for authenticated users as a temporary measure.
-
+    match /profiles/{userId} {
       // Production-grade rule: Only allow a user to read/create/update their OWN document.
       allow read, create, update: if isOwner(userId);
 
@@ -108,6 +108,19 @@ service cloud.firestore {
     match /config/{document=**} {
       allow read: if true;
       allow write: if false; // Only via console/admin
+    }
+
+    // ─── /waitlist/{document} ─────────────────────────────────────
+    //
+    // Landing page email capture — write-only for anonymous visitors.
+    // No read/list access from client to prevent email harvesting.
+
+    match /waitlist/{document} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'source', 'timestamp', 'userAgent'])
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() > 0
+                    && request.resource.data.email.size() <= 254;
+      allow read, update, delete: if false;
     }
 
     // ─── Deny everything else ───────────────────────────────────────

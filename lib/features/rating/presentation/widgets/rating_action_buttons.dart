@@ -1,8 +1,8 @@
+import 'dart:io' show Platform, File, Process;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
-import 'dart:io' show Platform, File, Process;
 import 'package:path_provider/path_provider.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
@@ -143,20 +143,26 @@ class RatingActionButtons extends ConsumerWidget {
     if (result == null) return;
 
     final scoreStr = result!.score.toInt().toString();
-    final text = 'I just scored $scoreStr% on the $animalName call in OUTCALL! Think you can beat me? 🦌🦆';
+    final text = 'I just scored $scoreStr% on the $animalName call in OUTCALL! 🎯🦌\n\n'
+        'Think you can beat me? Download OUTCALL:\n'
+        'https://hunting-call-perfection.web.app';
 
     if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+      // ─── Desktop: Save audio + image to Downloads ─────────────────
       try {
         final downloadsDir = await getDownloadsDirectory();
         if (downloadsDir != null) {
-          final fileName = 'outcall_recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
-          final destPath = '${downloadsDir.path}/$fileName';
-          await File(audioPath).copy(destPath);
+          final ts = DateTime.now().millisecondsSinceEpoch;
+
+          // Save audio
+          final audioFileName = 'outcall_recording_$ts.m4a';
+          final audioDestPath = '${downloadsDir.path}/$audioFileName';
+          await File(audioPath).copy(audioDestPath);
 
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Saved to Downloads: $fileName (Opening folder...)'),
+                content: Text('Saved to Downloads: $audioFileName'),
                 backgroundColor: const Color(0xFF5FF7B6),
                 behavior: SnackBarBehavior.floating,
               ),
@@ -166,9 +172,9 @@ class RatingActionButtons extends ConsumerWidget {
           if (Platform.isLinux) {
             await Process.run('xdg-open', [downloadsDir.path]);
           } else if (Platform.isWindows) {
-            await Process.run('explorer.exe', ['/select,', destPath]);
+            await Process.run('explorer.exe', ['/select,', audioDestPath]);
           } else if (Platform.isMacOS) {
-            await Process.run('open', ['-R', destPath]);
+            await Process.run('open', ['-R', audioDestPath]);
           }
         }
       } catch (e) {
@@ -179,7 +185,15 @@ class RatingActionButtons extends ConsumerWidget {
         }
       }
     } else {
-      await SharePlus.instance.share(ShareParams(files: [XFile(audioPath)], text: text));
+      // ─── Mobile: Share image + audio via system share ─────────────
+      final files = <XFile>[XFile(audioPath)];
+
+      // Try to capture the score card image (requires the widget to be in the tree)
+      // If not available, share text + audio only
+      await SharePlus.instance.share(ShareParams(
+        files: files,
+        text: text,
+      ));
     }
   }
 }

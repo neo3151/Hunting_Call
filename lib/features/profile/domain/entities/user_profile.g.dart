@@ -35,6 +35,9 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
           : DateTime.parse(json['birthday'] as String),
       isPremium: json['isPremium'] as bool? ?? false,
       isAlphaTester: json['isAlphaTester'] as bool? ?? false,
+      referralCode: json['referralCode'] as String?,
+      referredBy: json['referredBy'] as String?,
+      referralCount: (json['referralCount'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
@@ -57,6 +60,9 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'birthday': instance.birthday?.toIso8601String(),
       'isPremium': instance.isPremium,
       'isAlphaTester': instance.isAlphaTester,
+      'referralCode': instance.referralCode,
+      'referredBy': instance.referredBy,
+      'referralCount': instance.referralCount,
     };
 
 HistoryItem _$HistoryItemFromJson(Map<String, dynamic> json) => HistoryItem(

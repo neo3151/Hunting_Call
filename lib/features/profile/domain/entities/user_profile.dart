@@ -22,6 +22,9 @@ class UserProfile {
   final DateTime? birthday;
   final bool isPremium; // Entitlement: Has user purchased the full app?
   final bool isAlphaTester;
+  final String? referralCode;   // User's unique referral code (OUTCALL-XXXX)
+  final String? referredBy;     // Code of the user who referred them
+  final int referralCount;      // How many people used their code
 
   UserProfile({
     required this.id,
@@ -41,6 +44,9 @@ class UserProfile {
     this.birthday,
     this.isPremium = false,
     this.isAlphaTester = false,
+    this.referralCode,
+    this.referredBy,
+    this.referralCount = 0,
   });
 
   factory UserProfile.guest() {
@@ -50,6 +56,7 @@ class UserProfile {
       joinedDate: DateTime.now(),
       isPremium: false,
       isAlphaTester: false,
+      referralCount: 0,
     );
   }
 
@@ -69,6 +76,9 @@ class UserProfile {
     DateTime? birthday,
     bool? isPremium,
     bool? isAlphaTester,
+    String? referralCode,
+    String? referredBy,
+    int? referralCount,
   }) {
     return UserProfile(
       id: id,
@@ -88,6 +98,9 @@ class UserProfile {
       birthday: birthday ?? this.birthday,
       isPremium: isPremium ?? this.isPremium,
       isAlphaTester: isAlphaTester ?? this.isAlphaTester,
+      referralCode: referralCode ?? this.referralCode,
+      referredBy: referredBy ?? this.referredBy,
+      referralCount: referralCount ?? this.referralCount,
     );
   }
 

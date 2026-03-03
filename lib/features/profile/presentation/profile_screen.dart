@@ -13,6 +13,9 @@ import 'package:outcall/features/progress_map/presentation/progress_map_screen.d
 import 'package:outcall/config/app_config.dart';
 import 'package:outcall/core/widgets/upgrade_prompter.dart';
 import 'package:outcall/core/widgets/offline_banner.dart';
+import 'package:outcall/core/services/referral_service.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:flutter/services.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -72,6 +75,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             Expanded(child: _buildGlassStatCard('DAILY STREAK', '${profile.currentStreak} 🔥', Icons.local_fire_department)),
                           ],
                         ),
+                        const SizedBox(height: 16),
+                        
+                        // Invite Friends Card
+                        _buildInviteFriendsCard(profile),
                         const SizedBox(height: 16),
                         
                         // Map Button
@@ -443,6 +450,138 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Icon(Icons.chevron_right, color: AppColors.of(context).divider),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInviteFriendsCard(UserProfile profile) {
+    final referralCode = profile.referralCode ?? ReferralService.generateCode(profile.id);
+    final referralCount = profile.referralCount;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.accentGold.withValues(alpha: 0.1),
+                AppColors.accentGold.withValues(alpha: 0.05),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.people_outline, color: AppColors.accentGold, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'INVITE FRIENDS',
+                    style: GoogleFonts.oswald(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.accentGold,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (referralCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentGold.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Text(
+                        '$referralCount referred',
+                        style: GoogleFonts.lato(
+                          fontSize: 10,
+                          color: AppColors.accentGold,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Referral Code Display
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.of(context).surface,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.of(context).border),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        referralCode,
+                        style: GoogleFonts.oswald(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.of(context).textPrimary,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.copy, size: 18, color: AppColors.of(context).textTertiary),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: referralCode));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Code copied!', style: GoogleFonts.lato()),
+                            backgroundColor: AppColors.accentGold,
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      tooltip: 'Copy code',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Share Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final msg = ReferralService.shareMessage(referralCode);
+                    await SharePlus.instance.share(ShareParams(text: msg));
+                  },
+                  icon: const Icon(Icons.share, size: 16),
+                  label: Text(
+                    'SHARE INVITE',
+                    style: GoogleFonts.oswald(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1.5),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentGold,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

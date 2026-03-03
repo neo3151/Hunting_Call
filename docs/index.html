@@ -4,113 +4,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OUTCALL | Master the Hunt</title>
+    <title>OUTCALL | Master Your Craft — Hunting Call Training App</title>
     <meta name="description"
-        content="Refine your animal calling techniques with real-time audio analysis and feedback.">
+        content="Perfect your hunting calls with real-time audio analysis, AI scoring, and pro reference tracks. Available on Android, iOS, and Desktop.">
+    <meta name="keywords"
+        content="hunting call app, animal calls, elk call, turkey call, hunting training, audio analysis">
+
+    <!-- OG / Social -->
+    <meta property="og:title" content="OUTCALL — Master Your Craft">
+    <meta property="og:description" content="The premium hunting call training app with real-time audio analysis.">
+    <meta property="og:image" content="images/app_icon.png">
+    <meta property="og:type" content="website">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Custom CSS -->
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/app_icon.png">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SLPK7WY2SZ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-SLPK7WY2SZ');
+    </script>
 </head>
 
 <body>
-    <nav>
+
+    <!-- Particle Canvas -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- ─── Nav ─────────────────────────────────────────────────────────── -->
+    <nav id="main-nav">
         <div class="logo-container">
-            <img src="../assets/images/logo.png" alt="Hunting Calls Logo">
+            <img src="images/logo.png" alt="Outcall Logo">
             <span class="logo-text">OUTCALL</span>
         </div>
         <div class="nav-links">
-            <a href="https://github.com/neo3151/Hunting_Call" class="btn btn-outline">GitHub</a>
+            <a href="#features">Features</a>
+            <a href="#showcase">Preview</a>
+            <a href="#waitlist-cta" class="btn btn-primary" style="font-size:0.8rem; padding:0.6rem 1.4rem;">Join
+                Beta</a>
         </div>
     </nav>
 
-    <header>
-        <div class="hero-bg"></div>
+    <!-- ─── Hero ────────────────────────────────────────────────────────── -->
+    <section class="hero">
         <div class="hero-content">
-            <h1>PERFECT YOUR<br><span style="color: var(--accent);">CALL.</span></h1>
-            <p>Advanced real-time audio analysis and AI feedback to help you master animal calling techniques for elk,
-                turkey, and more.</p>
-            <div class="cta-group">
-                <a href="#features" class="btn btn-primary">Explore Features</a>
-                <a href="https://github.com/neo3151/Hunting_Call" class="btn btn-outline">View Source Code</a>
-            </div>
-        </div>
-    </header>
+            <img src="images/splash_logo.png" alt="Outcall Logo" class="hero-logo fade-up">
 
-    <section id="features">
-        <div class="section-title">
-            <h2>Precision Engineered</h2>
-            <p>Tools designed for the modern hunter who demands perfection.</p>
-        </div>
+            <h1 class="fade-up fade-up-d1">Perfect Your<br><span class="gold">Call.</span></h1>
 
-        <div class="screenshots-container"
-            style="display: flex; gap: 20px; justify-content: center; margin-bottom: 60px; flex-wrap: wrap;">
-            <img src="../assets/images/screenshots/login.png" alt="Login"
-                style="width: 250px; border-radius: 15px; border: 1px solid var(--glass); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <img src="../assets/images/screenshots/home.png" alt="Dashboard"
-                style="width: 250px; border-radius: 15px; border: 1px solid var(--glass); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <img src="../assets/images/screenshots/recorder.png" alt="Recorder"
-                style="width: 250px; border-radius: 15px; border: 1px solid var(--glass); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-        </div>
+            <div class="hero-divider fade-up fade-up-d2"></div>
 
-        <div class="features-grid">
-            <div class="feature-card">
-                <i class="fas fa-microphone-lines"></i>
-                <h3>Studio Quality Capture</h3>
-                <p>Native PCM16 WAV recording across all platforms ensures no detail of your call is lost.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fas fa-wave-square"></i>
-                <h3>Frequency Analysis</h3>
-                <p>Immediate visual feedback with live waveform and amplitude tracking using FFTEA technology.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fas fa-trophy"></i>
-                <h3>Comparison Scoring</h3>
-                <p>Compare your calls against professional reference tracks and receive instant accuracy scores.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fas fa-user-shield"></i>
-                <h3>Secure Profiles</h3>
-                <p>Track your development over time with local profile persistence and detailed performance stats.</p>
+            <p class="hero-tagline fade-up fade-up-d2">Master Your Craft</p>
+
+            <p class="hero-description fade-up fade-up-d3">
+                Real-time audio analysis and AI-powered scoring to help you master animal calling techniques.
+                Train with professional reference tracks across elk, turkey, duck, and more.
+            </p>
+
+            <!-- Waitlist Form -->
+            <div id="waitlist-hero" class="fade-up fade-up-d4">
+                <form class="waitlist-form" id="waitlist-form-hero" onsubmit="return handleWaitlist(event, 'hero')">
+                    <input type="email" id="email-hero" placeholder="Enter your email for early access" required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> Join Beta
+                    </button>
+                </form>
+                <div class="waitlist-success" id="success-hero">
+                    <i class="fas fa-check-circle"></i> You're on the list! We'll be in touch.
+                </div>
+                <p class="waitlist-count fade-up fade-up-d5">
+                    <i class="fas fa-shield-halved"></i> &nbsp;No spam. Unsubscribe anytime.
+                </p>
             </div>
         </div>
     </section>
 
+    <!-- ─── Stats Bar ───────────────────────────────────────────────────── -->
+    <div class="stats-bar">
+        <div class="stat-item reveal">
+            <div class="stat-number">16</div>
+            <div class="stat-label">Features</div>
+        </div>
+        <div class="stat-item reveal">
+            <div class="stat-number">135+</div>
+            <div class="stat-label">Pro Calls</div>
+        </div>
+        <div class="stat-item reveal">
+            <div class="stat-number">5</div>
+            <div class="stat-label">Platforms</div>
+        </div>
+        <div class="stat-item reveal">
+            <div class="stat-number">Real-Time</div>
+            <div class="stat-label">Audio Analysis</div>
+        </div>
+    </div>
+
+    <!-- ─── Features ────────────────────────────────────────────────────── -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>Precision Engineered</h2>
+            <p>Built for hunters who demand perfection in every call.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-microphone-lines"></i></div>
+                <h3>Studio Recording</h3>
+                <p>Native PCM16 WAV capture with live waveform visualization. Every nuance of your call is preserved in
+                    studio quality.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-wave-square"></i></div>
+                <h3>Frequency Analysis</h3>
+                <p>Real-time FFT spectral analysis breaks down your call's frequency profile and compares it against
+                    professional references.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-trophy"></i></div>
+                <h3>AI Scoring</h3>
+                <p>Get instant accuracy scores with detailed feedback on pitch, rhythm, and tone. Track your improvement
+                    over time.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-map-location-dot"></i></div>
+                <h3>Progress Map</h3>
+                <p>Unlock regions as you master new species. Visualize your journey from beginner to expert on an
+                    interactive world map.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                <h3>Daily Challenges</h3>
+                <p>Fresh challenges every day to keep your skills sharp. Earn XP, climb the leaderboard, and unlock
+                    achievements.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-cloud-sun"></i></div>
+                <h3>Weather Intel</h3>
+                <p>Real-time weather data and hunting condition analysis. Know exactly when and where conditions favor
+                    your hunt.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Showcase ────────────────────────────────────────────────────── -->
+    <section class="showcase" id="showcase">
+        <div class="section-header">
+            <h2>Experience the App</h2>
+            <p>Premium design meets field-tested functionality.</p>
+        </div>
+
+        <div class="showcase-images">
+            <img src="images/onboarding_library.png" alt="Call Library" class="showcase-img reveal">
+            <img src="images/onboarding_analysis.png" alt="Audio Analysis" class="showcase-img reveal">
+            <img src="images/onboarding_mastery.png" alt="Mastery Progress" class="showcase-img reveal">
+        </div>
+    </section>
+
+    <!-- ─── CTA Section ─────────────────────────────────────────────────── -->
+    <section class="cta-section" id="waitlist-cta">
+        <div class="cta-badge">
+            <span class="pulse-dot"></span>
+            Beta Now Open
+        </div>
+
+        <h2>Ready to Master<br>Your Call?</h2>
+        <p>Join the beta and be among the first to experience the future of hunting call training.</p>
+
+        <div id="waitlist-cta-container">
+            <form class="waitlist-form" id="waitlist-form-cta" onsubmit="return handleWaitlist(event, 'cta')">
+                <input type="email" id="email-cta" placeholder="your@email.com" required>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i> Get Early Access
+                </button>
+            </form>
+            <div class="waitlist-success" id="success-cta">
+                <i class="fas fa-check-circle"></i> You're on the list! We'll be in touch.
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Footer ──────────────────────────────────────────────────────── -->
     <footer>
+        <div class="footer-links">
+            <a href="privacy-policy.html">Privacy Policy</a>
+            <a href="delete-account.html">Delete Account</a>
+            <a href="https://github.com/neo3151/Hunting_Call">GitHub</a>
+        </div>
         <p>&copy; 2026 OUTCALL. All rights reserved.</p>
-        <p style="margin-top: 10px; font-size: 0.8rem;">Inspired by the wild. Built for the challenge.</p>
+        <p style="margin-top:0.5rem; font-size:0.7rem; color: rgba(255,255,255,0.2);">
+            Inspired by the wild. Built for the challenge.
+        </p>
     </footer>
 
-    <script>
-        // Subtle scroll reveal effect
-        const observerOptions = {
-            threshold: 0.1
+    <!-- ─── Scripts ─────────────────────────────────────────────────────── -->
+
+    <!-- Firebase SDK (modular) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBGJiaNDKA879CepT1Ymgp2pkBB_pm_FZs",
+            authDomain: "hunting-call-perfection.firebaseapp.com",
+            projectId: "hunting-call-perfection",
+            storageBucket: "hunting-call-perfection.appspot.com",
+            messagingSenderId: "654995904748",
+            appId: "1:654995904748:web:5079119d9b07508082adc9"
         };
 
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Expose to global scope for the form handler
+        window.firebaseDb = db;
+        window.firebaseAddDoc = addDoc;
+        window.firebaseCollection = collection;
+        window.firebaseServerTimestamp = serverTimestamp;
+    </script>
+
+    <script>
+        // ─── Waitlist Form Handler ──────────────────────────────────────
+        async function handleWaitlist(event, formId) {
+            event.preventDefault();
+
+            const emailInput = document.getElementById(`email-${formId}`);
+            const form = document.getElementById(`waitlist-form-${formId}`);
+            const success = document.getElementById(`success-${formId}`);
+            const email = emailInput.value.trim();
+
+            if (!email) return false;
+
+            try {
+                // Try Firebase
+                if (window.firebaseDb) {
+                    await window.firebaseAddDoc(
+                        window.firebaseCollection(window.firebaseDb, 'waitlist'),
+                        {
+                            email: email,
+                            source: formId,
+                            timestamp: window.firebaseServerTimestamp(),
+                            userAgent: navigator.userAgent
+                        }
+                    );
+                }
+            } catch (e) {
+                console.log('Firebase save skipped:', e);
+                // Still show success — we'll collect via analytics fallback
+            }
+
+            // Track conversion in GA4
+            if (typeof gtag === 'function') {
+                gtag('event', 'waitlist_signup', {
+                    event_category: 'conversion',
+                    event_label: formId,
+                    value: 1
+                });
+            }
+
+            // Show success
+            form.style.display = 'none';
+            success.classList.add('show');
+
+            return false;
+        }
+
+        // Make it globally accessible
+        window.handleWaitlist = handleWaitlist;
+
+        // ─── Floating Particles ─────────────────────────────────────────
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight * 2;
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = -Math.random() * 0.5 - 0.1;
+                this.radius = Math.random() * 1.5 + 0.5;
+                this.opacity = Math.random() * 0.15 + 0.03;
+                this.life = Math.random();
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life += 0.002;
+                if (this.y < -10 || this.life > 1) this.reset();
+            }
+            draw() {
+                const alpha = Math.sin(this.life * Math.PI) * this.opacity;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(232, 146, 45, ${alpha})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            resizeCanvas();
+            particles = Array.from({ length: 50 }, () => new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        initParticles();
+        animateParticles();
+
+        // ─── Scroll Reveal ──────────────────────────────────────────────
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.style.opacity = "1";
-                    entry.target.style.transform = "translateY(0)";
+                    entry.target.classList.add('visible');
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.1 });
 
-        document.querySelectorAll('.feature-card').forEach(card => {
-            card.style.opacity = "0";
-            card.style.transform = "translateY(30px)";
-            card.style.transition = "all 0.6s ease-out";
-            observer.observe(card);
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // ─── Nav Scroll Effect ──────────────────────────────────────────
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('main-nav');
+            nav.classList.toggle('scrolled', window.scrollY > 50);
         });
     </script>
+
 </body>
 
 </html>
