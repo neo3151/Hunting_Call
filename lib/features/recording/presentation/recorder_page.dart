@@ -278,8 +278,11 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Material(
                       color: Colors.transparent,
-                      child: InkWell(
-                        onTap: (isRecording || isCountingDown) ? null : () async {
+                      child: Semantics(
+                        button: true,
+                        label: 'Select animal call. Currently selected: ${selectedCall.animalName} ${selectedCall.callType}',
+                        child: InkWell(
+                          onTap: (isRecording || isCountingDown) ? null : () async {
                           final newId = await Navigator.push<String>(
                             context,
                             MaterialPageRoute(builder: (_) => const CallSelectionScreen()),
@@ -340,6 +343,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                             ],
                           ),
                         ),
+                       ),
                       ),
                     ),
                   ),
@@ -446,9 +450,12 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   }
 
   Widget _buildGlassButton({required VoidCallback? onPressed, required IconData icon, required String label}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
-      child: BackdropFilter(
+    return Semantics(
+      button: true,
+      label: label,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: TextButton.icon(
           onPressed: onPressed,
@@ -460,15 +467,19 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
             side: BorderSide(color: AppColors.of(context).border),
           ),
         ),
+       ),
       ),
     );
   }
 
 
   Widget _buildSmallIconButton({required VoidCallback onPressed, required IconData icon, required String label}) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
+    return Semantics(
+      button: true,
+      label: label,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
@@ -496,8 +507,9 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
             fontWeight: FontWeight.bold,
             letterSpacing: 1,
           ),
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

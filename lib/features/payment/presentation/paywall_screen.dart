@@ -110,8 +110,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
                   _buildHeader(colors),
                   const SizedBox(height: 24),
 
-                  // ─── Feature List ───────────────────────────
-                  _buildFeatureList(colors),
+                  // ─── Feature Matrix ───────────────────────────
+                  _buildComparisonMatrix(colors),
                   const SizedBox(height: 28),
 
                   // ─── Pricing Toggle ─────────────────────────
@@ -197,57 +197,66 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
     );
   }
 
-  Widget _buildFeatureList(AppColorPalette colors) {
+  Widget _buildComparisonMatrix(AppColorPalette colors) {
     final features = [
-      ('135+ Pro Calls', 'Every species, every sound', Icons.library_music_rounded),
-      ('AI Audio Analysis', 'Detailed pitch & rhythm scoring', Icons.insights_rounded),
-      ('Progress Map', 'Track your mastery journey', Icons.map_rounded),
-      ('Daily Challenges', 'Fresh challenges with XP & rewards', Icons.bolt_rounded),
-      ('Global Leaderboard', 'Compete with hunters worldwide', Icons.leaderboard_rounded),
-      ('Weather Intel', 'Real-time hunting conditions', Icons.cloud_rounded),
+      ('Call Library', 'Limited', 'All 135+ Calls'),
+      ('Audio Analysis', 'Basic Info', 'Detailed Scoring'),
+      ('Daily Challenge', 'Free Calls Only', 'Unlimited Access'),
+      ('Global Rankings', '❌', '✔️'),
+      ('Offline Mode', '❌', '✔️'),
     ];
 
-    return Column(
-      children: features.map((f) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.accentGold.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(f.$3, size: 20, color: AppColors.accentGold),
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.cardOverlay,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(flex: 2, child: Text('FEATURE', style: _matrixHeaderStyle(colors))),
+                Expanded(flex: 1, child: Text('FREE', textAlign: TextAlign.center, style: _matrixHeaderStyle(colors))),
+                Expanded(flex: 1, child: Text('PRO', textAlign: TextAlign.center, style: _matrixHeaderStyle(colors).copyWith(color: AppColors.accentGold))),
+              ],
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    f.$1,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: colors.textPrimary,
-                    ),
-                  ),
-                  Text(
-                    f.$2,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colors.textTertiary,
-                    ),
-                  ),
-                ],
-              ),
+          ),
+          Divider(color: colors.border, height: 1),
+          // Rows
+          ...features.map((f) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2, 
+                  child: Text(f.$1, style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
+                ),
+                Expanded(
+                  flex: 1, 
+                  child: Text(f.$2, textAlign: TextAlign.center, style: TextStyle(color: colors.textSecondary, fontSize: 12)),
+                ),
+                Expanded(
+                  flex: 1, 
+                  child: Text(f.$3, textAlign: TextAlign.center, style: TextStyle(color: AppColors.accentGold, fontSize: 12, fontWeight: FontWeight.w600)),
+                ),
+              ],
             ),
-            Icon(Icons.check_circle, size: 20, color: AppColors.success),
-          ],
-        ),
-      )).toList(),
+          )),
+        ],
+      ),
+    );
+  }
+
+  TextStyle _matrixHeaderStyle(AppColorPalette colors) {
+    return TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.bold,
+      letterSpacing: 1,
+      color: colors.textTertiary,
     );
   }
 
@@ -406,11 +415,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
                     : () async {
                         final userId = profile?.id ?? '';
                         if (userId.isEmpty) return;
+                        
+                        final productId = _isYearly ? 'outcall_premium_yearly' : 'outcall_premium_monthly';
+                        
                         final success = await ref
                             .read(paymentNotifierProvider.notifier)
                             .purchasePremium(userId, packageId: _selectedPackage!.identifier);
                         if (success && context.mounted) {
-                          Navigator.of(context).pop(true);
+                           Navigator.of(context).pop(true);
                         }
                       },
                 borderRadius: BorderRadius.circular(16),

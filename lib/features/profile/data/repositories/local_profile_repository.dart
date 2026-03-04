@@ -134,4 +134,19 @@ class LocalProfileRepository implements ProfileRepository {
     final updated = profile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
     await dataSource.saveProfile(updated);
   }
+
+  @override
+  Future<void> toggleFavoriteCall(String userId, String callId, bool isFavorite) async {
+    final profile = await dataSource.getProfile(userId);
+    final currentFavorites = List<String>.from(profile.favoriteCallIds);
+    
+    if (isFavorite && !currentFavorites.contains(callId)) {
+      currentFavorites.add(callId);
+    } else if (!isFavorite && currentFavorites.contains(callId)) {
+      currentFavorites.remove(callId);
+    }
+    
+    final updated = profile.copyWith(favoriteCallIds: currentFavorites);
+    await dataSource.saveProfile(updated);
+  }
 }

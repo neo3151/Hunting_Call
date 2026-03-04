@@ -403,4 +403,60 @@ class UnifiedProfileRepository implements ProfileRepository {
       if (_localDataSource == null) rethrow; // If no local, throw
     }
   }
+
+  @override
+  Future<void> toggleFavoriteCall(String userId, String callId, bool isFavorite) async {
+    // 1. Local backup if available
+    if (_localDataSource != null) {
+      try {
+        final localProfile = await _localDataSource!.getProfile(userId);
+        final currentFavorites = List<String>.from(localProfile.favoriteCallIds);
+        
+        if (isFavorite && !currentFavorites.contains(callId)) {
+          currentFavorites.add(callId);
+        } else if (!isFavorite && currentFavorites.contains(callId)) {
+          currentFavorites.remove(callId);
+        }
+        
+        final updated = localProfile.copyWith(favoriteCallIds: currentFavorites);
+        await _localDataSource!.saveProfile(updated);
+      } catch (e) {
+        AppLogger.d('⚠️ Failed to save local backup of favorites: $e');
+      }
+    }
+
+    if (userId == 'guest') return;
+
+    // 2. Cloud Update
+    try {
+      final doc = await _apiGateway.getDocument(_collectionPath, userId);
+      List<String> currentFavorites = [];
+      
+      if (doc != null && doc['favoriteCallIds'] != null) {
+        currentFavorites = List<String>.from(doc['favoriteCallIds']);
+      }
+      
+      if (isFavorite && !currentFavorites.contains(callId)) {
+        currentFavorites.add(callId);
+      } else if (!isFavorite && currentFavorites.contains(callId)) {
+        currentFavorites.remove(callId);
+      }
+      
+      if (doc == null) {
+        await _apiGateway.setDocument(_collectionPath, userId, {
+          'id': userId,
+          'name': 'Hunter',
+          'joinedDate': DateTime.now().toIso8601String(),
+          'favoriteCallIds': currentFavorites,
+        });
+      } else {
+        await _apiGateway.updateDocument(_collectionPath, userId, {
+          'favoriteCallIds': currentFavorites,
+        });
+      }
+    } catch (e) {
+      AppLogger.d('❌ ApiGateway: Error toggling favorite call: $e');
+      if (_localDataSource == null) rethrow;
+    }
+  }
 }

@@ -23,6 +23,10 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      favoriteCallIds: (json['favoriteCallIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       dailyChallengesCompleted:
           (json['dailyChallengesCompleted'] as num?)?.toInt() ?? 0,
       lastDailyChallengeDate: json['lastDailyChallengeDate'] == null
@@ -52,6 +56,7 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'averageScore': instance.averageScore,
       'history': instance.history.map((e) => e.toJson()).toList(),
       'achievements': instance.achievements,
+      'favoriteCallIds': instance.favoriteCallIds,
       'dailyChallengesCompleted': instance.dailyChallengesCompleted,
       'lastDailyChallengeDate':
           instance.lastDailyChallengeDate?.toIso8601String(),

@@ -25,7 +25,8 @@ import 'package:outcall/l10n/app_localizations.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final String userId;
-  const HomeScreen({super.key, required this.userId});
+  final void Function(int)? onNavigateTab;
+  const HomeScreen({super.key, required this.userId, this.onNavigateTab});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -241,10 +242,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 iconColor: Theme.of(context).primaryColor,
                 title: 'Quick\nPractice',
                 subtitle: S.of(context).startPracticingSubtitle,
-                onTap: () => Navigator.of(context).push(
-                  SlideUpRoute(
-                      page: RecorderPage(userId: activeUserId)),
-                ),
+                onTap: () {
+                  if (widget.onNavigateTab != null) {
+                    widget.onNavigateTab!(2); // Index 2 is RecorderPage (Practice)
+                  } else {
+                    Navigator.of(context).push(
+                      SlideUpRoute(page: RecorderPage(userId: activeUserId)),
+                    );
+                  }
+                },
               ),
             ),
             const SizedBox(width: 16),
