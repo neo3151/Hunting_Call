@@ -44,7 +44,10 @@ class RealRatingService implements RatingService {
   static final Map<String, AudioAnalysis> _refCache = {};
 
   @override
-  Future<RatingResult> rateCall(String userId, String audioPath, String animalType) async {
+  Future<RatingResult> rateCall(String userId, String audioPath, String animalType, {
+    double scoreOffset = 0.0,
+    double micSensitivity = 1.0,
+  }) async {
     AppLogger.d('RealRatingService: rateCall started for $animalType at $audioPath');
     
     // Try to get location (fire and forget or await briefly?)
@@ -125,6 +128,8 @@ class RealRatingService implements RatingService {
           animalId: reference.id,
           userAnalysis: userAnalysis,
           referenceAnalysis: refAnalysis,
+          scoreOffset: scoreOffset,
+          micSensitivity: micSensitivity,
         ),
       );
       

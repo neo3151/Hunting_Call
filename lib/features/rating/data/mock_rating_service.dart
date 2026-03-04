@@ -4,7 +4,10 @@ import 'package:outcall/features/rating/domain/rating_service.dart';
 
 class MockRatingService implements RatingService {
   @override
-  Future<RatingResult> rateCall(String userId, String audioPath, String animalType) async {
+  Future<RatingResult> rateCall(String userId, String audioPath, String animalType, {
+    double scoreOffset = 0.0,
+    double micSensitivity = 1.0,
+  }) async {
     // No delay
     final random = Random();
     final score = 60 + random.nextInt(40).toDouble(); // Score 60-100

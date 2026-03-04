@@ -1,5 +1,6 @@
 import 'package:outcall/core/theme/app_theme.dart';
 import 'package:outcall/core/services/simple_storage.dart';
+import 'package:outcall/features/settings/domain/calibration_profile.dart';
 import 'package:outcall/features/settings/domain/settings_model.dart';
 
 /// Persists [AppSettings] using ISimpleStorage.
@@ -24,6 +25,7 @@ class SettingsRepository {
       hapticFeedback: await _storage.getBool('${_prefix}hapticFeedback') ?? true,
       imageQuality: await _storage.getString('${_prefix}imageQuality') ?? 'high',
       autoCleanupHours: await _storage.getInt('${_prefix}autoCleanupHours') ?? 24,
+      calibration: await _loadCalibration(),
     );
   }
 
@@ -35,6 +37,7 @@ class SettingsRepository {
     await _storage.setBool('${_prefix}hapticFeedback', settings.hapticFeedback);
     await _storage.setString('${_prefix}imageQuality', settings.imageQuality);
     await _storage.setInt('${_prefix}autoCleanupHours', settings.autoCleanupHours);
+    await _saveCalibration(settings.calibration);
   }
 
   Future<void> clearSettings() async {
@@ -46,6 +49,37 @@ class SettingsRepository {
       'hapticFeedback',
     ]) {
       await _storage.remove('$_prefix$key');
+    }
+    // Also clear calibration keys
+    for (final key in ['cal_scoreOffset', 'cal_micSensitivity', 'cal_noiseFloorLevel', 'cal_calibratedAt']) {
+      await _storage.remove('$_prefix$key');
+    }
+  }
+
+  // ─── Calibration helpers ─────────────────────────────────────────────
+
+  static const _calPrefix = 'app_settings_cal_';
+
+  Future<CalibrationProfile> _loadCalibration() async {
+    final offset = await _storage.getDouble('${_calPrefix}scoreOffset');
+    final sensitivity = await _storage.getDouble('${_calPrefix}micSensitivity');
+    final noiseFloor = await _storage.getDouble('${_calPrefix}noiseFloorLevel');
+    final calibratedAtStr = await _storage.getString('${_calPrefix}calibratedAt');
+
+    return CalibrationProfile(
+      scoreOffset: offset ?? 0.0,
+      micSensitivity: sensitivity ?? 1.0,
+      noiseFloorLevel: noiseFloor ?? 0.0,
+      calibratedAt: calibratedAtStr != null ? DateTime.tryParse(calibratedAtStr) : null,
+    );
+  }
+
+  Future<void> _saveCalibration(CalibrationProfile cal) async {
+    await _storage.setDouble('${_calPrefix}scoreOffset', cal.scoreOffset);
+    await _storage.setDouble('${_calPrefix}micSensitivity', cal.micSensitivity);
+    await _storage.setDouble('${_calPrefix}noiseFloorLevel', cal.noiseFloorLevel);
+    if (cal.calibratedAt != null) {
+      await _storage.setString('${_calPrefix}calibratedAt', cal.calibratedAt!.toIso8601String());
     }
   }
 }

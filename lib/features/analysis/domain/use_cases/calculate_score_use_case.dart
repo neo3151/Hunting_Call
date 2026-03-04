@@ -12,6 +12,10 @@ class CalculateScoreParams {
   final String animalId;
   final AudioAnalysis userAnalysis;
   final AudioAnalysis? referenceAnalysis;
+
+  /// Optional calibration offsets from on-device calibration.
+  final double scoreOffset;
+  final double micSensitivity;
   
   const CalculateScoreParams({
     required this.userId,
@@ -19,6 +23,8 @@ class CalculateScoreParams {
     required this.animalId,
     required this.userAnalysis,
     this.referenceAnalysis,
+    this.scoreOffset = 0.0,
+    this.micSensitivity = 1.0,
   });
 }
 
@@ -42,13 +48,15 @@ class CalculateScoreUseCase {
     }
     
     // Calculate individual scores
+    // Apply mic sensitivity calibration to volume readings
+    final calibratedVolume = params.userAnalysis.averageVolume * params.micSensitivity;
     final volumeScore = _calculateVolumeScore(
-      params.userAnalysis.averageVolume,
+      calibratedVolume,
       params.userAnalysis.volumeConsistency,
     );
 
     // GUARD: If it's effectively silence, fail the score or give a zero before complex trait comparison
-    if (params.userAnalysis.averageVolume < 0.005) {
+    if (calibratedVolume < 0.005) {
       return right(AnalysisResult(
         recordingId: params.recordingId,
         userId: params.userId,
@@ -105,6 +113,11 @@ class CalculateScoreUseCase {
     }
     
     overallScore = max(0.0, overallScore - noisePenalty);
+
+  // Apply calibration score offset
+  if (params.scoreOffset != 0.0) {
+    overallScore = (overallScore + params.scoreOffset).clamp(0.0, 100.0);
+  }
 
     return right(AnalysisResult(
       recordingId: params.recordingId,

@@ -9,6 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
+import 'package:outcall/features/settings/presentation/calibration_screen.dart';
 import 'package:outcall/core/theme/app_theme.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/l10n/app_localizations.dart';
@@ -216,6 +217,20 @@ class SettingsScreen extends ConsumerWidget {
                               value: settings.hapticFeedback,
                               onChanged: notifier.setHapticFeedback,
                               activeThumbColor: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          Divider(color: colors.divider),
+                          _settingsTile(
+                            context: context,
+                            icon: Icons.tune,
+                            title: 'Calibrate Scoring',
+                            subtitle: settings.calibration.isCalibrated
+                                ? 'Last: ${_formatDate(settings.calibration.calibratedAt!)}'
+                                : 'Adjust scores for your device',
+                            trailing: Icon(Icons.chevron_right, color: colors.iconSubtle),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const CalibrationScreen()),
                             ),
                           ),
                           Divider(color: colors.divider),
@@ -507,5 +522,9 @@ User ID: $userId
           );
       }
     }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.month}/${date.day}/${date.year}';
   }
 }

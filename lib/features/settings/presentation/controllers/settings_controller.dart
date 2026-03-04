@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/di_providers.dart';
 import 'package:outcall/core/theme/app_theme.dart';
 import 'package:outcall/features/settings/data/settings_repository.dart';
+import 'package:outcall/features/settings/domain/calibration_profile.dart';
 import 'package:outcall/features/settings/domain/settings_model.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 
@@ -70,6 +71,14 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     const defaults = AppSettings();
     state = const AsyncValue.data(defaults);
     await ref.read(settingsRepositoryProvider).saveSettings(defaults);
+  }
+
+  Future<void> setCalibration(CalibrationProfile calibration) async {
+    await updateSetting((s) => s.copyWith(calibration: calibration));
+  }
+
+  Future<void> resetCalibration() async {
+    await updateSetting((s) => s.copyWith(calibration: const CalibrationProfile()));
   }
 }
 

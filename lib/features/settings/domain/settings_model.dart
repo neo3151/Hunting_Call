@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:outcall/core/theme/app_theme.dart';
+import 'package:outcall/features/settings/domain/calibration_profile.dart';
 
 /// Domain model for application settings.
 class AppSettings {
@@ -11,6 +12,7 @@ class AppSettings {
   final bool hapticFeedback;
   final String imageQuality; // 'high' | 'medium' | 'low'
   final int autoCleanupHours;
+  final CalibrationProfile calibration;
 
   const AppSettings({
     this.theme = AppTheme.classic,
@@ -21,6 +23,7 @@ class AppSettings {
     this.hapticFeedback = true,
     this.imageQuality = 'high',
     this.autoCleanupHours = 24,
+    this.calibration = const CalibrationProfile(),
   });
 
   AppSettings copyWith({
@@ -32,6 +35,7 @@ class AppSettings {
     bool? hapticFeedback,
     String? imageQuality,
     int? autoCleanupHours,
+    CalibrationProfile? calibration,
   }) {
     return AppSettings(
       theme: theme ?? this.theme,
@@ -42,6 +46,7 @@ class AppSettings {
       hapticFeedback: hapticFeedback ?? this.hapticFeedback,
       imageQuality: imageQuality ?? this.imageQuality,
       autoCleanupHours: autoCleanupHours ?? this.autoCleanupHours,
+      calibration: calibration ?? this.calibration,
     );
   }
 
@@ -54,6 +59,7 @@ class AppSettings {
         'hapticFeedback': hapticFeedback,
         'imageQuality': imageQuality,
         'autoCleanupHours': autoCleanupHours,
+        'calibration': calibration.toMap(),
       };
 
   factory AppSettings.fromMap(Map<String, dynamic> map) {
@@ -72,6 +78,9 @@ class AppSettings {
       hapticFeedback: map['hapticFeedback'] as bool? ?? true,
       imageQuality: map['imageQuality'] as String? ?? 'high',
       autoCleanupHours: map['autoCleanupHours'] as int? ?? 24,
+      calibration: map['calibration'] != null
+          ? CalibrationProfile.fromMap(Map<String, dynamic>.from(map['calibration']))
+          : const CalibrationProfile(),
     );
   }
 }

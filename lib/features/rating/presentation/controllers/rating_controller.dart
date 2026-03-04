@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/features/rating/domain/rating_service.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:outcall/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:outcall/di_providers.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 
@@ -51,7 +52,16 @@ class RatingNotifier extends Notifier<RatingState> {
     AppLogger.d('RatingNotifier: Starting analysis for $animalId at $audioPath');
     state = state.copyWith(isAnalyzing: true, error: null);
     try {
-      final result = await _ratingService.rateCall(userId, audioPath, animalId);
+      // Read calibration from settings
+      final settingsAsync = ref.read(settingsNotifierProvider);
+      final settings = settingsAsync.when(data: (s) => s, loading: () => null, error: (_, __) => null);
+      final cal = settings?.calibration;
+
+      final result = await _ratingService.rateCall(
+        userId, audioPath, animalId,
+        scoreOffset: cal?.scoreOffset ?? 0.0,
+        micSensitivity: cal?.micSensitivity ?? 1.0,
+      );
       if (!_mounted) return null; // Prevent setting state if disposed
       
       AppLogger.d('RatingNotifier: Analysis complete. Success: ${result.score > 0}');
