@@ -3,6 +3,7 @@ import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
 import 'package:outcall/features/profile/data/datasources/local_profile_data_source.dart';
 import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/spam_filter.dart';
 import 'package:outcall/core/services/api_gateway.dart';
 
 class UnifiedProfileRepository implements ProfileRepository {
@@ -134,7 +135,14 @@ class UnifiedProfileRepository implements ProfileRepository {
   Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday, String? email}) async {
     try {
       final docId = id ?? DateTime.now().millisecondsSinceEpoch.toString();
-          
+
+      // Spam detection — flag suspicious accounts but still create them
+      final bool isFlagged = SpamFilter.isSuspiciousEmail(email);
+      if (isFlagged) {
+        final reason = SpamFilter.getSuspiciousReason(email);
+        AppLogger.d('⚠️ SpamFilter: Flagging new profile ($docId) — $reason');
+      }
+
       final newProfile = UserProfile(
         id: docId,
         name: name,
@@ -143,8 +151,14 @@ class UnifiedProfileRepository implements ProfileRepository {
         birthday: birthday,
         isAlphaTester: true,
       );
-      
-      await _apiGateway.setDocument(_collectionPath, docId, newProfile.toJson());
+
+      final profileData = newProfile.toJson();
+      if (isFlagged) {
+        profileData['flagged'] = true;
+        profileData['flagReason'] = SpamFilter.getSuspiciousReason(email);
+      }
+
+      await _apiGateway.setDocument(_collectionPath, docId, profileData);
       return newProfile;
     } catch (e) {
       AppLogger.d('UnifiedProfileRepository: createProfile ERROR: $e');
