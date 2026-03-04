@@ -92,7 +92,7 @@ service cloud.firestore {
       allow write: if isAuthenticated()
                    && request.resource.data.keys().hasOnly(['scores', 'lastUpdated'])
                    && request.resource.data.scores is list
-                   && request.resource.data.scores.size() <= 10;
+                   && request.resource.data.scores.size() <= 20;
 
       allow delete: if false;
     }

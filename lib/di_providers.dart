@@ -1,44 +1,35 @@
-﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firedart/firedart.dart' as fd;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:outcall/core/services/api_gateway.dart';
+import 'package:outcall/core/services/cloud_audio_service.dart';
+import 'package:outcall/core/services/file_service.dart';
+import 'package:outcall/core/services/simple_storage.dart';
+import 'package:outcall/core/services/version_check_service.dart';
+import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
+import 'package:outcall/features/analysis/data/real_rating_service.dart';
+import 'package:outcall/features/analysis/domain/frequency_analyzer.dart';
+import 'package:outcall/features/analysis/domain/providers.dart'; // Use case providers
 import 'package:outcall/features/auth/data/firebase_auth_repository.dart';
 import 'package:outcall/features/auth/data/mock_auth_repository.dart';
-
-import 'package:outcall/features/recording/domain/audio_recorder_service.dart';
-import 'package:outcall/features/recording/data/repositories/real_audio_recorder_service.dart';
-import 'package:outcall/features/recording/data/repositories/mock_audio_recorder_service.dart';
-
-
+import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
+import 'package:outcall/features/daily_challenge/domain/providers.dart';
+import 'package:outcall/features/hunting_log/data/local_hunting_log_repository.dart';
+import 'package:outcall/features/hunting_log/domain/repositories/hunting_log_repository.dart';
+import 'package:outcall/features/leaderboard/data/cloud_function_leaderboard_service.dart';
+import 'package:outcall/features/leaderboard/data/unified_leaderboard_service.dart';
+import 'package:outcall/features/leaderboard/domain/repositories/leaderboard_service.dart';
 import 'package:outcall/features/profile/data/datasources/local_profile_data_source.dart';
-import 'package:outcall/features/profile/data/datasources/secure_profile_data_source.dart';
 import 'package:outcall/features/profile/data/datasources/migrating_profile_data_source.dart';
-import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/profile/data/datasources/secure_profile_data_source.dart';
 import 'package:outcall/features/profile/data/repositories/local_profile_repository.dart'; // LocalProfileRepository
 import 'package:outcall/features/profile/data/repositories/unified_profile_repository.dart';
-
-import 'package:outcall/features/leaderboard/domain/repositories/leaderboard_service.dart';
-import 'package:outcall/features/leaderboard/data/unified_leaderboard_service.dart';
-
-import 'package:outcall/features/analysis/domain/frequency_analyzer.dart';
-import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
-import 'package:outcall/features/analysis/domain/providers.dart'; // Use case providers
-
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
 import 'package:outcall/features/rating/domain/rating_service.dart';
-import 'package:outcall/features/analysis/data/real_rating_service.dart';
-
-import 'package:outcall/features/hunting_log/domain/repositories/hunting_log_repository.dart';
-import 'package:outcall/features/hunting_log/data/local_hunting_log_repository.dart';
-
-import 'package:outcall/features/daily_challenge/domain/providers.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firedart/firedart.dart' as fd;
-import 'package:outcall/core/services/api_gateway.dart';
-import 'package:outcall/core/services/simple_storage.dart';
-import 'package:outcall/core/services/file_service.dart';
-import 'package:outcall/core/services/version_check_service.dart';
-import 'package:outcall/core/services/cloud_audio_service.dart';
+import 'package:outcall/features/recording/data/repositories/mock_audio_recorder_service.dart';
+import 'package:outcall/features/recording/data/repositories/real_audio_recorder_service.dart';
+import 'package:outcall/features/recording/domain/audio_recorder_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // â”€â”€â”€ Platform Environment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -59,6 +50,7 @@ final versionCheckServiceProvider = Provider<VersionCheckService>((ref) {
     apiGateway: ref.watch(apiGatewayProvider),
   );
 });
+
 /// Holds the platform and Firebase state determined at app startup.
 /// Must be overridden in [ProviderScope] before the app runs.
 class PlatformEnvironment {
@@ -66,6 +58,7 @@ class PlatformEnvironment {
   final bool isDesktop;
   final bool useMocks;
   final SharedPreferences sharedPreferences;
+
   /// Pre-initialized auth repository (e.g. FiredartAuthRepository on Linux)
   final AuthRepository? preInitializedAuthRepo;
 
@@ -141,7 +134,7 @@ final profileDataSourceProvider = Provider<ProfileDataSource>((ref) {
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final env = ref.watch(platformEnvironmentProvider);
   final apiGateway = ref.watch(apiGatewayProvider);
-  
+
   if (env.isFirebaseEnabled && apiGateway != null) {
     return UnifiedProfileRepository(
       apiGateway,
@@ -156,9 +149,19 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 // â”€â”€â”€ Leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Provides [LeaderboardService] if Firebase is available, null otherwise.
+/// On mobile, uses the Cloud Function for writes (server-side transactions).
+/// On desktop (Firedart), falls back to direct Firestore writes.
 final leaderboardServiceProvider = Provider<LeaderboardService?>((ref) {
+  final env = ref.watch(platformEnvironmentProvider);
   final apiGateway = ref.watch(apiGatewayProvider);
   if (apiGateway == null) return null;
+
+  // Mobile (Firebase SDK) → route writes through the Cloud Function
+  if (env.isFirebaseEnabled && !env.isDesktop) {
+    return CloudFunctionLeaderboardService(apiGateway);
+  }
+
+  // Desktop (Firedart) → direct Firestore writes
   return UnifiedLeaderboardService(apiGateway);
 });
 
