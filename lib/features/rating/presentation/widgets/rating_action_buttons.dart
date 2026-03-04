@@ -11,6 +11,7 @@ import 'package:outcall/config/app_config.dart';
 import 'package:outcall/core/widgets/upgrade_prompter.dart';
 import 'package:outcall/features/leaderboard/presentation/leaderboard_screen.dart';
 import 'package:outcall/l10n/app_localizations.dart';
+import 'package:outcall/core/widgets/score_share_card.dart';
 
 /// Action buttons at the bottom of the rating screen:
 /// Try Again, Save/Share, Leaderboard, Done.
@@ -142,19 +143,40 @@ class RatingActionButtons extends ConsumerWidget {
   Future<void> _handleShare(BuildContext context, String animalName) async {
     if (result == null) return;
 
-    final scoreStr = result!.score.toInt().toString();
-    final text = 'I just scored $scoreStr% on the $animalName call in OUTCALL! 🎯🦌\n\n'
-        'Think you can beat me? Download OUTCALL:\n'
-        'https://hunting-call-perfection.web.app';
+    final score = result!.score;
+    final scoreStr = score.toInt().toString();
+    final tierLabel = _getTierLabel(score);
+    
+    // Build rich stats text
+    final buffer = StringBuffer();
+    buffer.writeln('🎯 OUTCALL — $animalName Call');
+    buffer.writeln('━━━━━━━━━━━━━━━━━━');
+    buffer.writeln('📊 Score: $scoreStr% ($tierLabel)');
+    if (result!.pitchHz > 0) {
+      buffer.writeln('🎵 Pitch: ${result!.pitchHz.toStringAsFixed(0)} Hz');
+    }
+    if (result!.metrics.isNotEmpty) {
+      for (final entry in result!.metrics.entries) {
+        final label = entry.key[0].toUpperCase() + entry.key.substring(1);
+        buffer.writeln('   • $label: ${entry.value.toInt()}%');
+      }
+    }
+    if (result!.feedback.isNotEmpty) {
+      buffer.writeln('');
+      buffer.writeln('💬 "${result!.feedback}"');
+    }
+    buffer.writeln('');
+    buffer.writeln('Think you can beat me? 🦌');
+    buffer.writeln('https://hunting-call-perfection.web.app');
+
+    final text = buffer.toString();
 
     if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-      // ─── Desktop: Save audio + image to Downloads ─────────────────
+      // ─── Desktop: Save audio to Downloads ──────────────────────────
       try {
         final downloadsDir = await getDownloadsDirectory();
         if (downloadsDir != null) {
           final ts = DateTime.now().millisecondsSinceEpoch;
-
-          // Save audio
           final audioFileName = 'outcall_recording_$ts.m4a';
           final audioDestPath = '${downloadsDir.path}/$audioFileName';
           await File(audioPath).copy(audioDestPath);
@@ -185,15 +207,65 @@ class RatingActionButtons extends ConsumerWidget {
         }
       }
     } else {
-      // ─── Mobile: Share image + audio via system share ─────────────
+      // ─── Mobile: Share score card image + audio + stats ─────────────
       final files = <XFile>[XFile(audioPath)];
 
-      // Try to capture the score card image (requires the widget to be in the tree)
-      // If not available, share text + audio only
+      // Try to capture branded score card as image
+      try {
+        final cardImage = await _captureScoreCard(
+          context, score, animalName, result!.feedback,
+          metrics: result!.metrics, pitchHz: result!.pitchHz,
+        );
+        if (cardImage != null) {
+          final tempDir = await getTemporaryDirectory();
+          final imgPath = '${tempDir.path}/outcall_score_${DateTime.now().millisecondsSinceEpoch}.png';
+          await File(imgPath).writeAsBytes(cardImage);
+          files.insert(0, XFile(imgPath));
+        }
+      } catch (_) {
+        // If card capture fails, just share text + audio
+      }
+
       await SharePlus.instance.share(ShareParams(
         files: files,
         text: text,
       ));
     }
+  }
+
+  /// Renders a ScoreShareCard off-screen and captures it as a PNG.
+  Future<List<int>?> _captureScoreCard(
+      BuildContext context, double score, String animalName, String feedback,
+      {Map<String, double> metrics = const {}, double pitchHz = 0}) async {
+    final card = ScoreShareCard(
+      score: score, animalName: animalName, feedback: feedback,
+      metrics: metrics, pitchHz: pitchHz,
+    );
+    final overlay = Overlay.of(context);
+
+    // Place card off-screen to render it
+    final entry = OverlayEntry(
+      builder: (_) => Positioned(
+        left: -500,
+        top: -500,
+        child: Material(color: Colors.transparent, child: card),
+      ),
+    );
+    overlay.insert(entry);
+
+    // Wait for the widget to render
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final bytes = await card.captureImage();
+    entry.remove();
+    return bytes;
+  }
+
+  String _getTierLabel(double score) {
+    if (score >= 95) return 'MASTER';
+    if (score >= 85) return 'EXPERT';
+    if (score >= 70) return 'SKILLED';
+    if (score >= 50) return 'LEARNING';
+    return 'ROOKIE';
   }
 }

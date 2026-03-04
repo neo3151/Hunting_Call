@@ -11,6 +11,8 @@ class ScoreShareCard extends StatelessWidget {
   final double score;
   final String animalName;
   final String feedback;
+  final Map<String, double> metrics;
+  final double pitchHz;
   final GlobalKey _repaintKey = GlobalKey();
 
   ScoreShareCard({
@@ -18,6 +20,8 @@ class ScoreShareCard extends StatelessWidget {
     required this.score,
     required this.animalName,
     this.feedback = '',
+    this.metrics = const {},
+    this.pitchHz = 0,
   });
 
   /// Capture the card as a PNG image (Uint8List).
@@ -81,6 +85,13 @@ class ScoreShareCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Extract pro breakdown metrics
+    final pitch = (metrics['score_pitch'] ?? 0).clamp(0, 100).toDouble();
+    final timbre = (metrics['score_timbre'] ?? 0).clamp(0, 100).toDouble();
+    final rhythm = (metrics['score_rhythm'] ?? 0).clamp(0, 100).toDouble();
+    final air = (metrics['score_duration'] ?? 0).clamp(0, 100).toDouble();
+    final hasMetrics = pitch > 0 || timbre > 0 || rhythm > 0 || air > 0;
+
     return RepaintBoundary(
       key: _repaintKey,
       child: Container(
@@ -140,7 +151,7 @@ class ScoreShareCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // ─── Score ──────────────────────────────────
             ShaderMask(
@@ -156,7 +167,7 @@ class ScoreShareCard extends StatelessWidget {
               child: Text(
                 '${score.toInt()}',
                 style: GoogleFonts.oswald(
-                  fontSize: 72,
+                  fontSize: 64,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                   height: 1.0,
@@ -200,14 +211,74 @@ class ScoreShareCard extends StatelessWidget {
               ),
             ),
 
+            // ─── Pitch Readout ──────────────────────────
+            if (pitchHz > 0) ...[
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.music_note, size: 12, color: Colors.white38),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${pitchHz.toStringAsFixed(0)} Hz',
+                    style: GoogleFonts.lato(
+                      fontSize: 12,
+                      color: Colors.white38,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
+            // ─── Pro Breakdown Metrics ──────────────────
+            if (hasMetrics) ...[
+              const SizedBox(height: 20),
+              Container(
+                height: 1,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.white.withValues(alpha: 0.1),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildMetricColumn('PITCH', pitch),
+                  _buildMetricColumn('TIMBRE', timbre),
+                  _buildMetricColumn('RHYTHM', rhythm),
+                  _buildMetricColumn('AIR', air),
+                ],
+              ),
+            ],
+
             // ─── Feedback ───────────────────────────────
             if (feedback.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
+              Container(
+                height: 1,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.white.withValues(alpha: 0.1),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
               Text(
                 '"$feedback"',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.lato(
-                  fontSize: 12,
+                  fontSize: 11,
                   color: Colors.white54,
                   fontStyle: FontStyle.italic,
                   height: 1.4,
@@ -237,6 +308,55 @@ class ScoreShareCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMetricColumn(String label, double value) {
+    final Color color;
+    if (value >= 80) {
+      color = const Color(0xFF5FF7B6);
+    } else if (value >= 50) {
+      color = Colors.orangeAccent;
+    } else {
+      color = Colors.redAccent;
+    }
+
+    return Column(
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.oswald(
+            fontSize: 8,
+            color: Colors.white38,
+            letterSpacing: 1,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '${value.toInt()}',
+          style: GoogleFonts.oswald(
+            fontSize: 20,
+            color: color,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 4),
+        // Mini progress bar
+        SizedBox(
+          width: 40,
+          height: 3,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: value / 100,
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              color: color,
+              minHeight: 3,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
