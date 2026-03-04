@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase/in_app_purchase.dart' hide PurchaseStatus;
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/features/payment/data/payment_repository.dart';
 import 'package:outcall/features/payment/presentation/controllers/payment_controller.dart';
@@ -35,8 +35,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
   bool _isLoadingProducts = true;
 
   static const _staticPlans = [
-    _PlanOption(id: 'outcall_premium_monthly', title: 'Monthly', price: '\$4.99', period: '/mo'),
-    _PlanOption(id: 'outcall_premium_yearly',  title: 'Yearly',  price: '\$29.99', period: '/yr', badge: '2 Months Free'),
+    _PlanOption(id: 'outcall_premium_monthly', title: 'Monthly', price: '\$14.99', period: '/mo'),
+    _PlanOption(id: 'outcall_premium_yearly',  title: 'Yearly',  price: '\$149.99', period: '/yr', badge: '2 Months Free'),
   ];
 
   String _selectedProductId = 'outcall_premium_yearly';
@@ -91,10 +91,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
       return _storeProducts.map((p) {
         final isYearly = p.id.contains('yearly');
         final isMonthly = p.id.contains('monthly');
+        // Strip any billing period text from the store price (e.g., "$14.99/5 min" → "$14.99")
+        final cleanPrice = _stripBillingPeriod(p.price);
         return _PlanOption(
           id: p.id,
           title: isYearly ? 'Yearly' : isMonthly ? 'Monthly' : p.title,
-          price: p.price,
+          price: cleanPrice,
           period: isYearly ? '/yr' : isMonthly ? '/mo' : '',
           badge: isYearly ? '2 Months Free' : null,
         );
@@ -102,6 +104,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
         ..sort((a, b) => a.id.contains('monthly') ? -1 : 1);
     }
     return _staticPlans;
+  }
+
+  /// Strips billing period text from store price strings.
+  /// e.g., "$14.99/5 min" → "$14.99", "US$149.99 / 5 minutes" → "US$149.99"
+  String _stripBillingPeriod(String price) {
+    // Remove everything after a "/" or " per " that follows a digit
+    final match = RegExp(r'^(.*?\d+\.?\d*)\s*[/]').firstMatch(price);
+    return match != null ? match.group(1)!.trim() : price;
   }
 
   _PlanOption get _selectedPlan => _plans.firstWhere(
@@ -113,6 +123,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
   Widget build(BuildContext context) {
     final paymentState = ref.watch(paymentNotifierProvider);
     final colors = AppColors.of(context);
+
+    // Show error feedback when a purchase fails
+    ref.listen<PaymentState>(paymentNotifierProvider, (prev, next) {
+      if (next.status == PurchaseStatus.failed && context.mounted) {
+        final errorMsg = next.error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg != null && errorMsg.contains('not found')
+                ? 'Product not available yet. Please try again later.'
+                : 'Purchase failed. Please try again.'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        ref.read(paymentNotifierProvider.notifier).reset();
+      }
+    });
 
     return Container(
       constraints: BoxConstraints(
@@ -315,7 +342,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
                   final userId = profile?.id ?? '';
                   if (userId.isEmpty) return;
                   final success = await ref.read(paymentNotifierProvider.notifier).purchasePremium(userId, packageId: _selectedProductId);
-                  if (success && context.mounted) Navigator.of(context).pop(true);
+                  if (context.mounted) {
+                    if (success) {
+                      Navigator.of(context).pop(true);
+                    }
+                    // Error feedback is handled by the ref.listen above
+                  }
                 },
                 borderRadius: BorderRadius.circular(16),
                 child: Center(

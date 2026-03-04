@@ -89,7 +89,7 @@ class NativePaymentRepository implements PaymentRepository {
   Future<bool> purchasePremium(String userId, {String? packageId}) async {
     if (!await _iap.isAvailable()) {
       AppLogger.d('❌ IAP: Store not available');
-      return false;
+      throw Exception('Store not available. Please check your connection and try again.');
     }
 
     final productId = packageId ?? 'outcall_premium_yearly';
@@ -99,7 +99,7 @@ class NativePaymentRepository implements PaymentRepository {
     final response = await _iap.queryProductDetails({productId});
     if (response.productDetails.isEmpty) {
       AppLogger.d('❌ IAP: Product $productId not found in store');
-      return false;
+      throw Exception('Product not found in store. Please try again later.');
     }
 
     final product = response.productDetails.first;
