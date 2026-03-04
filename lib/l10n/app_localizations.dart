@@ -1166,6 +1166,240 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Track your progress'**
   String get trackYourProgress;
+
+  /// No description provided for @performanceAndStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'PERFORMANCE & STORAGE'**
+  String get performanceAndStorage;
+
+  /// No description provided for @imageQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Image Quality'**
+  String get imageQuality;
+
+  /// No description provided for @imageQualitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower quality saves memory'**
+  String get imageQualitySubtitle;
+
+  /// No description provided for @audioCleanup.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Cleanup'**
+  String get audioCleanup;
+
+  /// No description provided for @audioCleanupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-delete old recordings'**
+  String get audioCleanupSubtitle;
+
+  /// No description provided for @calibrateScoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate Scoring'**
+  String get calibrateScoring;
+
+  /// No description provided for @calibrateScoringSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust scores for your device'**
+  String get calibrateScoringSubtitle;
+
+  /// No description provided for @calibrateLastDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Last: {date}'**
+  String calibrateLastDate(String date);
+
+  /// No description provided for @feedbackAndSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'FEEDBACK & SUPPORT'**
+  String get feedbackAndSupport;
+
+  /// No description provided for @sendFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Feedback'**
+  String get sendFeedback;
+
+  /// No description provided for @sendFeedbackSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a bug or suggest a feature'**
+  String get sendFeedbackSubtitle;
+
+  /// No description provided for @privacyPolicySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we handle your data'**
+  String get privacyPolicySubtitle;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'App Version'**
+  String get appVersion;
+
+  /// No description provided for @resetSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Defaults'**
+  String get resetSettings;
+
+  /// No description provided for @resetSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Settings?'**
+  String get resetSettingsTitle;
+
+  /// No description provided for @resetSettingsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will restore all settings to their defaults.'**
+  String get resetSettingsMessage;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'CANCEL'**
+  String get cancel;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'RESET'**
+  String get reset;
+
+  /// No description provided for @huntingLog.
+  ///
+  /// In en, this message translates to:
+  /// **'HUNTING LOG'**
+  String get huntingLog;
+
+  /// No description provided for @huntingLogEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ENTRIES'**
+  String huntingLogEntries(int count);
+
+  /// No description provided for @noLogsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Logs Yet'**
+  String get noLogsYet;
+
+  /// No description provided for @noLogsTapToAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to record your first hunt.'**
+  String get noLogsTapToAdd;
+
+  /// No description provided for @deleteEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Entry?'**
+  String get deleteEntry;
+
+  /// No description provided for @deleteEntryMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This log entry will be permanently deleted.'**
+  String get deleteEntryMessage;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'DELETE'**
+  String get delete;
+
+  /// No description provided for @newEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW ENTRY'**
+  String get newEntry;
+
+  /// No description provided for @animalField.
+  ///
+  /// In en, this message translates to:
+  /// **'Animal'**
+  String get animalField;
+
+  /// No description provided for @animalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Whitetail Buck, Turkey, etc.'**
+  String get animalHint;
+
+  /// No description provided for @notesField.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notesField;
+
+  /// No description provided for @notesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened? Conditions, behavior, etc.'**
+  String get notesHint;
+
+  /// No description provided for @notesRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter some notes'**
+  String get notesRequired;
+
+  /// No description provided for @tagLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag Location'**
+  String get tagLocation;
+
+  /// No description provided for @locationCaptured.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Captured'**
+  String get locationCaptured;
+
+  /// No description provided for @useCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your current GPS coordinates'**
+  String get useCurrentLocation;
+
+  /// No description provided for @saveEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE ENTRY'**
+  String get saveEntry;
+
+  /// No description provided for @leaderboardExperts.
+  ///
+  /// In en, this message translates to:
+  /// **'{animal} EXPERTS'**
+  String leaderboardExperts(String animal);
+
+  /// No description provided for @noExpertsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No experts yet.'**
+  String get noExpertsYet;
+
+  /// No description provided for @beFirstToScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Be the first to score high!'**
+  String get beFirstToScore;
+
+  /// No description provided for @couldNotOpenEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open email app.'**
+  String get couldNotOpenEmail;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

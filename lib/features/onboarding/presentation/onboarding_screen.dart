@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
 
@@ -43,9 +45,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final primary = Theme.of(context).primaryColor;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      body: SafeArea(
+      body: BackgroundWrapper(
+        child: SafeArea(
         child: Column(
           children: [
             // Skip button
@@ -55,7 +60,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 alignment: Alignment.topRight,
                 child: TextButton(
                   onPressed: _completeOnboarding,
-                  child: const Text('Skip', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                  child: Text('Skip', style: TextStyle(color: colors.textSubtle, fontSize: 16)),
                 ),
               ),
             ),
@@ -65,9 +70,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 controller: _pageController,
                 onPageChanged: (index) => setState(() => _currentPage = index),
                 children: [
-                  _buildWelcomePage(),
-                  _buildHowItWorksPage(),
-                  _buildExplorePage(),
+                  _buildPage(
+                    icon: Icons.multitrack_audio_rounded,
+                    title: 'Master Hunting\nCalls',
+                    description: 'Learn to call 50+ animals with high-quality reference audio and live visual feedback.',
+                    colors: colors,
+                    primary: primary,
+                  ),
+                  _buildPage(
+                    icon: Icons.trending_up_rounded,
+                    title: 'Track Your\nProgress',
+                    description: 'Score your accuracy against the reference call and level up your hunter profile.',
+                    colors: colors,
+                    primary: primary,
+                  ),
+                  _buildPage(
+                    icon: Icons.emoji_events_rounded,
+                    title: 'Compete\nDaily',
+                    description: 'Join the daily challenge, earn XP, and climb the leaderboard against hunters worldwide.',
+                    colors: colors,
+                    primary: primary,
+                  ),
                 ],
               ),
             ),
@@ -76,18 +99,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 children: [
-                  _buildProgressDots(),
+                  _buildProgressDots(colors, primary),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _nextPage,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: const Color(0xFF121212),
+                        backgroundColor: primary,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       child: Text(
@@ -106,10 +129,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ],
         ),
       ),
+     ),
     );
   }
 
-  Widget _buildProgressDots() {
+  Widget _buildProgressDots(AppColorPalette colors, Color primary) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(3, (index) {
@@ -119,9 +143,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           width: _currentPage == index ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: _currentPage == index
-                ? Theme.of(context).primaryColor
-                : Colors.white24,
+            color: _currentPage == index ? primary : colors.border,
             borderRadius: BorderRadius.circular(4),
           ),
         );
@@ -129,34 +151,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildWelcomePage() {
-    return _buildPage(
-      icon: Icons.multitrack_audio_rounded,
-      title: 'Master Hunting\nCalls',
-      description: 'Learn to call 50+ animals with high-quality reference audio and live visual feedback.',
-    );
-  }
-
-  Widget _buildHowItWorksPage() {
-    return _buildPage(
-      icon: Icons.trending_up_rounded,
-      title: 'Track Your\nProgress',
-      description: 'Score your accuracy against the reference call and level up your hunter profile.',
-    );
-  }
-
-  Widget _buildExplorePage() {
-    return _buildPage(
-      icon: Icons.emoji_events_rounded,
-      title: 'Compete\nDaily',
-      description: 'Join the daily challenge, earn XP, and climb the leaderboard against hunters worldwide.',
-    );
-  }
-
   Widget _buildPage({
     required IconData icon,
     required String title,
     required String description,
+    required AppColorPalette colors,
+    required Color primary,
   }) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
@@ -167,10 +167,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+              color: primary.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 64, color: Theme.of(context).primaryColor),
+            child: Icon(icon, size: 64, color: primary),
           ),
           const SizedBox(height: 48),
           Text(
@@ -179,7 +179,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: GoogleFonts.oswald(
               fontSize: 36,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: colors.textPrimary,
               height: 1.2,
             ),
           ),
@@ -189,7 +189,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.lato(
               fontSize: 16,
-              color: Colors.white70,
+              color: colors.textSecondary,
               height: 1.6,
             ),
           ),

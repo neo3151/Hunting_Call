@@ -290,5 +290,62 @@
   },
   "startRecordingForAchievements": "Start recording to earn achievements!",
   "allAchievementsEarned": "You've earned every achievement. Legend.",
-  "trackYourProgress": "Track your progress"
+  "trackYourProgress": "Track your progress",
+
+  "performanceAndStorage": "PERFORMANCE & STORAGE",
+  "imageQuality": "Image Quality",
+  "imageQualitySubtitle": "Lower quality saves memory",
+  "audioCleanup": "Audio Cleanup",
+  "audioCleanupSubtitle": "Auto-delete old recordings",
+  "calibrateScoring": "Calibrate Scoring",
+  "calibrateScoringSubtitle": "Adjust scores for your device",
+  "calibrateLastDate": "Last: {date}",
+  "@calibrateLastDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "feedbackAndSupport": "FEEDBACK & SUPPORT",
+  "sendFeedback": "Send Feedback",
+  "sendFeedbackSubtitle": "Report a bug or suggest a feature",
+  "privacyPolicySubtitle": "How we handle your data",
+  "appVersion": "App Version",
+  "resetSettings": "Reset to Defaults",
+  "resetSettingsTitle": "Reset Settings?",
+  "resetSettingsMessage": "This will restore all settings to their defaults.",
+  "cancel": "CANCEL",
+  "reset": "RESET",
+
+  "huntingLog": "HUNTING LOG",
+  "huntingLogEntries": "{count} ENTRIES",
+  "@huntingLogEntries": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noLogsYet": "No Logs Yet",
+  "noLogsTapToAdd": "Tap + to record your first hunt.",
+  "deleteEntry": "Delete Entry?",
+  "deleteEntryMessage": "This log entry will be permanently deleted.",
+  "delete": "DELETE",
+  "newEntry": "NEW ENTRY",
+  "animalField": "Animal",
+  "animalHint": "e.g. Whitetail Buck, Turkey, etc.",
+  "notesField": "Notes",
+  "notesHint": "What happened? Conditions, behavior, etc.",
+  "notesRequired": "Please enter some notes",
+  "tagLocation": "Tag Location",
+  "locationCaptured": "Location Captured",
+  "useCurrentLocation": "Use your current GPS coordinates",
+  "saveEntry": "SAVE ENTRY",
+
+  "leaderboardExperts": "{animal} EXPERTS",
+  "@leaderboardExperts": {
+    "placeholders": {
+      "animal": { "type": "String" }
+    }
+  },
+  "noExpertsYet": "No experts yet.",
+  "beFirstToScore": "Be the first to score high!",
+  "couldNotOpenEmail": "Could not open email app."
 }

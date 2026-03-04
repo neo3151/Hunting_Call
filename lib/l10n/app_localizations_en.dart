@@ -600,4 +600,129 @@ class SEn extends S {
 
   @override
   String get trackYourProgress => 'Track your progress';
+
+  @override
+  String get performanceAndStorage => 'PERFORMANCE & STORAGE';
+
+  @override
+  String get imageQuality => 'Image Quality';
+
+  @override
+  String get imageQualitySubtitle => 'Lower quality saves memory';
+
+  @override
+  String get audioCleanup => 'Audio Cleanup';
+
+  @override
+  String get audioCleanupSubtitle => 'Auto-delete old recordings';
+
+  @override
+  String get calibrateScoring => 'Calibrate Scoring';
+
+  @override
+  String get calibrateScoringSubtitle => 'Adjust scores for your device';
+
+  @override
+  String calibrateLastDate(String date) {
+    return 'Last: $date';
+  }
+
+  @override
+  String get feedbackAndSupport => 'FEEDBACK & SUPPORT';
+
+  @override
+  String get sendFeedback => 'Send Feedback';
+
+  @override
+  String get sendFeedbackSubtitle => 'Report a bug or suggest a feature';
+
+  @override
+  String get privacyPolicySubtitle => 'How we handle your data';
+
+  @override
+  String get appVersion => 'App Version';
+
+  @override
+  String get resetSettings => 'Reset to Defaults';
+
+  @override
+  String get resetSettingsTitle => 'Reset Settings?';
+
+  @override
+  String get resetSettingsMessage =>
+      'This will restore all settings to their defaults.';
+
+  @override
+  String get cancel => 'CANCEL';
+
+  @override
+  String get reset => 'RESET';
+
+  @override
+  String get huntingLog => 'HUNTING LOG';
+
+  @override
+  String huntingLogEntries(int count) {
+    return '$count ENTRIES';
+  }
+
+  @override
+  String get noLogsYet => 'No Logs Yet';
+
+  @override
+  String get noLogsTapToAdd => 'Tap + to record your first hunt.';
+
+  @override
+  String get deleteEntry => 'Delete Entry?';
+
+  @override
+  String get deleteEntryMessage =>
+      'This log entry will be permanently deleted.';
+
+  @override
+  String get delete => 'DELETE';
+
+  @override
+  String get newEntry => 'NEW ENTRY';
+
+  @override
+  String get animalField => 'Animal';
+
+  @override
+  String get animalHint => 'e.g. Whitetail Buck, Turkey, etc.';
+
+  @override
+  String get notesField => 'Notes';
+
+  @override
+  String get notesHint => 'What happened? Conditions, behavior, etc.';
+
+  @override
+  String get notesRequired => 'Please enter some notes';
+
+  @override
+  String get tagLocation => 'Tag Location';
+
+  @override
+  String get locationCaptured => 'Location Captured';
+
+  @override
+  String get useCurrentLocation => 'Use your current GPS coordinates';
+
+  @override
+  String get saveEntry => 'SAVE ENTRY';
+
+  @override
+  String leaderboardExperts(String animal) {
+    return '$animal EXPERTS';
+  }
+
+  @override
+  String get noExpertsYet => 'No experts yet.';
+
+  @override
+  String get beFirstToScore => 'Be the first to score high!';
+
+  @override
+  String get couldNotOpenEmail => 'Could not open email app.';
 }

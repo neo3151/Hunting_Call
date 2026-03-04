@@ -19,6 +19,7 @@ import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_widgets.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_dialogs.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_coaching.dart';
+import 'package:outcall/features/recording/presentation/widgets/playback_review_dialog.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 
 class RecorderPage extends ConsumerStatefulWidget {
@@ -146,13 +147,20 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
           
           if (mounted) {
             if (path != null && path.isNotEmpty && !path.contains('not open')) {
-                Navigator.of(context).push(
-                   MaterialPageRoute(builder: (_) => RatingScreen(
-                     audioPath: path, 
-                     animalId: selectedCallId,
-                     userId: widget.userId,
-                   ))
-                );
+                // Show playback review before analysis
+                final shouldAnalyze = await showPlaybackReviewDialog(context, path);
+                if (!mounted) return;
+                if (shouldAnalyze) {
+                  Navigator.of(context).push(
+                     MaterialPageRoute(builder: (_) => RatingScreen(
+                       audioPath: path, 
+                       animalId: selectedCallId,
+                       userId: widget.userId,
+                     ))
+                  );
+                } else {
+                  _resetRecording();
+                }
             } else {
                ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Recording Failed: Could not save audio file.')),
