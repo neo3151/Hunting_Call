@@ -5,6 +5,9 @@ abstract class PaymentRepository {
   /// Returns true if successful, false otherwise.
   Future<bool> purchasePremium(String userId, {String? packageId});
 
+  /// Check if the user currently has the 'OUTCALL Pro' entitlement active.
+  Future<bool> hasProEntitlement(String userId);
+
   /// Restores purchases (checks store for existing entitlements).
   Future<bool> restorePurchases(String userId);
 }
