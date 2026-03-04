@@ -78,6 +78,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 const SizedBox(height: 24),
                               ],
 
+                              // Manage Subscription (Premium Users Only)
+                              if (profile.isPremium) ...[
+                                _buildManageSubscriptionCard(context),
+                                const SizedBox(height: 24),
+                              ],
+
                               // Stats Row
                               Row(
                                 children: [

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Draft</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-outer: #0f1115;
+            --bg-window: #1c1e24;
+            --bg-content: #22252b;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent: #4ade80;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-outer);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 297mm;
+            padding: 40px;
+            box-sizing: border-box;
+            background-image: radial-gradient(circle at 50% 0%, rgba(74, 222, 128, 0.05), transparent 60%);
+        }
+
+        .email-client {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--bg-window);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .window-header {
+            height: 48px;
+            background: linear-gradient(to bottom, #2b2e36, #1c1e24);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .traffic-lights {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.red {
+            background-color: #ff5f56;
+        }
+
+        .dot.yellow {
+            background-color: #ffbd2e;
+        }
+
+        .dot.green {
+            background-color: #27c93f;
+        }
+
+        .email-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--bg-window);
+        }
+
+        .header-row {
+            display: flex;
+            margin-bottom: 12px;
+            font-size: 14px;
+            align-items: baseline;
+        }
+
+        .header-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            color: var(--text-muted);
+            width: 60px;
+            text-align: right;
+            margin-right: 16px;
+            font-weight: 500;
+        }
+
+        .value {
+            color: var(--text-main);
+            flex: 1;
+        }
+
+        .value.subject {
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .email-body {
+            background-color: var(--bg-content);
+            padding: 40px 48px;
+            color: #d1d5db;
+            font-family: 'Crimson Pro', serif;
+            font-size: 17px;
+            line-height: 1.7;
+            min-height: 600px;
+        }
+
+        .email-body p {
+            margin-top: 0;
+            margin-bottom: 24px;
+        }
+
+        .email-body .greeting {
+            font-size: 19px;
+            color: #fff;
+            margin-bottom: 32px;
+        }
+
+        .highlight {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+        }
+
+        .signature {
+            margin-top: 48px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+
+        .signature strong {
+            color: var(--text-main);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 32px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="email-client">
+        <div class="window-header">
+            <div class="traffic-lights">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+            </div>
+            <div style="flex:1; text-align:center; color: var(--text-muted); font-size: 13px; font-weight: 500;">New
+                Message</div>
+            <div style="width:44px;"></div>
+        </div>
+
+        <div class="email-header">
+            <div class="header-row">
+                <div class="label">To:</div>
+                <div class="value">[Influencer Name] &lt;[email@domain.com]&gt;</div>
+            </div>
+            <div class="header-row">
+                <div class="label">From:</div>
+                <div class="value">Outcall Team &lt;founder@outcall.app&gt;</div>
+            </div>
+            <div class="header-row" style="margin-top: 16px;">
+                <div class="label">Subject:</div>
+                <div class="value subject">I built this engine between shifts. I need someone who actually knows the
+                    woods to break it.</div>
+            </div>
+        </div>
+
+        <div class="email-body">
+            <p class="greeting">Hey [Name],</p>
+
+            <p>I'm not going to try to sell you anything right now, because frankly, I don't have the energy for
+                marketing bullshit.</p>
+
+            <p>I'm a programmer by trade, but I spend my days busting my ass doing hard physical labor just to keep the
+                lights on and pay the bills. When I get home, smelling like sweat and dirt, knowing my body is wrecked
+                for the day, I pack a bowl, sit down at my keyboard, and I build things.</p>
+
+            <p>I wouldn't call myself a master woodsman. But I know audio processing. And watching guys sit in their
+                trucks blowing into acrylic tubes, listening to YouTube videos, and just guessing if they sound like a
+                mallard or a bull elk bothered the hell out of the nerd in me. Why the fuck are we guessing when we can
+                measure it?</p>
+
+            <p>So over the last year, between shifts and late nights, I built an acoustics engine. It's called
+                <strong>Outcall</strong>.</p>
+
+            <p>I took the raw frequency analysis algorithms used by audio engineers and mapped them to a mobile app. You
+                play a master reference track of a real animal, blow your call into your phone, and it physically maps
+                your waveform against the real thing. It grades your pitch, your cadence, your sustain. It doesn't care
+                about your ego; it just reads the data to tell you exactly where your mechanics suck.</p>
+
+            <div class="divider"></div>
+
+            <p>I'm starting a closed Alpha. I don't want your money, and I'm not asking for a shoutout or a sponsor plug
+                on your channel.</p>
+
+            <p>I just need someone who actually knows what the hell they're doing to test this thing. I need you to
+                break it. I need you to tell me where my acoustic model fails in the real world, and tell me if all the
+                late nights building this exhausted out of my mind were actually worth it.</p>
+
+            <p>If you're down to give a tired programmer some brutal, honest feedback, reply and I'll send you lifetime
+                unlocked access right now.</p>
+
+            <p>Thanks for your time, man. Keep up the videos.</p>
+
+            <div class="signature">
+                <strong>[Your Name]</strong>
+                The guy behind Outcall
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
