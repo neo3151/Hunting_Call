@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/payment/presentation/paywall_screen.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 
 class CallSelectionScreen extends ConsumerStatefulWidget {
@@ -153,7 +154,9 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                 child: Material(
                 color: Colors.transparent,
                 child: ListTile(
-                  onTap: isLocked ? null : () => Navigator.pop(context, call.id),
+                  onTap: isLocked 
+                      ? () => PaywallScreen.show(context) 
+                      : () => Navigator.pop(context, call.id),
                   tileColor: AppColors.of(context).cardOverlay,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -207,7 +210,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                     ),
                   ),
                   trailing: _buildDifficultyBadge(call.difficulty),
-                  enabled: !isLocked,
+                  enabled: true, // Always enabled so onTap fires, locking handled inside onTap
                 ),
               ),
               ),

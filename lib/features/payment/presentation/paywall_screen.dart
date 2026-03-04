@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/features/payment/presentation/controllers/payment_controller.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/core/services/revenuecat_service.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 /// ─── Paywall Screen ────────────────────────────────────────────────────────
 /// Luxury upgrade screen shown when a user tries to access premium content.
@@ -27,8 +29,11 @@ class PaywallScreen extends ConsumerStatefulWidget {
 
 class _PaywallScreenState extends ConsumerState<PaywallScreen>
     with SingleTickerProviderStateMixin {
-  bool _isYearly = true;
   late final AnimationController _shimmerController;
+
+  List<Package> _packages = [];
+  Package? _selectedPackage;
+  bool _isLoadingOfferings = true;
 
   @override
   void initState() {
@@ -37,6 +42,27 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat();
+
+    _loadOfferings();
+  }
+
+  Future<void> _loadOfferings() async {
+    final rcService = ref.read(revenueCatServiceProvider);
+    final packages = await rcService.getOfferings();
+    
+    if (mounted) {
+      setState(() {
+        _packages = packages;
+        _isLoadingOfferings = false;
+        if (packages.isNotEmpty) {
+          // Try to select yearly by default if available, otherwise first package
+          _selectedPackage = packages.firstWhere(
+            (p) => p.packageType == PackageType.annual,
+            orElse: () => packages.first,
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -89,11 +115,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
                   const SizedBox(height: 28),
 
                   // ─── Pricing Toggle ─────────────────────────
-                  _buildPricingToggle(colors),
+                  if (_isLoadingOfferings)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: CircularProgressIndicator(),
+                    )
+                  else if (_packages.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text('No subscription plans available.'),
+                    )
+                  else
+                    _buildPricingToggle(colors),
                   const SizedBox(height: 20),
 
                   // ─── Purchase Button ────────────────────────
-                  _buildPurchaseButton(paymentState, colors),
+                  if (_selectedPackage != null)
+                    _buildPurchaseButton(paymentState, colors),
                   const SizedBox(height: 12),
 
                   // ─── Restore ────────────────────────────────
@@ -214,6 +252,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
   }
 
   Widget _buildPricingToggle(AppColorPalette colors) {
+    if (_packages.isEmpty) return const SizedBox.shrink();
+
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -221,24 +261,32 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
-        children: [
-          _pricingOption(
-            'Monthly',
-            '\$4.99/mo',
-            null,
-            !_isYearly,
+        children: _packages.map((package) {
+          final isSelected = _selectedPackage?.identifier == package.identifier;
+          
+          String title = package.storeProduct.title;
+          // Clean up standard store titles (e.g. "Pro Yearly (Hunting Call)")
+          if (title.contains('(')) title = title.split('(').first.trim();
+          
+          String price = package.storeProduct.priceString;
+          String? badge;
+
+          if (package.packageType == PackageType.annual) {
+            title = 'Yearly';
+            badge = 'Save 50%'; // You could calculate this dynamically if desired
+          } else if (package.packageType == PackageType.monthly) {
+            title = 'Monthly';
+          }
+
+          return _pricingOption(
+            title,
+            price,
+            badge,
+            isSelected,
             colors,
-            () => setState(() => _isYearly = false),
-          ),
-          _pricingOption(
-            'Yearly',
-            '\$29.99/yr',
-            'Save 50%',
-            _isYearly,
-            colors,
-            () => setState(() => _isYearly = true),
-          ),
-        ],
+            () => setState(() => _selectedPackage = package),
+          );
+        }).toList(),
       ),
     );
   }
@@ -314,6 +362,13 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
     final profile = ref.watch(profileNotifierProvider).profile;
     final isProcessing = paymentState.isProcessing;
 
+    String buttonText = 'Upgrade';
+    if (_selectedPackage != null) {
+      final period = _selectedPackage!.packageType == PackageType.annual ? 'year' : 'month';
+      final price = _selectedPackage!.storeProduct.priceString;
+      buttonText = 'Upgrade — $price/$period';
+    }
+
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -346,14 +401,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: isProcessing
+                onTap: isProcessing || _selectedPackage == null
                     ? null
                     : () async {
                         final userId = profile?.id ?? '';
                         if (userId.isEmpty) return;
                         final success = await ref
                             .read(paymentNotifierProvider.notifier)
-                            .purchasePremium(userId);
+                            .purchasePremium(userId, packageId: _selectedPackage!.identifier);
                         if (success && context.mounted) {
                           Navigator.of(context).pop(true);
                         }
@@ -370,7 +425,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
                           ),
                         )
                       : Text(
-                          _isYearly ? 'Upgrade — \$29.99/year' : 'Upgrade — \$4.99/month',
+                          buttonText,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,

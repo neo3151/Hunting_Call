@@ -37,7 +37,7 @@ class RevenueCatPaymentRepository implements PaymentRepository {
         _profileRepo = profileRepo;
 
   @override
-  Future<bool> purchasePremium(String userId) async {
+  Future<bool> purchasePremium(String userId, {String? packageId}) async {
     try {
       AppLogger.d('🛒 RevenueCat: Fetching offerings...');
       final packages = await _rcService.getOfferings();
@@ -47,11 +47,16 @@ class RevenueCatPaymentRepository implements PaymentRepository {
         return false;
       }
 
-      // Find monthly package first, fallback to first available
-      final package = packages.firstWhere(
-        (p) => p.identifier == '\$rc_monthly',
-        orElse: () => packages.first,
-      );
+      // Find specific package if requested, otherwise fallback to first available
+      final package = packageId != null
+          ? packages.firstWhere(
+              (p) => p.identifier == packageId,
+              orElse: () => packages.first,
+            )
+          : packages.firstWhere(
+              (p) => p.identifier == '\$rc_monthly',
+              orElse: () => packages.first,
+            );
 
       AppLogger.d('🛒 RevenueCat: Purchasing ${package.identifier}...');
       final success = await _rcService.purchase(package);
@@ -95,7 +100,7 @@ class MockPaymentRepository implements PaymentRepository {
   MockPaymentRepository(this._profileRepo);
 
   @override
-  Future<bool> purchasePremium(String userId) async {
+  Future<bool> purchasePremium(String userId, {String? packageId}) async {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 1));
 

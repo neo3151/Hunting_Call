@@ -46,12 +46,12 @@ class PaymentNotifier extends Notifier<PaymentState> {
   }
 
   /// Initiate a premium purchase via the domain use case.
-  Future<bool> purchasePremium(String userId) async {
+  Future<bool> purchasePremium(String userId, {String? packageId}) async {
     if (state.isProcessing) return false;
     state = state.copyWith(status: PurchaseStatus.processing, clearError: true);
     try {
       final useCase = ref.read(purchasePremiumUseCaseProvider);
-      final result = await useCase(userId);
+      final result = await useCase(userId, packageId: packageId);
       state = state.copyWith(
         status: result ? PurchaseStatus.success : PurchaseStatus.failed,
         purchaseResult: result,

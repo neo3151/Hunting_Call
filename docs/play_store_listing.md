@@ -1,48 +1,72 @@
-# Outcall — Play Store Listing
+# Outcall — Play Store Listing (Optimized)
 
 ## App Title
-Outcall: Master Your Calls
+Outcall: Hunting Call Trainer
 
 ## Short Description (80 chars max)
-Practice & perfect your hunting calls with real-time analysis and audio coaching.
+Master elk, turkey & deer calls with AI scoring, real-time analysis & 135+ calls
 
 ## Full Description (4000 chars max)
-🦌 **Outcall: Master Your Calls** is the ultimate training app for hunters who want to sharpen their calling skills before heading into the field.
+🎯 **OUTCALL** — The #1 hunting call training app trusted by hunters who refuse to miss.
 
-**PRACTICE WITH REAL CALLS**
-Browse a complete library of 50 professional-grade animal calls covering North American game — from Whitetail Deer grunts to Elk bugles, Turkey yelps to Predator calls. Each recording is sourced from real wildlife audio, giving you authentic sounds to study and replicate.
+Stop guessing if your calls sound right. OUTCALL uses **real-time audio analysis** to compare your calls against professional recordings and tells you exactly what to fix — pitch, rhythm, tone, and timing. It's like having a pro calling coach in your pocket.
 
-**REAL-TIME AUDIO ANALYSIS**
-Record your own calls and get instant feedback on pitch accuracy, timing, rhythm, and tone quality. Our comprehensive audio analyzer compares your attempt against the reference call and provides a detailed score breakdown.
+━━━━━━━━━━━━━━━━━━━━━━━━
+📱 WHY HUNTERS CHOOSE OUTCALL
+━━━━━━━━━━━━━━━━━━━━━━━━
 
-**TRACK YOUR PROGRESS**
-Watch your skills improve over time with detailed performance tracking. Every practice session is logged with scores, timestamps, and location data. See your mastery level grow from Beginner to Expert across all species.
+🎙️ **135+ PROFESSIONAL CALLS**
+The largest in-app library of real hunting calls. Every species. Every sound. Sourced from field recordings, not synthesizers. Elk bugles, turkey yelps, deer grunts, duck quacks, predator howls — all at your fingertips.
 
-**DAILY CHALLENGES**
-Stay sharp with daily practice challenges that push you to master new calls and improve your technique. Build streaks and unlock achievements as you progress.
+📊 **REAL-TIME AI SCORING**
+Record your call. Get instant feedback. Our audio analysis engine breaks down frequency, amplitude, and rhythm to give you a precision score from 0-100. Watch your scores climb as you improve.
 
-**INTERACTIVE PROGRESS MAP**
-Visualize your practice sessions and achievements on an interactive map. See where you've been practicing and track your geographic coverage.
+🌊 **LIVE WAVEFORM COMPARISON**
+See your call overlaid on the professional reference in real-time. Visual feedback shows you exactly where your call differs — high pitch, low amplitude, timing gaps — so you know what to fix.
 
-**LEADERBOARD**
-Compete with other hunters to see who can produce the most accurate calls. Climb the global leaderboard and prove your skills.
+📈 **TRACK YOUR PROGRESS**
+Every practice session is logged. View your improvement over time with detailed statistics. Go from beginner to expert with clear, measurable milestones.
 
-**KEY FEATURES:**
-• 50 professional hunting call recordings
-• Real-time pitch, timing, and tone analysis
-• Personal progress tracking and statistics
+⚡ **DAILY CHALLENGES**
+Fresh challenge every day. Build streaks. Earn XP. Climb the global leaderboard. Beat your personal best and compete with hunters worldwide.
+
+🗺️ **INTERACTIVE PROGRESS MAP**
+Unlock regions as you master new species. Visualize your journey from novice to master on a beautiful interactive world map.
+
+🌤️ **WEATHER & CONDITIONS**
+Real-time weather data with hunting condition analysis. Know when conditions favor your hunt before you head out.
+
+🏆 **GLOBAL LEADERBOARD**
+See how your calls stack up against the community. Top scores earn bragging rights.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+🦌 SPECIES COVERED
+━━━━━━━━━━━━━━━━━━━━━━━━
+Whitetail Deer • Mule Deer • Elk • Moose • Turkey • Mallard Duck • Goose • Coyote • Black Bear • Pronghorn • Bobwhite Quail • Pheasant • Dove • Crow • Cottontail Rabbit • Red Fox • and more being added regularly
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+✅ KEY FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━
+• 135+ professional hunting call recordings
+• Real-time FFT audio analysis & AI scoring
+• Live waveform visualization & comparison
+• Personal progress tracking & statistics
 • Daily practice challenges with streaks
-• Interactive practice map
-• Global leaderboard
-• Google Sign-In for cloud sync
-• Works offline for field practice
+• Interactive world progress map
+• Global leaderboard & achievements
+• Weather & hunting conditions
+• Google & Apple Sign-In for cloud sync
+• Works offline — practice in the field
+• 5 platforms: Android, iOS, Windows, Mac, Linux
 
-**SPECIES COVERED:**
-Whitetail Deer, Elk, Moose, Turkey, Duck, Goose, Coyote, Black Bear, Pronghorn, Bobwhite Quail, Pheasant, Dove, Crow, and many more.
+━━━━━━━━━━━━━━━━━━━━━━━━
 
-Whether you're a seasoned hunter or just getting started, OUTCALL gives you the tools to practice anywhere, anytime. Perfect your technique at home so you're ready when it matters in the field.
+Whether you're a seasoned caller or picking up your first reed, OUTCALL gives you the tools to practice anywhere, anytime. Perfect your technique at home so when that bull elk steps into range, your call is flawless.
 
-📱 **Privacy**: We respect your privacy. See our full privacy policy in the app settings.
+Download now. Master your craft. 🎯
+
+📱 **Privacy**: We respect your data. See our full policy at hunting-call-perfection.web.app/privacy-policy.html
+📧 **Support**: benchmarkappsllc@gmail.com
 
 ## Category
 Sports
@@ -50,11 +74,14 @@ Sports
 ## Content Rating
 Everyone
 
-## Tags
-hunting, calls, wildlife, outdoors, practice, training, deer, elk, turkey, duck
+## Tags / Keywords
+hunting call app, elk call trainer, turkey call practice, deer grunt app, hunting training, animal call sounds, call scoring, audio analysis hunting, duck call app, predator calls, hunting app, wildlife calls, call comparison, hunting practice, outdoor training app
 
 ## Contact Email
 benchmarkappsllc@gmail.com
 
 ## Privacy Policy URL
 https://hunting-call-perfection.web.app/privacy-policy.html
+
+## Website
+https://hunting-call-perfection.web.app

@@ -12,6 +12,7 @@ import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/features/progress_map/presentation/progress_map_screen.dart';
 import 'package:outcall/config/app_config.dart';
 import 'package:outcall/core/widgets/upgrade_prompter.dart';
+import 'package:outcall/features/payment/presentation/paywall_screen.dart';
 import 'package:outcall/core/widgets/offline_banner.dart';
 import 'package:outcall/core/services/referral_service.dart';
 import 'package:share_plus/share_plus.dart';
@@ -64,6 +65,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         // Header Section
                         _buildProfileHeader(profile),
                         const SizedBox(height: 32),
+                        
+                        // Upgrade to Pro Banner (Non-Premium Users Only)
+                        if (!profile.isPremium) ...[
+                          _buildUpgradeBanner(context),
+                          const SizedBox(height: 24),
+                        ],
                         
                         // Stats Row
                         Row(
@@ -602,6 +609,86 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Icon(Icons.mic_none, color: AppColors.of(context).divider, size: 48),
           const SizedBox(height: 16),
           Text('NO HUNTS RECORDED YET', style: GoogleFonts.oswald(color: AppColors.of(context).border, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpgradeBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.accentGoldDark,
+            AppColors.accentGold,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentGold.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'UPGRADE TO PRO',
+                  style: GoogleFonts.oswald(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                Text(
+                  'Unlock all calls & features',
+                  style: GoogleFonts.lato(
+                    fontSize: 12,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => PaywallScreen.show(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.accentGoldDark,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              elevation: 0,
+            ),
+            child: Text(
+              'VIEW',
+              style: GoogleFonts.oswald(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ),
         ],
       ),
     );
