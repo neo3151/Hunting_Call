@@ -1,22 +1,24 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:outcall/core/theme/app_colors.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:outcall/features/profile/domain/entities/user_profile.dart';
-import 'package:outcall/features/library/data/reference_database.dart';
-import 'package:outcall/features/profile/domain/achievement_service.dart';
-import 'package:outcall/core/widgets/background_wrapper.dart';
-import 'package:outcall/features/progress_map/presentation/progress_map_screen.dart';
-import 'package:outcall/config/app_config.dart';
-import 'package:outcall/core/widgets/upgrade_prompter.dart';
-import 'package:outcall/features/payment/presentation/paywall_screen.dart';
-import 'package:outcall/core/widgets/offline_banner.dart';
-import 'package:outcall/core/services/referral_service.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:outcall/config/app_config.dart';
+import 'package:outcall/core/services/referral_service.dart';
+import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/core/widgets/offline_banner.dart';
+import 'package:outcall/core/widgets/upgrade_prompter.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/payment/presentation/paywall_screen.dart';
+import 'package:outcall/features/profile/domain/achievement_service.dart';
+import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/progress_map/presentation/progress_map_screen.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -46,7 +48,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: Text('HANDLER PROFILE', style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+          title: Text('HANDLER PROFILE',
+              style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -55,122 +58,141 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             const OfflineBanner(),
             Expanded(
               child: isLoading
-                  ? Center(child: CircularProgressIndicator(color: AppColors.of(context).textPrimary))
+                  ? Center(
+                      child: CircularProgressIndicator(color: AppColors.of(context).textPrimary))
                   : profile == null
-                      ? Center(child: Text('Profile not found.', style: TextStyle(color: AppColors.of(context).textSecondary)))
+                      ? Center(
+                          child: Text('Profile not found.',
+                              style: TextStyle(color: AppColors.of(context).textSecondary)))
                       : SingleChildScrollView(
                           padding: const EdgeInsets.all(24),
                           child: Column(
-                      children: [
-                        // Header Section
-                        _buildProfileHeader(profile),
-                        const SizedBox(height: 32),
-                        
-                        // Upgrade to Pro Banner (Non-Premium Users Only)
-                        if (!profile.isPremium) ...[
-                          _buildUpgradeBanner(context),
-                          const SizedBox(height: 24),
-                        ],
-                        
-                        // Stats Row
-                        Row(
-                          children: [
-                            Expanded(child: _buildGlassStatCard('TOTAL CALLS', profile.totalCalls.toString(), Icons.mic)),
-                            const SizedBox(width: 16),
-                            Expanded(child: _buildGlassStatCard('AVG ACCURACY', '${profile.averageScore.toStringAsFixed(1)}%', Icons.analytics)),
-                            const SizedBox(width: 16),
-                            Expanded(child: _buildGlassStatCard('DAILY STREAK', '${profile.currentStreak} 🔥', Icons.local_fire_department)),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Invite Friends Card
-                        _buildInviteFriendsCard(profile),
-                        const SizedBox(height: 16),
-                        
-                        // Map Button
-                        if (AppConfig.instance.allowMap || (profile.isPremium))
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => ProgressMapScreen(userId: widget.userId)),
-                              );
-                            },
-                            icon: Icon(Icons.map_outlined, color: AppColors.of(context).textSecondary),
-                            label: const Text('VIEW FIELD MAP'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: BorderSide(color: AppColors.of(context).border),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
-                        )
-                        else
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () => UpgradePrompter.show(context, featureName: 'Field Map'),
-                            icon: Icon(Icons.lock_outline, color: AppColors.of(context).textSubtle),
-                            label: const Text('FIELD MAP (LOCKED)'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white38,
-                              side: BorderSide(color: AppColors.of(context).border),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 32),
-                        
-                        // Achievements Section
-                        if (profile.achievements.isNotEmpty) ...[
-                          _buildSectionHeader('HONORS & BADGES'),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            height: 100,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: profile.achievements.length,
-                              itemBuilder: (context, index) {
-                                final achievementId = profile.achievements[index];
-                                final achievement = AchievementService.achievements.firstWhere(
-                                  (a) => a.id == achievementId,
-                                  orElse: () => Achievement(
-                                    id: 'unknown',
-                                    name: 'Unknown',
-                                    description: '',
-                                    icon: '❓',
-                                    isEarned: (_) => false,
+                            children: [
+                              // Header Section
+                              _buildProfileHeader(profile),
+                              const SizedBox(height: 32),
+
+                              // Upgrade to Pro Banner (Non-Premium Users Only)
+                              if (!profile.isPremium) ...[
+                                _buildUpgradeBanner(context),
+                                const SizedBox(height: 24),
+                              ],
+
+                              // Stats Row
+                              Row(
+                                children: [
+                                  Expanded(
+                                      child: _buildGlassStatCard(
+                                          'TOTAL CALLS', profile.totalCalls.toString(), Icons.mic)),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                      child: _buildGlassStatCard(
+                                          'AVG ACCURACY',
+                                          '${profile.averageScore.toStringAsFixed(1)}%',
+                                          Icons.analytics)),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                      child: _buildGlassStatCard(
+                                          'DAILY STREAK',
+                                          '${profile.currentStreak} 🔥',
+                                          Icons.local_fire_department)),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Invite Friends Card
+                              _buildInviteFriendsCard(profile),
+                              const SizedBox(height: 16),
+
+                              // Map Button
+                              if (AppConfig.instance.allowMap || (profile.isPremium))
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                ProgressMapScreen(userId: widget.userId)),
+                                      );
+                                    },
+                                    icon: Icon(Icons.map_outlined,
+                                        color: AppColors.of(context).textSecondary),
+                                    label: const Text('VIEW FIELD MAP'),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      side: BorderSide(color: AppColors.of(context).border),
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                    ),
                                   ),
-                                );
-                                return _buildAchievementBadge(achievement);
-                              },
-                            ),
+                                )
+                              else
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () =>
+                                        UpgradePrompter.show(context, featureName: 'Field Map'),
+                                    icon: Icon(Icons.lock_outline,
+                                        color: AppColors.of(context).textSubtle),
+                                    label: const Text('FIELD MAP (LOCKED)'),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.white38,
+                                      side: BorderSide(color: AppColors.of(context).border),
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                    ),
+                                  ),
+                                ),
+
+                              const SizedBox(height: 32),
+
+                              // Achievements Section
+                              if (profile.achievements.isNotEmpty) ...[
+                                _buildSectionHeader('HONORS & BADGES'),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  height: 100,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: profile.achievements.length,
+                                    itemBuilder: (context, index) {
+                                      final achievementId = profile.achievements[index];
+                                      final achievement =
+                                          AchievementService.achievements.firstWhere(
+                                        (a) => a.id == achievementId,
+                                        orElse: () => Achievement(
+                                          id: 'unknown',
+                                          name: 'Unknown',
+                                          description: '',
+                                          icon: '❓',
+                                          isEarned: (_) => false,
+                                        ),
+                                      );
+                                      return _buildAchievementBadge(achievement);
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                              ],
+
+                              // History Section
+                              _buildSectionHeader('RECENT ACTIVITY'),
+                              const SizedBox(height: 16),
+                              if (profile.history.isEmpty)
+                                _buildEmptyHistory()
+                              else
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: profile.history.length,
+                                  itemBuilder: (context, index) {
+                                    final item = profile.history[index];
+                                    return _buildHistoryCard(item);
+                                  },
+                                ),
+                            ],
                           ),
-                          const SizedBox(height: 32),
-                        ],
-                        
-                        // History Section
-                        _buildSectionHeader('RECENT ACTIVITY'),
-                        const SizedBox(height: 16),
-                        if (profile.history.isEmpty)
-                           _buildEmptyHistory()
-                        else
-                           ListView.builder(
-                             shrinkWrap: true,
-                             physics: const NeverScrollableScrollPhysics(),
-                             itemCount: profile.history.length,
-                             itemBuilder: (context, index) {
-                               final item = profile.history[index];
-                               return _buildHistoryCard(item);
-                             },
-                           ),
-                      ],
-                    ),
-                  ),
+                        ),
             ),
           ],
         ),
@@ -205,7 +227,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   : CircleAvatar(
                       radius: 50,
                       backgroundColor: AppColors.of(context).surface,
-                      child: Icon(Icons.person, size: 50, color: AppColors.of(context).textSecondary),
+                      child:
+                          Icon(Icons.person, size: 50, color: AppColors.of(context).textSecondary),
                     ),
             ),
             Container(
@@ -224,7 +247,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 16),
         Text(
           (profile.nickname?.isNotEmpty == true ? profile.nickname! : profile.name).toUpperCase(),
-          style: GoogleFonts.oswald(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.of(context).textPrimary, letterSpacing: 1.0),
+          style: GoogleFonts.oswald(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: AppColors.of(context).textPrimary,
+              letterSpacing: 1.0),
         ),
         if (profile.nickname?.isNotEmpty == true && profile.name != profile.nickname)
           Text(
@@ -234,7 +261,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 4),
         Text(
           'HANDLING SINCE ${DateFormat.yMMMd().format(profile.joinedDate).toUpperCase()}',
-          style: GoogleFonts.lato(color: AppColors.of(context).textTertiary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+          style: GoogleFonts.lato(
+              color: AppColors.of(context).textTertiary,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2),
         ),
         if (profile.isAlphaTester) ...[
           const SizedBox(height: 12),
@@ -252,7 +283,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(width: 4),
                 Text(
                   'ALPHA TESTER',
-                  style: GoogleFonts.lato(color: Theme.of(context).primaryColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                  style: GoogleFonts.lato(
+                      color: Theme.of(context).primaryColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0),
                 ),
               ],
             ),
@@ -353,7 +388,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: GoogleFonts.oswald(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor.withValues(alpha: 0.8), letterSpacing: 1.5),
+        style: GoogleFonts.oswald(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
+            letterSpacing: 1.5),
       ),
     );
   }
@@ -375,8 +414,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               Icon(icon, color: AppColors.of(context).textTertiary, size: 20),
               const SizedBox(height: 12),
-              Text(value, style: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.of(context).textPrimary)),
-              Text(label, style: GoogleFonts.lato(fontSize: 10, color: AppColors.of(context).textSubtle, fontWeight: FontWeight.bold)),
+              Text(value,
+                  style: GoogleFonts.oswald(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.of(context).textPrimary)),
+              Text(label,
+                  style: GoogleFonts.lato(
+                      fontSize: 10,
+                      color: AppColors.of(context).textSubtle,
+                      fontWeight: FontWeight.bold)),
             ],
           ),
         ),
@@ -404,7 +451,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 8),
           Text(
             achievement.name,
-            style: GoogleFonts.lato(fontSize: 10, color: AppColors.of(context).textSecondary, fontWeight: FontWeight.bold),
+            style: GoogleFonts.lato(
+                fontSize: 10,
+                color: AppColors.of(context).textSecondary,
+                fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -441,7 +491,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   child: Text(
                     item.result.score.toStringAsFixed(0),
-                    style: TextStyle(color: _getScoreColor(item.result.score), fontWeight: FontWeight.bold, fontSize: 18),
+                    style: TextStyle(
+                        color: _getScoreColor(item.result.score),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -449,8 +502,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(call.animalName.toUpperCase(), style: GoogleFonts.oswald(color: AppColors.of(context).textPrimary, fontWeight: FontWeight.bold)),
-                      Text(DateFormat.yMMMd().add_jm().format(item.timestamp).toUpperCase(), style: GoogleFonts.lato(color: AppColors.of(context).textSubtle, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(call.animalName.toUpperCase(),
+                          style: GoogleFonts.oswald(
+                              color: AppColors.of(context).textPrimary,
+                              fontWeight: FontWeight.bold)),
+                      Text(DateFormat.yMMMd().add_jm().format(item.timestamp).toUpperCase(),
+                          style: GoogleFonts.lato(
+                              color: AppColors.of(context).textSubtle,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -578,7 +638,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   icon: const Icon(Icons.share, size: 16),
                   label: Text(
                     'SHARE INVITE',
-                    style: GoogleFonts.oswald(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1.5),
+                    style: GoogleFonts.oswald(
+                        fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1.5),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accentGold,
@@ -608,7 +669,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Icon(Icons.mic_none, color: AppColors.of(context).divider, size: 48),
           const SizedBox(height: 16),
-          Text('NO HUNTS RECORDED YET', style: GoogleFonts.oswald(color: AppColors.of(context).border, fontWeight: FontWeight.bold)),
+          Text('NO HUNTS RECORDED YET',
+              style: GoogleFonts.oswald(
+                  color: AppColors.of(context).border, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -619,7 +682,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
             AppColors.accentGoldDark,
             AppColors.accentGold,
@@ -685,6 +748,103 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               'VIEW',
               style: GoogleFonts.oswald(
                 fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildManageSubscriptionCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.of(context).cardOverlay,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppColors.accentGoldDark, AppColors.accentGold],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'OUTCALL PRO',
+                      style: GoogleFonts.oswald(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.accentGold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Text(
+                        'ACTIVE',
+                        style: GoogleFonts.lato(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.greenAccent,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'All features unlocked',
+                  style: GoogleFonts.lato(
+                    fontSize: 12,
+                    color: AppColors.of(context).textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          OutlinedButton(
+            onPressed: () async {
+              // Deep-link to Google Play subscription management
+              const url =
+                  'https://play.google.com/store/account/subscriptions?sku=outcall_premium_yearly&package=com.huntingcall.app';
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.of(context).textSecondary,
+              side: BorderSide(color: AppColors.of(context).border),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(
+              'MANAGE',
+              style: GoogleFonts.oswald(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
                 letterSpacing: 1.0,
               ),
             ),
