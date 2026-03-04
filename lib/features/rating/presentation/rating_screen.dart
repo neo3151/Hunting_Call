@@ -21,6 +21,8 @@ import 'package:outcall/features/rating/presentation/widgets/rating_action_butto
 import 'package:outcall/core/widgets/achievement_overlay.dart';
 import 'package:outcall/features/profile/domain/achievement_service.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/core/services/analytics_service.dart';
+import 'package:outcall/di_providers.dart' show appRatingServiceProvider;
 
 class RatingScreen extends ConsumerStatefulWidget {
   final String audioPath;
@@ -188,6 +190,12 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           _triggerResultHaptics(next.result);
           // Check for achievement unlocks
           _checkForAchievements();
+          // Track analytics
+          AnalyticsService.logRecordingCompleted(widget.animalId, next.result!.score);
+          // Maybe prompt for app review after a high score
+          if (next.result!.score >= 80) {
+            ref.read(appRatingServiceProvider).maybePromptReview();
+          }
         } else if (next.error != null) {
           HapticFeedback.vibrate();
         }

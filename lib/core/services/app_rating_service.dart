@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/services/simple_storage.dart';
 
@@ -17,16 +19,16 @@ class AppRatingService {
   AppRatingService(this._storage);
 
   /// Call this after a positive moment (high score, achievement).
-  /// Returns true if a review prompt should be shown.
-  Future<bool> shouldPromptReview() async {
+  /// Checks conditions and shows the in-app review dialog if appropriate.
+  Future<void> maybePromptReview() async {
     // Never prompt again if user already rated
     final hasRated = await _storage.getBool(_keyHasRated) ?? false;
-    if (hasRated) return false;
+    if (hasRated) return;
 
     // Check session count threshold
     final sessionCount = (await _storage.getInt(_keySessionCount) ?? 0) + 1;
     await _storage.setInt(_keySessionCount, sessionCount);
-    if (sessionCount < _minSessionsBeforePrompt) return false;
+    if (sessionCount < _minSessionsBeforePrompt) return;
 
     // Check cooldown
     final lastPromptStr = await _storage.getString(_keyLastPrompt);
@@ -34,14 +36,28 @@ class AppRatingService {
       final lastPrompt = DateTime.tryParse(lastPromptStr);
       if (lastPrompt != null &&
           DateTime.now().difference(lastPrompt).inDays < _cooldownDays) {
-        return false;
+        return;
       }
     }
 
     // All conditions met — show prompt
     await _storage.setString(_keyLastPrompt, DateTime.now().toIso8601String());
-    AppLogger.d('AppRatingService: Prompting user for review');
-    return true;
+
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      AppLogger.d('AppRatingService: Skipped review prompt (desktop)');
+      return;
+    }
+
+    try {
+      final inAppReview = InAppReview.instance;
+      if (await inAppReview.isAvailable()) {
+        await inAppReview.requestReview();
+        AppLogger.d('AppRatingService: Review prompt shown');
+        await markAsRated(); // Don't prompt again after showing
+      }
+    } catch (e) {
+      AppLogger.d('AppRatingService: Review prompt failed: $e');
+    }
   }
 
   /// Call when the user has submitted a review.

@@ -1,13 +1,27 @@
+import 'dart:io';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 
-/// Lightweight analytics event tracking.
+/// Lightweight analytics event tracking backed by Firebase Analytics.
 ///
-/// Wraps Firebase Analytics (or any other provider) to track
-/// key user actions for understanding feature usage and engagement.
+/// Wraps Firebase Analytics to track key user actions for
+/// understanding feature usage and engagement.
 class AnalyticsService {
   AnalyticsService._();
 
+  static FirebaseAnalytics? _instance;
   static bool _enabled = true;
+
+  static void initialize() {
+    if (Platform.isAndroid || Platform.isIOS) {
+      try {
+        _instance = FirebaseAnalytics.instance;
+        AppLogger.d('📊 Analytics: Firebase Analytics initialized');
+      } catch (e) {
+        AppLogger.d('📊 Analytics: Firebase Analytics unavailable: $e');
+      }
+    }
+  }
 
   static void setEnabled(bool enabled) => _enabled = enabled;
 
@@ -44,7 +58,8 @@ class AnalyticsService {
   // ─── Navigation events ────────────────────────────────────────────────
 
   static void logScreenView(String screenName) {
-    _log('screen_view', {'screen_name': screenName});
+    _instance?.logScreenView(screenName: screenName);
+    AppLogger.d('📊 Analytics: screen_view {screen_name: $screenName}');
   }
 
   static void logLibraryBrowse(String category) {
@@ -76,10 +91,9 @@ class AnalyticsService {
 
   // ─── Internal ─────────────────────────────────────────────────────────
 
-  static void _log(String event, Map<String, dynamic> params) {
+  static void _log(String event, Map<String, Object> params) {
     if (!_enabled) return;
-    // TODO: Wire to Firebase Analytics when ready:
-    // FirebaseAnalytics.instance.logEvent(name: event, parameters: params);
+    _instance?.logEvent(name: event, parameters: params);
     AppLogger.d('📊 Analytics: $event $params');
   }
 }
