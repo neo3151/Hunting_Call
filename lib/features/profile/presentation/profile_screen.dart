@@ -832,9 +832,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           OutlinedButton(
             onPressed: () async {
-              // Deep-link to Google Play subscription management
+              // Deep-link to Google Play subscription management (generic page)
               const url =
-                  'https://play.google.com/store/account/subscriptions?sku=outcall_premium_yearly&package=com.huntingcall.app';
+                  'https://play.google.com/store/account/subscriptions';
               final uri = Uri.parse(url);
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);

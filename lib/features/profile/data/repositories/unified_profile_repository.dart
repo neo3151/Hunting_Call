@@ -34,17 +34,9 @@ class UnifiedProfileRepository implements ProfileRepository {
         profile = UserProfile.guest(); 
       }
 
-      // Hybrid Check: If not premium in Cloud, check Local Storage override
-      if (!profile.isPremium && _localDataSource != null) {
-        try {
-           final localProfile = await _localDataSource!.getProfile(userId);
-           if (localProfile.isPremium) {
-             profile = profile.copyWith(isPremium: true);
-           }
-        } catch (e) {
-          // Ignore local read errors, trust cloud
-        }
-      }
+      // Cloud is the source of truth for premium status.
+      // Local storage is only used as a write-through cache,
+      // not as an override.
       
       return profile;
     } catch (e) {

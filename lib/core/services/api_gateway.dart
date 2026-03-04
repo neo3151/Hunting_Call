@@ -36,8 +36,17 @@ class FirebaseApiGateway implements ApiGateway {
 
   @override
   Future<Map<String, dynamic>?> getDocument(String collection, String documentId) async {
-    final doc = await _firestore.collection(collection).doc(documentId).get();
-    return doc.data();
+    try {
+      // Always try server first to get the freshest data (especially isPremium)
+      final doc = await _firestore.collection(collection).doc(documentId)
+          .get(const GetOptions(source: Source.server));
+      return doc.data();
+    } catch (_) {
+      // Fallback to cache when offline
+      final doc = await _firestore.collection(collection).doc(documentId)
+          .get(const GetOptions(source: Source.cache));
+      return doc.data();
+    }
   }
 
   @override

@@ -27,15 +27,19 @@ class MigratingProfileDataSource implements ProfileDataSource {
       // Let's check for guest or real ID.
       
       if (secureProfile.id != 'guest') {
-         // Check if this profile has any history or is premium. 
-         // If it's the default 'New Hunter' (no history, not premium), 
+         // Check if this profile has any history.
+         // If it's the default 'New Hunter' (no history),
          // we should check if local storage has something better.
-         if (secureProfile.history.isEmpty && !secureProfile.isPremium) {
+         // NOTE: isPremium is NOT checked here — Firestore is the 
+         // source of truth for premium status, not local storage.
+         if (secureProfile.history.isEmpty) {
             final localProfile = await localDataSource.getProfile(userId);
-            if (localProfile.history.isNotEmpty || localProfile.isPremium) {
+            if (localProfile.history.isNotEmpty) {
               AppLogger.d('📦 MigratingProfileDataSource: Migrating profile $userId from local to secure storage.');
-              await secureDataSource.saveProfile(localProfile);
-              return localProfile;
+              // Migrate history but DON'T migrate isPremium (cloud is source of truth)
+              final migratedProfile = localProfile.copyWith(isPremium: false);
+              await secureDataSource.saveProfile(migratedProfile);
+              return migratedProfile;
             }
          }
       }
