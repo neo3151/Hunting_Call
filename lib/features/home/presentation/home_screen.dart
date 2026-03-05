@@ -52,9 +52,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (homeState.profile == null &&
         homeState.error == null &&
         !homeState.isLoading) {
-      return Scaffold(
+      return const Scaffold(
         body: BackgroundWrapper(
-          child: const SafeArea(
+          child: SafeArea(
             child: DashboardSkeleton(),
           ),
         ),

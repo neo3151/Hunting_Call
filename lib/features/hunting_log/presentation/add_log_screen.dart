@@ -27,7 +27,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
   Future<void> _getLocation() async {
     setState(() => _isLoading = true);
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) throw 'Location services are disabled.';
 
       LocationPermission permission = await Geolocator.checkPermission();
