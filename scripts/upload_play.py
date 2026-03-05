@@ -76,14 +76,26 @@ def upload_aab(track: str, aab_path: str, release_name: str, notes: str):
     edit_id = edit["id"]
     print(f"   Edit ID: {edit_id}")
 
-    # 2. Upload the AAB
+    # 2. Upload the AAB with resumable chunks + retries for large files
     print("⬆️  Uploading AAB (this may take a few minutes)...")
-    media = MediaFileUpload(aab_path, mimetype="application/octet-stream", resumable=True)
-    bundle = service.edits().bundles().upload(
+    media = MediaFileUpload(
+        aab_path,
+        mimetype="application/octet-stream",
+        resumable=True,
+        chunksize=50 * 1024 * 1024,  # 50MB chunks
+    )
+    request = service.edits().bundles().upload(
         packageName=PACKAGE_NAME,
         editId=edit_id,
         media_body=media,
-    ).execute()
+    )
+    response = None
+    while response is None:
+        status, response = request.next_chunk(num_retries=5)
+        if status:
+            pct = int(status.progress() * 100)
+            print(f"   ⬆️  {pct}% uploaded")
+    bundle = response
     version_code = bundle["versionCode"]
     print(f"   ✅ Uploaded! Version code: {version_code}")
 

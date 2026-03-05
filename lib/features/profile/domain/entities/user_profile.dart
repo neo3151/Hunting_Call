@@ -23,6 +23,7 @@ class UserProfile {
   final DateTime? birthday;
   final bool isPremium; // Entitlement: Has user purchased the full app?
   final bool isAlphaTester;
+  final bool nameRestricted; // Locked after repeated profanity violations
   final String? referralCode;   // User's unique referral code (OUTCALL-XXXX)
   final String? referredBy;     // Code of the user who referred them
   final int referralCount;      // How many people used their code
@@ -46,6 +47,7 @@ class UserProfile {
     this.birthday,
     this.isPremium = false,
     this.isAlphaTester = false,
+    this.nameRestricted = false,
     this.referralCode,
     this.referredBy,
     this.referralCount = 0,
@@ -58,6 +60,7 @@ class UserProfile {
       joinedDate: DateTime.now(),
       isPremium: false,
       isAlphaTester: false,
+      nameRestricted: false,
       referralCount: 0,
     );
   }
@@ -79,6 +82,7 @@ class UserProfile {
     DateTime? birthday,
     bool? isPremium,
     bool? isAlphaTester,
+    bool? nameRestricted,
     String? referralCode,
     String? referredBy,
     int? referralCount,
@@ -102,6 +106,7 @@ class UserProfile {
       birthday: birthday ?? this.birthday,
       isPremium: isPremium ?? this.isPremium,
       isAlphaTester: isAlphaTester ?? this.isAlphaTester,
+      nameRestricted: nameRestricted ?? this.nameRestricted,
       referralCode: referralCode ?? this.referralCode,
       referredBy: referredBy ?? this.referredBy,
       referralCount: referralCount ?? this.referralCount,

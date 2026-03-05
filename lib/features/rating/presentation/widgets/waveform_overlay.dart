@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 class WaveformOverlay extends StatelessWidget {
   final List<double> userWaveform;
@@ -48,7 +49,7 @@ class WaveformOverlay extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('SPECTRAL SYNC', 
+                  Text(S.of(context).spectralSync, 
                     style: GoogleFonts.oswald(
                       fontSize: 14, 
                       letterSpacing: 1.5, 
@@ -56,7 +57,7 @@ class WaveformOverlay extends StatelessWidget {
                       fontWeight: FontWeight.bold
                     )
                   ),
-                  Text('WAVEFORM COMPARISON',
+                  Text(S.of(context).waveformComparison,
                     style: GoogleFonts.oswald(
                       fontSize: 8,
                       letterSpacing: 1.0,

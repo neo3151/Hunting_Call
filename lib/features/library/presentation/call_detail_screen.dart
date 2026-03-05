@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/features/library/domain/reference_call_model.dart';
 import 'package:outcall/features/library/presentation/acoustic_spectrum_widget.dart';
 
@@ -267,7 +268,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                 icon: const Icon(Icons.emoji_events_outlined,
                                     color: Colors.orangeAccent),
                                 label:
-                                    const Text('VIEW GLOBAL EXPERT RANKINGS'),
+                                    Text(S.of(context).viewGlobalExpertRankings),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: palette.textSecondary,
                                   side: BorderSide(
@@ -292,7 +293,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                 },
                                 icon: Icon(Icons.lock_outline,
                                     color: palette.textSubtle),
-                                label: const Text('GLOBAL RANKINGS (LOCKED)'),
+                                label: Text(S.of(context).globalRankingsLocked),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: palette.textSubtle,
                                   side: BorderSide(color: palette.border),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart' hide PurchaseStatus;
 import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/features/payment/data/payment_repository.dart';
 import 'package:outcall/features/payment/presentation/controllers/payment_controller.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
@@ -213,7 +214,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
           child: const Icon(Icons.workspace_premium_rounded, size: 36, color: Colors.white),
         ),
         const SizedBox(height: 16),
-        Text('UNLOCK OUTCALL PRO', style: TextStyle(
+        Text(S.of(context).unlockOutcallPro, style: TextStyle(
           fontFamily: 'Oswald', fontSize: 22, fontWeight: FontWeight.w700,
           letterSpacing: 2, color: colors.textPrimary,
         )),
@@ -246,9 +247,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(children: [
-              Expanded(flex: 2, child: Text('FEATURE', style: _matrixHeaderStyle(colors))),
-              Expanded(flex: 1, child: Text('FREE', textAlign: TextAlign.center, style: _matrixHeaderStyle(colors))),
-              Expanded(flex: 1, child: Text('PRO', textAlign: TextAlign.center, style: _matrixHeaderStyle(colors).copyWith(color: AppColors.accentGold))),
+              Expanded(flex: 2, child: Text(S.of(context).featureColumn, style: _matrixHeaderStyle(colors))),
+              Expanded(flex: 1, child: Text(S.of(context).freeColumn, textAlign: TextAlign.center, style: _matrixHeaderStyle(colors))),
+              Expanded(flex: 1, child: Text(S.of(context).proColumn, textAlign: TextAlign.center, style: _matrixHeaderStyle(colors).copyWith(color: AppColors.accentGold))),
             ]),
           ),
           Divider(color: colors.border, height: 1),

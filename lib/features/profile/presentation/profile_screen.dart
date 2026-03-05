@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:outcall/config/app_config.dart';
 import 'package:outcall/core/services/referral_service.dart';
 import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/core/widgets/offline_banner.dart';
 import 'package:outcall/core/widgets/upgrade_prompter.dart';
@@ -49,7 +50,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: Text('HANDLER PROFILE',
+          title: Text(S.of(context).handlerProfile,
               style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -126,7 +127,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     },
                                     icon: Icon(Icons.map_outlined,
                                         color: AppColors.of(context).textSecondary),
-                                    label: const Text('VIEW FIELD MAP'),
+                                    label: Text(S.of(context).viewFieldMap),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: Colors.white,
                                       side: BorderSide(color: AppColors.of(context).border),
@@ -142,7 +143,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         UpgradePrompter.show(context, featureName: 'Field Map'),
                                     icon: Icon(Icons.lock_outline,
                                         color: AppColors.of(context).textSubtle),
-                                    label: const Text('FIELD MAP (LOCKED)'),
+                                    label: Text(S.of(context).fieldMapLocked),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: Colors.white38,
                                       side: BorderSide(color: AppColors.of(context).border),
@@ -376,7 +377,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Note: Nicknames are revokable by moderators if they contain improper words.',
+                  'Warning: Inappropriate names will be automatically blocked.',
                   style: GoogleFonts.lato(color: Colors.redAccent, fontSize: 11),
                 ),
               ],
@@ -388,20 +389,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: Text('CANCEL', style: TextStyle(color: AppColors.of(context).textTertiary)),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final newNickname = nicknameController.text.trim();
                 final newAvatarUrl = avatarUrlController.text.trim();
-                ref.read(profileNotifierProvider.notifier).updateProfile(
+                final success = await ref.read(profileNotifierProvider.notifier).updateProfile(
                       nickname: newNickname.isEmpty ? null : newNickname,
                       avatarUrl: newAvatarUrl.isEmpty ? null : newAvatarUrl,
                     );
-                Navigator.pop(context);
+
+                if (!context.mounted) return;
+
+                if (success) {
+                  Navigator.pop(context);
+                } else {
+                  // Show error feedback — don't close the dialog
+                  final errorMsg = ref.read(profileNotifierProvider).error
+                      ?? 'Failed to update profile.';
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(errorMsg, style: GoogleFonts.lato())),
+                        ],
+                      ),
+                      backgroundColor: Colors.redAccent,
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: AppColors.of(context).background,
               ),
-              child: const Text('SAVE'),
+              child: Text(S.of(context).save),
             ),
           ],
         );
@@ -695,7 +719,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Icon(Icons.mic_none, color: AppColors.of(context).divider, size: 48),
           const SizedBox(height: 16),
-          Text('NO HUNTS RECORDED YET',
+          Text(S.of(context).noHuntsRecordedYet,
               style: GoogleFonts.oswald(
                   color: AppColors.of(context).border, fontWeight: FontWeight.bold)),
         ],

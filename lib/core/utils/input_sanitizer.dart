@@ -1,7 +1,10 @@
+import 'package:outcall/core/utils/profanity_filter.dart';
+import 'package:outcall/core/services/perspective_api_service.dart';
+
 /// Input sanitization utilities for user-facing text fields.
 ///
-/// Provides basic protection against injection attacks, XSS, and malformed
-/// input in user-submitted strings (usernames, feedback, etc.).
+/// Provides basic protection against injection attacks, XSS, malformed
+/// input, and inappropriate content in user-submitted strings.
 class InputSanitizer {
   InputSanitizer._();
 
@@ -16,15 +19,43 @@ class InputSanitizer {
   /// - Trims whitespace
   /// - Removes control characters
   /// - Strips HTML/script tags
+  /// - Replaces profane/inappropriate names with [fallback]
   /// - Truncates to [maxNameLength]
-  static String sanitizeName(String input) {
+  static String sanitizeName(String input, {String fallback = 'Hunter'}) {
     var clean = input.trim();
     clean = _removeControlCharacters(clean);
     clean = _stripHtmlTags(clean);
     if (clean.length > maxNameLength) {
       clean = clean.substring(0, maxNameLength);
     }
+    // Replace offensive names with the fallback
+    clean = ProfanityFilter.cleanName(clean, fallback: fallback);
     return clean;
+  }
+
+  /// Returns `true` if [name] contains inappropriate content (local filter only).
+  static bool containsInappropriateContent(String? name) {
+    return ProfanityFilter.containsProfanity(name);
+  }
+
+  /// Async version that also checks the Perspective API for ML-based
+  /// toxicity scoring when available.
+  ///
+  /// Falls back to local-only if the Perspective API is not configured or
+  /// the network call fails.
+  static Future<bool> containsInappropriateContentAsync(String? name) async {
+    if (name == null || name.isEmpty) return false;
+
+    // Fast path: check local blocklist first
+    if (ProfanityFilter.containsProfanity(name)) return true;
+
+    // Slow path: check Perspective API (if available)
+    if (PerspectiveApiService.isAvailable) {
+      final isToxic = await PerspectiveApiService.isToxic(name);
+      if (isToxic) return true;
+    }
+
+    return false;
   }
 
   /// Sanitize free-text input (feedback, comments).

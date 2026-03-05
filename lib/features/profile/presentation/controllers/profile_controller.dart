@@ -5,6 +5,8 @@ import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/profile/domain/providers.dart';
 import 'package:outcall/di_providers.dart';
 import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/input_sanitizer.dart';
+import 'package:outcall/core/utils/profanity_filter.dart';
 
 /// State for user profile operations
 class ProfileState {
@@ -81,9 +83,12 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   /// Create a new profile
   Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday}) async {
+    // Sanitize and filter the name
+    final cleanName = InputSanitizer.sanitizeName(name);
+
     state = state.copyWith(isProfileLoading: true, error: null);
     try {
-      final profile = await _repo.createProfile(name, id: id, birthday: birthday);
+      final profile = await _repo.createProfile(cleanName, id: id, birthday: birthday);
       final updatedProfiles = [...state.allProfiles, profile];
       state = state.copyWith(
         profile: profile,
@@ -132,14 +137,45 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
-  /// Update the profile's nickname and avatar
-  Future<void> updateProfile({String? nickname, String? avatarUrl}) async {
+  /// Update the profile's nickname and avatar.
+  ///
+  /// Returns `true` if the update succeeded, `false` if blocked
+  /// (e.g. inappropriate content or account restricted).
+  Future<bool> updateProfile({String? nickname, String? avatarUrl}) async {
     final currentProfile = state.profile;
-    if (currentProfile == null) return;
-    
+    if (currentProfile == null) return false;
+
+    // Check if user is name-restricted due to past violations
+    if (nickname != null && currentProfile.nameRestricted) {
+      state = state.copyWith(
+        error: 'Your name has been permanently locked due to repeated violations.',
+      );
+      return false;
+    }
+
+    // Block inappropriate nicknames — local filter + Perspective API
+    if (nickname != null &&
+        await InputSanitizer.containsInappropriateContentAsync(nickname)) {
+      AppLogger.d('⚠️ ProfileNotifier: blocked inappropriate nickname "$nickname"');
+
+      // Log the violation and apply strike system
+      final strikeCount = await _logAndApplyStrikes(currentProfile.id, nickname);
+
+      final errorMsg = strikeCount >= 3
+          ? 'Your name has been permanently locked due to repeated violations.'
+          : 'That name contains inappropriate content. Please choose another. '
+            '(Strike $strikeCount/3)';
+
+      state = state.copyWith(error: errorMsg);
+      return false;
+    }
+
+    // Sanitize the nickname (XSS, length, etc.)
+    final cleanNickname = nickname != null ? InputSanitizer.sanitizeName(nickname) : null;
+
     state = state.copyWith(error: null);
     try {
-      await _repo.updateProfileDetails(currentProfile.id, nickname: nickname, avatarUrl: avatarUrl);
+      await _repo.updateProfileDetails(currentProfile.id, nickname: cleanNickname, avatarUrl: avatarUrl);
       
       // Update local state immediately for snappy UI
       final updatedProfile = currentProfile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
@@ -149,11 +185,48 @@ class ProfileNotifier extends Notifier<ProfileState> {
       final updatedAll = state.allProfiles.map((p) => p.id == updatedProfile.id ? updatedProfile : p).toList();
       state = state.copyWith(allProfiles: updatedAll);
       
-      // Optionally reload from repo to ensure sync
-      // await loadProfile(currentProfile.id);
+      return true;
     } catch (e) {
       AppLogger.d('ProfileNotifier: updateProfile failed: $e');
       state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
+
+  /// Logs the violation, increments strikes, and applies restriction if needed.
+  /// Returns the new total strike count.
+  Future<int> _logAndApplyStrikes(String userId, String attemptedName) async {
+    try {
+      final match = ProfanityFilter.getFirstMatch(attemptedName);
+
+      // Log the individual violation
+      await _repo.logProfanityViolation(
+        userId: userId,
+        attemptedName: attemptedName,
+        matchedTerm: match ?? 'unknown',
+      );
+
+      // Get total violation count for this user
+      final violationCount = await _repo.getViolationCount(userId);
+      AppLogger.d('📝 Profanity violation #$violationCount: user=$userId name="$attemptedName" match="$match"');
+
+      // Strike limit: 3 violations → permanent name restriction
+      if (violationCount >= 3) {
+        await _repo.restrictUserName(userId);
+        // Force local state update
+        final profile = state.profile;
+        if (profile != null && profile.id == userId) {
+          state = state.copyWith(
+            profile: profile.copyWith(nameRestricted: true, nickname: null),
+          );
+        }
+        AppLogger.d('🚫 User $userId permanently name-restricted after $violationCount violations');
+      }
+
+      return violationCount;
+    } catch (e) {
+      AppLogger.d('⚠️ Failed to process profanity strike: $e');
+      return 0;
     }
   }
 

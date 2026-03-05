@@ -728,4 +728,120 @@ class SEn extends S {
 
   @override
   String get couldNotOpenEmail => 'Could not open email app.';
+
+  @override
+  String get huntForecast => 'HUNT FORECAST';
+
+  @override
+  String get windScentTracker => 'WIND & SCENT TRACKER';
+
+  @override
+  String get solunarActivity => 'SOLUNAR ACTIVITY';
+
+  @override
+  String get peakActivityPeriods => 'PEAK ACTIVITY PERIODS';
+
+  @override
+  String get themeSys => 'SYS';
+
+  @override
+  String get themeLight => 'LGT';
+
+  @override
+  String get themeDark => 'DRK';
+
+  @override
+  String get unitImperial => 'IMP';
+
+  @override
+  String get unitMetric => 'MET';
+
+  @override
+  String get qualityLow => 'LOW';
+
+  @override
+  String get qualityMedium => 'MED';
+
+  @override
+  String get qualityHigh => 'HIGH';
+
+  @override
+  String get analysisResult => 'ANALYSIS RESULT';
+
+  @override
+  String get offGrid => 'OFF-GRID';
+
+  @override
+  String get scoreMyCall => 'SCORE MY CALL';
+
+  @override
+  String get discardAndRetry => 'DISCARD & RETRY';
+
+  @override
+  String get pitchComparison => 'PITCH COMPARISON';
+
+  @override
+  String get target => 'TARGET';
+
+  @override
+  String get yourPitch => 'YOUR PITCH';
+
+  @override
+  String get proBreakdown => 'PRO BREAKDOWN';
+
+  @override
+  String primaryFlawLabel(String flaw) {
+    return 'PRIMARY FLAW: $flaw';
+  }
+
+  @override
+  String get spectralSync => 'SPECTRAL SYNC';
+
+  @override
+  String get waveformComparison => 'WAVEFORM COMPARISON';
+
+  @override
+  String get handlerProfile => 'HANDLER PROFILE';
+
+  @override
+  String get viewFieldMap => 'VIEW FIELD MAP';
+
+  @override
+  String get fieldMapLocked => 'FIELD MAP (LOCKED)';
+
+  @override
+  String get save => 'SAVE';
+
+  @override
+  String get noHuntsRecordedYet => 'NO HUNTS RECORDED YET';
+
+  @override
+  String get unlockOutcallPro => 'UNLOCK OUTCALL PRO';
+
+  @override
+  String get featureColumn => 'FEATURE';
+
+  @override
+  String get freeColumn => 'FREE';
+
+  @override
+  String get proColumn => 'PRO';
+
+  @override
+  String get callLibrary => 'CALL LIBRARY';
+
+  @override
+  String get viewGlobalExpertRankings => 'VIEW GLOBAL EXPERT RANKINGS';
+
+  @override
+  String get reRecord => 'RE-RECORD';
+
+  @override
+  String get analyze => 'ANALYZE';
+
+  @override
+  String get welcomeBack => 'WELCOME BACK,';
+
+  @override
+  String get signOutAction => 'SIGN OUT';
 }

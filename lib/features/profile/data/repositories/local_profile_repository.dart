@@ -149,4 +149,21 @@ class LocalProfileRepository implements ProfileRepository {
     final updated = profile.copyWith(favoriteCallIds: currentFavorites);
     await dataSource.saveProfile(updated);
   }
+
+  @override
+  Future<void> logProfanityViolation({
+    required String userId,
+    required String attemptedName,
+    required String matchedTerm,
+  }) async {
+    // No-op for local-only — violations are only logged to the cloud
+  }
+
+  @override
+  Future<int> getViolationCount(String userId) async => 0;
+
+  @override
+  Future<void> restrictUserName(String userId) async {
+    // No-op for local-only
+  }
 }

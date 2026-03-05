@@ -13,4 +13,17 @@ abstract class ProfileRepository {
   Future<List<UserProfile>> getTopGlobalUsers({int limit = 50});
   Future<void> updateProfileDetails(String userId, {String? nickname, String? avatarUrl});
   Future<void> toggleFavoriteCall(String userId, String callId, bool isFavorite);
+
+  /// Logs a profanity violation attempt for admin review.
+  Future<void> logProfanityViolation({
+    required String userId,
+    required String attemptedName,
+    required String matchedTerm,
+  });
+
+  /// Returns the total number of profanity violations for a user.
+  Future<int> getViolationCount(String userId);
+
+  /// Permanently restricts a user's ability to change their name.
+  Future<void> restrictUserName(String userId);
 }

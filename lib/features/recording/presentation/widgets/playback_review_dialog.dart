@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 
@@ -193,7 +194,7 @@ class _PlaybackReviewSheetState extends State<_PlaybackReviewSheet> {
                       Navigator.pop(context, false);
                     },
                     icon: const Icon(Icons.refresh, size: 18),
-                    label: Text('RE-RECORD', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    label: Text(S.of(context).reRecord, style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colors.textTertiary,
                       side: BorderSide(color: colors.border),
@@ -210,7 +211,7 @@ class _PlaybackReviewSheetState extends State<_PlaybackReviewSheet> {
                       Navigator.pop(context, true);
                     },
                     icon: const Icon(Icons.analytics_outlined, size: 18),
-                    label: Text('ANALYZE', style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    label: Text(S.of(context).analyze, style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primary,
                       foregroundColor: Colors.white,

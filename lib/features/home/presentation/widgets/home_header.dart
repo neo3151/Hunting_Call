@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 
 /// Header bar for the home screen showing welcome text and cloud/sign-out controls.
@@ -41,7 +42,7 @@ class HomeHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('WELCOME BACK,',
+                    Text(S.of(context).welcomeBack,
                         style: GoogleFonts.oswald(
                             color: palette.textSecondary,
                             fontSize: 28,
@@ -146,13 +147,13 @@ class HomeHeader extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: Text('CANCEL',
+                  child: Text(S.of(context).cancel,
                       style: TextStyle(color: palette.textTertiary)),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('SIGN OUT',
-                      style: TextStyle(
+                  child: Text(S.of(context).signOutAction,
+                      style: const TextStyle(
                           color: Colors.redAccent,
                           fontWeight: FontWeight.bold)),
                 ),

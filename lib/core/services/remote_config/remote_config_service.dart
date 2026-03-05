@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/profanity_filter.dart';
+import 'package:outcall/core/services/perspective_api_service.dart';
 
 /// Provider for the RemoteConfigService
 final remoteConfigServiceProvider = Provider<RemoteConfigService>((ref) {
@@ -24,17 +26,24 @@ class RemoteConfigService {
       // Set default values before fetching
       await _remoteConfig!.setDefaults(const {
         'is_leaderboard_enabled': true,
-        // Add more default flags here as the app grows
+        'profanity_blocklist': '', // Comma-separated extra blocked terms
+        'perspective_api_key': '', // Google Perspective API key (empty = disabled)
       });
 
       // Configure fetch interval (e.g., fetch every 1 hour, or 0 during dev)
       await _remoteConfig!.setConfigSettings(RemoteConfigSettings(
         fetchTimeout: const Duration(minutes: 1),
-        minimumFetchInterval: const Duration(hours: 1), // During dev, set to 0. For prod, 1-12 hours.
+        minimumFetchInterval: const Duration(hours: 1),
       ));
 
       // Fetch and activate the latest values from Firebase
       await _remoteConfig!.fetchAndActivate();
+
+      // Load remote profanity terms into the filter
+      _loadProfanityTerms();
+
+      // Initialize Perspective API if key is configured
+      _initPerspectiveApi();
     } catch (e) {
       // If fetching fails (e.g., no internet), it will safely use the defaults
       AppLogger.d('Remote Config fetch failed: $e');
@@ -43,4 +52,28 @@ class RemoteConfigService {
 
   /// The Kill Switch: checks if the leaderboard feature is currently enabled
   bool get isLeaderboardEnabled => _remoteConfig?.getBool('is_leaderboard_enabled') ?? true;
+
+  /// Parses the remote profanity blocklist and loads it into ProfanityFilter.
+  void _loadProfanityTerms() {
+    final raw = _remoteConfig?.getString('profanity_blocklist') ?? '';
+    if (raw.isEmpty) return;
+
+    final terms = raw
+        .split(',')
+        .map((t) => t.trim().toLowerCase())
+        .where((t) => t.isNotEmpty)
+        .toList();
+
+    if (terms.isNotEmpty) {
+      ProfanityFilter.loadRemoteTerms(terms);
+    }
+  }
+
+  /// Initializes the Perspective API with the key from Remote Config.
+  void _initPerspectiveApi() {
+    final key = _remoteConfig?.getString('perspective_api_key') ?? '';
+    if (key.isNotEmpty) {
+      PerspectiveApiService.initialize(apiKey: key);
+    }
+  }
 }

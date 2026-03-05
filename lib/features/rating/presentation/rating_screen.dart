@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 
 import 'package:outcall/features/rating/presentation/controllers/rating_controller.dart';
@@ -214,7 +215,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('ANALYSIS RESULT', 
+        title: Text(S.of(context).analysisResult, 
           style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 16, color: Colors.white)
         ),
         centerTitle: true,
@@ -222,7 +223,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         elevation: 0,
         actions: [
           if (!ref.watch(firebaseEnabledProvider))
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(right: 16.0),
               child: Center(
                 child: Tooltip(
@@ -232,7 +233,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                     children: [
                       Icon(Icons.cloud_off, color: Colors.orangeAccent, size: 16),
                       SizedBox(width: 4),
-                      Text('OFF-GRID', style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(S.of(context).offGrid, style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -346,7 +347,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                                 );
                               },
                               icon: const Icon(Icons.refresh_rounded),
-                              label: Text('TRY AGAIN', style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+                              label: Text(S.of(context).tryAgain, style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF5FF7B6),
                                 foregroundColor: Colors.black,
@@ -469,7 +470,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
               child: ElevatedButton.icon(
                 onPressed: _startAnalysis,
                 icon: const Icon(Icons.analytics_rounded),
-                label: Text('SCORE MY CALL', style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+                label: Text(S.of(context).scoreMyCall, style: GoogleFonts.oswald(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.black,
@@ -484,7 +485,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white70,
               ),
-              child: const Text('DISCARD & RETRY'),
+              child: Text(S.of(context).discardAndRetry),
             ),
           ],
         ),
@@ -532,14 +533,14 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           ),
           child: Column(
             children: [
-              Text('PITCH COMPARISON', style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
+              Text(S.of(context).pitchComparison, style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     children: [
-                      Text('TARGET', style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
+                      Text(S.of(context).target, style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
                       const SizedBox(height: 4),
                       Text('${targetPitch.toInt()} Hz', style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                     ],
@@ -554,7 +555,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   ),
                   Column(
                     children: [
-                      Text('YOUR PITCH', style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
+                      Text(S.of(context).yourPitch, style: GoogleFonts.oswald(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
                       const SizedBox(height: 4),
                       Text('${userPitch.toInt()} Hz', style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                     ],

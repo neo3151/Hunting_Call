@@ -221,7 +221,7 @@ class ProBreakdown extends StatelessWidget {
           children: [
             Container(width: 3, height: 14, decoration: const BoxDecoration(color: Color(0xFF5FF7B6), borderRadius: BorderRadius.all(Radius.circular(2)))),
             const SizedBox(width: 8),
-            Text('PRO BREAKDOWN', style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
+            Text(S.of(context).proBreakdown, style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
           ],
         ),
         const SizedBox(height: 16),

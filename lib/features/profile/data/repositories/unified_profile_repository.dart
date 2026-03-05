@@ -4,6 +4,7 @@ import 'package:outcall/features/profile/domain/repositories/profile_repository.
 import 'package:outcall/features/profile/data/datasources/local_profile_data_source.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/spam_filter.dart';
+import 'package:outcall/core/utils/profanity_filter.dart';
 import 'package:outcall/core/services/api_gateway.dart';
 
 class UnifiedProfileRepository implements ProfileRepository {
@@ -91,7 +92,14 @@ class UnifiedProfileRepository implements ProfileRepository {
   void _sanitizeProfileData(Map<String, dynamic> data, String docId) {
     data['id'] = data['id'] ?? docId;
     data['name'] = data['name'] ?? 'Hunter';
-    
+
+    // Clean offensive names/nicknames on read
+    if (data['name'] is String) {
+      data['name'] = ProfanityFilter.cleanName(data['name'] as String);
+    }
+    if (data['nickname'] is String && (data['nickname'] as String).isNotEmpty) {
+      data['nickname'] = ProfanityFilter.cleanName(data['nickname'] as String);
+    }
     // Handle Timestamp (Firebase) or DateTime (Firedart) to ISO String
     if (data['joinedDate'] != null && data['joinedDate'] is! String) {
         try {
@@ -388,7 +396,10 @@ class UnifiedProfileRepository implements ProfileRepository {
     // 2. Cloud Update
     try {
       final updates = <String, dynamic>{};
-      if (nickname != null) updates['nickname'] = nickname;
+      if (nickname != null) {
+        // Safety net: clean offensive nicknames at the data layer
+        updates['nickname'] = ProfanityFilter.cleanName(nickname);
+      }
       if (avatarUrl != null) updates['avatarUrl'] = avatarUrl;
       
       if (updates.isNotEmpty) {
@@ -463,6 +474,47 @@ class UnifiedProfileRepository implements ProfileRepository {
     } catch (e) {
       AppLogger.d('❌ ApiGateway: Error toggling favorite call: $e');
       if (_localDataSource == null) rethrow;
+    }
+  }
+
+  @override
+  Future<void> logProfanityViolation({
+    required String userId,
+    required String attemptedName,
+    required String matchedTerm,
+  }) async {
+    try {
+      await _apiGateway.addDocument('profanity_violations', {
+        'userId': userId,
+        'attemptedName': attemptedName,
+        'matchedTerm': matchedTerm,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      AppLogger.d('⚠️ Failed to log profanity violation to Firestore: $e');
+    }
+  }
+
+  @override
+  Future<int> getViolationCount(String userId) async {
+    try {
+      final docs = await _apiGateway.queryCollection('profanity_violations', 'userId', userId);
+      return docs.length;
+    } catch (e) {
+      AppLogger.d('⚠️ Failed to get violation count: $e');
+      return 0;
+    }
+  }
+
+  @override
+  Future<void> restrictUserName(String userId) async {
+    try {
+      await _apiGateway.updateDocument(_collectionPath, userId, {
+        'nameRestricted': true,
+        'nickname': null,
+      });
+    } catch (e) {
+      AppLogger.d('⚠️ Failed to restrict user name: $e');
     }
   }
 }

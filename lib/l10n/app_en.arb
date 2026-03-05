@@ -349,5 +349,56 @@
   },
   "noExpertsYet": "No experts yet.",
   "beFirstToScore": "Be the first to score high!",
-  "couldNotOpenEmail": "Could not open email app."
+  "couldNotOpenEmail": "Could not open email app.",
+
+  "huntForecast": "HUNT FORECAST",
+  "windScentTracker": "WIND & SCENT TRACKER",
+  "solunarActivity": "SOLUNAR ACTIVITY",
+  "peakActivityPeriods": "PEAK ACTIVITY PERIODS",
+
+  "themeSys": "SYS",
+  "themeLight": "LGT",
+  "themeDark": "DRK",
+  "unitImperial": "IMP",
+  "unitMetric": "MET",
+  "qualityLow": "LOW",
+  "qualityMedium": "MED",
+  "qualityHigh": "HIGH",
+
+  "analysisResult": "ANALYSIS RESULT",
+  "offGrid": "OFF-GRID",
+  "scoreMyCall": "SCORE MY CALL",
+  "discardAndRetry": "DISCARD & RETRY",
+  "pitchComparison": "PITCH COMPARISON",
+  "target": "TARGET",
+  "yourPitch": "YOUR PITCH",
+  "proBreakdown": "PRO BREAKDOWN",
+  "primaryFlawLabel": "PRIMARY FLAW: {flaw}",
+  "@primaryFlawLabel": {
+    "placeholders": {
+      "flaw": { "type": "String" }
+    }
+  },
+  "spectralSync": "SPECTRAL SYNC",
+  "waveformComparison": "WAVEFORM COMPARISON",
+
+  "handlerProfile": "HANDLER PROFILE",
+  "viewFieldMap": "VIEW FIELD MAP",
+  "fieldMapLocked": "FIELD MAP (LOCKED)",
+  "save": "SAVE",
+  "noHuntsRecordedYet": "NO HUNTS RECORDED YET",
+
+  "unlockOutcallPro": "UNLOCK OUTCALL PRO",
+  "featureColumn": "FEATURE",
+  "freeColumn": "FREE",
+  "proColumn": "PRO",
+
+  "callLibrary": "CALL LIBRARY",
+  "viewGlobalExpertRankings": "VIEW GLOBAL EXPERT RANKINGS",
+
+  "reRecord": "RE-RECORD",
+  "analyze": "ANALYZE",
+
+  "welcomeBack": "WELCOME BACK,",
+  "signOutAction": "SIGN OUT"
 }

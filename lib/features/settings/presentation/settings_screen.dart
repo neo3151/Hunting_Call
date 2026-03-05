@@ -10,9 +10,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
 import 'package:outcall/features/settings/presentation/calibration_screen.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/core/theme/app_theme.dart';
 import 'package:outcall/core/theme/app_colors.dart';
-import 'package:outcall/l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -75,10 +75,10 @@ class SettingsScreen extends ConsumerWidget {
                             title: S.of(context).darkMode,
                             subtitle: S.of(context).darkModeSubtitle,
                             trailing: SegmentedButton<ThemeMode>(
-                              segments: const [
-                                ButtonSegment(value: ThemeMode.system, label: Text('SYS', style: TextStyle(fontSize: 10))),
-                                ButtonSegment(value: ThemeMode.light, label: Text('LGT', style: TextStyle(fontSize: 10))),
-                                ButtonSegment(value: ThemeMode.dark, label: Text('DRK', style: TextStyle(fontSize: 10))),
+                              segments: [
+                                ButtonSegment(value: ThemeMode.system, label: Text(S.of(context).themeSys, style: TextStyle(fontSize: 10))),
+                                ButtonSegment(value: ThemeMode.light, label: Text(S.of(context).themeLight, style: TextStyle(fontSize: 10))),
+                                ButtonSegment(value: ThemeMode.dark, label: Text(S.of(context).themeDark, style: TextStyle(fontSize: 10))),
                               ],
                               selected: {settings.themeMode},
                               onSelectionChanged: (v) => notifier.setThemeMode(v.first),
@@ -151,14 +151,14 @@ class SettingsScreen extends ConsumerWidget {
                                 ? S.of(context).distanceUnitImperial
                                 : S.of(context).distanceUnitMetric,
                             trailing: SegmentedButton<String>(
-                              segments: const [
+                              segments: [
                                 ButtonSegment(
                                     value: 'imperial',
-                                    label: Text('IMP',
+                                    label: Text(S.of(context).unitImperial,
                                         style: TextStyle(fontSize: 11))),
                                 ButtonSegment(
                                     value: 'metric',
-                                    label: Text('MET',
+                                    label: Text(S.of(context).unitMetric,
                                         style: TextStyle(fontSize: 11))),
                               ],
                               selected: {settings.distanceUnit},
@@ -242,10 +242,10 @@ class SettingsScreen extends ConsumerWidget {
                             title: S.of(context).imageQuality,
                             subtitle: S.of(context).imageQualitySubtitle,
                             trailing: SegmentedButton<String>(
-                              segments: const [
-                                ButtonSegment(value: 'low', label: Text('LOW', style: TextStyle(fontSize: 10))),
-                                ButtonSegment(value: 'medium', label: Text('MED', style: TextStyle(fontSize: 10))),
-                                ButtonSegment(value: 'high', label: Text('HIGH', style: TextStyle(fontSize: 10))),
+                              segments: [
+                                ButtonSegment(value: 'low', label: Text(S.of(context).qualityLow, style: const TextStyle(fontSize: 10))),
+                                ButtonSegment(value: 'medium', label: Text(S.of(context).qualityMedium, style: const TextStyle(fontSize: 10))),
+                                ButtonSegment(value: 'high', label: Text(S.of(context).qualityHigh, style: const TextStyle(fontSize: 10))),
                               ],
                               selected: {settings.imageQuality},
                               onSelectionChanged: (v) => notifier.setImageQuality(v.first),

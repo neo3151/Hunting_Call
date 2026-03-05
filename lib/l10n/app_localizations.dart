@@ -1406,6 +1406,234 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Could not open email app.'**
   String get couldNotOpenEmail;
+
+  /// No description provided for @huntForecast.
+  ///
+  /// In en, this message translates to:
+  /// **'HUNT FORECAST'**
+  String get huntForecast;
+
+  /// No description provided for @windScentTracker.
+  ///
+  /// In en, this message translates to:
+  /// **'WIND & SCENT TRACKER'**
+  String get windScentTracker;
+
+  /// No description provided for @solunarActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'SOLUNAR ACTIVITY'**
+  String get solunarActivity;
+
+  /// No description provided for @peakActivityPeriods.
+  ///
+  /// In en, this message translates to:
+  /// **'PEAK ACTIVITY PERIODS'**
+  String get peakActivityPeriods;
+
+  /// No description provided for @themeSys.
+  ///
+  /// In en, this message translates to:
+  /// **'SYS'**
+  String get themeSys;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'LGT'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'DRK'**
+  String get themeDark;
+
+  /// No description provided for @unitImperial.
+  ///
+  /// In en, this message translates to:
+  /// **'IMP'**
+  String get unitImperial;
+
+  /// No description provided for @unitMetric.
+  ///
+  /// In en, this message translates to:
+  /// **'MET'**
+  String get unitMetric;
+
+  /// No description provided for @qualityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'LOW'**
+  String get qualityLow;
+
+  /// No description provided for @qualityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'MED'**
+  String get qualityMedium;
+
+  /// No description provided for @qualityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGH'**
+  String get qualityHigh;
+
+  /// No description provided for @analysisResult.
+  ///
+  /// In en, this message translates to:
+  /// **'ANALYSIS RESULT'**
+  String get analysisResult;
+
+  /// No description provided for @offGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'OFF-GRID'**
+  String get offGrid;
+
+  /// No description provided for @scoreMyCall.
+  ///
+  /// In en, this message translates to:
+  /// **'SCORE MY CALL'**
+  String get scoreMyCall;
+
+  /// No description provided for @discardAndRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'DISCARD & RETRY'**
+  String get discardAndRetry;
+
+  /// No description provided for @pitchComparison.
+  ///
+  /// In en, this message translates to:
+  /// **'PITCH COMPARISON'**
+  String get pitchComparison;
+
+  /// No description provided for @target.
+  ///
+  /// In en, this message translates to:
+  /// **'TARGET'**
+  String get target;
+
+  /// No description provided for @yourPitch.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR PITCH'**
+  String get yourPitch;
+
+  /// No description provided for @proBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'PRO BREAKDOWN'**
+  String get proBreakdown;
+
+  /// No description provided for @primaryFlawLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PRIMARY FLAW: {flaw}'**
+  String primaryFlawLabel(String flaw);
+
+  /// No description provided for @spectralSync.
+  ///
+  /// In en, this message translates to:
+  /// **'SPECTRAL SYNC'**
+  String get spectralSync;
+
+  /// No description provided for @waveformComparison.
+  ///
+  /// In en, this message translates to:
+  /// **'WAVEFORM COMPARISON'**
+  String get waveformComparison;
+
+  /// No description provided for @handlerProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'HANDLER PROFILE'**
+  String get handlerProfile;
+
+  /// No description provided for @viewFieldMap.
+  ///
+  /// In en, this message translates to:
+  /// **'VIEW FIELD MAP'**
+  String get viewFieldMap;
+
+  /// No description provided for @fieldMapLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'FIELD MAP (LOCKED)'**
+  String get fieldMapLocked;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE'**
+  String get save;
+
+  /// No description provided for @noHuntsRecordedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'NO HUNTS RECORDED YET'**
+  String get noHuntsRecordedYet;
+
+  /// No description provided for @unlockOutcallPro.
+  ///
+  /// In en, this message translates to:
+  /// **'UNLOCK OUTCALL PRO'**
+  String get unlockOutcallPro;
+
+  /// No description provided for @featureColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'FEATURE'**
+  String get featureColumn;
+
+  /// No description provided for @freeColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'FREE'**
+  String get freeColumn;
+
+  /// No description provided for @proColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'PRO'**
+  String get proColumn;
+
+  /// No description provided for @callLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'CALL LIBRARY'**
+  String get callLibrary;
+
+  /// No description provided for @viewGlobalExpertRankings.
+  ///
+  /// In en, this message translates to:
+  /// **'VIEW GLOBAL EXPERT RANKINGS'**
+  String get viewGlobalExpertRankings;
+
+  /// No description provided for @reRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'RE-RECORD'**
+  String get reRecord;
+
+  /// No description provided for @analyze.
+  ///
+  /// In en, this message translates to:
+  /// **'ANALYZE'**
+  String get analyze;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'WELCOME BACK,'**
+  String get welcomeBack;
+
+  /// No description provided for @signOutAction.
+  ///
+  /// In en, this message translates to:
+  /// **'SIGN OUT'**
+  String get signOutAction;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

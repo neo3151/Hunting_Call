@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/features/weather/presentation/controllers/temperature_controller.dart';
 import 'package:outcall/features/weather/domain/weather_entities.dart';
 import 'package:outcall/features/weather/presentation/weather_controller.dart';
@@ -20,7 +21,7 @@ class WeatherScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('HUNT FORECAST', style: GoogleFonts.oswald(letterSpacing: 1.5)),
+        title: Text(S.of(context).huntForecast, style: GoogleFonts.oswald(letterSpacing: 1.5)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -51,11 +52,11 @@ class WeatherScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildWeatherCard(weatherAsync, unit),
+                _buildWeatherCard(context, weatherAsync, unit),
                 const SizedBox(height: 24),
-                _buildWindCard(weatherAsync),
+                _buildWindCard(context, weatherAsync),
                 const SizedBox(height: 24),
-                _buildSolunarCard(solunarAsync),
+                _buildSolunarCard(context, solunarAsync),
               ],
             ),
           ),
@@ -64,7 +65,7 @@ class WeatherScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWeatherCard(AsyncValue weatherAsync, TemperatureUnit unit) {
+  Widget _buildWeatherCard(BuildContext context, AsyncValue weatherAsync, TemperatureUnit unit) {
     return weatherAsync.when(
       data: (weather) {
         double temp = weather.temperature;
@@ -107,7 +108,7 @@ class WeatherScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWindCard(AsyncValue weatherAsync) {
+  Widget _buildWindCard(BuildContext context, AsyncValue weatherAsync) {
     return weatherAsync.when(
       data: (weather) => Container(
         width: double.infinity,
@@ -119,7 +120,7 @@ class WeatherScreen extends ConsumerWidget {
         ),
         child: Column(
           children: [
-            Text('WIND & SCENT TRACKER', style: GoogleFonts.oswald(color: Colors.white70)),
+            Text(S.of(context).windScentTracker, style: GoogleFonts.oswald(color: Colors.white70)),
             const SizedBox(height: 20),
             WindCompass(windDegree: weather.windDegree, windSpeed: weather.windSpeed),
             const SizedBox(height: 12),
@@ -135,7 +136,7 @@ class WeatherScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSolunarCard(AsyncValue solunarAsync) {
+  Widget _buildSolunarCard(BuildContext context, AsyncValue solunarAsync) {
     return solunarAsync.when(
       data: (solunar) => Container(
         padding: const EdgeInsets.all(20),
@@ -150,7 +151,7 @@ class WeatherScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('SOLUNAR ACTIVITY', style: GoogleFonts.oswald(color: Colors.white70)),
+                Text(S.of(context).solunarActivity, style: GoogleFonts.oswald(color: Colors.white70)),
                 Row(
                   children: List.generate(5, (index) => Icon(
                     Icons.star,
@@ -166,7 +167,7 @@ class WeatherScreen extends ConsumerWidget {
             _buildInfoRow(Icons.brightness_4, 'SUNSET', DateFormat.jm().format(solunar.sunset)),
             const Divider(color: Colors.white10),
             const SizedBox(height: 12),
-            Text('PEAK ACTIVITY PERIODS', style: GoogleFonts.oswald(fontSize: 14)),
+            Text(S.of(context).peakActivityPeriods, style: GoogleFonts.oswald(fontSize: 14)),
             const SizedBox(height: 8),
             ...solunar.majorPeriods.map((p) => _buildPeriodTile(p, Colors.greenAccent)),
             ...solunar.minorPeriods.map((p) => _buildPeriodTile(p, Colors.blueAccent)),

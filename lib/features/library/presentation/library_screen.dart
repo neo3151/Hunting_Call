@@ -11,6 +11,7 @@ import 'package:outcall/features/library/presentation/call_detail_screen.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/main_common.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
@@ -156,7 +157,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
       child: Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
-            title: Text('CALL LIBRARY',
+            title: Text(S.of(context).callLibrary,
                 style: GoogleFonts.oswald(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.5,
