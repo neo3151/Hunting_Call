@@ -1239,6 +1239,12 @@ abstract class S {
   /// **'How we handle your data'**
   String get privacyPolicySubtitle;
 
+  /// No description provided for @aboutSection.
+  ///
+  /// In en, this message translates to:
+  /// **'ABOUT'**
+  String get aboutSection;
+
   /// No description provided for @appVersion.
   ///
   /// In en, this message translates to:

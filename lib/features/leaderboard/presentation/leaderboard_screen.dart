@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:outcall/core/widgets/skeleton_loader.dart';
 import 'package:outcall/features/leaderboard/presentation/controllers/leaderboard_controller.dart';
+import 'package:outcall/features/leaderboard/presentation/global_leaderboard_screen.dart';
 
 class LeaderboardScreen extends ConsumerWidget {
   final String animalId;
@@ -28,6 +29,16 @@ class LeaderboardScreen extends ConsumerWidget {
           '$animalName EXPERTS',
           style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.public, color: Colors.white70),
+            tooltip: 'Global Rankings',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const GlobalLeaderboardScreen()),
+            ),
+          ),
+        ],
       ),
       body: scoresAsync.when(
         loading: () => const ListSkeleton(),

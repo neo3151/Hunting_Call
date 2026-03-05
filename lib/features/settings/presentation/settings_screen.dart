@@ -235,12 +235,12 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           Divider(color: colors.divider),
 
-                          _sectionTitle(context, 'PERFORMANCE & STORAGE'),
+                          _sectionTitle(context, S.of(context).performanceAndStorage),
                           _settingsTile(
                             context: context,
                             icon: Icons.high_quality,
-                            title: 'Image Quality',
-                            subtitle: 'Lower quality saves memory',
+                            title: S.of(context).imageQuality,
+                            subtitle: S.of(context).imageQualitySubtitle,
                             trailing: SegmentedButton<String>(
                               segments: const [
                                 ButtonSegment(value: 'low', label: Text('LOW', style: TextStyle(fontSize: 10))),
@@ -265,8 +265,8 @@ class SettingsScreen extends ConsumerWidget {
                           _settingsTile(
                             context: context,
                             icon: Icons.cleaning_services,
-                            title: 'Audio Cleanup',
-                            subtitle: 'Auto-delete old recordings',
+                            title: S.of(context).audioCleanup,
+                            subtitle: S.of(context).audioCleanupSubtitle,
                             trailing: DropdownButton<int>(
                               value: settings.autoCleanupHours,
                               dropdownColor: colors.surface,
@@ -283,23 +283,23 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           Divider(color: colors.divider),
 
-                          _sectionTitle(context, 'FEEDBACK & SUPPORT'),
+                          _sectionTitle(context, S.of(context).feedbackAndSupport),
                           _settingsTile(
                             context: context,
                             icon: Icons.bug_report_outlined,
-                            title: 'Send Feedback',
-                            subtitle: 'Report a bug or suggest a feature',
+                            title: S.of(context).sendFeedback,
+                            subtitle: S.of(context).sendFeedbackSubtitle,
                             trailing: Icon(Icons.chevron_right, color: colors.iconSubtle),
                             onTap: () => _sendFeedbackEmail(context, ref),
                           ),
                           Divider(color: colors.divider),
 
-                          _sectionTitle(context, 'ABOUT'),
+                          _sectionTitle(context, S.of(context).aboutSection),
                           _settingsTile(
                             context: context,
                             icon: Icons.shield_outlined,
-                            title: 'Privacy Policy',
-                            subtitle: 'How we handle your data',
+                            title: S.of(context).privacyPolicy,
+                            subtitle: S.of(context).privacyPolicySubtitle,
                             trailing: Icon(Icons.chevron_right,
                                 color: colors.iconSubtle),
                             onTap: () => Navigator.push(

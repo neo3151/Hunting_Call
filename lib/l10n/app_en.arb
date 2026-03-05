@@ -309,6 +309,8 @@
   "sendFeedback": "Send Feedback",
   "sendFeedbackSubtitle": "Report a bug or suggest a feature",
   "privacyPolicySubtitle": "How we handle your data",
+  "privacyPolicy": "Privacy Policy",
+  "aboutSection": "ABOUT",
   "appVersion": "App Version",
   "resetSettings": "Reset to Defaults",
   "resetSettingsTitle": "Reset Settings?",

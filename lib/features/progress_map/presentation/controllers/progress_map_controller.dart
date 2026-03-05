@@ -51,6 +51,8 @@ class ProgressMapNotifier extends Notifier<ProgressMapState> {
 
   void selectWorld(int index) {
     state = state.copyWith(selectedWorld: index, clearSelectedNode: true);
+    // Persist selection
+    ref.read(progressMapRepositoryProvider).setCurrentWorldIndex(index);
   }
 
   void selectNode(MapNode? node) {
@@ -69,6 +71,13 @@ class ProgressMapNotifier extends Notifier<ProgressMapState> {
     state = state.copyWith(isLoading: true);
 
     try {
+      // Restore saved world selection
+      final repo = ref.read(progressMapRepositoryProvider);
+      final savedWorld = await repo.getCurrentWorldIndex();
+      if (savedWorld != state.selectedWorld) {
+        state = state.copyWith(selectedWorld: savedWorld);
+      }
+
       final getAllCallsUseCase = ref.read(getAllCallsUseCaseProvider);
       final callsResult = getAllCallsUseCase.execute();
 

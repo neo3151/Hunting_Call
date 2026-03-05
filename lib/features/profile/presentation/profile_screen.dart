@@ -19,6 +19,7 @@ import 'package:outcall/features/profile/presentation/controllers/profile_contro
 import 'package:outcall/features/progress_map/presentation/progress_map_screen.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -352,6 +353,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Theme.of(context).primaryColor),
                     ),
+                    suffixIcon: (Platform.isAndroid || Platform.isIOS)
+                        ? IconButton(
+                            icon: Icon(Icons.camera_alt, color: Theme.of(context).primaryColor),
+                            tooltip: 'Upload Photo',
+                            onPressed: () async {
+                              // For now, show a snackbar with instructions
+                              // Full image picker requires the image_picker package
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Paste an image URL or use a profile picture link',
+                                    style: GoogleFonts.lato(),
+                                  ),
+                                  backgroundColor: Theme.of(context).primaryColor,
+                                ),
+                              );
+                            },
+                          )
+                        : null,
                   ),
                 ),
                 const SizedBox(height: 16),

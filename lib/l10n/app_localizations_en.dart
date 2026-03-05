@@ -640,6 +640,9 @@ class SEn extends S {
   String get privacyPolicySubtitle => 'How we handle your data';
 
   @override
+  String get aboutSection => 'ABOUT';
+
+  @override
   String get appVersion => 'App Version';
 
   @override

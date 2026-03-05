@@ -22,6 +22,10 @@ import 'package:outcall/core/widgets/global_error_view.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/core/services/analytics_service.dart';
+import 'package:outcall/core/services/notification_service.dart';
+import 'package:outcall/core/services/deep_link_service.dart';
+import 'package:outcall/core/services/simple_storage.dart';
+import 'package:outcall/core/services/connectivity/connectivity_provider.dart';
 // removed revenuecat
 
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
@@ -38,6 +42,17 @@ Future<void> mainCommon() async {
 
   // Initialize analytics
   if (firebaseReady) AnalyticsService.initialize();
+
+  // Initialize push notifications
+  if (firebaseReady) {
+    final notifService = NotificationService(
+      SharedPrefsStorage(await SharedPreferences.getInstance()),
+    );
+    await notifService.initialize();
+  }
+
+  // Initialize deep links
+  await DeepLinkService.initialize();
 
   // removed revenuecat
 
@@ -187,6 +202,19 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
     ref.watch(themeNotifierProvider);
     final themeNotifier = ref.read(themeNotifierProvider.notifier);
     final themeMode = ref.watch(themeModeProvider);
+
+    // Process offline queue when connectivity returns
+    ref.listen<bool>(isOfflineProvider, (previous, current) {
+      if (previous == true && current == false) {
+        AppLogger.d('Connectivity restored — processing offline queue');
+        final queue = ref.read(offlineQueueServiceProvider);
+        queue.processQueue((item) async {
+          AppLogger.d('OfflineQueue: Processing ${item.type}');
+          // Items will be re-queued if processing fails
+          return true;
+        });
+      }
+    });
 
     return MaterialApp(
       title: AppConfig.instance.appName,
