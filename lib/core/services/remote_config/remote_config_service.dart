@@ -3,7 +3,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/profanity_filter.dart';
-import 'package:outcall/core/services/perspective_api_service.dart';
+
 
 /// Provider for the RemoteConfigService
 final remoteConfigServiceProvider = Provider<RemoteConfigService>((ref) {
@@ -27,7 +27,6 @@ class RemoteConfigService {
       await _remoteConfig!.setDefaults(const {
         'is_leaderboard_enabled': true,
         'profanity_blocklist': '', // Comma-separated extra blocked terms
-        'perspective_api_key': '', // Google Perspective API key (empty = disabled)
       });
 
       // Configure fetch interval (e.g., fetch every 1 hour, or 0 during dev)
@@ -41,9 +40,6 @@ class RemoteConfigService {
 
       // Load remote profanity terms into the filter
       _loadProfanityTerms();
-
-      // Initialize Perspective API if key is configured
-      _initPerspectiveApi();
     } catch (e) {
       // If fetching fails (e.g., no internet), it will safely use the defaults
       AppLogger.d('Remote Config fetch failed: $e');
@@ -69,11 +65,5 @@ class RemoteConfigService {
     }
   }
 
-  /// Initializes the Perspective API with the key from Remote Config.
-  void _initPerspectiveApi() {
-    final key = _remoteConfig?.getString('perspective_api_key') ?? '';
-    if (key.isNotEmpty) {
-      PerspectiveApiService.initialize(apiKey: key);
-    }
-  }
+
 }

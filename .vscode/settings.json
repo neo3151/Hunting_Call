@@ -153,5 +153,8 @@
             "editorBracketHighlight.foreground3": "#D1CDDA",
             "editorBracketHighlight.unexpectedBracket.foreground": "#FF3366"
         }
-    }
+    },
+    "python.autoComplete.extraPaths": [
+        "c:\\Users\\neo31\\.antigravity\\extensions\\continue.continue-0.1.5-win32-x64"
+    ]
 }

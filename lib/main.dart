@@ -7,6 +7,7 @@ void main() {
   AppConfig.create(
     flavor: AppFlavor.free,
     appName: 'OUTCALL',
+    storeUrl: 'https://play.google.com/store/apps/details?id=com.neo3151.huntingcalls',
   );
   mainCommon();
 }

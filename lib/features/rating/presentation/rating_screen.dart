@@ -224,16 +224,16 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         actions: [
           if (!ref.watch(firebaseEnabledProvider))
             Padding(
-              padding: EdgeInsets.only(right: 16.0),
+              padding: const EdgeInsets.only(right: 16.0),
               child: Center(
                 child: Tooltip(
                   message: 'Off-Grid Mode: Cloud Sync Disabled',
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.cloud_off, color: Colors.orangeAccent, size: 16),
-                      SizedBox(width: 4),
-                      Text(S.of(context).offGrid, style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                      const Icon(Icons.cloud_off, color: Colors.orangeAccent, size: 16),
+                      const SizedBox(width: 4),
+                      Text(S.of(context).offGrid, style: const TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),

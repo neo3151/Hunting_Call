@@ -139,3 +139,6 @@ token.json
 # Firebase config (contains API keys — keep local only)
 google-services.json
 SHA1_FINGERPRINT.txt
+
+auth_export.json
+NUL

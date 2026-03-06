@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/features/home/presentation/home_screen.dart';
-import 'package:outcall/features/library/presentation/library_screen.dart';
+import 'package:outcall/features/library/presentation/category_grid_screen.dart';
 import 'package:outcall/features/recording/presentation/recorder_page.dart';
 import 'package:outcall/features/progress_map/presentation/progress_map_screen.dart';
 import 'package:outcall/features/profile/presentation/profile_screen.dart';
@@ -33,7 +33,7 @@ class _MainShellState extends State<MainShell> {
         userId: widget.userId,
         onNavigateTab: _onBottomNavTapped,
       ),
-      LibraryScreen(userId: widget.userId),
+      CategoryGridScreen(userId: widget.userId),
       RecorderPage(userId: widget.userId),
       ProgressMapScreen(userId: widget.userId),
       ProfileScreen(userId: widget.userId),

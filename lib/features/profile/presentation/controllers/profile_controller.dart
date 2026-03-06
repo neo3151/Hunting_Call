@@ -153,9 +153,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       return false;
     }
 
-    // Block inappropriate nicknames — local filter + Perspective API
+    // Block inappropriate nicknames — local profanity filter
     if (nickname != null &&
-        await InputSanitizer.containsInappropriateContentAsync(nickname)) {
+        InputSanitizer.containsInappropriateContent(nickname)) {
       AppLogger.d('⚠️ ProfileNotifier: blocked inappropriate nickname "$nickname"');
 
       // Log the violation and apply strike system

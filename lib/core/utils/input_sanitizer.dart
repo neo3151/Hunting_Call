@@ -1,5 +1,5 @@
 import 'package:outcall/core/utils/profanity_filter.dart';
-import 'package:outcall/core/services/perspective_api_service.dart';
+
 
 /// Input sanitization utilities for user-facing text fields.
 ///
@@ -38,25 +38,7 @@ class InputSanitizer {
     return ProfanityFilter.containsProfanity(name);
   }
 
-  /// Async version that also checks the Perspective API for ML-based
-  /// toxicity scoring when available.
-  ///
-  /// Falls back to local-only if the Perspective API is not configured or
-  /// the network call fails.
-  static Future<bool> containsInappropriateContentAsync(String? name) async {
-    if (name == null || name.isEmpty) return false;
 
-    // Fast path: check local blocklist first
-    if (ProfanityFilter.containsProfanity(name)) return true;
-
-    // Slow path: check Perspective API (if available)
-    if (PerspectiveApiService.isAvailable) {
-      final isToxic = await PerspectiveApiService.isToxic(name);
-      if (isToxic) return true;
-    }
-
-    return false;
-  }
 
   /// Sanitize free-text input (feedback, comments).
   ///

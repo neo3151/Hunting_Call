@@ -43,8 +43,8 @@ class VersionCheckServiceImpl implements VersionCheckService {
   }
 
   bool _isVersionOlder(String current, String minimum) {
-    final currentParts = current.split('.').map(int.parse).toList();
-    final minParts = minimum.split('.').map(int.parse).toList();
+    final currentParts = current.split('.').map((s) => int.tryParse(s) ?? 0).toList();
+    final minParts = minimum.split('.').map((s) => int.tryParse(s) ?? 0).toList();
 
     for (var i = 0; i < 3; i++) {
       final currentPart = i < currentParts.length ? currentParts[i] : 0;

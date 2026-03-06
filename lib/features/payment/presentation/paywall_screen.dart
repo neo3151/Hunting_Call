@@ -36,8 +36,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
   bool _isLoadingProducts = true;
 
   static const _staticPlans = [
-    _PlanOption(id: 'outcall_premium_monthly', title: 'Monthly', price: '\$14.99', period: '/mo'),
-    _PlanOption(id: 'outcall_premium_yearly',  title: 'Yearly',  price: '\$149.99', period: '/yr', badge: '2 Months Free'),
+    _PlanOption(id: 'outcall_premium_yearly', title: 'Yearly', price: '\$25.00', period: '/yr'),
   ];
 
   String _selectedProductId = 'outcall_premium_yearly';
@@ -89,20 +88,18 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
 
   List<_PlanOption> get _plans {
     if (_storeProducts.isNotEmpty) {
-      return _storeProducts.map((p) {
-        final isYearly = p.id.contains('yearly');
-        final isMonthly = p.id.contains('monthly');
-        // Strip any billing period text from the store price (e.g., "$14.99/5 min" → "$14.99")
+      // Only show yearly plan
+      final yearlyProducts = _storeProducts.where((p) => p.id.contains('yearly')).toList();
+      final products = yearlyProducts.isNotEmpty ? yearlyProducts : _storeProducts;
+      return products.map((p) {
         final cleanPrice = _stripBillingPeriod(p.price);
         return _PlanOption(
           id: p.id,
-          title: isYearly ? 'Yearly' : isMonthly ? 'Monthly' : p.title,
+          title: 'Yearly',
           price: cleanPrice,
-          period: isYearly ? '/yr' : isMonthly ? '/mo' : '',
-          badge: isYearly ? '2 Months Free' : null,
+          period: '/yr',
         );
-      }).toList()
-        ..sort((a, b) => a.id.contains('monthly') ? -1 : 1);
+      }).toList();
     }
     return _staticPlans;
   }
@@ -271,20 +268,19 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
   }
 
   Widget _buildPricingToggle(AppColorPalette colors) {
+    final plan = _plans.first;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(color: colors.surfaceLight, borderRadius: BorderRadius.circular(16)),
       child: Row(
-        children: _plans.map((plan) {
-          final isSelected = _selectedProductId == plan.id;
-          return _pricingOption(plan.title, plan.price, plan.badge, isSelected, colors,
-            () => setState(() => _selectedProductId = plan.id));
-        }).toList(),
+        children: [
+          _pricingOption(plan.title, plan.price, true, colors, () {}),
+        ],
       ),
     );
   }
 
-  Widget _pricingOption(String title, String price, String? badge, bool selected, AppColorPalette colors, VoidCallback onTap) {
+  Widget _pricingOption(String title, String price, bool selected, AppColorPalette colors, VoidCallback onTap) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -298,13 +294,6 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
             boxShadow: selected ? [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8)] : null,
           ),
           child: Column(children: [
-            if (badge != null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(color: AppColors.accentGold, borderRadius: BorderRadius.circular(50)),
-                child: Text(badge, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.black)),
-              ),
             Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: selected ? colors.textPrimary : colors.textTertiary)),
             const SizedBox(height: 2),
             Text(price, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: selected ? AppColors.accentGold : colors.textSubtle)),
@@ -392,6 +381,5 @@ class _PlanOption {
   final String title;
   final String price;
   final String period;
-  final String? badge;
-  const _PlanOption({required this.id, required this.title, required this.price, required this.period, this.badge});
+  const _PlanOption({required this.id, required this.title, required this.price, required this.period});
 }

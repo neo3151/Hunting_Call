@@ -76,9 +76,9 @@ class SettingsScreen extends ConsumerWidget {
                             subtitle: S.of(context).darkModeSubtitle,
                             trailing: SegmentedButton<ThemeMode>(
                               segments: [
-                                ButtonSegment(value: ThemeMode.system, label: Text(S.of(context).themeSys, style: TextStyle(fontSize: 10))),
-                                ButtonSegment(value: ThemeMode.light, label: Text(S.of(context).themeLight, style: TextStyle(fontSize: 10))),
-                                ButtonSegment(value: ThemeMode.dark, label: Text(S.of(context).themeDark, style: TextStyle(fontSize: 10))),
+                                ButtonSegment(value: ThemeMode.system, label: Text(S.of(context).themeSys, style: const TextStyle(fontSize: 10))),
+                                ButtonSegment(value: ThemeMode.light, label: Text(S.of(context).themeLight, style: const TextStyle(fontSize: 10))),
+                                ButtonSegment(value: ThemeMode.dark, label: Text(S.of(context).themeDark, style: const TextStyle(fontSize: 10))),
                               ],
                               selected: {settings.themeMode},
                               onSelectionChanged: (v) => notifier.setThemeMode(v.first),
@@ -155,11 +155,11 @@ class SettingsScreen extends ConsumerWidget {
                                 ButtonSegment(
                                     value: 'imperial',
                                     label: Text(S.of(context).unitImperial,
-                                        style: TextStyle(fontSize: 11))),
+                                        style: const TextStyle(fontSize: 11))),
                                 ButtonSegment(
                                     value: 'metric',
                                     label: Text(S.of(context).unitMetric,
-                                        style: TextStyle(fontSize: 11))),
+                                        style: const TextStyle(fontSize: 11))),
                               ],
                               selected: {settings.distanceUnit},
                               onSelectionChanged: (v) =>

@@ -68,7 +68,12 @@ def upload_aab(track: str, aab_path: str, release_name: str, notes: str):
     print()
 
     creds = get_credentials()
-    service = build("androidpublisher", "v3", credentials=creds)
+    import httplib2
+    import google_auth_httplib2
+    http = httplib2.Http(timeout=600)  # 10-minute timeout for large uploads
+    http.follow_redirects = False
+    authed_http = google_auth_httplib2.AuthorizedHttp(creds, http=http)
+    service = build("androidpublisher", "v3", http=authed_http)
 
     # 1. Create an edit
     print("📝 Creating edit...")

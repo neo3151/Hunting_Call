@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:outcall/core/utils/app_logger.dart';
 
 /// Service for generating and managing referral codes.
 /// Referral codes are deterministic — derived from the user ID.
@@ -25,19 +24,5 @@ class ReferralService {
         'real-time audio analysis, AI scoring, and 135+ pro calls.\n\n'
         'Use my code $referralCode when you sign up!\n\n'
         'Download: https://hunting-call-perfection.web.app';
-  }
-
-  /// Log a referral event. In a production app, this would write to Firestore.
-  static void logReferral({
-    required String referrerCode,
-    required String newUserId,
-  }) {
-    AppLogger.d('🎁 Referral: $newUserId signed up with code $referrerCode');
-    // TODO: Write to Firestore 'referrals' collection when backend is ready
-    // await FirebaseFirestore.instance.collection('referrals').add({
-    //   'referrerCode': referrerCode,
-    //   'newUserId': newUserId,
-    //   'timestamp': FieldValue.serverTimestamp(),
-    // });
   }
 }

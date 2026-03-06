@@ -30,7 +30,7 @@ import 'package:outcall/features/recording/data/repositories/mock_audio_recorder
 import 'package:outcall/features/recording/data/repositories/real_audio_recorder_service.dart';
 import 'package:outcall/features/recording/domain/audio_recorder_service.dart';
 import 'package:outcall/core/services/notification_service.dart';
-import 'package:outcall/core/services/offline_queue_service.dart';
+
 import 'package:outcall/core/services/app_rating_service.dart';
 import 'package:outcall/features/progress_map/data/progress_map_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -203,10 +203,7 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService(ref.watch(simpleStorageProvider));
 });
 
-/// Provides [OfflineQueueService].
-final offlineQueueServiceProvider = Provider<OfflineQueueService>((ref) {
-  return OfflineQueueService(ref.watch(simpleStorageProvider));
-});
+
 
 /// Provides [AppRatingService].
 final appRatingServiceProvider = Provider<AppRatingService>((ref) {
