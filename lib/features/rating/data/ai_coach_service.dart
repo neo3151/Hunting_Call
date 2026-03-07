@@ -2,31 +2,49 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/features/rating/data/coaching_session_history.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 
 /// Service that calls Ollama directly from the app to get
-/// personalized AI coaching from Gemma 3 4B.
+/// personalized AI coaching from the custom outcall-coach model.
 ///
-/// Point [ollamaBaseUrl] to your local machine's IP on the network.
-/// The phone and server must be on the same Wi-Fi network.
+/// The outcall-coach model is based on Gemma 3 4B with the full
+/// hunting call knowledge base baked into its system prompt.
+///
+/// Session history is injected into each prompt so the coach
+/// remembers past sessions and adapts its feedback.
 class AiCoachService {
   // Cloudflare Tunnel to local Ollama instance
   // Note: this URL changes each time cloudflared restarts
   // Local fallback: http://192.168.1.189:11434
   static const String ollamaBaseUrl = 'https://estate-douglas-subject-eagle.trycloudflare.com';
 
+  // Custom model with baked-in hunting call knowledge
+  static const String _model = 'outcall-coach';
+
   /// Request AI coaching feedback based on rating results.
   ///
-  /// Returns the coaching text, or a fallback string if
-  /// Ollama is unreachable.
+  /// Injects user's session history for personalized, adaptive coaching.
+  /// Returns the coaching text, or a fallback string if Ollama is unreachable.
   static Future<String> getCoaching({
     required String animalName,
     required String callType,
     required RatingResult result,
     required double idealPitchHz,
     String? proTips,
+    String? userId,
   }) async {
     try {
+      // Fetch session history for context (non-blocking fallback)
+      String historySummary = '';
+      if (userId != null && userId.isNotEmpty) {
+        try {
+          historySummary = await CoachingSessionHistory.getHistorySummary(userId);
+        } catch (_) {
+          // History is nice-to-have, don't block coaching on it
+        }
+      }
+
       final pitchDiff = (result.pitchHz - idealPitchHz).abs();
       final pitchDirection = result.pitchHz > idealPitchHz ? 'too high' : 'too low';
 
@@ -34,37 +52,45 @@ class AiCoachService {
           .map((e) => '  - ${e.key}: ${e.value.toStringAsFixed(1)}')
           .join('\n');
 
-      const systemPrompt = 'You are a master hunting call coach with decades of field experience. '
-          'You give warm, encouraging, practical advice to hunters learning to '
-          'perfect their animal calls. You speak with authority but never '
-          'condescension. Keep your coaching concise — 2-3 short paragraphs max. '
-          'Use specific, actionable tips. Never use markdown formatting, emojis, '
-          'or bullet points — just clean conversational text.';
-
-      final userPrompt = 'A hunter just practiced their $callType call for $animalName '
-          'and scored ${result.score.toStringAsFixed(0)}%.\n\n'
-          'Their pitch was ${result.pitchHz.toStringAsFixed(0)} Hz '
+      final prompt = StringBuffer();
+      prompt.writeln('A hunter just practiced their $callType call for $animalName '
+          'and scored ${result.score.toStringAsFixed(0)}%.');
+      prompt.writeln();
+      prompt.writeln('Their pitch was ${result.pitchHz.toStringAsFixed(0)} Hz '
           '(target: ${idealPitchHz.toStringAsFixed(0)} Hz — '
-          '${pitchDiff < 10 ? "right on target" : "${pitchDiff.toStringAsFixed(0)} Hz $pitchDirection"}).\n\n'
-          'Detailed metrics:\n$metricsBreakdown\n\n'
-          '${proTips != null && proTips.isNotEmpty ? "Reference tips for this call: $proTips\n\n" : ""}'
-          'Give them personalized coaching feedback. What are they doing well? '
+          '${pitchDiff < 10 ? "right on target" : "${pitchDiff.toStringAsFixed(0)} Hz $pitchDirection"}).');
+      prompt.writeln();
+      prompt.writeln('Detailed metrics:');
+      prompt.writeln(metricsBreakdown);
+
+      if (proTips != null && proTips.isNotEmpty) {
+        prompt.writeln();
+        prompt.writeln('Reference tips for this call: $proTips');
+      }
+
+      if (historySummary.isNotEmpty) {
+        prompt.writeln();
+        prompt.writeln('SESSION HISTORY:');
+        prompt.writeln(historySummary);
+      }
+
+      prompt.writeln();
+      prompt.writeln('Give them personalized coaching feedback. What are they doing well? '
           "What's the #1 thing they should focus on improving? "
-          'Give one specific, practical drill or technique they can try right now.';
+          'Give one specific, practical drill or technique they can try right now.');
 
       final response = await http
           .post(
             Uri.parse('$ollamaBaseUrl/api/generate'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
-              'model': 'gemma3:4b',
-              'prompt': userPrompt,
-              'system': systemPrompt,
+              'model': _model,
+              'prompt': prompt.toString(),
               'stream': false,
               'options': {
                 'temperature': 0.7,
                 'top_p': 0.9,
-                'num_predict': 300,
+                'num_predict': 350,
               },
             }),
           )
@@ -80,6 +106,19 @@ class AiCoachService {
 
       if (coaching.length < 20) {
         return _fallback(result.score);
+      }
+
+      // Save session for future context (fire and forget)
+      if (userId != null && userId.isNotEmpty) {
+        CoachingSessionHistory.saveSession(
+          userId: userId,
+          animalId: animalName,
+          animalName: animalName,
+          callType: callType,
+          score: result.score,
+          metrics: result.metrics,
+          coachingText: coaching,
+        );
       }
 
       return coaching;

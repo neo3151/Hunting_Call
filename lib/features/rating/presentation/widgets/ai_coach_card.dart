@@ -70,12 +70,14 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
     );
 
     try {
+      final profile = ref.read(profileNotifierProvider).profile;
       final coaching = await AiCoachService.getCoaching(
         animalName: animalName,
         callType: callType,
         result: widget.result,
         idealPitchHz: idealPitchHz,
         proTips: proTips,
+        userId: profile?.id,
       );
 
       if (mounted) {
