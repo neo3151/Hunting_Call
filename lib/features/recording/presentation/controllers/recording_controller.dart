@@ -1,12 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:outcall/core/services/logger/logger_service.dart';
 import 'package:outcall/di_providers.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/recording/domain/failures/recording_failure.dart';
 import 'package:outcall/features/recording/domain/providers.dart';
 import 'package:outcall/features/recording/domain/use_cases/start_recording_use_case.dart';
 import 'package:outcall/features/recording/domain/use_cases/stop_recording_use_case.dart';
-import 'package:outcall/features/recording/domain/failures/recording_failure.dart';
-import 'package:outcall/features/library/data/reference_database.dart';
-import 'package:outcall/core/services/logger/logger_service.dart';
 
 /// State for recording session
 enum RecordingStatus { idle, countdown, recording, stopping, error }
@@ -29,7 +30,7 @@ class RecordingState {
   bool get isRecording => status == RecordingStatus.recording;
   bool get isCountingDown => status == RecordingStatus.countdown;
   bool get hasError => status == RecordingStatus.error;
-  
+
   // Convenience getter for error message
   String? get errorMessage => failure?.message;
 
@@ -56,6 +57,12 @@ class RecordingState {
 class RecordingNotifier extends Notifier<RecordingState> {
   Timer? _timer;
 
+  /// Hard ceiling on any recording, regardless of call duration.
+  static const int _absoluteMaxSeconds = 65;
+
+  /// Current max duration for this recording session.
+  int _maxDurationSec = _absoluteMaxSeconds;
+
   @override
   RecordingState build() {
     ref.onDispose(() {
@@ -67,6 +74,12 @@ class RecordingNotifier extends Notifier<RecordingState> {
   // Use cases injected via providers
   StartRecordingUseCase get _startUseCase => ref.read(startRecordingUseCaseProvider);
   StopRecordingUseCase get _stopUseCase => ref.read(stopRecordingUseCaseProvider);
+
+  /// Set max recording duration based on the reference call's ideal length.
+  /// Call this BEFORE startRecordingWithCountdown().
+  void setMaxDuration(double idealDurationSec) {
+    _maxDurationSec = (idealDurationSec + 3).clamp(5, _absoluteMaxSeconds).toInt();
+  }
 
   /// Start recording with countdown
   Future<void> startRecordingWithCountdown() async {
@@ -95,7 +108,9 @@ class RecordingNotifier extends Notifier<RecordingState> {
     result.fold(
       // Error
       (failure) {
-        ref.read(loggerServiceProvider).recordError(failure, null, reason: 'Failed to start recording');
+        ref
+            .read(loggerServiceProvider)
+            .recordError(failure, null, reason: 'Failed to start recording');
         state = state.copyWith(
           status: RecordingStatus.error,
           failure: failure,
@@ -118,7 +133,16 @@ class RecordingNotifier extends Notifier<RecordingState> {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      state = state.copyWith(recordDuration: state.recordDuration + 1);
+      final newDuration = state.recordDuration + 1;
+      state = state.copyWith(recordDuration: newDuration);
+
+      // Hard failsafe: force-stop if max duration exceeded
+      if (newDuration >= _maxDurationSec) {
+        ref.read(loggerServiceProvider).log(
+              '⏱️ Hard max duration (${_maxDurationSec}s) reached — force-stopping recording',
+            );
+        stopRecording();
+      }
     });
   }
 
@@ -137,7 +161,9 @@ class RecordingNotifier extends Notifier<RecordingState> {
     return result.fold(
       // Error
       (failure) {
-        ref.read(loggerServiceProvider).recordError(failure, null, reason: 'Failed to stop recording');
+        ref
+            .read(loggerServiceProvider)
+            .recordError(failure, null, reason: 'Failed to stop recording');
         state = state.copyWith(
           status: RecordingStatus.error,
           failure: failure,
@@ -170,19 +196,22 @@ class RecordingNotifier extends Notifier<RecordingState> {
   }
 }
 
-final recordingNotifierProvider = NotifierProvider<RecordingNotifier, RecordingState>(RecordingNotifier.new);
+final recordingNotifierProvider =
+    NotifierProvider<RecordingNotifier, RecordingState>(RecordingNotifier.new);
 
 /// State for the selected call
 class SelectedCallIdNotifier extends Notifier<String> {
   @override
-  String build() => ReferenceDatabase.calls.isNotEmpty ? ReferenceDatabase.calls.first.id : 'unknown';
+  String build() =>
+      ReferenceDatabase.calls.isNotEmpty ? ReferenceDatabase.calls.first.id : 'unknown';
 
   void setCallId(String id) {
     state = id;
   }
 }
 
-final selectedCallIdProvider = NotifierProvider<SelectedCallIdNotifier, String>(SelectedCallIdNotifier.new);
+final selectedCallIdProvider =
+    NotifierProvider<SelectedCallIdNotifier, String>(SelectedCallIdNotifier.new);
 
 /// Stream of amplitude changes for visualization
 final amplitudeStreamProvider = StreamProvider<double>((ref) {

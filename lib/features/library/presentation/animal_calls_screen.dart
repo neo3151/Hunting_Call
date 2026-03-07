@@ -1,16 +1,17 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:outcall/features/library/domain/reference_call_model.dart';
-import 'package:outcall/features/library/domain/providers.dart';
-import 'package:outcall/core/widgets/upgrade_prompter.dart';
 import 'package:outcall/core/services/audio_service.dart';
-import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:outcall/features/library/presentation/call_detail_screen.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
-import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/core/widgets/upgrade_prompter.dart';
+import 'package:outcall/features/library/domain/providers.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/features/library/presentation/call_detail_screen.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/main_common.dart';
 
 /// Filter mode for the calls screen.
@@ -30,6 +31,7 @@ class AnimalCallsScreen extends ConsumerStatefulWidget {
   final String? userId;
   final CallFilterMode filterMode;
   final String? title;
+  final bool selectionMode;
 
   const AnimalCallsScreen({
     super.key,
@@ -38,14 +40,14 @@ class AnimalCallsScreen extends ConsumerStatefulWidget {
     this.userId,
     this.filterMode = CallFilterMode.animal,
     this.title,
+    this.selectionMode = false,
   });
 
   @override
   ConsumerState<AnimalCallsScreen> createState() => _AnimalCallsScreenState();
 }
 
-class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
-    with RouteAware {
+class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with RouteAware {
   AudioService? _audioService;
 
   @override
@@ -97,9 +99,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Could not play audio: $e'),
-              backgroundColor: Colors.red),
+          SnackBar(content: Text('Could not play audio: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -125,11 +125,16 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
       return;
     }
 
+    if (widget.selectionMode) {
+      // Pop with the selected call ID — parent screens will forward the result
+      Navigator.of(context).pop(call.id);
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CallDetailScreen(
-            call: call, userId: widget.userId ?? 'anonymous'),
+        builder: (context) => CallDetailScreen(call: call, userId: widget.userId ?? 'anonymous'),
       ),
     );
   }
@@ -169,9 +174,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
       },
       (calls) {
         if (widget.animalName != null) {
-          return calls
-              .where((c) => c.animalName == widget.animalName)
-              .toList();
+          return calls.where((c) => c.animalName == widget.animalName).toList();
         }
         return calls;
       },
@@ -207,8 +210,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded,
-              color: palette.textPrimary),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: palette.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -244,8 +246,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
                     final call = calls[index];
                     final isPlaying = currentlyPlayingId == call.id;
 
-                    final checkLockUseCase =
-                        ref.read(checkCallLockStatusUseCaseProvider);
+                    final checkLockUseCase = ref.read(checkCallLockStatusUseCaseProvider);
                     final lockResult = checkLockUseCase.execute(
                       callId: call.id,
                       isUserPremium: isPremium,
@@ -280,18 +281,14 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
                   color: isLocked
                       ? Colors.black.withValues(alpha: 0.2)
                       : isPlaying
-                          ? Theme.of(context)
-                              .primaryColor
-                              .withValues(alpha: 0.2)
+                          ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
                           : palette.cardOverlay,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isLocked
                         ? palette.cardOverlay
                         : isPlaying
-                            ? Theme.of(context)
-                                .primaryColor
-                                .withValues(alpha: 0.5)
+                            ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
                             : palette.border,
                   ),
                 ),
@@ -307,8 +304,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Show animal name in favorites mode
-                              if (widget.filterMode ==
-                                  CallFilterMode.favorites) ...[
+                              if (widget.filterMode == CallFilterMode.favorites) ...[
                                 Text(
                                   call.animalName,
                                   style: GoogleFonts.oswald(
@@ -340,24 +336,19 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
                       Text(
                         call.description,
                         style: TextStyle(
-                            color: palette.textTertiary,
-                            fontSize: 13,
-                            fontStyle: FontStyle.italic),
+                            color: palette.textTertiary, fontSize: 13, fontStyle: FontStyle.italic),
                       ),
                     ],
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        _buildMetricChip(
-                            Icons.music_note, '${call.idealPitchHz.toInt()} Hz'),
+                        _buildMetricChip(Icons.music_note, '${call.idealPitchHz.toInt()} Hz'),
                         const SizedBox(width: 8),
-                        _buildMetricChip(
-                            Icons.timer_outlined, '${call.idealDurationSec}s'),
+                        _buildMetricChip(Icons.timer_outlined, '${call.idealDurationSec}s'),
                         const SizedBox(width: 8),
                         const Spacer(),
                         if (call.proTips.isNotEmpty)
-                          Icon(Icons.info_outline,
-                              size: 16, color: palette.textSubtle),
+                          Icon(Icons.info_outline, size: 16, color: palette.textSubtle),
                       ],
                     ),
                   ],
@@ -395,8 +386,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
       ),
       child: Text(
         difficulty.toUpperCase(),
-        style:
-            TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -414,9 +404,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
         children: [
           Icon(icon, size: 12, color: palette.textSecondary),
           const SizedBox(width: 4),
-          Text(label,
-              style:
-                  TextStyle(color: palette.textSecondary, fontSize: 11)),
+          Text(label, style: TextStyle(color: palette.textSecondary, fontSize: 11)),
         ],
       ),
     );
@@ -436,17 +424,14 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen>
         },
         child: Icon(
           isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-          color: isFavorite
-              ? Colors.redAccent
-              : AppColors.of(context).textTertiary,
+          color: isFavorite ? Colors.redAccent : AppColors.of(context).textTertiary,
           size: 24,
         ),
       ),
     );
   }
 
-  Widget _buildPlayButton(
-      ReferenceCall call, bool isPlaying, bool isLocked) {
+  Widget _buildPlayButton(ReferenceCall call, bool isPlaying, bool isLocked) {
     final palette = AppColors.of(context);
     return Semantics(
       button: true,

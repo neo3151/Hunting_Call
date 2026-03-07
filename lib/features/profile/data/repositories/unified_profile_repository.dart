@@ -1,19 +1,19 @@
-import 'package:outcall/features/profile/domain/entities/user_profile.dart';
-import 'package:outcall/features/rating/domain/rating_model.dart';
-import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
-import 'package:outcall/features/profile/data/datasources/local_profile_data_source.dart';
-import 'package:outcall/core/utils/app_logger.dart';
-import 'package:outcall/core/utils/spam_filter.dart';
-import 'package:outcall/core/utils/profanity_filter.dart';
 import 'package:outcall/core/services/api_gateway.dart';
+import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/utils/profanity_filter.dart';
+import 'package:outcall/core/utils/spam_filter.dart';
+import 'package:outcall/features/profile/data/datasources/local_profile_data_source.dart';
+import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
 
 class UnifiedProfileRepository implements ProfileRepository {
   final ApiGateway _apiGateway;
   final ProfileDataSource? _localDataSource;
-  
+
   final String _collectionPath = 'profiles';
-  
-  UnifiedProfileRepository(this._apiGateway, {ProfileDataSource? localDataSource}) 
+
+  UnifiedProfileRepository(this._apiGateway, {ProfileDataSource? localDataSource})
       : _localDataSource = localDataSource;
 
   @override
@@ -33,13 +33,13 @@ class UnifiedProfileRepository implements ProfileRepository {
         _sanitizeProfileData(data, userId);
         profile = UserProfile.fromJson(data);
       } else {
-        profile = UserProfile.guest(); 
+        profile = UserProfile.guest();
       }
 
       // Cloud is the source of truth for premium status.
       // Local storage is only used as a write-through cache,
       // not as an override.
-      
+
       return profile;
     } catch (e) {
       AppLogger.d('UnifiedProfileRepository: getProfile ERROR: $e');
@@ -52,7 +52,7 @@ class UnifiedProfileRepository implements ProfileRepository {
     try {
       final docs = await _apiGateway.getCollection(_collectionPath);
       if (docs.isEmpty) return [];
-      
+
       return docs.map((data) {
         final id = data['id'] as String? ?? 'unknown';
         _sanitizeProfileData(data, id);
@@ -77,15 +77,15 @@ class UnifiedProfileRepository implements ProfileRepository {
     try {
       final docs = await _apiGateway.queryCollection(_collectionPath, 'email', email);
       if (docs.isEmpty) return [];
-      
+
       return docs.map((data) {
         final id = data['id'] as String? ?? 'unknown';
         _sanitizeProfileData(data, id);
         return UserProfile.fromJson(data);
       }).toList();
-    } catch(e) {
-       AppLogger.d('❌ Error getting profiles by email: $e');
-       return [];
+    } catch (e) {
+      AppLogger.d('❌ Error getting profiles by email: $e');
+      return [];
     }
   }
 
@@ -102,45 +102,57 @@ class UnifiedProfileRepository implements ProfileRepository {
     }
     // Handle Timestamp (Firebase) or DateTime (Firedart) to ISO String
     if (data['joinedDate'] != null && data['joinedDate'] is! String) {
-        try {
-            data['joinedDate'] = data['joinedDate'].toDate().toIso8601String();
-        } catch (_) { // Firedart uses DateTime directly
-             if (data['joinedDate'] is DateTime) {
-                 data['joinedDate'] = (data['joinedDate'] as DateTime).toIso8601String();
-             }
+      try {
+        data['joinedDate'] = data['joinedDate'].toDate().toIso8601String();
+      } catch (_) {
+        // Firedart uses DateTime directly
+        if (data['joinedDate'] is DateTime) {
+          data['joinedDate'] = (data['joinedDate'] as DateTime).toIso8601String();
         }
+      }
     } else if (data['joinedDate'] == null) {
       data['joinedDate'] = DateTime.now().toIso8601String();
     }
 
-    if (data['lastDailyChallengeDate'] != null && data['lastDailyChallengeDate'] is! String && data['lastDailyChallengeDate'] is! int) {
-       try {
-            data['lastDailyChallengeDate'] = data['lastDailyChallengeDate'].toDate().toIso8601String();
-       } catch (_) {
-           if (data['lastDailyChallengeDate'] is DateTime) {
-                data['lastDailyChallengeDate'] = (data['lastDailyChallengeDate'] as DateTime).toIso8601String();
-           }
-       }
+    if (data['lastDailyChallengeDate'] != null &&
+        data['lastDailyChallengeDate'] is! String &&
+        data['lastDailyChallengeDate'] is! int) {
+      try {
+        data['lastDailyChallengeDate'] = data['lastDailyChallengeDate'].toDate().toIso8601String();
+      } catch (_) {
+        if (data['lastDailyChallengeDate'] is DateTime) {
+          data['lastDailyChallengeDate'] =
+              (data['lastDailyChallengeDate'] as DateTime).toIso8601String();
+        }
+      }
     }
 
     if (data['history'] != null && data['history'] is List) {
       final historyList = data['history'] as List;
       for (var item in historyList) {
         if (item is Map && item['timestamp'] != null && item['timestamp'] is! String) {
-             try {
-                item['timestamp'] = item['timestamp'].toDate().toIso8601String();
-             } catch (_) {
-                 if (item['timestamp'] is DateTime) {
-                      item['timestamp'] = (item['timestamp'] as DateTime).toIso8601String();
-                 }
-             }
+          try {
+            item['timestamp'] = item['timestamp'].toDate().toIso8601String();
+          } catch (_) {
+            if (item['timestamp'] is DateTime) {
+              item['timestamp'] = (item['timestamp'] as DateTime).toIso8601String();
+            }
+          }
         }
       }
+      // Sort history newest-first by timestamp.
+      // This fixes existing data that was stored in the wrong order.
+      historyList.sort((a, b) {
+        final tsA = a is Map ? (a['timestamp'] as String? ?? '') : '';
+        final tsB = b is Map ? (b['timestamp'] as String? ?? '') : '';
+        return tsB.compareTo(tsA); // Descending: newest first
+      });
     }
   }
 
   @override
-  Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday, String? email}) async {
+  Future<UserProfile> createProfile(String name,
+      {String? id, DateTime? birthday, String? email}) async {
     try {
       final docId = id ?? DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -186,30 +198,30 @@ class UnifiedProfileRepository implements ProfileRepository {
       );
 
       final data = newItem.toJson();
-      
+
       Map<String, dynamic> existingData = {};
       final doc = await _apiGateway.getDocument(_collectionPath, userId);
-      
+
       if (doc == null) {
-          // Profile doesn't exist
-          await _apiGateway.setDocument(_collectionPath, userId, {
-            'id': userId,
-            'name': 'Hunter',
-            'joinedDate': DateTime.now().toIso8601String(),
-            'history': [data],
-            'totalCalls': 1,
-            'isAlphaTester': true,
-          });
-          return;
+        // Profile doesn't exist
+        await _apiGateway.setDocument(_collectionPath, userId, {
+          'id': userId,
+          'name': 'Hunter',
+          'joinedDate': DateTime.now().toIso8601String(),
+          'history': [data],
+          'totalCalls': 1,
+          'isAlphaTester': true,
+        });
+        return;
       } else {
-          existingData = doc;
+        existingData = doc;
       }
 
       final history = List<dynamic>.from(existingData['history'] ?? <dynamic>[]);
-      history.add(data);
-      
+      history.insert(0, data);
+
       final totalCalls = (existingData['totalCalls'] as int? ?? 0) + 1;
-      
+
       await _apiGateway.updateDocument(_collectionPath, userId, {
         'history': history,
         'totalCalls': totalCalls,
@@ -217,7 +229,6 @@ class UnifiedProfileRepository implements ProfileRepository {
         'joinedDate': existingData['joinedDate'] ?? DateTime.now().toIso8601String(),
         'isAlphaTester': true,
       });
-      
     } catch (e) {
       AppLogger.d('UnifiedProfileRepository: saveResultForUser ERROR: $e');
       rethrow;
@@ -230,18 +241,18 @@ class UnifiedProfileRepository implements ProfileRepository {
 
     final doc = await _apiGateway.getDocument(_collectionPath, userId);
     if (doc == null) {
-        await _apiGateway.setDocument(_collectionPath, userId, {
-            'id': userId,
-            'name': 'Hunter',
-            'joinedDate': DateTime.now().toIso8601String(),
-            'achievements': achievementIds,
-        });
-        return;
+      await _apiGateway.setDocument(_collectionPath, userId, {
+        'id': userId,
+        'name': 'Hunter',
+        'joinedDate': DateTime.now().toIso8601String(),
+        'achievements': achievementIds,
+      });
+      return;
     }
-    
+
     final Set<String> achievements = Set.from(doc['achievements'] ?? []);
     achievements.addAll(achievementIds);
-    
+
     await _apiGateway.updateDocument(_collectionPath, userId, {
       'achievements': achievements.toList(),
     });
@@ -253,11 +264,11 @@ class UnifiedProfileRepository implements ProfileRepository {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     final doc = await _apiGateway.getDocument(_collectionPath, userId);
-    
+
     if (doc == null) {
-      // Profile doesn't exist 
+      // Profile doesn't exist
       await _apiGateway.setDocument(_collectionPath, userId, {
         'id': userId,
         'name': 'Hunter',
@@ -271,16 +282,16 @@ class UnifiedProfileRepository implements ProfileRepository {
     }
 
     final data = doc;
-    
+
     final dynamic rawLastDate = data['lastDailyChallengeDate'];
     DateTime? lastDate;
-    
+
     if (rawLastDate is int) {
       lastDate = DateTime.fromMillisecondsSinceEpoch(rawLastDate);
     } else if (rawLastDate is String) {
       lastDate = DateTime.tryParse(rawLastDate);
     }
-        
+
     bool shouldIncrement = false;
     if (lastDate == null) {
       shouldIncrement = true;
@@ -290,20 +301,20 @@ class UnifiedProfileRepository implements ProfileRepository {
         shouldIncrement = true;
       }
     }
-    
+
     if (shouldIncrement) {
       final int currentStreak = data['currentStreak'] as int? ?? 0;
       final int longestStreak = data['longestStreak'] as int? ?? 0;
-      
+
       bool isConsecutive = false;
       if (lastDate != null) {
         final lastDateDay = DateTime(lastDate.year, lastDate.month, lastDate.day);
         final diff = today.difference(lastDateDay).inDays;
         if (diff == 1) isConsecutive = true;
       } else {
-          isConsecutive = true;
+        isConsecutive = true;
       }
-      
+
       final int newStreak = isConsecutive ? currentStreak + 1 : 1;
       final int newLongest = newStreak > longestStreak ? newStreak : longestStreak;
       final int totalCompleted = (data['dailyChallengesCompleted'] as int? ?? 0) + 1;
@@ -331,19 +342,19 @@ class UnifiedProfileRepository implements ProfileRepository {
     }
 
     if (userId == 'guest') {
-       return;
+      return;
     }
 
     // 2. Attempt Cloud Save
     try {
       final doc = await _apiGateway.getDocument(_collectionPath, userId);
       if (doc == null) {
-          await _apiGateway.setDocument(_collectionPath, userId, {
-            'id': userId,
-            'name': 'Hunter',
-            'joinedDate': DateTime.now().toIso8601String(),
-            'isPremium': isPremium,
-          });
+        await _apiGateway.setDocument(_collectionPath, userId, {
+          'id': userId,
+          'name': 'Hunter',
+          'joinedDate': DateTime.now().toIso8601String(),
+          'isPremium': isPremium,
+        });
       } else {
         await _apiGateway.updateDocument(_collectionPath, userId, {
           'isPremium': isPremium,
@@ -358,26 +369,31 @@ class UnifiedProfileRepository implements ProfileRepository {
   @override
   Future<List<UserProfile>> getTopGlobalUsers({int limit = 50}) async {
     try {
-      final query = await _apiGateway.getTopDocuments(_collectionPath, 'averageScore', limit: limit);
-          
-      return query.map((data) {
-        final id = data['id'] as String? ?? 'unknown';
-        _sanitizeProfileData(data, id);
-        try {
-          return UserProfile.fromJson(data);
-        } catch (e) {
-          return UserProfile(
-            id: id,
-            name: data['name'] ?? 'Error Profile',
-            joinedDate: DateTime.now(),
-          );
-        }
-      }).where((p) => p.totalCalls > 0).toList();
+      final query =
+          await _apiGateway.getTopDocuments(_collectionPath, 'averageScore', limit: limit);
+
+      return query
+          .map((data) {
+            final id = data['id'] as String? ?? 'unknown';
+            _sanitizeProfileData(data, id);
+            try {
+              return UserProfile.fromJson(data);
+            } catch (e) {
+              return UserProfile(
+                id: id,
+                name: data['name'] ?? 'Error Profile',
+                joinedDate: DateTime.now(),
+              );
+            }
+          })
+          .where((p) => p.totalCalls > 0)
+          .toList();
     } catch (e) {
       AppLogger.d('❌ Error getting top global users: $e');
       return [];
     }
   }
+
   @override
   Future<void> updateProfileDetails(String userId, {String? nickname, String? avatarUrl}) async {
     // 1. Local backup if available
@@ -401,7 +417,7 @@ class UnifiedProfileRepository implements ProfileRepository {
         updates['nickname'] = ProfanityFilter.cleanName(nickname);
       }
       if (avatarUrl != null) updates['avatarUrl'] = avatarUrl;
-      
+
       if (updates.isNotEmpty) {
         final doc = await _apiGateway.getDocument(_collectionPath, userId);
         if (doc == null) {
@@ -428,13 +444,13 @@ class UnifiedProfileRepository implements ProfileRepository {
       try {
         final localProfile = await _localDataSource!.getProfile(userId);
         final currentFavorites = List<String>.from(localProfile.favoriteCallIds);
-        
+
         if (isFavorite && !currentFavorites.contains(callId)) {
           currentFavorites.add(callId);
         } else if (!isFavorite && currentFavorites.contains(callId)) {
           currentFavorites.remove(callId);
         }
-        
+
         final updated = localProfile.copyWith(favoriteCallIds: currentFavorites);
         await _localDataSource!.saveProfile(updated);
       } catch (e) {
@@ -448,17 +464,17 @@ class UnifiedProfileRepository implements ProfileRepository {
     try {
       final doc = await _apiGateway.getDocument(_collectionPath, userId);
       List<String> currentFavorites = [];
-      
+
       if (doc != null && doc['favoriteCallIds'] != null) {
         currentFavorites = List<String>.from(doc['favoriteCallIds']);
       }
-      
+
       if (isFavorite && !currentFavorites.contains(callId)) {
         currentFavorites.add(callId);
       } else if (!isFavorite && currentFavorites.contains(callId)) {
         currentFavorites.remove(callId);
       }
-      
+
       if (doc == null) {
         await _apiGateway.setDocument(_collectionPath, userId, {
           'id': userId,

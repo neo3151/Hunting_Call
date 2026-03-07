@@ -1,12 +1,13 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
-import 'package:outcall/features/library/presentation/animal_grid_screen.dart';
 import 'package:outcall/features/library/presentation/animal_calls_screen.dart';
+import 'package:outcall/features/library/presentation/animal_grid_screen.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 
@@ -14,7 +15,8 @@ import 'package:outcall/l10n/app_localizations.dart';
 /// Shows large premium buttons for each category with semi-transparent images.
 class CategoryGridScreen extends ConsumerWidget {
   final String? userId;
-  const CategoryGridScreen({super.key, this.userId});
+  final bool selectionMode;
+  const CategoryGridScreen({super.key, this.userId, this.selectionMode = false});
 
   /// Map of category names to representative animal images and gradient colors.
   static const List<_CategoryItem> _categories = [
@@ -70,7 +72,7 @@ class CategoryGridScreen extends ConsumerWidget {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          S.of(context).callLibrary,
+          selectionMode ? 'SELECT CALL' : S.of(context).callLibrary,
           style: GoogleFonts.oswald(
             fontWeight: FontWeight.bold,
             letterSpacing: 1.5,
@@ -79,6 +81,13 @@ class CategoryGridScreen extends ConsumerWidget {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: selectionMode
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: palette.textPrimary),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
+        automaticallyImplyLeading: selectionMode,
       ),
       body: BackgroundWrapper(
         child: SafeArea(
@@ -91,24 +100,27 @@ class CategoryGridScreen extends ConsumerWidget {
               crossAxisSpacing: 14,
               childAspectRatio: 0.85,
               children: [
-                // ─── Special: Favorites ─────────────────
-                _buildSpecialButton(
-                  context: context,
-                  label: 'Favorites',
-                  icon: Icons.favorite_rounded,
-                  count: favCount,
-                  gradientColors: const [Color(0xFF8B1A1A), Color(0xFFC0392B)],
-                  onTap: () => _navigateToFavorites(context),
-                ),
-                // ─── Special: All ───────────────────────
-                _buildSpecialButton(
-                  context: context,
-                  label: 'All Calls',
-                  icon: Icons.library_music_rounded,
-                  count: allCalls.length,
-                  gradientColors: const [Color(0xFF1A1A2E), Color(0xFF16213E)],
-                  onTap: () => _navigateToAll(context),
-                ),
+                // ─── Special buttons (hidden in selection mode) ──
+                if (!selectionMode) ...[
+                  // ─── Special: Favorites ─────────────────
+                  _buildSpecialButton(
+                    context: context,
+                    label: 'Favorites',
+                    icon: Icons.favorite_rounded,
+                    count: favCount,
+                    gradientColors: const [Color(0xFF8B1A1A), Color(0xFFC0392B)],
+                    onTap: () => _navigateToFavorites(context),
+                  ),
+                  // ─── Special: All ───────────────────────
+                  _buildSpecialButton(
+                    context: context,
+                    label: 'All Calls',
+                    icon: Icons.library_music_rounded,
+                    count: allCalls.length,
+                    gradientColors: const [Color(0xFF1A1A2E), Color(0xFF16213E)],
+                    onTap: () => _navigateToAll(context),
+                  ),
+                ],
                 // ─── Category buttons ───────────────────
                 ..._categories.map((cat) => _buildCategoryButton(
                       context: context,
@@ -132,16 +144,20 @@ class CategoryGridScreen extends ConsumerWidget {
       button: true,
       label: '${item.name} category, $callCount calls',
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final result = await Navigator.push<String>(
             context,
             MaterialPageRoute(
               builder: (_) => AnimalGridScreen(
                 category: item.name,
                 userId: userId,
+                selectionMode: selectionMode,
               ),
             ),
           );
+          if (selectionMode && result != null && context.mounted) {
+            Navigator.of(context).pop(result);
+          }
         },
         borderRadius: BorderRadius.circular(20),
         child: ClipRRect(

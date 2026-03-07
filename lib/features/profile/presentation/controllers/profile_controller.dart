@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
-import 'package:outcall/features/profile/domain/entities/user_profile.dart';
-import 'package:outcall/features/rating/domain/rating_model.dart';
-import 'package:outcall/features/profile/domain/providers.dart';
-import 'package:outcall/di_providers.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/input_sanitizer.dart';
 import 'package:outcall/core/utils/profanity_filter.dart';
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/features/profile/domain/providers.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
 
 /// State for user profile operations
 class ProfileState {
@@ -52,11 +52,16 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   Future<UserProfile> fetchProfile(String userId) => _repo.getProfile(userId);
 
+  /// Save achievements for a user (public access for cross-feature use)
+  Future<void> saveAchievementsForUser(String userId, List<String> achievementIds) async {
+    await _repo.saveAchievements(userId, achievementIds);
+  }
+
   /// Load all profiles for login screen
   Future<void> loadAllProfiles() async {
     // AppLogger.d("ProfileNotifier: Loading all profiles...");
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final profiles = await _repo.getAllProfiles();
       state = state.copyWith(allProfiles: profiles, isLoading: false);
@@ -102,14 +107,13 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
-
   /// Save a rating result to the user's history
   Future<void> saveResult(String userId, RatingResult result, String animalId) async {
     try {
       await _repo.saveResultForUser(userId, result, animalId);
       // Reload profile to get updated history
       await loadProfile(userId);
-      
+
       final currentProfile = state.profile;
       if (currentProfile != null && userId != 'guest') {
         // Use domain use case for achievement calculation
@@ -118,7 +122,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
           currentProfile,
           currentProfile.achievements,
         );
-        
+
         achievementsResult.fold(
           (failure) {
             AppLogger.d('Achievement calculation failed: ${failure.message}');
@@ -154,8 +158,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
 
     // Block inappropriate nicknames — local profanity filter
-    if (nickname != null &&
-        InputSanitizer.containsInappropriateContent(nickname)) {
+    if (nickname != null && InputSanitizer.containsInappropriateContent(nickname)) {
       AppLogger.d('⚠️ ProfileNotifier: blocked inappropriate nickname "$nickname"');
 
       // Log the violation and apply strike system
@@ -164,7 +167,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       final errorMsg = strikeCount >= 3
           ? 'Your name has been permanently locked due to repeated violations.'
           : 'That name contains inappropriate content. Please choose another. '
-            '(Strike $strikeCount/3)';
+              '(Strike $strikeCount/3)';
 
       state = state.copyWith(error: errorMsg);
       return false;
@@ -175,16 +178,18 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     state = state.copyWith(error: null);
     try {
-      await _repo.updateProfileDetails(currentProfile.id, nickname: cleanNickname, avatarUrl: avatarUrl);
-      
+      await _repo.updateProfileDetails(currentProfile.id,
+          nickname: cleanNickname, avatarUrl: avatarUrl);
+
       // Update local state immediately for snappy UI
       final updatedProfile = currentProfile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
       state = state.copyWith(profile: updatedProfile);
-      
+
       // Also update in allProfiles if it exists
-      final updatedAll = state.allProfiles.map((p) => p.id == updatedProfile.id ? updatedProfile : p).toList();
+      final updatedAll =
+          state.allProfiles.map((p) => p.id == updatedProfile.id ? updatedProfile : p).toList();
       state = state.copyWith(allProfiles: updatedAll);
-      
+
       return true;
     } catch (e) {
       AppLogger.d('ProfileNotifier: updateProfile failed: $e');
@@ -208,7 +213,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
       // Get total violation count for this user
       final violationCount = await _repo.getViolationCount(userId);
-      AppLogger.d('📝 Profanity violation #$violationCount: user=$userId name="$attemptedName" match="$match"');
+      AppLogger.d(
+          '📝 Profanity violation #$violationCount: user=$userId name="$attemptedName" match="$match"');
 
       // Strike limit: 3 violations → permanent name restriction
       if (violationCount >= 3) {
@@ -237,19 +243,20 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final currentFavorites = List<String>.from(currentProfile.favoriteCallIds);
     final isFavorite = currentFavorites.contains(callId);
-    
+
     // Toggle locally for instant UI update
     if (isFavorite) {
       currentFavorites.remove(callId);
     } else {
       currentFavorites.add(callId);
     }
-    
+
     final updatedProfile = currentProfile.copyWith(favoriteCallIds: currentFavorites);
     state = state.copyWith(profile: updatedProfile);
-    
+
     // Update allProfiles list
-    final updatedAll = state.allProfiles.map((p) => p.id == updatedProfile.id ? updatedProfile : p).toList();
+    final updatedAll =
+        state.allProfiles.map((p) => p.id == updatedProfile.id ? updatedProfile : p).toList();
     state = state.copyWith(allProfiles: updatedAll);
 
     // Persist
