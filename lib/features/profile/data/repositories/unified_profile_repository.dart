@@ -215,13 +215,14 @@ class UnifiedProfileRepository implements ProfileRepository {
       final doc = await _apiGateway.getDocument(_collectionPath, userId);
 
       if (doc == null) {
-        // Profile doesn't exist
+        // Profile doesn't exist — create with first score as the average
         await _apiGateway.setDocument(_collectionPath, userId, {
           'id': userId,
           'name': 'Hunter',
           'joinedDate': DateTime.now().toIso8601String(),
           'history': [data],
           'totalCalls': 1,
+          'averageScore': result.score,
           'isAlphaTester': true,
         });
         return;
@@ -234,9 +235,24 @@ class UnifiedProfileRepository implements ProfileRepository {
 
       final totalCalls = (existingData['totalCalls'] as int? ?? 0) + 1;
 
+      // Recalculate average score from all history entries
+      double totalScore = 0;
+      int scoredItems = 0;
+      for (final item in history) {
+        if (item is Map) {
+          final r = item['result'];
+          if (r is Map && r['score'] != null) {
+            totalScore += (r['score'] as num).toDouble();
+            scoredItems++;
+          }
+        }
+      }
+      final averageScore = scoredItems > 0 ? totalScore / scoredItems : 0.0;
+
       await _apiGateway.updateDocument(_collectionPath, userId, {
         'history': history,
         'totalCalls': totalCalls,
+        'averageScore': averageScore,
         'id': userId, // Ensure core fields are there
         'joinedDate': existingData['joinedDate'] ?? DateTime.now().toIso8601String(),
         'isAlphaTester': true,

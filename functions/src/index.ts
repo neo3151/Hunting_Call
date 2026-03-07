@@ -293,3 +293,66 @@ export const scrubInactiveProfilesManual = functions.https.onCall(async (_data, 
     functions.logger.info("🧹 Manual profile scrub complete", result);
     return result;
 });
+
+// ─── backfillAverageScores ──────────────────────────────────────────
+//
+// One-time callable Cloud Function to recalculate averageScore for
+// all existing profiles from their history arrays.
+// Fixes the bug where averageScore was never updated on cloud writes.
+//
+
+export const backfillAverageScores = functions.https.onCall(async (_data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError(
+            "unauthenticated",
+            "Must be logged in to trigger backfill."
+        );
+    }
+
+    const profilesSnap = await db.collection("profiles").get();
+    let updated = 0;
+    let skipped = 0;
+
+    for (const doc of profilesSnap.docs) {
+        const data = doc.data();
+        const history = data.history as Array<{ result?: { score?: number } }> | undefined;
+
+        if (!history || history.length === 0) {
+            skipped++;
+            continue;
+        }
+
+        let totalScore = 0;
+        let scoredItems = 0;
+
+        for (const item of history) {
+            if (item.result && typeof item.result.score === "number") {
+                totalScore += item.result.score;
+                scoredItems++;
+            }
+        }
+
+        if (scoredItems === 0) {
+            skipped++;
+            continue;
+        }
+
+        const averageScore = totalScore / scoredItems;
+
+        // Only update if the current value is wrong
+        const currentAvg = (data.averageScore as number) || 0;
+        if (Math.abs(currentAvg - averageScore) > 0.01) {
+            await doc.ref.update({ averageScore });
+            updated++;
+            functions.logger.info(
+                `✅ ${doc.id}: ${currentAvg.toFixed(1)} → ${averageScore.toFixed(1)} (${scoredItems} entries)`
+            );
+        } else {
+            skipped++;
+        }
+    }
+
+    const result = { total: profilesSnap.size, updated, skipped };
+    functions.logger.info("📊 Backfill complete", result);
+    return result;
+});
