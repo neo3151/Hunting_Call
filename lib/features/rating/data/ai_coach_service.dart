@@ -10,8 +10,10 @@ import 'package:outcall/features/rating/domain/rating_model.dart';
 /// Point [ollamaBaseUrl] to your local machine's IP on the network.
 /// The phone and server must be on the same Wi-Fi network.
 class AiCoachService {
-  // Change this to your machine's local IP address
-  static const String ollamaBaseUrl = 'http://192.168.1.189:11434';
+  // Cloudflare Tunnel to local Ollama instance
+  // Note: this URL changes each time cloudflared restarts
+  // Local fallback: http://192.168.1.189:11434
+  static const String ollamaBaseUrl = 'https://estate-douglas-subject-eagle.trycloudflare.com';
 
   /// Request AI coaching feedback based on rating results.
   ///
@@ -32,7 +34,7 @@ class AiCoachService {
           .map((e) => '  - ${e.key}: ${e.value.toStringAsFixed(1)}')
           .join('\n');
 
-      final systemPrompt = 'You are a master hunting call coach with decades of field experience. '
+      const systemPrompt = 'You are a master hunting call coach with decades of field experience. '
           'You give warm, encouraging, practical advice to hunters learning to '
           'perfect their animal calls. You speak with authority but never '
           'condescension. Keep your coaching concise — 2-3 short paragraphs max. '
