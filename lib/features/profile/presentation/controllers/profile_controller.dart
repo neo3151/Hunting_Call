@@ -80,6 +80,13 @@ class ProfileNotifier extends Notifier<ProfileState> {
       final profile = await _repo.getProfile(userId);
       // AppLogger.d("ProfileNotifier: loadProfile success for $userId");
       state = state.copyWith(profile: profile, isProfileLoading: false);
+
+      // Stamp lastActiveAt for scrubber inactivity tracking
+      try {
+        await _repo.updateProfileDetails(userId, lastActiveAt: DateTime.now());
+      } catch (_) {
+        // Non-critical — don't block the UI if the stamp fails
+      }
     } catch (e) {
       AppLogger.d('ProfileNotifier: loadProfile failed for $userId: $e');
       state = state.copyWith(error: e.toString(), isProfileLoading: false);

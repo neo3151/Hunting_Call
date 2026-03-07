@@ -1,7 +1,7 @@
-import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
-import 'package:outcall/features/profile/domain/entities/user_profile.dart';
-import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/profile/data/datasources/local_profile_data_source.dart';
+import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
 
 class LocalProfileRepository implements ProfileRepository {
   final ProfileDataSource dataSource;
@@ -27,7 +27,7 @@ class LocalProfileRepository implements ProfileRepository {
     }
     return profiles;
   }
-  
+
   @override
   Future<List<UserProfile>> getProfilesByEmail(String email) async {
     final allProfiles = await getAllProfiles();
@@ -35,7 +35,8 @@ class LocalProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday, String? email}) async {
+  Future<UserProfile> createProfile(String name,
+      {String? id, DateTime? birthday, String? email}) async {
     final finalId = id ?? 'local_${DateTime.now().millisecondsSinceEpoch}';
     final newProfile = UserProfile(
       id: finalId,
@@ -74,7 +75,7 @@ class LocalProfileRepository implements ProfileRepository {
     final profile = await dataSource.getProfile(userId);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     bool shouldIncrement = false;
     if (profile.lastDailyChallengeDate == null) {
       shouldIncrement = true;
@@ -85,24 +86,28 @@ class LocalProfileRepository implements ProfileRepository {
         shouldIncrement = true;
       }
     }
-    
+
     if (shouldIncrement) {
-      final isConsecutive = profile.lastDailyChallengeDate != null && 
-        now.difference(profile.lastDailyChallengeDate!).inHours < 48 && // Allow 48h to account for "yesterday"
-        (today.difference(DateTime(profile.lastDailyChallengeDate!.year, profile.lastDailyChallengeDate!.month, profile.lastDailyChallengeDate!.day)).inDays == 1);
-      
+      final isConsecutive = profile.lastDailyChallengeDate != null &&
+          now.difference(profile.lastDailyChallengeDate!).inHours <
+              48 && // Allow 48h to account for "yesterday"
+          (today
+                  .difference(DateTime(profile.lastDailyChallengeDate!.year,
+                      profile.lastDailyChallengeDate!.month, profile.lastDailyChallengeDate!.day))
+                  .inDays ==
+              1);
+
       int newStreak = isConsecutive ? profile.currentStreak + 1 : 1;
       final int newLongest = newStreak > profile.longestStreak ? newStreak : profile.longestStreak;
 
       // Handle first ever or if current streak was 0 for some reason
-      if(profile.currentStreak == 0) newStreak = 1; 
+      if (profile.currentStreak == 0) newStreak = 1;
 
       final updatedProfile = profile.copyWith(
-        dailyChallengesCompleted: profile.dailyChallengesCompleted + 1,
-        lastDailyChallengeDate: now,
-        currentStreak: newStreak,
-        longestStreak: newLongest
-      );
+          dailyChallengesCompleted: profile.dailyChallengesCompleted + 1,
+          lastDailyChallengeDate: now,
+          currentStreak: newStreak,
+          longestStreak: newLongest);
       await dataSource.saveProfile(updatedProfile);
     }
   }
@@ -119,19 +124,22 @@ class LocalProfileRepository implements ProfileRepository {
     final allProfiles = await getAllProfiles();
     // Filter profiles with at least 1 call to avoid showing empty users
     final validProfiles = allProfiles.where((p) => p.totalCalls > 0).toList();
-    
+
     // Sort by average score descending
     validProfiles.sort((a, b) => b.averageScore.compareTo(a.averageScore));
-    
+
     if (validProfiles.length > limit) {
       return validProfiles.sublist(0, limit);
     }
     return validProfiles;
   }
+
   @override
-  Future<void> updateProfileDetails(String userId, {String? nickname, String? avatarUrl}) async {
+  Future<void> updateProfileDetails(String userId,
+      {String? nickname, String? avatarUrl, DateTime? lastActiveAt}) async {
     final profile = await dataSource.getProfile(userId);
-    final updated = profile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
+    final updated =
+        profile.copyWith(nickname: nickname, avatarUrl: avatarUrl, lastActiveAt: lastActiveAt);
     await dataSource.saveProfile(updated);
   }
 
@@ -139,13 +147,13 @@ class LocalProfileRepository implements ProfileRepository {
   Future<void> toggleFavoriteCall(String userId, String callId, bool isFavorite) async {
     final profile = await dataSource.getProfile(userId);
     final currentFavorites = List<String>.from(profile.favoriteCallIds);
-    
+
     if (isFavorite && !currentFavorites.contains(callId)) {
       currentFavorites.add(callId);
     } else if (!isFavorite && currentFavorites.contains(callId)) {
       currentFavorites.remove(callId);
     }
-    
+
     final updated = profile.copyWith(favoriteCallIds: currentFavorites);
     await dataSource.saveProfile(updated);
   }

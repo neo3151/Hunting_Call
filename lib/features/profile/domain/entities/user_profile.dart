@@ -24,9 +24,10 @@ class UserProfile {
   final bool isPremium; // Entitlement: Has user purchased the full app?
   final bool isAlphaTester;
   final bool nameRestricted; // Locked after repeated profanity violations
-  final String? referralCode;   // User's unique referral code (OUTCALL-XXXX)
-  final String? referredBy;     // Code of the user who referred them
-  final int referralCount;      // How many people used their code
+  final String? referralCode; // User's unique referral code (OUTCALL-XXXX)
+  final String? referredBy; // Code of the user who referred them
+  final int referralCount; // How many people used their code
+  final DateTime? lastActiveAt; // Stamped each session for scrubber inactivity tracking
 
   UserProfile({
     required this.id,
@@ -51,6 +52,7 @@ class UserProfile {
     this.referralCode,
     this.referredBy,
     this.referralCount = 0,
+    this.lastActiveAt,
   });
 
   factory UserProfile.guest() {
@@ -86,6 +88,7 @@ class UserProfile {
     String? referralCode,
     String? referredBy,
     int? referralCount,
+    DateTime? lastActiveAt,
   }) {
     return UserProfile(
       id: id,
@@ -110,6 +113,7 @@ class UserProfile {
       referralCode: referralCode ?? this.referralCode,
       referredBy: referredBy ?? this.referredBy,
       referralCount: referralCount ?? this.referralCount,
+      lastActiveAt: lastActiveAt ?? this.lastActiveAt,
     );
   }
 

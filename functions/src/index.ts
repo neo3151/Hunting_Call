@@ -126,3 +126,170 @@ export const submitScore = functions.https.onCall(async (data: SubmitScoreReques
 
     return result;
 });
+
+// ─── scrubInactiveProfiles ──────────────────────────────────────────
+//
+// Scheduled Cloud Function that deletes stale user profiles.
+//
+// Rules:
+//   1. Skip profiles where isPremium === true or isAlphaTester === true
+//   2. Determine last activity from: lastActiveAt → latest history timestamp → joinedDate
+//   3. If inactive for 90+ days → delete the profile document
+//   4. Also remove the deleted user from all leaderboard scores arrays
+//   5. Log a summary of actions taken
+//
+
+const INACTIVITY_THRESHOLD_DAYS = 90;
+
+/**
+ * Core scrubbing logic — shared between the scheduled and callable triggers.
+ */
+async function runProfileScrub(): Promise<{
+    scanned: number;
+    deleted: number;
+    skippedPremium: number;
+    skippedAlpha: number;
+    skippedActive: number;
+    leaderboardsCleaned: number;
+}> {
+    const now = Date.now();
+    const cutoffMs = INACTIVITY_THRESHOLD_DAYS * 24 * 60 * 60 * 1000;
+    const cutoffDate = now - cutoffMs;
+
+    const profilesSnap = await db.collection("profiles").get();
+
+    let deleted = 0;
+    let skippedPremium = 0;
+    let skippedAlpha = 0;
+    let skippedActive = 0;
+    const deletedUserIds: string[] = [];
+
+    for (const doc of profilesSnap.docs) {
+        const data = doc.data();
+
+        // Skip premium users
+        if (data.isPremium === true) {
+            skippedPremium++;
+            continue;
+        }
+
+        // Skip alpha testers
+        if (data.isAlphaTester === true) {
+            skippedAlpha++;
+            continue;
+        }
+
+        // Determine last activity timestamp
+        let lastActivityMs = 0;
+
+        // 1. Check lastActiveAt field (set by client on each session)
+        if (data.lastActiveAt) {
+            const ts = toTimestampMs(data.lastActiveAt);
+            if (ts > lastActivityMs) lastActivityMs = ts;
+        }
+
+        // 2. Check latest history entry
+        if (Array.isArray(data.history) && data.history.length > 0) {
+            for (const item of data.history) {
+                const ts = toTimestampMs(item.timestamp);
+                if (ts > lastActivityMs) lastActivityMs = ts;
+            }
+        }
+
+        // 3. Fall back to joinedDate
+        if (lastActivityMs === 0 && data.joinedDate) {
+            lastActivityMs = toTimestampMs(data.joinedDate);
+        }
+
+        // If still no timestamp, treat as ancient (delete)
+        if (lastActivityMs > cutoffDate) {
+            skippedActive++;
+            continue;
+        }
+
+        // Delete the stale profile
+        await doc.ref.delete();
+        deleted++;
+        deletedUserIds.push(doc.id);
+    }
+
+    // Clean deleted users from leaderboard scores
+    let leaderboardsCleaned = 0;
+    if (deletedUserIds.length > 0) {
+        const leaderboardsSnap = await db.collection("leaderboards").get();
+        for (const lbDoc of leaderboardsSnap.docs) {
+            const lbData = lbDoc.data();
+            if (!Array.isArray(lbData.scores)) continue;
+
+            const originalLen = lbData.scores.length;
+            const filtered = lbData.scores.filter(
+                (entry: LeaderboardEntry) => !deletedUserIds.includes(entry.userId)
+            );
+
+            if (filtered.length < originalLen) {
+                await lbDoc.ref.update({
+                    scores: filtered,
+                    lastUpdated: new Date().toISOString(),
+                });
+                leaderboardsCleaned++;
+            }
+        }
+    }
+
+    return {
+        scanned: profilesSnap.size,
+        deleted,
+        skippedPremium,
+        skippedAlpha,
+        skippedActive,
+        leaderboardsCleaned,
+    };
+}
+
+/**
+ * Convert Firestore timestamp / ISO string / epoch ms to milliseconds.
+ */
+function toTimestampMs(value: unknown): number {
+    if (!value) return 0;
+    // Firestore Timestamp object
+    if (typeof value === "object" && value !== null && "toMillis" in value) {
+        return (value as { toMillis: () => number }).toMillis();
+    }
+    // ISO date string
+    if (typeof value === "string") {
+        const parsed = Date.parse(value);
+        return isNaN(parsed) ? 0 : parsed;
+    }
+    // Epoch milliseconds
+    if (typeof value === "number") {
+        return value;
+    }
+    return 0;
+}
+
+// ── Scheduled trigger: runs every Sunday at 3:00 AM UTC ──
+export const scrubInactiveProfiles = functions.pubsub
+    .schedule("every sunday 03:00")
+    .timeZone("UTC")
+    .onRun(async () => {
+        functions.logger.info("🧹 Starting scheduled profile scrub...");
+        const result = await runProfileScrub();
+        functions.logger.info("🧹 Profile scrub complete", result);
+        return null;
+    });
+
+// ── Manual trigger: callable from Firebase console or client ──
+export const scrubInactiveProfilesManual = functions.https.onCall(async (_data, context) => {
+    // Only allow authenticated admin calls
+    if (!context.auth) {
+        throw new functions.https.HttpsError(
+            "unauthenticated",
+            "Must be logged in to trigger scrub."
+        );
+    }
+
+    functions.logger.info("🧹 Starting manual profile scrub...");
+    const result = await runProfileScrub();
+    functions.logger.info("🧹 Manual profile scrub complete", result);
+    return result;
+});

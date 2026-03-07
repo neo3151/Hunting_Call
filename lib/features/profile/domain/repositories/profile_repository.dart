@@ -11,7 +11,8 @@ abstract class ProfileRepository {
   Future<void> updateDailyChallengeStats(String userId);
   Future<void> setPremiumStatus(String userId, bool isPremium);
   Future<List<UserProfile>> getTopGlobalUsers({int limit = 50});
-  Future<void> updateProfileDetails(String userId, {String? nickname, String? avatarUrl});
+  Future<void> updateProfileDetails(String userId,
+      {String? nickname, String? avatarUrl, DateTime? lastActiveAt});
   Future<void> toggleFavoriteCall(String userId, String callId, bool isFavorite);
 
   /// Logs a profanity violation attempt for admin review.

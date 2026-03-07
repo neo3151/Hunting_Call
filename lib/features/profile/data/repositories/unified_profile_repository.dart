@@ -127,6 +127,18 @@ class UnifiedProfileRepository implements ProfileRepository {
       }
     }
 
+    if (data['lastActiveAt'] != null &&
+        data['lastActiveAt'] is! String &&
+        data['lastActiveAt'] is! int) {
+      try {
+        data['lastActiveAt'] = data['lastActiveAt'].toDate().toIso8601String();
+      } catch (_) {
+        if (data['lastActiveAt'] is DateTime) {
+          data['lastActiveAt'] = (data['lastActiveAt'] as DateTime).toIso8601String();
+        }
+      }
+    }
+
     if (data['history'] != null && data['history'] is List) {
       final historyList = data['history'] as List;
       for (var item in historyList) {
@@ -395,12 +407,14 @@ class UnifiedProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> updateProfileDetails(String userId, {String? nickname, String? avatarUrl}) async {
+  Future<void> updateProfileDetails(String userId,
+      {String? nickname, String? avatarUrl, DateTime? lastActiveAt}) async {
     // 1. Local backup if available
     if (_localDataSource != null) {
       try {
         final localProfile = await _localDataSource!.getProfile(userId);
-        final updated = localProfile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
+        final updated = localProfile.copyWith(
+            nickname: nickname, avatarUrl: avatarUrl, lastActiveAt: lastActiveAt);
         await _localDataSource!.saveProfile(updated);
       } catch (e) {
         AppLogger.d('⚠️ Failed to save local backup of profile details: $e');
@@ -417,6 +431,7 @@ class UnifiedProfileRepository implements ProfileRepository {
         updates['nickname'] = ProfanityFilter.cleanName(nickname);
       }
       if (avatarUrl != null) updates['avatarUrl'] = avatarUrl;
+      if (lastActiveAt != null) updates['lastActiveAt'] = lastActiveAt.toIso8601String();
 
       if (updates.isNotEmpty) {
         final doc = await _apiGateway.getDocument(_collectionPath, userId);

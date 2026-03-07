@@ -43,6 +43,9 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
       referralCode: json['referralCode'] as String?,
       referredBy: json['referredBy'] as String?,
       referralCount: (json['referralCount'] as num?)?.toInt() ?? 0,
+      lastActiveAt: json['lastActiveAt'] == null
+          ? null
+          : DateTime.parse(json['lastActiveAt'] as String),
     );
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
@@ -70,6 +73,7 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'referralCode': instance.referralCode,
       'referredBy': instance.referredBy,
       'referralCount': instance.referralCount,
+      'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
     };
 
 HistoryItem _$HistoryItemFromJson(Map<String, dynamic> json) => HistoryItem(
