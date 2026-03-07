@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:outcall/features/library/domain/providers.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/rating/data/ai_coach_service.dart';
@@ -100,8 +99,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
   Widget build(BuildContext context) {
     // Only show for premium users
     final profile = ref.watch(profileNotifierProvider).profile;
-    final isFirebaseEnabled = ref.watch(firebaseEnabledProvider);
-    if (profile == null || !profile.isPremium || !isFirebaseEnabled) {
+    if (profile == null || !profile.isPremium) {
       return const SizedBox.shrink();
     }
 
