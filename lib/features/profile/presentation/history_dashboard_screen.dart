@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/widgets/staggered_fade_slide.dart';
-import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/library/domain/providers.dart';
 import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/profile/presentation/widgets/attempt_detail_sheet.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 
 /// Practice history dashboard with stats, per-animal breakdown, and score trend.
@@ -38,7 +41,8 @@ class HistoryDashboardScreen extends ConsumerWidget {
               Icon(Icons.bar_chart_rounded, size: 64, color: palette.textSubtle),
               const SizedBox(height: 16),
               Text(S.of(context).noRecordingsYet,
-                  style: GoogleFonts.oswald(fontSize: 20, color: palette.textPrimary, fontWeight: FontWeight.bold)),
+                  style: GoogleFonts.oswald(
+                      fontSize: 20, color: palette.textPrimary, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text(S.of(context).startFirstHunt,
                   style: GoogleFonts.lato(color: palette.textSecondary, fontSize: 14)),
@@ -94,9 +98,25 @@ class HistoryDashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 32),
 
-              // Per-animal breakdown
+              // Recent attempts list
               StaggeredFadeSlide(
                 index: 3,
+                child: _buildSectionHeader(palette, 'RECENT ATTEMPTS'),
+              ),
+              const SizedBox(height: 12),
+              ...recentScores.reversed.take(10).toList().asMap().entries.map((entry) {
+                final idx = entry.key;
+                final h = entry.value;
+                return StaggeredFadeSlide(
+                  index: 4 + idx,
+                  child: _buildAttemptTile(context, ref, palette, h, history),
+                );
+              }),
+              const SizedBox(height: 32),
+
+              // Per-animal breakdown
+              StaggeredFadeSlide(
+                index: 14,
                 child: _buildSectionHeader(palette, S.of(context).animalBreakdown),
               ),
               const SizedBox(height: 12),
@@ -105,11 +125,13 @@ class HistoryDashboardScreen extends ConsumerWidget {
                 final animalId = entry.value.key;
                 final items = entry.value.value;
                 final animalBest = items.map((h) => h.result.score).reduce((a, b) => a > b ? a : b);
-                final animalAvg = items.map((h) => h.result.score).reduce((a, b) => a + b) / items.length;
+                final animalAvg =
+                    items.map((h) => h.result.score).reduce((a, b) => a + b) / items.length;
 
                 return StaggeredFadeSlide(
-                  index: 4 + idx,
-                  child: _buildAnimalCard(context, palette, animalId, items.length, animalBest, animalAvg),
+                  index: 15 + idx,
+                  child: _buildAnimalCard(context, ref, palette, animalId, items.length, animalBest,
+                      animalAvg, history),
                 );
               }),
             ],
@@ -140,37 +162,52 @@ class HistoryDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryRow(BuildContext context, AppColorPalette palette, int total, double avg, double best) {
+  Widget _buildSummaryRow(
+      BuildContext context, AppColorPalette palette, int total, double avg, double best) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard(palette, S.of(context).totalSessions, '$total', Icons.mic, const Color(0xFF5FF7B6))),
+        Expanded(
+            child: _buildStatCard(palette, S.of(context).totalSessions, '$total', Icons.mic,
+                const Color(0xFF5FF7B6))),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(palette, S.of(context).averageScore, '${avg.toInt()}%', Icons.speed, Colors.orangeAccent)),
+        Expanded(
+            child: _buildStatCard(palette, S.of(context).averageScore, '${avg.toInt()}%',
+                Icons.speed, Colors.orangeAccent)),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(palette, S.of(context).bestScore, '${best.toInt()}%', Icons.emoji_events, const Color(0xFFFFD700))),
+        Expanded(
+            child: _buildStatCard(palette, S.of(context).bestScore, '${best.toInt()}%',
+                Icons.emoji_events, const Color(0xFFFFD700))),
       ],
     );
   }
 
-  Widget _buildStatCard(AppColorPalette palette, String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      AppColorPalette palette, String label, String value, IconData icon, Color color) {
     return Semantics(
       label: '$label: $value',
       child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: palette.surfaceLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 8),
-          Text(value, style: GoogleFonts.oswald(fontSize: 22, fontWeight: FontWeight.bold, color: palette.textPrimary)),
-          const SizedBox(height: 4),
-          Text(label, style: GoogleFonts.lato(fontSize: 9, color: palette.textSubtle, fontWeight: FontWeight.bold, letterSpacing: 1)),
-        ],
-      ),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: palette.surfaceLight,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 8),
+            Text(value,
+                style: GoogleFonts.oswald(
+                    fontSize: 22, fontWeight: FontWeight.bold, color: palette.textPrimary)),
+            const SizedBox(height: 4),
+            Text(label,
+                style: GoogleFonts.lato(
+                    fontSize: 9,
+                    color: palette.textSubtle,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1)),
+          ],
+        ),
       ),
     );
   }
@@ -205,7 +242,8 @@ class HistoryDashboardScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('${recent.length} sessions ago', style: GoogleFonts.lato(fontSize: 10, color: palette.textSubtle)),
+              Text('${recent.length} sessions ago',
+                  style: GoogleFonts.lato(fontSize: 10, color: palette.textSubtle)),
               Text('Latest', style: GoogleFonts.lato(fontSize: 10, color: palette.textSubtle)),
             ],
           ),
@@ -231,7 +269,8 @@ class HistoryDashboardScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(S.of(context).challengeStreakTitle,
-                    style: GoogleFonts.oswald(fontSize: 16, fontWeight: FontWeight.bold, color: palette.textPrimary)),
+                    style: GoogleFonts.oswald(
+                        fontSize: 16, fontWeight: FontWeight.bold, color: palette.textPrimary)),
                 const SizedBox(height: 4),
                 Text('${profile.currentStreak} day current  •  ${profile.longestStreak} day best',
                     style: GoogleFonts.lato(fontSize: 13, color: palette.textSecondary)),
@@ -239,7 +278,8 @@ class HistoryDashboardScreen extends ConsumerWidget {
             ),
           ),
           Text('${profile.dailyChallengesCompleted}',
-              style: GoogleFonts.oswald(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.orangeAccent)),
+              style: GoogleFonts.oswald(
+                  fontSize: 28, fontWeight: FontWeight.bold, color: Colors.orangeAccent)),
         ],
       ),
     );
@@ -257,17 +297,115 @@ class HistoryDashboardScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Text(title, style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: palette.textPrimary, fontWeight: FontWeight.bold)),
+        Text(title,
+            style: GoogleFonts.oswald(
+                fontSize: 12,
+                letterSpacing: 1.5,
+                color: palette.textPrimary,
+                fontWeight: FontWeight.bold)),
       ],
     );
   }
 
-  Widget _buildAnimalCard(BuildContext context, AppColorPalette palette, String animalId, int count, double best, double avg) {
-    // Format animal name from ID (e.g., "elk_bugle" -> "Elk Bugle")
-    final name = animalId
+  /// Tappable tile for a single attempt in the recent list.
+  Widget _buildAttemptTile(BuildContext context, WidgetRef ref, AppColorPalette palette,
+      HistoryItem h, List<HistoryItem> allHistory) {
+    final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
+    final callResult = getCallUseCase.execute(h.animalId);
+    String animalName = h.animalId
         .split('_')
         .map((w) => w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}')
         .join(' ');
+    callResult.fold((_) {}, (reference) => animalName = reference.animalName);
+
+    final scoreColor = h.result.score >= 90
+        ? const Color(0xFFFFD700)
+        : h.result.score >= 75
+            ? const Color(0xFF5FF7B6)
+            : h.result.score >= 50
+                ? Colors.orangeAccent
+                : Colors.redAccent;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => AttemptDetailSheet.show(context, h, allHistory),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: palette.surfaceLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: palette.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: scoreColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Text('${h.result.score.toInt()}',
+                        style: GoogleFonts.oswald(
+                            fontSize: 14, fontWeight: FontWeight.bold, color: scoreColor)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(animalName,
+                          style: GoogleFonts.oswald(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: palette.textPrimary)),
+                      Text(DateFormat('MMM d, h:mm a').format(h.timestamp),
+                          style: GoogleFonts.lato(fontSize: 10, color: palette.textSubtle)),
+                    ],
+                  ),
+                ),
+                // Mini metric dots
+                ...h.result.metrics.entries.take(4).map((m) {
+                  final mColor = m.value >= 80
+                      ? const Color(0xFF5FF7B6)
+                      : m.value >= 50
+                          ? Colors.orangeAccent
+                          : Colors.redAccent;
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 3),
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: mColor),
+                    ),
+                  );
+                }),
+                const SizedBox(width: 8),
+                Icon(Icons.chevron_right, size: 16, color: palette.textSubtle),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimalCard(BuildContext context, WidgetRef ref, AppColorPalette palette,
+      String animalId, int count, double best, double avg, List<HistoryItem> allHistory) {
+    // Resolve animal name
+    final getCallUseCase = ref.read(getCallByIdUseCaseProvider);
+    final callResult = getCallUseCase.execute(animalId);
+    String name = animalId
+        .split('_')
+        .map((w) => w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
+    callResult.fold((_) {}, (reference) => name = reference.animalName);
 
     final Color tierColor;
     if (best >= 90) {
@@ -282,50 +420,132 @@ class HistoryDashboardScreen extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: palette.surfaceLight,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: palette.border),
+          onTap: () => _showAnimalAttempts(context, ref, palette, animalId, name, allHistory),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: palette.surfaceLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: palette.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: tierColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text('${best.toInt()}',
+                        style: GoogleFonts.oswald(
+                            fontSize: 16, fontWeight: FontWeight.bold, color: tierColor)),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name,
+                          style: GoogleFonts.oswald(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: palette.textPrimary)),
+                      Text('$count sessions  •  Avg ${avg.toInt()}%',
+                          style: GoogleFonts.lato(fontSize: 11, color: palette.textSubtle)),
+                    ],
+                  ),
+                ),
+                // Mini bar
+                SizedBox(
+                  width: 60,
+                  height: 6,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: best / 100,
+                      backgroundColor: palette.border,
+                      color: tierColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.chevron_right, size: 16, color: palette.textSubtle),
+              ],
+            ),
+          ),
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: tierColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: Text('${best.toInt()}', style: GoogleFonts.oswald(fontSize: 16, fontWeight: FontWeight.bold, color: tierColor)),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: GoogleFonts.oswald(fontSize: 15, fontWeight: FontWeight.bold, color: palette.textPrimary)),
-                  Text('$count sessions  •  Avg ${avg.toInt()}%', style: GoogleFonts.lato(fontSize: 11, color: palette.textSubtle)),
-                ],
-              ),
-            ),
-            // Mini bar
-            SizedBox(
-              width: 60,
-              height: 6,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(3),
-                child: LinearProgressIndicator(
-                  value: best / 100,
-                  backgroundColor: palette.border,
-                  color: tierColor,
+      ),
+    );
+  }
+
+  /// Shows a bottom sheet with all attempts for a specific animal.
+  void _showAnimalAttempts(BuildContext context, WidgetRef ref, AppColorPalette palette,
+      String animalId, String animalName, List<HistoryItem> allHistory) {
+    final filtered = allHistory.where((h) => h.animalId == animalId).toList()
+      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.65,
+        minChildSize: 0.4,
+        maxChildSize: 0.85,
+        builder: (ctx, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: palette.background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              // Handle + header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                child: Column(
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                            color: palette.textSubtle.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(2)),
+                      ),
+                    ),
+                    Text(animalName.toUpperCase(),
+                        style: GoogleFonts.oswald(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                            color: palette.textPrimary)),
+                    const SizedBox(height: 4),
+                    Text('${filtered.length} attempts',
+                        style: GoogleFonts.lato(fontSize: 12, color: palette.textSubtle)),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
-            ),
-          ],
+              // Attempt list
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  itemCount: filtered.length,
+                  itemBuilder: (ctx, i) =>
+                      _buildAttemptTile(context, ref, palette, filtered[i], allHistory),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
