@@ -14,6 +14,7 @@ import 'package:outcall/features/profile/domain/achievement_service.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/rating/presentation/controllers/rating_controller.dart';
+import 'package:outcall/features/rating/presentation/widgets/ai_coach_card.dart';
 import 'package:outcall/features/rating/presentation/widgets/rating_action_buttons.dart';
 import 'package:outcall/features/rating/presentation/widgets/rating_analytics_widgets.dart';
 import 'package:outcall/features/rating/presentation/widgets/rating_feedback_widgets.dart';
@@ -402,6 +403,13 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                                     const SizedBox(height: 16),
                                     _tryRender(() => PersonalityFeedbackCard(score: result.score),
                                         'Personality'),
+                                    const SizedBox(height: 24),
+                                    _tryRender(
+                                        () => AiCoachCard(
+                                              result: result,
+                                              animalId: widget.animalId,
+                                            ),
+                                        'AI Coach'),
                                     const SizedBox(height: 32),
                                     _tryRender(
                                         () => _buildPitchComparison(result), 'Pitch Comparison'),

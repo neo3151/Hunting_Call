@@ -356,3 +356,111 @@ export const backfillAverageScores = functions.https.onCall(async (_data, contex
     functions.logger.info("📊 Backfill complete", result);
     return result;
 });
+
+// ─── getCoachingFeedback ────────────────────────────────────────────
+//
+// Callable Cloud Function that generates personalized coaching feedback
+// from Gemma 3 4B via the Ollama REST API.
+//
+// Input: { animalName, callType, score, pitchHz, idealPitchHz, metrics, proTips }
+// Output: { coaching: string }
+//
+
+const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
+
+interface CoachingRequest {
+    animalName: string;
+    callType: string;
+    score: number;
+    pitchHz: number;
+    idealPitchHz: number;
+    metrics: Record<string, number>;
+    proTips?: string;
+}
+
+export const getCoachingFeedback = functions.https.onCall(async (data: CoachingRequest, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError(
+            "unauthenticated",
+            "Must be logged in to get coaching feedback."
+        );
+    }
+
+    // Validate input
+    if (!data.animalName || typeof data.score !== "number") {
+        throw new functions.https.HttpsError(
+            "invalid-argument",
+            "animalName and score are required."
+        );
+    }
+
+    // Build the coaching prompt
+    const pitchDiff = Math.abs(data.pitchHz - data.idealPitchHz);
+    const pitchDirection = data.pitchHz > data.idealPitchHz ? "too high" : "too low";
+
+    const metricsBreakdown = data.metrics
+        ? Object.entries(data.metrics)
+            .map(([key, val]) => `  - ${key}: ${typeof val === "number" ? val.toFixed(1) : val}`)
+            .join("\n")
+        : "  No detailed metrics available.";
+
+    const systemPrompt = `You are a master hunting call coach with decades of field experience. You give warm, encouraging, practical advice to hunters learning to perfect their animal calls. You speak with authority but never condescension. Keep your coaching concise — 2-3 short paragraphs max. Use specific, actionable tips. Never use markdown formatting, emojis, or bullet points — just clean conversational text.`;
+
+    const userPrompt = `A hunter just practiced their ${data.callType} call for ${data.animalName} and scored ${data.score.toFixed(0)}%.
+
+Their pitch was ${data.pitchHz.toFixed(0)} Hz (target: ${data.idealPitchHz.toFixed(0)} Hz — ${pitchDiff < 10 ? "right on target" : `${pitchDiff.toFixed(0)} Hz ${pitchDirection}`}).
+
+Detailed metrics:
+${metricsBreakdown}
+
+${data.proTips ? `Reference tips for this call: ${data.proTips}` : ""}
+
+Give them personalized coaching feedback. What are they doing well? What's the #1 thing they should focus on improving? Give one specific, practical drill or technique they can try right now.`;
+
+    try {
+        const response = await fetch(`${OLLAMA_URL}/api/generate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "gemma3:4b",
+                prompt: userPrompt,
+                system: systemPrompt,
+                stream: false,
+                options: {
+                    temperature: 0.7,
+                    top_p: 0.9,
+                    num_predict: 300,
+                },
+            }),
+        });
+
+        if (!response.ok) {
+            functions.logger.warn(`Ollama returned ${response.status}`);
+            return { coaching: getFallbackCoaching(data.score) };
+        }
+
+        const result = await response.json() as { response?: string };
+        const coaching = result.response?.trim();
+
+        if (!coaching || coaching.length < 20) {
+            return { coaching: getFallbackCoaching(data.score) };
+        }
+
+        return { coaching };
+    } catch (error) {
+        functions.logger.warn("Ollama unreachable, using fallback", { error });
+        return { coaching: getFallbackCoaching(data.score) };
+    }
+});
+
+function getFallbackCoaching(score: number): string {
+    if (score >= 85) {
+        return "Excellent work! Your call is sounding very natural. Focus on consistency now — try making five calls in a row at this quality level. Small variations in pitch will actually make your calling sound more realistic in the field.";
+    } else if (score >= 70) {
+        return "Good foundation! Your technique is solid but there's room to tighten things up. Focus on matching the target pitch more precisely — try humming the pitch before making the call. Record yourself and compare side-by-side with the reference.";
+    } else if (score >= 50) {
+        return "You're making progress! The key right now is to slow down and focus on one element at a time. Start with pitch accuracy — get that dialed in before worrying about duration or rhythm. Listen to the reference call three times before each attempt.";
+    } else {
+        return "Every expert started right where you are. The most important thing is repetition with intention. Listen carefully to the reference call, then try to mimic just the opening note. Once that sounds right, add the next part. Build the call piece by piece.";
+    }
+}
