@@ -1,10 +1,7 @@
-🎯 v1.8.3 — Smart Library & Content Safety
+🧠 v1.9.0 — AI Coach & Server Maintenance
 
-• 3-tier animal library: browse by category → animal → call type
-• Profanity filter + strike system for clean community content
-• Spam detection to flag suspicious profiles
-• Score animations for satisfying practice feedback
-• Scoring calibration with noise test & mic sensitivity
-• Analytics & crash reporting improvements
-• Dead code cleanup and yearly subscription option
-• CI/CD pipeline for faster, more reliable releases
+• AI Coach: Pro users get personalized coaching tips powered by Gemma 3 AI after every call rating
+• Global Rankings: Fixed scores showing as 0% for all users
+• Profile Cleanup: Automatic removal of inactive accounts (90+ days), premium members excluded
+• Last Active tracking for more accurate user activity data
+• Performance and stability improvements
