@@ -1,13 +1,14 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:outcall/features/auth/presentation/auth_wrapper.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
+
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:outcall/core/services/remote_config/remote_config_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
+import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/features/auth/presentation/auth_wrapper.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -16,8 +17,7 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen>
-    with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
   late final AnimationController _logoController;
   late final AnimationController _shimmerController;
   late final Animation<double> _logoScale;
@@ -51,11 +51,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     // Start logo animation
     _logoController.forward();
 
-    // Start background background initializations
-    _initDeferredServices();
-
-    // Navigate after delay
-    Timer(const Duration(milliseconds: 2800), () {
+    // Wait for both the minimum splash duration (for animation) and background services
+    Future.wait([
+      Future.delayed(const Duration(milliseconds: 2800)),
+      _initDeferredServices(),
+    ]).then((_) {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
