@@ -221,40 +221,62 @@ class AttemptDetailSheet extends ConsumerWidget {
   }
 
   Widget _buildMetricsGrid(AppColorPalette palette, Map<String, double> metrics) {
-    final icons = {
-      'pitch': Icons.music_note,
-      'timbre': Icons.graphic_eq,
-      'rhythm': Icons.timer,
-      'air': Icons.air,
-    };
-    final colors = {
-      'pitch': const Color(0xFF5FF7B6),
-      'timbre': const Color(0xFF64B5F6),
-      'rhythm': Colors.orangeAccent,
-      'air': const Color(0xFFCE93D8),
-    };
-    final labels = {
-      'pitch': 'Pitch',
-      'timbre': 'Tone\nQuality',
-      'rhythm': 'Rhythm',
-      'air': 'Breath\nControl',
-    };
+    // Extract the 4 core scoring metrics from the raw metrics map
+    final coreMetrics = <_CoreMetric>[
+      _CoreMetric(
+        label: 'Pitch',
+        value: metrics['score_pitch'] ?? metrics['pitch'] ?? 0,
+        icon: Icons.music_note,
+        color: const Color(0xFF5FF7B6),
+      ),
+      _CoreMetric(
+        label: 'Tone Quality',
+        value: metrics['score_timbre'] ?? metrics['timbre'] ?? 0,
+        icon: Icons.graphic_eq,
+        color: const Color(0xFF64B5F6),
+      ),
+      _CoreMetric(
+        label: 'Rhythm',
+        value: metrics['score_rhythm'] ?? metrics['rhythm'] ?? 0,
+        icon: Icons.timer,
+        color: Colors.orangeAccent,
+      ),
+      _CoreMetric(
+        label: 'Breath Control',
+        value: metrics['score_duration'] ?? metrics['air'] ?? metrics['duration'] ?? 0,
+        icon: Icons.air,
+        color: const Color(0xFFCE93D8),
+      ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionLabel(palette, 'METRICS BREAKDOWN'),
         const SizedBox(height: 12),
+        // 2x2 grid
         Row(
-          children: metrics.entries.map((entry) {
-            final key = entry.key.toLowerCase();
-            final color = colors[key] ?? const Color(0xFF5FF7B6);
-            final icon = icons[key] ?? Icons.bar_chart;
-            final label = labels[key] ?? entry.key;
-            return Expanded(
-              child: _buildMetricCard(palette, label, entry.value, icon, color),
-            );
-          }).toList(),
+          children: [
+            Expanded(
+                child: _buildMetricCard(palette, coreMetrics[0].label, coreMetrics[0].value,
+                    coreMetrics[0].icon, coreMetrics[0].color)),
+            const SizedBox(width: 8),
+            Expanded(
+                child: _buildMetricCard(palette, coreMetrics[1].label, coreMetrics[1].value,
+                    coreMetrics[1].icon, coreMetrics[1].color)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+                child: _buildMetricCard(palette, coreMetrics[2].label, coreMetrics[2].value,
+                    coreMetrics[2].icon, coreMetrics[2].color)),
+            const SizedBox(width: 8),
+            Expanded(
+                child: _buildMetricCard(palette, coreMetrics[3].label, coreMetrics[3].value,
+                    coreMetrics[3].icon, coreMetrics[3].color)),
+          ],
         ),
       ],
     );
@@ -503,4 +525,19 @@ class AttemptDetailSheet extends ConsumerWidget {
     if (score >= 50) return Colors.orangeAccent;
     return Colors.redAccent;
   }
+}
+
+/// Simple data holder for the 4 core metrics displayed in the attempt detail sheet.
+class _CoreMetric {
+  final String label;
+  final double value;
+  final IconData icon;
+  final Color color;
+
+  const _CoreMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
 }

@@ -143,19 +143,29 @@ class AiCoachService {
     final score = result.score;
     final buf = StringBuffer();
 
-    // Find weakest and strongest metrics
+    // Only consider score-based metrics (0-100 range) for feedback,
+    // not raw values like Pitch (Hz) or Duration (s).
+    const scoreLabels = {
+      'score_pitch': 'Pitch',
+      'score_timbre': 'Tone',
+      'score_rhythm': 'Rhythm',
+      'score_duration': 'Duration',
+    };
+
     String? weakest;
     String? strongest;
     double weakestVal = 101;
     double strongestVal = -1;
-    for (final entry in result.metrics.entries) {
-      if (entry.value < weakestVal) {
-        weakestVal = entry.value;
-        weakest = entry.key;
+    for (final key in scoreLabels.keys) {
+      final val = result.metrics[key];
+      if (val == null) continue;
+      if (val < weakestVal) {
+        weakestVal = val;
+        weakest = key;
       }
-      if (entry.value > strongestVal) {
-        strongestVal = entry.value;
-        strongest = entry.key;
+      if (val > strongestVal) {
+        strongestVal = val;
+        strongest = key;
       }
     }
 
@@ -187,12 +197,11 @@ class AiCoachService {
     buf.writeln();
 
     // Metric-specific drill
-    if (weakest != null && weakestVal < 70) {
-      buf.write('Focus on your $weakest (${weakestVal.toStringAsFixed(0)}%) — ');
-      switch (weakest.toLowerCase()) {
+    final weakestLabel = weakest != null ? scoreLabels[weakest] ?? weakest : null;
+    if (weakestLabel != null && weakestVal < 70) {
+      buf.write('Focus on your $weakestLabel (${weakestVal.toStringAsFixed(0)}%) — ');
+      switch (weakestLabel.toLowerCase()) {
         case 'timing':
-          buf.writeln('use a metronome or tap your foot to lock in the rhythm.');
-          break;
         case 'rhythm':
           buf.writeln('listen to the reference 3x, then clap the pattern before calling.');
           break;
@@ -202,14 +211,18 @@ class AiCoachService {
         case 'duration':
           buf.writeln('practice holding your breath control — aim for steady, even notes.');
           break;
+        case 'tone':
+          buf.writeln('try adjusting how much air you push — less pressure for a smoother sound.');
+          break;
         default:
           buf.writeln('practice that element in isolation before blending it back in.');
       }
     }
 
-    if (strongest != null && strongestVal >= 80) {
+    final strongestLabel = strongest != null ? scoreLabels[strongest] ?? strongest : null;
+    if (strongestLabel != null && strongestVal >= 80) {
       buf.writeln(
-          'Your $strongest is a strength at ${strongestVal.toStringAsFixed(0)}% — keep it up.');
+          'Your $strongestLabel is a strength at ${strongestVal.toStringAsFixed(0)}% — keep it up.');
     }
 
     return buf.toString().trim();
