@@ -1,22 +1,21 @@
 import 'dart:io';
+
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
-import 'package:outcall/features/rating/domain/rating_model.dart';
-import 'package:outcall/features/rating/domain/rating_service.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/analysis/domain/audio_analysis_model.dart';
 import 'package:outcall/features/analysis/domain/frequency_analyzer.dart';
 import 'package:outcall/features/analysis/domain/use_cases/analyze_audio_use_case.dart';
 import 'package:outcall/features/analysis/domain/use_cases/calculate_score_use_case.dart';
 import 'package:outcall/features/daily_challenge/domain/usecases/get_daily_challenge_use_case.dart';
-import 'package:outcall/features/library/data/reference_database.dart';
-
-import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
-import 'package:outcall/features/leaderboard/domain/repositories/leaderboard_service.dart';
 import 'package:outcall/features/leaderboard/domain/leaderboard_entry.dart';
-
+import 'package:outcall/features/leaderboard/domain/repositories/leaderboard_service.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
 import 'package:outcall/features/rating/domain/personality_feedback_service.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:outcall/features/rating/domain/rating_service.dart';
 
 class RealRatingService implements RatingService {
   final AnalyzeAudioUseCase _analyzeUseCase;
@@ -26,35 +25,39 @@ class RealRatingService implements RatingService {
   final ProfileRepository profileRepository;
   final LeaderboardService? leaderboardService;
   final CloudAudioService? cloudAudioService;
-  
+
   Position? _currentPosition;
 
   RealRatingService({
     required AnalyzeAudioUseCase analyzeUseCase,
     required CalculateScoreUseCase calculateUseCase,
     required GetDailyChallengeUseCase getDailyChallengeUseCase,
-    required this.analyzer, 
+    required this.analyzer,
     required this.profileRepository,
     this.leaderboardService,
     this.cloudAudioService,
-  }) : _analyzeUseCase = analyzeUseCase,
-       _calculateUseCase = calculateUseCase,
-       _getDailyChallengeUseCase = getDailyChallengeUseCase;
+  })  : _analyzeUseCase = analyzeUseCase,
+        _calculateUseCase = calculateUseCase,
+        _getDailyChallengeUseCase = getDailyChallengeUseCase;
 
   static final Map<String, AudioAnalysis> _refCache = {};
 
   @override
-  Future<RatingResult> rateCall(String userId, String audioPath, String animalType, {
+  Future<RatingResult> rateCall(
+    String userId,
+    String audioPath,
+    String animalType, {
     double scoreOffset = 0.0,
     double micSensitivity = 1.0,
   }) async {
     AppLogger.d('RealRatingService: rateCall started for $animalType at $audioPath');
-    
+
     // Try to get location (fire and forget or await briefly?)
     // Await briefly so we have it for the result
     try {
       final hasPermission = await Geolocator.checkPermission();
-      if (hasPermission == LocationPermission.always || hasPermission == LocationPermission.whileInUse) {
+      if (hasPermission == LocationPermission.always ||
+          hasPermission == LocationPermission.whileInUse) {
         // High accuracy might take time, use medium
         _currentPosition = await Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
@@ -77,7 +80,7 @@ class RealRatingService implements RatingService {
         (failure) => throw Exception(failure.message),
         (analysis) => analysis,
       );
-      
+
       // Double-check signal quality
       if (userAnalysis.dominantFrequencyHz == 0 && userAnalysis.totalDurationSec == 0) {
         return RatingResult(
@@ -87,15 +90,15 @@ class RealRatingService implements RatingService {
           metrics: {},
         );
       }
-      
+
       // 3. Get or Analyze the reference audio
       AudioAnalysis? refAnalysis = _refCache[animalType];
-      
+
       if (refAnalysis == null) {
         try {
           AppLogger.d('RealRatingService: Analyzing reference for $animalType (not cached)');
           final assetPath = reference.audioAssetPath;
-          
+
           // Use CloudAudioService if available, otherwise fall back to rootBundle
           String refFilePath;
           if (cloudAudioService != null) {
@@ -108,11 +111,15 @@ class RealRatingService implements RatingService {
             await tempFile.writeAsBytes(bytes);
             refFilePath = tempFile.path;
           }
-          
+
           refAnalysis = await analyzer.analyzeAudio(refFilePath);
           _refCache[animalType] = refAnalysis;
-          
-          try { await File(refFilePath).delete(); } catch (e) { AppLogger.d('Temp ref file cleanup failed: $e'); }
+
+          try {
+            await File(refFilePath).delete();
+          } catch (e) {
+            AppLogger.d('Temp ref file cleanup failed: $e');
+          }
         } catch (e) {
           AppLogger.d('Reference Analysis Error: $e');
         }
@@ -132,7 +139,7 @@ class RealRatingService implements RatingService {
           micSensitivity: micSensitivity,
         ),
       );
-      
+
       final analysisResult = scoreResult.fold(
         (failure) => throw Exception(failure.message),
         (result) => result,
@@ -145,7 +152,7 @@ class RealRatingService implements RatingService {
       final durationScore = analysisResult.durationScore.score;
       final detectedPitch = analysisResult.pitchScore.actualHz;
       final rawScore = analysisResult.overallScore;
-      
+
       // Rolling average: blend current score with up to 2 previous attempts for this animal
       double displayScore = rawScore;
       try {
@@ -162,20 +169,37 @@ class RealRatingService implements RatingService {
       } catch (e) {
         AppLogger.d('Rolling average lookup failed, using raw score: $e');
       }
-      
+
       String technicalFeedback = '';
-      final bool pitchIsGood = pitchScore >= 85;
-      final bool timbreIsGood = timbreScore >= 80;
-      final bool rhythmIsGood = rhythmScore >= 80;
-      
-      if (pitchIsGood && timbreIsGood && rhythmIsGood) {
-        technicalFeedback = 'Outstanding! You sound just like a ${reference.animalName}.';
-      } else if (!pitchIsGood) {
-        technicalFeedback = detectedPitch > reference.idealPitchHz ? 'Too High! Lower your pitch.' : 'Too Low! Raise your pitch.';
-      } else if (!timbreIsGood) {
-        technicalFeedback = userAnalysis.nasality > (refAnalysis?.nasality ?? 50) + 15 ? 'Too much nasality!' : 'Tone is muffled.';
+
+      // V2 Pro Architecture: Actionable Mechanical Diagnostics
+      // We provide specific, anatomical telemetry to the user.
+
+      if (pitchScore >= 85 && timbreScore >= 80 && rhythmScore >= 80) {
+        technicalFeedback = 'Outstanding acoustic execution. You are competition-ready.';
       } else {
-        technicalFeedback = 'Watch your rhythm and stability.';
+        // Find the weakest link and deliver a highly specific mechanical critique
+        if (pitchScore < timbreScore && pitchScore < rhythmScore) {
+          final hzDiff = (detectedPitch - reference.idealPitchHz).abs().toInt();
+          if (detectedPitch > reference.idealPitchHz) {
+            technicalFeedback =
+                'Pitch ceiling is $hzDiff Hz too high. Drop your jaw and loosen your tongue pressure.';
+          } else {
+            technicalFeedback =
+                'Pitch floor is $hzDiff Hz too low. Increase your diaphragm pressure and tighten your air channel.';
+          }
+        } else if (timbreScore < pitchScore && timbreScore < rhythmScore) {
+          if (userAnalysis.nasality > (refAnalysis?.nasality ?? 50) + 15) {
+            technicalFeedback =
+                'Critical spectral failure: too nasal. Open your nasal passages and resonate in your chest.';
+          } else {
+            technicalFeedback =
+                'Missing harmonic overtones. The tone is muffled and hollow. Drive more air across the reed.';
+          }
+        } else {
+          technicalFeedback =
+              'Temporal failure. Your rhythm envelope drifted significantly from the champion reference sequence. Tighten your cadence.';
+        }
       }
 
       final String personalityCritique = PersonalityFeedbackService.getSpecificCritique({
@@ -217,7 +241,7 @@ class RealRatingService implements RatingService {
 
       // Save to history
       await profileRepository.saveResultForUser(userId, result, animalType);
-      
+
       // Submit to Leaderboard if score is decent
       if (analysisResult.overallScore >= 60 && userId != 'guest' && leaderboardService != null) {
         try {
@@ -236,25 +260,25 @@ class RealRatingService implements RatingService {
           AppLogger.d('Leaderboard submission failed: $e');
         }
       }
-      
+
       // Check if this call matches the Daily Challenge
       try {
         if (userId != 'guest') {
           final challengeResult = await _getDailyChallengeUseCase.execute();
-          challengeResult.fold(
-            (l) => AppLogger.d('Could not fetch daily challenge for completion check: $l'),
-            (dailyCall) async {
-              if (dailyCall.id == animalType && analysisResult.overallScore >= 70) {
-                AppLogger.d('Daily Challenge ($animalType) Completed by $userId with score ${analysisResult.overallScore}');
-                await profileRepository.updateDailyChallengeStats(userId);
-              }
+          challengeResult
+              .fold((l) => AppLogger.d('Could not fetch daily challenge for completion check: $l'),
+                  (dailyCall) async {
+            if (dailyCall.id == animalType && analysisResult.overallScore >= 70) {
+              AppLogger.d(
+                  'Daily Challenge ($animalType) Completed by $userId with score ${analysisResult.overallScore}');
+              await profileRepository.updateDailyChallengeStats(userId);
             }
-          );
+          });
         }
       } catch (e) {
         AppLogger.d('Daily Challenge update failed: $e');
       }
-      
+
       return result;
     } catch (e) {
       AppLogger.d('RealRatingService: Analysis failed: $e');

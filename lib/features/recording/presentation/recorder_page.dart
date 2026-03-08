@@ -17,6 +17,7 @@ import 'package:outcall/features/profile/presentation/controllers/profile_contro
 import 'package:outcall/features/rating/presentation/rating_screen.dart';
 import 'package:outcall/features/recording/presentation/controllers/recording_controller.dart';
 import 'package:outcall/features/recording/presentation/widgets/playback_review_dialog.dart';
+import 'package:outcall/features/recording/presentation/widgets/preflight_check_modal.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_coaching.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_dialogs.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_widgets.dart';
@@ -190,6 +191,16 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         }
 
         await HapticFeedback.heavyImpact();
+
+        // 0. Pre-Flight Calibration Check
+        // Enforce professional hardware baseline before allowing training
+        if (mounted) {
+          final passedCalibration = await showPreFlightCheck(context);
+          if (!passedCalibration) {
+            setState(() => isProcessing = false);
+            return; // Abort recording if room is too loud or mic fails
+          }
+        }
 
         // Clear buffer on start
         setState(() => _amplitudeBuffer.clear());
