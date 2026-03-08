@@ -27,7 +27,9 @@ class UnifiedProfileRepository implements ProfileRepository {
     }
 
     try {
-      final data = await _apiGateway.getDocument(_collectionPath, userId);
+      final data = await _apiGateway
+          .getDocument(_collectionPath, userId)
+          .timeout(const Duration(seconds: 8));
       UserProfile profile;
       if (data != null) {
         _sanitizeProfileData(data, userId);
@@ -37,13 +39,35 @@ class UnifiedProfileRepository implements ProfileRepository {
       }
 
       // Cloud is the source of truth for premium status.
-      // Local storage is only used as a write-through cache,
-      // not as an override.
+      // Write-through: cache cloud profile locally for offline fallback.
+      if (_localDataSource != null && profile.id != 'guest') {
+        try {
+          await _localDataSource!.saveProfile(profile);
+        } catch (_) {
+          // Non-critical — don't block return if local save fails
+        }
+      }
 
       return profile;
     } catch (e) {
-      AppLogger.d('UnifiedProfileRepository: getProfile ERROR: $e');
-      return UserProfile.guest();
+      AppLogger.d('UnifiedProfileRepository: getProfile cloud ERROR: $e');
+
+      // Fallback to local cache if cloud fails
+      if (_localDataSource != null) {
+        try {
+          final localProfile = await _localDataSource!.getProfile(userId);
+          // Local data source returns a default 'New Hunter' if no cache exists.
+          // Only use it if it looks like a real cached profile.
+          if (localProfile.id == userId) {
+            AppLogger.d('UnifiedProfileRepository: ✅ Loaded profile from local fallback');
+            return localProfile;
+          }
+        } catch (localErr) {
+          AppLogger.d('UnifiedProfileRepository: local fallback also failed: $localErr');
+        }
+      }
+
+      rethrow;
     }
   }
 
@@ -397,15 +421,28 @@ class UnifiedProfileRepository implements ProfileRepository {
   @override
   Future<List<UserProfile>> getTopGlobalUsers({int limit = 50}) async {
     try {
-      final query =
-          await _apiGateway.getTopDocuments(_collectionPath, 'averageScore', limit: limit);
+      final query = await _apiGateway
+          .getTopDocuments(_collectionPath, 'averageScore', limit: limit)
+          .timeout(const Duration(seconds: 8));
 
       return query
           .map((data) {
             final id = data['id'] as String? ?? 'unknown';
             _sanitizeProfileData(data, id);
             try {
-              return UserProfile.fromJson(data);
+              var profile = UserProfile.fromJson(data);
+              // Compute averageScore from history if stored value is 0
+              if (profile.averageScore == 0 && profile.history.isNotEmpty) {
+                final scores = profile.history
+                    .where((h) => h.result.score > 0)
+                    .map((h) => h.result.score)
+                    .toList();
+                if (scores.isNotEmpty) {
+                  final computed = scores.reduce((a, b) => a + b) / scores.length;
+                  profile = profile.copyWith(averageScore: computed);
+                }
+              }
+              return profile;
             } catch (e) {
               return UserProfile(
                 id: id,

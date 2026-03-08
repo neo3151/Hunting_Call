@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/input_sanitizer.dart';
@@ -77,7 +79,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
     // AppLogger.d("ProfileNotifier: loadProfile called for $userId");
     state = state.copyWith(isProfileLoading: true, error: null);
     try {
-      final profile = await _repo.getProfile(userId);
+      final profile = await _repo.getProfile(userId).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw TimeoutException('Profile load timed out after 10s'),
+          );
       // AppLogger.d("ProfileNotifier: loadProfile success for $userId");
       state = state.copyWith(profile: profile, isProfileLoading: false);
 

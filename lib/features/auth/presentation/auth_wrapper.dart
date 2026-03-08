@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:outcall/di_providers.dart';
-import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:outcall/features/onboarding/presentation/controllers/onboarding_controller.dart';
-import 'package:outcall/features/auth/presentation/login_screen.dart';
-import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:outcall/features/onboarding/presentation/onboarding_screen.dart';
-import 'package:outcall/core/widgets/main_shell.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/core/utils/app_logger.dart';
-
+import 'package:outcall/core/widgets/main_shell.dart';
 import 'package:outcall/core/widgets/update_required_screen.dart';
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:outcall/features/auth/presentation/login_screen.dart';
+import 'package:outcall/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:outcall/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 
 /// Watches auth state and shows LoginScreen, OnboardingScreen, or HomeScreen.
 /// Profile creation is handled by LoginScreen - this only loads existing profiles.
@@ -53,7 +52,7 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
 
   Future<void> _loadProfile(String userId) async {
     if (_lastHandledUserId == userId || userId == 'guest') return;
-    
+
     // Avoid double loading if already loading
     if (_isLoadingProfile) return;
 
@@ -61,17 +60,18 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     _lastHandledUserId = userId;
 
     if (mounted) setState(() => _isLoadingProfile = true);
-    
+
     try {
       AppLogger.d('AuthWrapper: Loading profile for $userId');
-      
+
       // Check 1: Profile notifier might already have a profile loaded
       final currentProfile = ref.read(profileNotifierProvider).profile;
       if (currentProfile != null && currentProfile.id != 'guest') {
-        AppLogger.d('AuthWrapper: ✅ Profile already loaded: ${currentProfile.name} (${currentProfile.id})');
+        AppLogger.d(
+            'AuthWrapper: ✅ Profile already loaded: ${currentProfile.name} (${currentProfile.id})');
         return;
       }
-      
+
       // Check 2: Try to find profile by Firebase UID.
       // The profile may not exist yet because LoginScreen._createNewProfile
       // creates the auth account first (which triggers this rebuild) and
@@ -80,11 +80,15 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       const maxRetries = 5;
       for (int attempt = 1; attempt <= maxRetries; attempt++) {
         AppLogger.d('AuthWrapper: getProfile attempt $attempt/$maxRetries for $userId');
-        final profile = await profileRepo.getProfile(userId);
-        if (profile.id != 'guest') {
-          AppLogger.d('AuthWrapper: ✅ Profile found by UID: ${profile.name}');
-          await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
-          return;
+        try {
+          final profile = await profileRepo.getProfile(userId);
+          if (profile.id != 'guest') {
+            AppLogger.d('AuthWrapper: ✅ Profile found by UID: ${profile.name}');
+            await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
+            return;
+          }
+        } catch (e) {
+          AppLogger.d('AuthWrapper: getProfile attempt $attempt failed: $e');
         }
         if (attempt < maxRetries) {
           AppLogger.d('AuthWrapper: Profile not found yet, waiting 1s before retry...');
@@ -92,9 +96,9 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
           if (!mounted) return;
         }
       }
-      
-      AppLogger.d('AuthWrapper: ⚠️ No profile found for $userId after $maxRetries attempts — showing guest fallback.');
-      
+
+      AppLogger.d(
+          'AuthWrapper: ⚠️ No profile found for $userId after $maxRetries attempts — showing guest fallback.');
     } catch (e, stack) {
       AppLogger.d('AuthWrapper: Error loading profile: $e');
       AppLogger.d('Stack: $stack');
@@ -111,7 +115,7 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     if (_versionStatus == VersionCheckStatus.required) {
       return const UpdateRequiredScreen();
     }
-    
+
     if (_versionStatus == VersionCheckStatus.pending) {
       return Scaffold(
         body: Center(
@@ -127,55 +131,56 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     return authState.when(
       data: (user) {
         AppLogger.d('AuthWrapper: data received. user: ${user?.id}');
-        
+
         // 1. Check Onboarding First
         final onboardingState = ref.watch(onboardingProvider);
-        
+
         return onboardingState.when(
           data: (hasSeenOnboarding) {
             if (!hasSeenOnboarding) {
               AppLogger.d('AuthWrapper: Onboarding not seen. Returning OnboardingScreen.');
               return const OnboardingScreen();
             }
-        
-        // 2. Handle Authentication
-        if (user == null) {
-          _lastHandledUserId = null;
-          // Clean up profile notifier
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              ref.read(profileNotifierProvider.notifier).reset();
-            }
-          });
-          return const LoginScreen();
-        }
 
-        final userId = user.id;
-        
-        // Load profile before showing home screen
-        if (_lastHandledUserId != userId) {
-             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _loadProfile(userId);
-            });
-        }
-        
-        if (_isLoadingProfile) {
-           return const Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Setting up your profile...'),
-                ],
-              ),
-            ),
-          );
-        }
-        
-        AppLogger.d('AuthWrapper: User authenticated and onboarding seen. Returning HomeScreen($userId).');
-        return MainShell(userId: userId);
+            // 2. Handle Authentication
+            if (user == null) {
+              _lastHandledUserId = null;
+              // Clean up profile notifier
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  ref.read(profileNotifierProvider.notifier).reset();
+                }
+              });
+              return const LoginScreen();
+            }
+
+            final userId = user.id;
+
+            // Load profile before showing home screen
+            if (_lastHandledUserId != userId) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _loadProfile(userId);
+              });
+            }
+
+            if (_isLoadingProfile) {
+              return const Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('Setting up your profile...'),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            AppLogger.d(
+                'AuthWrapper: User authenticated and onboarding seen. Returning HomeScreen($userId).');
+            return MainShell(userId: userId);
           },
           loading: () => const Scaffold(
             body: Center(child: CircularProgressIndicator()),
@@ -193,15 +198,16 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       error: (error, stack) {
         final errorStr = error.toString();
         if (errorStr.contains('User signed out') || errorStr.contains('SignedOutException')) {
-          AppLogger.d('AuthWrapper: Detected signed out error ($errorStr). Invalidating provider to force retry.');
-           // This might cause infinite loop with AsyncNotifier if not careful, 
-           // but mapped stream should handle nulls as data(null).
-           // Error usually means stream error.
-           WidgetsBinding.instance.addPostFrameCallback((_) {
-             ref.invalidate(authControllerProvider);
-           });
+          AppLogger.d(
+              'AuthWrapper: Detected signed out error ($errorStr). Invalidating provider to force retry.');
+          // This might cause infinite loop with AsyncNotifier if not careful,
+          // but mapped stream should handle nulls as data(null).
+          // Error usually means stream error.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.invalidate(authControllerProvider);
+          });
         }
-        
+
         return Scaffold(
           body: Center(
             child: Padding(
@@ -227,7 +233,8 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
                       foregroundColor: const Color(0xFF121212),
                     ),
                     onPressed: () => ref.invalidate(authControllerProvider),
-                    child: Text('TRY AGAIN', style: GoogleFonts.oswald(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: Text('TRY AGAIN',
+                        style: GoogleFonts.oswald(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -238,4 +245,3 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     );
   }
 }
-

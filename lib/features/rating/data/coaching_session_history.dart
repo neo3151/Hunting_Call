@@ -54,7 +54,8 @@ class CoachingSessionHistory {
           .where('userId', isEqualTo: userId)
           .orderBy('timestamp', descending: true)
           .limit(_maxHistoryForPrompt)
-          .get();
+          .get(const GetOptions(source: Source.cache))
+          .timeout(const Duration(seconds: 3));
 
       if (snapshot.docs.isEmpty) {
         return '';

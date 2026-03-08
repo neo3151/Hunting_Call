@@ -23,10 +23,12 @@ abstract class ApiGateway {
   Future<List<Map<String, dynamic>>> getCollection(String collection);
 
   /// Queries a collection for documents matching a specific field and value.
-  Future<List<Map<String, dynamic>>> queryCollection(String collection, String field, dynamic value);
+  Future<List<Map<String, dynamic>>> queryCollection(
+      String collection, String field, dynamic value);
 
   /// Queries a collection and orders by a field.
-  Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField, {int limit = 50});
+  Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField,
+      {int limit = 50});
 }
 
 class FirebaseApiGateway implements ApiGateway {
@@ -37,16 +39,24 @@ class FirebaseApiGateway implements ApiGateway {
   @override
   Future<Map<String, dynamic>?> getDocument(String collection, String documentId) async {
     try {
-      // Always try server first to get the freshest data (especially isPremium)
-      final doc = await _firestore.collection(collection).doc(documentId)
-          .get(const GetOptions(source: Source.server));
-      return doc.data();
-    } catch (_) {
-      // Fallback to cache when offline
-      final doc = await _firestore.collection(collection).doc(documentId)
+      // Cache-first for instant loading; server data syncs automatically
+      // via Firestore's offline persistence.
+      final doc = await _firestore
+          .collection(collection)
+          .doc(documentId)
           .get(const GetOptions(source: Source.cache));
-      return doc.data();
+      if (doc.exists && doc.data() != null) {
+        return doc.data();
+      }
+    } catch (_) {
+      // Cache miss or empty — fall through to server
     }
+    // No cache hit — fetch from server (first-ever load or cleared cache)
+    final doc = await _firestore
+        .collection(collection)
+        .doc(documentId)
+        .get(const GetOptions(source: Source.server));
+    return doc.data();
   }
 
   @override
@@ -55,7 +65,8 @@ class FirebaseApiGateway implements ApiGateway {
   }
 
   @override
-  Future<void> updateDocument(String collection, String documentId, Map<String, dynamic> data) async {
+  Future<void> updateDocument(
+      String collection, String documentId, Map<String, dynamic> data) async {
     await _firestore.collection(collection).doc(documentId).update(data);
   }
 
@@ -77,20 +88,56 @@ class FirebaseApiGateway implements ApiGateway {
 
   @override
   Future<List<Map<String, dynamic>>> getCollection(String collection) async {
-    final query = await _firestore.collection(collection).get();
+    try {
+      final query =
+          await _firestore.collection(collection).get(const GetOptions(source: Source.cache));
+      if (query.docs.isNotEmpty) {
+        return query.docs.map((d) => d.data()).toList();
+      }
+    } catch (_) {}
+    final query =
+        await _firestore.collection(collection).get(const GetOptions(source: Source.server));
     return query.docs.map((d) => d.data()).toList();
   }
 
   @override
-  Future<List<Map<String, dynamic>>> queryCollection(String collection, String field, dynamic value) async {
-    final query = await _firestore.collection(collection).where(field, isEqualTo: value).get();
+  Future<List<Map<String, dynamic>>> queryCollection(
+      String collection, String field, dynamic value) async {
+    try {
+      final query = await _firestore
+          .collection(collection)
+          .where(field, isEqualTo: value)
+          .get(const GetOptions(source: Source.cache));
+      if (query.docs.isNotEmpty) {
+        return query.docs.map((d) => d.data()).toList();
+      }
+    } catch (_) {}
+    final query = await _firestore
+        .collection(collection)
+        .where(field, isEqualTo: value)
+        .get(const GetOptions(source: Source.server));
     return query.docs.map((d) => d.data()).toList();
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField, {int limit = 50}) async {
-    final query = await _firestore.collection(collection).orderBy(orderByField, descending: true).limit(limit).get();
-    return query.docs.map((d) => d.data()).toList();
+  Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField,
+      {int limit = 50}) async {
+    try {
+      final query = await _firestore
+          .collection(collection)
+          .orderBy(orderByField, descending: true)
+          .limit(limit)
+          .get(const GetOptions(source: Source.cache));
+      if (query.docs.isNotEmpty) {
+        return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
+      }
+    } catch (_) {}
+    final query = await _firestore
+        .collection(collection)
+        .orderBy(orderByField, descending: true)
+        .limit(limit)
+        .get(const GetOptions(source: Source.server));
+    return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
   }
 }
 
@@ -118,7 +165,8 @@ class FiredartApiGateway implements ApiGateway {
   }
 
   @override
-  Future<void> updateDocument(String collection, String documentId, Map<String, dynamic> data) async {
+  Future<void> updateDocument(
+      String collection, String documentId, Map<String, dynamic> data) async {
     await _firestore.collection(collection).document(documentId).update(data);
   }
 
@@ -143,14 +191,20 @@ class FiredartApiGateway implements ApiGateway {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> queryCollection(String collection, String field, dynamic value) async {
+  Future<List<Map<String, dynamic>>> queryCollection(
+      String collection, String field, dynamic value) async {
     final query = await _firestore.collection(collection).where(field, isEqualTo: value).get();
     return query.map((d) => d.map).toList();
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField, {int limit = 50}) async {
-    final query = await _firestore.collection(collection).orderBy(orderByField, descending: true).limit(limit).get();
+  Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField,
+      {int limit = 50}) async {
+    final query = await _firestore
+        .collection(collection)
+        .orderBy(orderByField, descending: true)
+        .limit(limit)
+        .get();
     return query.map((d) => d.map).toList();
   }
 }

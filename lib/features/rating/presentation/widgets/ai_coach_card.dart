@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 import 'package:outcall/features/library/domain/providers.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/rating/data/ai_coach_service.dart';
@@ -71,6 +72,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
 
     try {
       final profile = ref.read(profileNotifierProvider).profile;
+      final remoteConfig = ref.read(remoteConfigServiceProvider);
       final coaching = await AiCoachService.getCoaching(
         animalName: animalName,
         callType: callType,
@@ -78,6 +80,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
         idealPitchHz: idealPitchHz,
         proTips: proTips,
         userId: profile?.id,
+        baseUrl: remoteConfig.aiCoachUrl,
       );
 
       if (mounted) {

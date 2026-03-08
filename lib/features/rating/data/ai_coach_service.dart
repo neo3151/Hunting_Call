@@ -15,15 +15,17 @@ import 'package:outcall/features/rating/domain/rating_model.dart';
 /// remembers past sessions and adapts its feedback.
 class AiCoachService {
   // Cloudflare Tunnel to local Ollama instance
-  // Note: this URL changes each time cloudflared restarts
+  // This is just the fallback — the actual URL is fetched from Remote Config
+  // so it can be updated server-side when the tunnel changes.
   // Local fallback: http://192.168.1.189:11434
-  static const String ollamaBaseUrl = 'https://estate-douglas-subject-eagle.trycloudflare.com';
+  static const String _fallbackBaseUrl = 'https://farming-idaho-location-taste.trycloudflare.com';
 
   // Custom model with baked-in hunting call knowledge
   static const String _model = 'outcall-coach';
 
   /// Request AI coaching feedback based on rating results.
   ///
+  /// [baseUrl] should come from RemoteConfigService.aiCoachUrl for dynamic updates.
   /// Injects user's session history for personalized, adaptive coaching.
   /// Returns the coaching text, or a fallback string if Ollama is unreachable.
   static Future<String> getCoaching({
@@ -33,6 +35,7 @@ class AiCoachService {
     required double idealPitchHz,
     String? proTips,
     String? userId,
+    String? baseUrl,
   }) async {
     try {
       // Fetch session history for context (non-blocking fallback)
@@ -81,7 +84,7 @@ class AiCoachService {
 
       final response = await http
           .post(
-            Uri.parse('$ollamaBaseUrl/api/generate'),
+            Uri.parse('${baseUrl ?? _fallbackBaseUrl}/api/generate'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'model': _model,
@@ -90,22 +93,24 @@ class AiCoachService {
               'options': {
                 'temperature': 0.7,
                 'top_p': 0.9,
-                'num_predict': 350,
+                'num_predict': 200,
               },
             }),
           )
-          .timeout(const Duration(seconds: 60));
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode != 200) {
         AppLogger.d('AI Coach: Ollama returned ${response.statusCode}');
-        return _fallback(result.score);
+        return _fallback(
+            result: result, idealPitchHz: idealPitchHz, animalName: animalName, callType: callType);
       }
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final coaching = (data['response'] as String?)?.trim() ?? '';
 
       if (coaching.length < 20) {
-        return _fallback(result.score);
+        return _fallback(
+            result: result, idealPitchHz: idealPitchHz, animalName: animalName, callType: callType);
       }
 
       // Save session for future context (fire and forget)
@@ -124,23 +129,89 @@ class AiCoachService {
       return coaching;
     } catch (e) {
       AppLogger.d('AI Coach: Ollama unreachable: $e');
-      return _fallback(result.score);
+      return _fallback(
+          result: result, idealPitchHz: idealPitchHz, animalName: animalName, callType: callType);
     }
   }
 
-  static String _fallback(double score) {
-    if (score >= 85) {
-      return 'Excellent work! Your call is sounding very natural. Focus on '
-          'consistency now — try making five calls in a row at this quality level.';
-    } else if (score >= 70) {
-      return 'Good foundation! Focus on matching the target pitch more '
-          'precisely — try humming the pitch before making the call.';
-    } else if (score >= 50) {
-      return "You're making progress! Slow down and focus on pitch accuracy "
-          'first. Listen to the reference call three times before each attempt.';
-    } else {
-      return 'Every expert started right where you are. Listen to the reference '
-          'call, then mimic just the opening note. Build the call piece by piece.';
+  static String _fallback({
+    required RatingResult result,
+    required double idealPitchHz,
+    required String animalName,
+    required String callType,
+  }) {
+    final score = result.score;
+    final buf = StringBuffer();
+
+    // Find weakest and strongest metrics
+    String? weakest;
+    String? strongest;
+    double weakestVal = 101;
+    double strongestVal = -1;
+    for (final entry in result.metrics.entries) {
+      if (entry.value < weakestVal) {
+        weakestVal = entry.value;
+        weakest = entry.key;
+      }
+      if (entry.value > strongestVal) {
+        strongestVal = entry.value;
+        strongest = entry.key;
+      }
     }
+
+    // Pitch analysis
+    final pitchDiff = (result.pitchHz - idealPitchHz).abs();
+    final pitchDir = result.pitchHz > idealPitchHz ? 'high' : 'low';
+
+    // Opening line based on score
+    if (score >= 85) {
+      buf.writeln('Great $callType for $animalName — ${score.toStringAsFixed(0)}% is solid work!');
+    } else if (score >= 70) {
+      buf.writeln('Decent attempt on the $animalName $callType at ${score.toStringAsFixed(0)}%.');
+    } else if (score >= 50) {
+      buf.writeln('Your $animalName $callType scored ${score.toStringAsFixed(0)}% — room to grow.');
+    } else {
+      buf.writeln('${score.toStringAsFixed(0)}% on the $animalName $callType. Let\'s work on it.');
+    }
+    buf.writeln();
+
+    // Pitch-specific feedback
+    if (pitchDiff < 15) {
+      buf.writeln('Your pitch is right on target — nice ear!');
+    } else {
+      buf.writeln('Your pitch is ${pitchDiff.toStringAsFixed(0)} Hz too $pitchDir '
+          '(you hit ${result.pitchHz.toStringAsFixed(0)} Hz, target is '
+          '${idealPitchHz.toStringAsFixed(0)} Hz). '
+          'Try ${pitchDir == "high" ? "relaxing your lips and using less air pressure" : "tightening your embouchure slightly"}.');
+    }
+    buf.writeln();
+
+    // Metric-specific drill
+    if (weakest != null && weakestVal < 70) {
+      buf.write('Focus on your $weakest (${weakestVal.toStringAsFixed(0)}%) — ');
+      switch (weakest.toLowerCase()) {
+        case 'timing':
+          buf.writeln('use a metronome or tap your foot to lock in the rhythm.');
+          break;
+        case 'rhythm':
+          buf.writeln('listen to the reference 3x, then clap the pattern before calling.');
+          break;
+        case 'pitch':
+          buf.writeln('hum the target note before each attempt.');
+          break;
+        case 'duration':
+          buf.writeln('practice holding your breath control — aim for steady, even notes.');
+          break;
+        default:
+          buf.writeln('practice that element in isolation before blending it back in.');
+      }
+    }
+
+    if (strongest != null && strongestVal >= 80) {
+      buf.writeln(
+          'Your $strongest is a strength at ${strongestVal.toStringAsFixed(0)}% — keep it up.');
+    }
+
+    return buf.toString().trim();
   }
 }

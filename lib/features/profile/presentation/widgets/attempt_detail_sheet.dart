@@ -233,6 +233,12 @@ class AttemptDetailSheet extends ConsumerWidget {
       'rhythm': Colors.orangeAccent,
       'air': const Color(0xFFCE93D8),
     };
+    final labels = {
+      'pitch': 'Pitch',
+      'timbre': 'Tone\nQuality',
+      'rhythm': 'Rhythm',
+      'air': 'Breath\nControl',
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,8 +250,9 @@ class AttemptDetailSheet extends ConsumerWidget {
             final key = entry.key.toLowerCase();
             final color = colors[key] ?? const Color(0xFF5FF7B6);
             final icon = icons[key] ?? Icons.bar_chart;
+            final label = labels[key] ?? entry.key;
             return Expanded(
-              child: _buildMetricCard(palette, entry.key, entry.value, icon, color),
+              child: _buildMetricCard(palette, label, entry.value, icon, color),
             );
           }).toList(),
         ),
@@ -276,7 +283,7 @@ class AttemptDetailSheet extends ConsumerWidget {
           Text(
             label,
             style: GoogleFonts.lato(
-                fontSize: 9,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.5,
                 color: palette.textSubtle),

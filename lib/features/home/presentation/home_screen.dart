@@ -1,26 +1,27 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:outcall/core/widgets/background_wrapper.dart';
-import 'package:outcall/core/theme/app_colors.dart';
-import 'package:outcall/core/widgets/skeleton_loader.dart';
-import 'package:outcall/features/recording/presentation/recorder_page.dart';
-import 'package:outcall/features/daily_challenge/presentation/daily_challenge_screen.dart';
-import 'package:outcall/features/daily_challenge/presentation/controllers/daily_challenge_controller.dart';
-import 'package:outcall/features/settings/presentation/settings_screen.dart';
-import 'package:outcall/features/leaderboard/presentation/global_leaderboard_screen.dart';
 import 'package:outcall/core/services/remote_config/remote_config_service.dart';
-import 'package:outcall/core/widgets/offline_banner.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/utils/friendly_errors.dart';
-import 'package:outcall/features/home/presentation/controllers/home_controller.dart';
-import 'package:outcall/features/home/presentation/widgets/home_header.dart';
-import 'package:outcall/features/home/presentation/widgets/daily_challenge_card.dart';
-import 'package:outcall/features/home/presentation/widgets/recent_activity_card.dart';
-import 'package:outcall/core/widgets/staggered_fade_slide.dart';
 import 'package:outcall/core/utils/page_transitions.dart';
-import 'package:outcall/features/profile/presentation/history_dashboard_screen.dart';
+import 'package:outcall/core/widgets/background_wrapper.dart';
+import 'package:outcall/core/widgets/offline_banner.dart';
+import 'package:outcall/core/widgets/skeleton_loader.dart';
+import 'package:outcall/core/widgets/staggered_fade_slide.dart';
+import 'package:outcall/features/daily_challenge/presentation/controllers/daily_challenge_controller.dart';
+import 'package:outcall/features/daily_challenge/presentation/daily_challenge_screen.dart';
+import 'package:outcall/features/home/presentation/controllers/home_controller.dart';
+import 'package:outcall/features/home/presentation/widgets/daily_challenge_card.dart';
+import 'package:outcall/features/home/presentation/widgets/home_header.dart';
+import 'package:outcall/features/home/presentation/widgets/recent_activity_card.dart';
+import 'package:outcall/features/leaderboard/presentation/global_leaderboard_screen.dart';
 import 'package:outcall/features/profile/presentation/achievements_screen.dart';
+import 'package:outcall/features/profile/presentation/history_dashboard_screen.dart';
+import 'package:outcall/features/recording/presentation/recorder_page.dart';
+import 'package:outcall/features/settings/presentation/settings_screen.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -44,14 +45,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final homeState = ref.watch(homeNotifierProvider);
-    final activeUserId = homeState.activeUserId.isEmpty
-        ? widget.userId
-        : homeState.activeUserId;
+    final activeUserId = homeState.activeUserId.isEmpty ? widget.userId : homeState.activeUserId;
 
     // Initial load — no profile, no error, not loading
-    if (homeState.profile == null &&
-        homeState.error == null &&
-        !homeState.isLoading) {
+    // Safety net: re-trigger profile load if we're stuck in this state
+    if (homeState.profile == null && homeState.error == null && !homeState.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(homeNotifierProvider.notifier).loadProfile(widget.userId);
+      });
       return const Scaffold(
         body: BackgroundWrapper(
           child: SafeArea(
@@ -62,73 +63,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     return Scaffold(
-        body: BackgroundWrapper(
-          child: SafeArea(
-            child: homeState.isLoading
-                ? const DashboardSkeleton()
-                : homeState.error != null
-                    ? _buildErrorState(homeState.error!)
-                    : Column(
-                        children: [
-                          HomeHeader(
-                            userName: homeState.userName,
-                            isCloudMode: homeState.isCloudMode,
-                            onSignOut: () => ref
-                                .read(homeNotifierProvider.notifier)
-                                .signOut(),
-                            onSettings: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (_) => const SettingsScreen()),
-                            ),
+      body: BackgroundWrapper(
+        child: SafeArea(
+          child: homeState.isLoading
+              ? const DashboardSkeleton()
+              : homeState.error != null
+                  ? _buildErrorState(homeState.error!)
+                  : Column(
+                      children: [
+                        HomeHeader(
+                          userName: homeState.userName,
+                          isCloudMode: homeState.isCloudMode,
+                          onSignOut: () => ref.read(homeNotifierProvider.notifier).signOut(),
+                          onSettings: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const SettingsScreen()),
                           ),
-                          const OfflineBanner(),
-                          Expanded(
-                            child: Center(
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 600),
-                                child: SingleChildScrollView(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 8),
-                                  StaggeredFadeSlide(
-                                    index: 0,
-                                    child: _buildDailyChallenge(context, activeUserId),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  StaggeredFadeSlide(
-                                    index: 1,
-                                    child: _buildActionGrid(context, activeUserId),
-                                  ),
-                                  const SizedBox(height: 32),
-                                  if (homeState.mostRecentActivity != null) ...[
+                        ),
+                        const OfflineBanner(),
+                        Expanded(
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 600),
+                              child: SingleChildScrollView(
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 8),
                                     StaggeredFadeSlide(
-                                      index: 2,
-                                      child: Text(S.of(context).recentHunts,
-                                          style: GoogleFonts.oswald(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54)),
+                                      index: 0,
+                                      child: _buildDailyChallenge(context, activeUserId),
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 24),
                                     StaggeredFadeSlide(
-                                      index: 3,
-                                      child: RecentActivityCard(
-                                          historyItem:
-                                              homeState.mostRecentActivity!),
+                                      index: 1,
+                                      child: _buildActionGrid(context, activeUserId),
                                     ),
+                                    const SizedBox(height: 32),
+                                    if (homeState.mostRecentActivity != null) ...[
+                                      StaggeredFadeSlide(
+                                        index: 2,
+                                        child: Text(S.of(context).recentHunts,
+                                            style: GoogleFonts.oswald(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                    Theme.of(context).brightness == Brightness.dark
+                                                        ? Colors.white70
+                                                        : Colors.black54)),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      StaggeredFadeSlide(
+                                        index: 3,
+                                        child: RecentActivityCard(
+                                            historyItem: homeState.mostRecentActivity!),
+                                      ),
+                                    ],
                                   ],
-                                ],
+                                ),
                               ),
                             ),
                           ),
-                          ),
-                          ),
-                        ],
-                      ),
-          ),
+                        ),
+                      ],
+                    ),
         ),
+      ),
     );
   }
 
@@ -141,8 +141,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.cloud_off_outlined,
-              color: Colors.orangeAccent, size: 64),
+          const Icon(Icons.cloud_off_outlined, color: Colors.orangeAccent, size: 64),
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -160,18 +159,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 8),
                 Text(
                   friendlyMessage,
-                  style:
-                      TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
+                  style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
                   textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  errorMessage,
+                  style: TextStyle(
+                    color: isDark ? Colors.white24 : Colors.black26,
+                    fontSize: 9,
+                    fontFamily: 'monospace',
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () => ref
-                .read(homeNotifierProvider.notifier)
-                .loadProfile(widget.userId),
+            onPressed: () => ref.read(homeNotifierProvider.notifier).loadProfile(widget.userId),
             icon: const Icon(Icons.refresh),
             label: const Text('Retry'),
             style: ElevatedButton.styleFrom(
@@ -184,16 +192,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content:
-                      const Text('Contact support at: BenchmarkAppsLLC@gmail.com'),
+                  content: const Text('Contact support at: BenchmarkAppsLLC@gmail.com'),
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
               );
             },
             child: Text(
               'Contact Support',
-              style:
-                  GoogleFonts.lato(color: AppColors.of(context).textSubtle, fontSize: 12),
+              style: GoogleFonts.lato(color: AppColors.of(context).textSubtle, fontSize: 12),
             ),
           ),
         ],
@@ -222,8 +228,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return DailyChallengeCard(
           challengeCall: challengeCall,
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-                builder: (_) => DailyChallengeScreen(userId: activeUserId)),
+            MaterialPageRoute(builder: (_) => DailyChallengeScreen(userId: activeUserId)),
           ),
         );
       },
@@ -262,8 +267,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 title: 'Daily\nChallenge',
                 subtitle: 'Compete for top scores',
                 onTap: () => Navigator.of(context).push(
-                  FadeScaleRoute(
-                      page: DailyChallengeScreen(userId: activeUserId)),
+                  FadeScaleRoute(page: DailyChallengeScreen(userId: activeUserId)),
                 ),
               ),
             ),
@@ -281,8 +285,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   title: 'Global\nRankings',
                   subtitle: 'See top hunters',
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const GlobalLeaderboardScreen()),
+                    MaterialPageRoute(builder: (_) => const GlobalLeaderboardScreen()),
                   ),
                 ),
               )

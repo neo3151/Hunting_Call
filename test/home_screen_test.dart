@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:outcall/di_providers.dart';
-import 'package:outcall/features/home/presentation/home_screen.dart';
 import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
-import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/home/presentation/home_screen.dart';
 import 'package:outcall/features/profile/domain/entities/user_profile.dart';
+import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
+
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
@@ -25,6 +27,14 @@ void main() {
     when(() => mockAuthRepository.authStateChanges).thenAnswer((_) => Stream.value(null));
     when(() => mockAuthRepository.currentUser).thenAnswer((_) async => null);
     when(() => mockAuthRepository.isMock).thenReturn(true);
+
+    // Stub updateProfileDetails so the lastActiveAt stamp in loadProfile doesn't throw
+    when(() => mockProfileRepository.updateProfileDetails(
+          any(),
+          nickname: any(named: 'nickname'),
+          avatarUrl: any(named: 'avatarUrl'),
+          lastActiveAt: any(named: 'lastActiveAt'),
+        )).thenAnswer((_) async {});
 
     SharedPreferences.setMockInitialValues({});
     mockPrefs = await SharedPreferences.getInstance();
@@ -43,6 +53,8 @@ void main() {
         authRepositoryProvider.overrideWithValue(mockAuthRepository),
       ],
       child: const MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: HomeScreen(userId: 'test_user'),
       ),
     );
@@ -68,7 +80,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Quick'), findsOneWidget);
-    expect(find.textContaining('Practice'), findsOneWidget);
+    expect(find.textContaining('Practice'), findsWidgets);
     expect(find.textContaining('Daily'), findsOneWidget);
     expect(find.textContaining('Challenge'), findsOneWidget);
   });
@@ -86,13 +98,13 @@ void main() {
 
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(find.text('Sign Out?'), findsOneWidget);
-    
+
     final signOutButton = find.widgetWithText(TextButton, 'SIGN OUT');
     expect(signOutButton, findsOneWidget);
 
     await tester.tap(signOutButton);
     // Use pump() instead of pumpAndSettle to avoid timeout from infinite loading animation
-    await tester.pump(const Duration(milliseconds: 500)); 
+    await tester.pump(const Duration(milliseconds: 500));
 
     // HomeScreen now uses authControllerProvider.notifier.signOut()
     // which calls the signOut use case, which calls mockAuthRepository.signOut()

@@ -1,9 +1,9 @@
 import 'dart:io';
+
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/profanity_filter.dart';
-
 
 /// Provider for the RemoteConfigService
 final remoteConfigServiceProvider = Provider<RemoteConfigService>((ref) {
@@ -27,6 +27,7 @@ class RemoteConfigService {
       await _remoteConfig!.setDefaults(const {
         'is_leaderboard_enabled': true,
         'profanity_blocklist': '', // Comma-separated extra blocked terms
+        'ai_coach_url': 'https://farming-idaho-location-taste.trycloudflare.com',
       });
 
       // Configure fetch interval (e.g., fetch every 1 hour, or 0 during dev)
@@ -49,21 +50,21 @@ class RemoteConfigService {
   /// The Kill Switch: checks if the leaderboard feature is currently enabled
   bool get isLeaderboardEnabled => _remoteConfig?.getBool('is_leaderboard_enabled') ?? true;
 
+  /// Dynamic AI Coach URL — update in Firebase Console when tunnel changes
+  String get aiCoachUrl => _remoteConfig?.getString('ai_coach_url').isNotEmpty == true
+      ? _remoteConfig!.getString('ai_coach_url')
+      : 'https://farming-idaho-location-taste.trycloudflare.com';
+
   /// Parses the remote profanity blocklist and loads it into ProfanityFilter.
   void _loadProfanityTerms() {
     final raw = _remoteConfig?.getString('profanity_blocklist') ?? '';
     if (raw.isEmpty) return;
 
-    final terms = raw
-        .split(',')
-        .map((t) => t.trim().toLowerCase())
-        .where((t) => t.isNotEmpty)
-        .toList();
+    final terms =
+        raw.split(',').map((t) => t.trim().toLowerCase()).where((t) => t.isNotEmpty).toList();
 
     if (terms.isNotEmpty) {
       ProfanityFilter.loadRemoteTerms(terms);
     }
   }
-
-
 }
