@@ -1076,7 +1076,70 @@ Future<Map<String, dynamic>> getDocument(String path) async {
 
 ## 4. Risks & Considerations
 - **Stale Data**: Users might see slightly outdated leaderboards if they haven't synced recently. This is an acceptable trade-off for the performance gain.
-- **Cache Size**: Firestore manages cache eviction automatically, but testing should verify that large amounts of audio/profile data do not bloat the local storage excessively.\n</document_content>\n\n---\n\n## FILE: `elk_calling.md` [Category: Technical/Core]\n<document_content>\n# Elk Calling: The Encyclopedia of the Mountain Rut
+- **Cache Size**: Firestore manages cache eviction automatically, but testing should verify that large amounts of audio/profile data do not bloat the local storage excessively.\n</document_content>\n\n---\n\n## FILE: `dev_major_implementations.md` [Category: Technical/Core]\n<document_content>\n# Major App Implementations & Dev History
+
+OUTCALL's development path is marked by conquering difficult, hardware-level audio processing challenges within the constraints of a cross-platform mobile framework (Flutter). This document serves as a high-level summary of the major technical pillars erected during development.
+
+---
+
+## 1. The Real-Time Scoring Pipeline (Isolate Architecture)
+**The Challenge:** Processing Fast Fourier Transforms (FFTs) and Mel-Frequency Cepstral Coefficients (MFCCs) on a 44.1kHz audio stream instantly causes the main Dart UI thread to drop frames, resulting in extreme visual jank.
+**The Implementation:** 
+- Converted all heavy DSP math into a standalone Dart Isolate via `compute()`.
+- The audio buffer fills continuously, and every 500ms, a chunk of byte-data is serialized and passed across the Isolate boundary.
+- The secondary thread calculates pitch, rhythm, and timbre, returning a lightweight JSON payload of scores back to the main thread for 60FPS UI rendering.
+
+## 2. In-App Purchase & Hybrid Entitlements
+**The Challenge:** Relying solely on a cloud database to check if a user is "Premium" fails when the hunter is out of cell service.
+**The Implementation:**
+- Integrated `in_app_purchase` for the native native Android/iOS transaction handling.
+- Built a dual-layer persistence model. The `EntitlementsRepository` first attempts a network check with RevenueCat/Firebase. If that fails, it reads a securely encrypted local cache (`shared_preferences` with AES encryption) to verify the premium token.
+- Designed a "Luxury" Paywall UI using the brand's Gold/Charcoal aesthetic to convert free users to the AI Coach tier.
+
+## 3. The "AI Coach" Integration
+**The Challenge:** Providing users with more than just a number. If they score a 45/100, they need to know *why* and *how* to fix it.
+**The Implementation:**
+- Integrated the local Gemma 3 (4B) LLM model.
+- The `RealRatingService` feeds the raw, sub-component scores (e.g., Pitch: 90, Rhythm: 20, Timbre: 45) into a strict system prompt.
+- The LLM acts as the "Coach," generating 2-sentence actionable feedback ("Your tone was great, but you rushed the sequence. Put more space between your clucks.").
+- *Note:* Also implemented a web-based FAQ chatbot for the landing page using Ollama via Cloudflare Tunnels to drive early-access signups.
+
+## 4. Riverpod State Management & Navigation
+**The Challenge:** Managing deeply nested state across recording active states, audio playback, scoring history, and premium paywall lockouts without creating a spaghetti architecture.
+**The Implementation:**
+- Adopted strict **MVVM (Model-View-ViewModel)** using `flutter_riverpod`.
+- Implemented `AutoDispose` providers heavily to ensure the heavy RAM footprint of the AudioCache is flushed immediately when the user leaves the recording screen.
+- Centralized dependency injection in `di_providers.dart` to allow effortless mocking of the audio engine and Firebase during unit testing (achieving 90%+ test coverage on core services).
+
+## 5. The OUTCALL Brand Transformation
+**The Challenge:** The app started as a generic "Gobble Guru" turkey-only application with standard Material Design colors.
+**The Implementation:**
+- Executed a major repository-wide rename and continuous integration restructuring to "OUTCALL".
+- Standardized the visual design system across all screens, docs, and the wiki using Charcoal (`#0C0E12`) and Gold (`#E8922D`).
+- Consolidated 135+ reference animal sounds into a heavily compressed, high-fidelity asset pack.\n</document_content>\n\n---\n\n## FILE: `dev_roadmap.md` [Category: Technical/Core]\n<document_content>\n# App Development Roadmap (2026-2027)
+
+OUTCALL is currently in active beta on Android, with a massive set of core features already completed. The roadmap below outlines the immediate short-term goals for commercial release and long-term expansion plans into new tech and platforms.
+
+## Q2 2026: Commercial Launch & Hardening
+The immediate priority is transitioning from a functional beta into a resilient, monetized consumer product.
+- **Scoring Engine V2:** Completing the transition from YIN pitch detection to the deep-learning pYIN/CREPE models for high-noise environments (especially for windy waterfowl hunting).
+- **iOS Port Validation:** The Flutter codebase is theoretically cross-platform, but CoreAudio integration and permission handling for the iOS microphone require extensive physical device testing.
+- **Paywall Refinement:** Launching the "OUTCALL Elite" tier ($4.99/mo or $29.99/yr) powered by RevenueCat.
+- **Offline Mode Validation:** Ensuring Firebase Analytics and the local Core Data caching system gracefully handle users tracking calls entirely deep in the backcountry without cell service.
+
+## Q3 2026: Social & Competitive Features
+Hunting is inherently social and competitive. OUTCALL will expand beyond solo coaching.
+- **Global Leaderboards & Seasons:** Implementing a ranked Elo system where users compete globally on specific species calls (e.g., "September Elk Bugle Challenge").
+- **Shareable Brag-Cards:** Generative images displaying the user's score waveform against the golden reference, formatted for easy sharing on Instagram/X.
+- **Live Head-to-Head:** WebRTC audio streaming to allow two hunters to "call-off" against each other, with the AI engine acting as the live judge.
+
+## Q4 2026: The "Live Woods" Wearable Integration
+Moving the app from a pre-hunt training tool into an active, in-the-field companion.
+- **Smartwatch Haptics (Apple Watch / WearOS):** While hunting, taking out a bright phone screen is unviable. The user will be able to start an active listening session via their watch. The watch will use haptic feedback (buzzing) to tell the hunter if the turkey they just heard in the distance was a 1-year-old Jake, or a mature 3-year-old Boss Tom based on the engine's sub-bass resonance analysis.
+- **Bluetooth Decoy Integration:** Syncing the OUTCALL engine with motorized decoys to automatically trigger motion only when the user executes a perfectly timed "Feed Chuckle" sequence.
+
+## 2027 & Beyond: Synthetic Wildlife Generation
+- **Dynamic AI Opponents:** Generating completely synthetic, reactive animal audio using advanced TTS and sound-synthesis models. The user will engage in a "mock hunt" where an AI-generated elk bugles back at them, dynamically changing its aggression, volume, and simulated distance based exactly on how the user responds.\n</document_content>\n\n---\n\n## FILE: `elk_calling.md` [Category: Technical/Core]\n<document_content>\n# Elk Calling: The Encyclopedia of the Mountain Rut
 
 The North American Elk (`Cervus canadensis`) is one of the continent's most majestic and vocal big-game animals. Hunting them during the September rut is a phenomenal, chaotic display of acoustic dominance and extreme physical endurance at high altitudes.
 
