@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OUTCALL Knowledge Base</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0C0E12;
+            --bg-surface: #121212;
+            --bg-card: #1A1A1A;
+            --bg-card-hover: #222228;
+            --accent: #E8922D;
+            --accent-light: #F0B860;
+            --accent-dark: #8B5A1B;
+            --text: #F5F5F5;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --text-subtle: rgba(255, 255, 255, 0.4);
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --gold-glow: rgba(232, 146, 45, 0.15);
+            --radius: 16px;
+            --radius-lg: 24px;
+            --green: #4ADE80;
+            --blue: #60A5FA;
+            --purple: #A78BFA;
+            --red: #F87171;
+            --yellow: #FBBF24;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* ─── Layout ─────────────────────────────────────────────────── */
+        .wiki-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 900px) {
+            .wiki-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .sidebar.open {
+                display: block;
+                position: fixed;
+                z-index: 100;
+                width: 280px;
+            }
+
+            .mobile-toggle {
+                display: flex !important;
+            }
+        }
+
+        /* ─── Sidebar ────────────────────────────────────────────────── */
+        .sidebar {
+            background: var(--bg-surface);
+            border-right: 1px solid var(--glass-border);
+            padding: 24px 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-dark) transparent;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 16px;
+        }
+
+        .sidebar-header h1 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--accent-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-header p {
+            font-size: 0.75rem;
+            color: var(--text-subtle);
+            margin-top: 4px;
+        }
+
+        .nav-section {
+            padding: 8px 16px;
+        }
+
+        .nav-section-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-subtle);
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: var(--gold-glow);
+            color: var(--accent-light);
+        }
+
+        .nav-item.active {
+            border-left: 3px solid var(--accent);
+        }
+
+        .nav-item .icon {
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* ─── Mobile Toggle ──────────────────────────────────────────── */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            font-size: 1.4rem;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(232, 146, 45, 0.4);
+        }
+
+        /* ─── Main Content ───────────────────────────────────────────── */
+        .main-content {
+            padding: 32px 48px;
+            max-width: 960px;
+        }
+
+        @media (max-width: 600px) {
+            .main-content {
+                padding: 20px 16px;
+            }
+        }
+
+        /* ─── Search ─────────────────────────────────────────────────── */
+        .search-bar {
+            position: relative;
+            margin-bottom: 32px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            border-radius: var(--radius);
+            border: 1px solid var(--glass-border);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--gold-glow);
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-subtle);
+        }
+
+        .search-bar .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-subtle);
+            font-size: 1.1rem;
+        }
+
+        .search-results-count {
+            font-size: 0.8rem;
+            color: var(--text-subtle);
+            margin-top: 8px;
+        }
+
+        /* ─── Article ────────────────────────────────────────────────── */
+        .article {
+            display: none;
+        }
+
+        .article.active {
+            display: block;
+        }
+
+        .article-header {
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .article-header h2 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--text), var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .article-tag {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tag-audio {
+            background: rgba(96, 165, 250, 0.15);
+            color: var(--blue);
+        }
+
+        .tag-scoring {
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--green);
+        }
+
+        .tag-business {
+            background: rgba(167, 139, 250, 0.15);
+            color: var(--purple);
+        }
+
+        .tag-tech {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--red);
+        }
+
+        .tag-reference {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--yellow);
+        }
+
+        /* ─── Content Blocks ─────────────────────────────────────────── */
+        .article-body h3 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-light);
+            margin: 32px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .article-body h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 20px 0 8px;
+        }
+
+        .article-body p,
+        .article-body li {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            margin-bottom: 8px;
+        }
+
+        .article-body ul,
+        .article-body ol {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .article-body strong {
+            color: var(--text);
+        }
+
+        .article-body blockquote {
+            border-left: 3px solid var(--accent);
+            padding: 12px 16px;
+            margin: 16px 0;
+            background: var(--glass);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .article-body code {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: var(--accent-light);
+        }
+
+        .article-body pre {
+            background: var(--bg-surface);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        .article-body pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-muted);
+        }
+
+        /* Tables */
+        .article-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.88rem;
+        }
+
+        .article-body th {
+            text-align: left;
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border-bottom: 2px solid var(--accent-dark);
+            color: var(--accent-light);
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .article-body td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--glass-border);
+            color: var(--text-muted);
+        }
+
+        .article-body tr:hover td {
+            background: var(--glass);
+        }
+
+        /* Info Boxes */
+        .info-box {
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            margin: 16px 0;
+            border-left: 4px solid;
+        }
+
+        .info-box.tip {
+            background: rgba(74, 222, 128, 0.06);
+            border-color: var(--green);
+        }
+
+        .info-box.warning {
+            background: rgba(251, 191, 36, 0.06);
+            border-color: var(--yellow);
+        }
+
+        .info-box.important {
+            background: rgba(248, 113, 113, 0.06);
+            border-color: var(--red);
+        }
+
+        .info-box-title {
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .tip .info-box-title {
+            color: var(--green);
+        }
+
+        .warning .info-box-title {
+            color: var(--yellow);
+        }
+
+        .important .info-box-title {
+            color: var(--red);
+        }
+
+        /* ─── Home Page ──────────────────────────────────────────────── */
+        .home-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .home-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .home-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .home-card .card-icon {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+        }
+
+        .home-card h3 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: var(--text);
+            border: none;
+            margin: 0 0 8px;
+            padding: 0;
+        }
+
+        .home-card p {
+            font-size: 0.82rem;
+            color: var(--text-subtle);
+            line-height: 1.5;
+        }
+
+        /* ─── Last Updated ───────────────────────────────────────────── */
+        .last-updated {
+            font-size: 0.7rem;
+            color: var(--text-subtle);
+            position: absolute;
+            bottom: 16px;
+            left: 20px;
+        }
+
+        /* ─── Highlight ──────────────────────────────────────────────── */
+        mark {
+            background: var(--gold-glow);
+            color: var(--accent-light);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        /* ─── Back to site link ──────────────────────────────────────── */
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-subtle);
+            text-decoration: none;
+            font-size: 0.8rem;
+            padding: 8px 16px 16px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--accent-light);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wiki-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>📖 Knowledge Base</h1>
+                <p>OUTCALL Internal Wiki</p>
+            </div>
+
+            <a href="index.html" class="back-link">← Back to Landing Page</a>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Overview</div>
+                <a class="nav-item active" data-page="home" onclick="showPage('home')">
+                    <span class="icon">🏠</span> Home
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Audio & Scoring</div>
+                <a class="nav-item" data-page="bioacoustics" onclick="showPage('bioacoustics')">
+                    <span class="icon">🦃</span> Animal Bioacoustics
+                </a>
+                <a class="nav-item" data-page="audio-techniques" onclick="showPage('audio-techniques')">
+                    <span class="icon">🎵</span> Audio Techniques
+                </a>
+                <a class="nav-item" data-page="scoring-engine" onclick="showPage('scoring-engine')">
+                    <span class="icon">📊</span> Scoring Engine
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Architecture</div>
+                <a class="nav-item" data-page="architecture" onclick="showPage('architecture')">
+                    <span class="icon">🏗️</span> App Architecture
+                </a>
+                <a class="nav-item" data-page="branding" onclick="showPage('branding')">
+                    <span class="icon">🎨</span> Branding & Identity
+                </a>
+                <a class="nav-item" data-page="payment" onclick="showPage('payment')">
+                    <span class="icon">💳</span> Payment & IAP
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Strategy</div>
+                <a class="nav-item" data-page="competitive" onclick="showPage('competitive')">
+                    <span class="icon">🎯</span> Competitive Landscape
+                </a>
+                <a class="nav-item" data-page="chatbot" onclick="showPage('chatbot')">
+                    <span class="icon">🤖</span> AI Chatbot
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Operations</div>
+                <a class="nav-item" data-page="audit" onclick="showPage('audit')">
+                    <span class="icon">🔍</span> Code Audit Report
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search the knowledge base..."
+                    oninput="handleSearch(this.value)">
+                <div class="search-results-count" id="searchResults"></div>
+            </div>
+
+            <!-- ═══ HOME ═══ -->
+            <div class="article active" id="page-home">
+                <div class="article-header">
+                    <h2>OUTCALL Knowledge Base</h2>
+                    <p style="color: var(--text-muted); margin-top: 8px;">Internal documentation for the OUTCALL Hunting
+                        Call Training App</p>
+                </div>
+                <div class="home-grid">
+                    <div class="home-card" onclick="showPage('bioacoustics')">
+                        <div class="card-icon">🦃</div>
+                        <h3>Animal Bioacoustics</h3>
+                        <p>Frequency ranges, spectral characteristics, and scoring implications for turkey, elk, deer,
+                            coyote, and duck calls.</p>
+                    </div>
+                    <div class="home-card" onclick="showPage('audio-techniques')">
+                        <div class="card-icon">🎵</div>
+                        <h3>Audio Techniques</h3>
+                        <p>Pitch detection algorithms (YIN, pYIN, CREPE), MFCC vs DTW comparison, WAV parsing, and
+                            Flutter audio patterns.</p>
+                    </div>
+                    <div class="home-card" onclick="showPage('scoring-engine')">
+                        <div class="card-icon">📊</div>
+                        <h3>Scoring Engine</h3>
+                        <p>The weighted scoring matrix, real-world retuning adjustments, and AI coach feedback strategy.
+                        </p>
+                    </div>
+                    <div class="home-card" onclick="showPage('architecture')">
+                        <div class="card-icon">🏗️</div>
+                        <h3>App Architecture</h3>
+                        <p>MVVM + Riverpod, DDD patterns, DI container, services, and platform environment setup.</p>
+                    </div>
+                    <div class="home-card" onclick="showPage('competitive')">
+                        <div class="card-icon">🎯</div>
+                        <h3>Competitive Landscape</h3>
+                        <p>Market analysis: iHunt, HuntWise, monetization strategies, and OUTCALL's unique
+                            differentiators.</p>
+                    </div>
+                    <div class="home-card" onclick="showPage('branding')">
+                        <div class="card-icon">🎨</div>
+                        <h3>Branding & Identity</h3>
+                        <p>The transition from Gobble Guru to OUTCALL — design system, colors, typography, and visual
+                            language.</p>
+                    </div>
+                    <div class="home-card" onclick="showPage('payment')">
+                        <div class="card-icon">💳</div>
+                        <h3>Payment & IAP</h3>
+                        <p>In-app purchase lifecycle, entitlement persistence, desktop mocks, and the luxury paywall UI.
+                        </p>
+                    </div>
+                    <div class="home-card" onclick="showPage('chatbot')">
+                        <div class="card-icon">🤖</div>
+                        <h3>AI Chatbot</h3>
+                        <p>FAQ-first architecture, Ollama integration via Cloudflare tunnel, and chatbot widget
+                            implementation.</p>
+                    </div>
+                    <div class="home-card" onclick="showPage('audit')">
+                        <div class="card-icon">🔍</div>
+                        <h3>Code Audit Report</h3>
+                        <p>Deep codebase audit results with Grok comparison — fact-checked findings and real issues
+                            identified.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ BIOACOUSTICS ═══ -->
+            <div class="article" id="page-bioacoustics" data-tags="audio reference"
+                data-searchable="turkey elk deer coyote duck frequency pitch Hz spectral gobble yelp cluck purr bugle mew grunt bleat howl quack bioacoustics hearing range call type">
+                <div class="article-header">
+                    <h2>Animal Bioacoustics</h2>
+                    <div class="article-meta">
+                        <span class="article-tag tag-audio">Audio</span>
+                        <span class="article-tag tag-reference">Reference</span>
+                    </div>
+                </div>
+                <div class="article-body">
+                    <blockquote>Compiled from peer-reviewed bioacoustics research for use in OUTCALL's scoring engine
+                        calibration and reference call validation.</blockquote>
+
+                    <h3>Turkey (Meleagris gallopavo)</h3>
+                    <p><strong>Hearing range:</strong> 290 Hz – 5,250 Hz (optimal sensitivity ~2,000 Hz)</p>
+                    <table>
+                        <tr>
+                            <th>Call Type</th>
+                            <th>Frequency Range</th>
+                            <th>Notes</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Gobble</strong></td>
+                            <td>400 – 4,500 Hz</td>
+                            <td>Complex multi-harmonic vocalization</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Yelp</strong></td>
+                            <td>~1,000 Hz</td>
+                            <td>Hen yelps higher-pitched than tom yelps</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cluck</strong></td>
+                            <td>~1,300 Hz</td>
+                            <td>Short, sharp single notes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Purr</strong></td>
+                            <td>700 – 1,400 Hz</td>
+                            <td>Soft, rolling contentment call</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cackle</strong></td>
+                            <td>1,000 – 4,000 Hz</td>
+                            <td>Excited, rapid series</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cutting</strong></td>
+                            <td>Up to 12,000–15,000 Hz</td>
+                            <td>Aggressive excited calls</td>
+                        </tr>
+                    </table>
+
+                    <div class="info-box tip">
+                        <div class="info-box-title">Scoring Implication</div>
+                        Turkey calls span a wide frequency range; pitch tolerance should be ±100-200 Hz. Harmonic
+                        content is critical for realism. Rhythm/tempo matters greatly for yelps, clucks, and cutting
+                        sequences.
+                    </div>
+
+                    <h3>Elk (Cervus canadensis)</h3>
+                    <p><strong>Bugle structure:</strong> Three segments — on-glide → whistle → off-glide</p>
+                    <table>
+                        <tr>
+                            <th>Call Type</th>
+                            <th>Frequency Range</th>
+                            <th>Notes</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Bugle (fundamental)</strong></td>
+                            <td>~145 Hz</td>
+                            <td>Low-frequency vocal fold tone</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bugle (whistle)</strong></td>
+                            <td>1,000 – 4,000+ Hz</td>
+                            <td>Upper airway, can be 10x higher</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cow call / Mew</strong></td>
+                            <td>800 – 2,000 Hz</td>
+                            <td>Soft, rising pitch that trails off</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Alarm bark</strong></td>
+                            <td>1,500 – 3,000 Hz</td>
+                            <td>Sharp, urgent, dog-like</td>
+                        </tr>
+                    </table>
+
+                    <div class="info-box warning">
+                        <div class="info-box-title">Biphonation Warning</div>
+                        Elk bugle uses biphonation (two independent sound sources) — MFCC comparison must account for
+                        this dual-frequency signature.
+                    </div>
+
+                    <h3>White-tailed Deer</h3>
+                    <p><strong>Hearing range:</strong> 250 Hz – 30+ kHz (best sensitivity 4–8 kHz)</p>
+                    <table>
+                        <tr>
+                            <th>Call Type</th>
+                            <th>Frequency Range</th>
+                            <th>Notes</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Grunt</strong></td>
+                            <td>100 – 500 Hz</td>
+                            <td>Low, guttural; dominant buck</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bleat</strong></td>
+                            <td>1,500 – 4,000 Hz</td>
+                            <td>High-pitched doe/fawn call</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fawn distress</strong></td>
+                            <td>2,000 – 6,000 Hz</td>
+                            <td>Urgent high-pitched</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Snort-wheeze</strong></td>
+                            <td>Broadband</td>
+                            <td>Aggressive dominance display</td>
+                        </tr>
+                    </table>
+
+                    <h3>Coyote (Canis latrans)</h3>
+                    <p><strong>Hearing range:</strong> Up to 45,000 Hz (45 kHz)</p>
+                    <table>
+                        <tr>
+                            <th>Call Type</th>
+                            <th>Frequency Range</th>
+                            <th>Notes</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Howl</strong></td>
+                            <td>500 – 3,000 Hz</td>
+                            <td>Long-range territorial</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Yips/Yip-howl</strong></td>
+                            <td>1,000 – 5,000 Hz</td>
+                            <td>Social bonding, pack reunion</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bark</strong></td>
+                            <td>500 – 2,000 Hz</td>
+                            <td>Warning signal</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Distress calls</strong></td>
+                            <td>Up to 40,000+ Hz</td>
+                            <td>Prey mimicry, above human hearing</td>
+                        </tr>
+                    </table>
+
+                    <h3>Duck (Mallard)</h3>
+                    <p><strong>Hearing range:</strong> 66 Hz – 7,600 Hz (best sensitivity ~2,000 Hz)</p>
+                    <table>
+                        <tr>
+                            <th>Call Type</th>
+                            <th>Frequency Range</th>
+                            <th>Notes</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Hen quack</strong></td>
+                            <td>1,000 – 4,000 Hz</td>
+                            <td>Reed vibration on tone board</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hail call</strong></td>
+                            <td>1,500 – 4,000 Hz</td>
+                            <td>5-6 notes, loud → soft</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Feeding chuckle</strong></td>
+                            <td>800 – 2,500 Hz</td>
+                            <td>Raspy, low-intensity</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Drake quack</strong></td>
+                            <td>800 – 2,500 Hz</td>
+                            <td>Lower-pitched than hen</td>
+                        </tr>
+                    </table>
+
+                    <h3>Cross-Species Reference</h3>
+                    <table>
+                        <tr>
+                            <th>Species</th>
+                            <th>Lowest Hz</th>
+                            <th>Highest Hz</th>
+                            <th>Primary Band</th>
+                            <th>Pitch Tolerance</th>
+                        </tr>
+                        <tr>
+                            <td>Turkey</td>
+                            <td>400</td>
+                            <td>15,000</td>
+                            <td>1,000–4,000</td>
+                            <td>±150 Hz</td>
+                        </tr>
+                        <tr>
+                            <td>Elk</td>
+                            <td>145</td>
+                            <td>4,000+</td>
+                            <td>800–2,000</td>
+                            <td>±80–200 Hz</td>
+                        </tr>
+                        <tr>
+                            <td>Deer</td>
+                            <td>100</td>
+                            <td>8,000</td>
+                            <td>3,000–6,500</td>
+                            <td>±100 Hz</td>
+                        </tr>
+                        <tr>
+                            <td>Coyote</td>
+                            <td>500</td>
+                            <td>6,000+</td>
+                            <td>1,000–3,000</td>
+                            <td>±200 Hz</td>
+                        </tr>
+                        <tr>
+                            <td>Duck</td>
+                            <td>800</td>
+                            <td>5,000</td>
+                            <td>1,000–4,000</td>
+                            <td>±120 Hz</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ═══ AUDIO TECHNIQUES ═══ -->
+            <div class="article" id="page-audio-techniques" data-tags="audio tech"
+                data-searchable="MFCC cosine similarity DTW dynamic time warping pitch detection YIN pYIN CREPE autocorrelation gammatone GFCC WAV format parsing chunk header PCM isolate Flutter waveform FFT noise robustness spectral">
+                <div class="article-header">
+                    <h2>Advanced Audio Techniques</h2>
+                    <div class="article-meta">
+                        <span class="article-tag tag-audio">Audio</span>
+                        <span class="article-tag tag-tech">Technical</span>
+                    </div>
+                </div>
+                <div class="article-body">
+                    <h3>1. Pitch Detection Algorithms</h3>
+                    <table>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Accuracy</th>
+                            <th>Noise Robustness</th>
+                            <th>Speed</th>
+                            <th>Best For</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Autocorrelation</strong></td>
+                            <td>Basic</td>
+                            <td>Low</td>
+                            <td>⚡ Fastest</td>
+                            <td>Low freq, resource-constrained</td>
+                        </tr>
+                        <tr>
+                            <td><strong>YIN</strong></td>
+                            <td>Good</td>
+                            <td>Medium</td>
+                            <td>⚡ Fast</td>
+                            <td>Monophonic, low latency</td>
+                        </tr>
+                        <tr>
+                            <td><strong>pYIN</strong></td>
+                            <td>Very Good</td>
+                            <td>Good</td>
+                            <td>⚡ Fast</td>
+                            <td>Varied audio, fewer octave errors</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CREPE</strong></td>
+                            <td>Best</td>
+                            <td>Excellent</td>
+                            <td>🐢 Slow</td>
+                            <td>Max accuracy, handles noise well</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SwiftF0</strong></td>
+                            <td>Very Good</td>
+                            <td>Good</td>
+                            <td>⚡ 90x faster than CREPE</td>
+                            <td>Future mobile deployment</td>
+                        </tr>
+                    </table>
+
+                    <div class="info-box tip">
+                        <div class="info-box-title">Current State</div>
+                        OUTCALL uses autocorrelation-based pitch detection. Upgrade path: add parabolic interpolation →
+                        implement pYIN → consider CREPE-tiny (requires TFLite).
+                    </div>
+
+                    <h3>2. Audio Comparison Metrics</h3>
+
+                    <h4>MFCC + Cosine Similarity (Current)</h4>
+                    <p><strong>Strengths:</strong> Captures spectral envelope, scale-invariant, computationally
+                        efficient.</p>
+                    <p><strong>Weaknesses:</strong> Sensitive to mic differences, degrades with reverb/noise, loses
+                        temporal info.</p>
+
+                    <h4>Dynamic Time Warping (DTW) — Recommended Enhancement</h4>
+                    <p>Aligns two sequences of feature vectors by non-linearly warping the time axis. <strong>Better for
+                            animal calls</strong> because it:</p>
+                    <ul>
+                        <li>Handles tempo variations (calls at different speeds)</li>
+                        <li>Compares sequences of different lengths naturally</li>
+                        <li>Aligns complex frequency-modulated patterns</li>
+                        <li>No ML training required — pure mathematics</li>
+                    </ul>
+
+                    <h4>Gammatone Frequency Cepstral Coefficients (GFCCs)</h4>
+                    <p>Drop-in replacement for MFCCs with <strong>superior noise robustness</strong>, especially at low
+                        SNR. Based on gammatone filter model of the peripheral auditory system.</p>
+
+                    <h3>3. WAV File Format — Robust Parsing</h3>
+                    <div class="info-box important">
+                        <div class="info-box-title">Current Risk</div>
+                        OUTCALL hardcodes data offset at byte 44. Non-standard WAV files (extended headers, JUNK chunks)
+                        will be misread silently.
+                    </div>
+                    <p><strong>Correct approach:</strong> Iterate through RIFF chunks by reading 4-byte ID + 4-byte
+                        size, process <code>fmt </code> and <code>data</code> chunks, skip unknown chunks.</p>
+
+                    <h3>4. Flutter Audio Processing Patterns</h3>
+                    <table>
+                        <tr>
+                            <th>Library</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                        </tr>
+                        <tr>
+                            <td><code>fftea</code></td>
+                            <td>FFT analysis</td>
+                            <td>✅ In use</td>
+                        </tr>
+                        <tr>
+                            <td><code>record</code></td>
+                            <td>Audio capture</td>
+                            <td>✅ In use</td>
+                        </tr>
+                        <tr>
+                            <td><code>audio_waveforms</code></td>
+                            <td>Waveform viz</td>
+                            <td>Consider</td>
+                        </tr>
+                        <tr>
+                            <td><code>flutter_soloud</code></td>
+                            <td>Low-latency playback + FFT</td>
+                            <td>Consider</td>
+                        </tr>
+                    </table>
+
+                    <h3>5. Signal Quality Factors</h3>
+                    <table>
+                        <tr>
+                            <th>Factor</th>
+                            <th>Impact</th>
+                            <th>Mitigation</th>
+                        </tr>
+                        <tr>
+                            <td>Speaker → mic chain</td>
+                            <td>MFCC distortion</td>
+                            <td>Reduced MFCC weight (40%)</td>
+                        </tr>
+                        <tr>
+                            <td>Background wind/noise</td>
+                            <td>Pitch detection errors</td>
+                            <td>Noise floor calibration</td>
+                        </tr>
+                        <tr>
+                            <td>Device mic quality</td>
+                            <td>Frequency coloring</td>
+                            <td>Channel compensation</td>
+                        </tr>
+                        <tr>
+                            <td>Room reverb</td>
+                            <td>MFCC smearing</td>
+                            <td>Pre-emphasis filtering</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ═══ SCORING ENGINE ═══ -->
+            <div class="article" id="page-scoring-engine" data-tags="audio scoring"
+                data-searchable="scoring engine pitch tone rhythm duration volume weight noise penalty MFCC tolerance calibration signal quality floor AI coach feedback rolling average weighted average calculate score">
+                <div class="article-header">
+                    <h2>Scoring Engine</h2>
+                    <div class="article-meta">
+                        <span class="article-tag tag-scoring">Scoring</span>
+                        <span class="article-tag tag-audio">Audio</span>
+                    </div>
+                </div>
+                <div class="article-body">
+                    <h3>High-Level Flow</h3>
+                    <ol>
+                        <li><strong>Recording:</strong> <code>RecordingNotifier</code> captures audio via the Record
+                            plugin</li>
+                        <li><strong>Analysis:</strong> <code>AnalyzeAudioUseCase</code> extracts features into
+                            <code>AudioAnalysis</code> (runs in isolate)</li>
+                        <li><strong>Reference:</strong> <code>RealRatingService</code> fetches reference call from
+                            <code>ReferenceDatabase</code></li>
+                        <li><strong>Scoring:</strong> <code>CalculateScoreUseCase</code> compares user vs. reference
+                        </li>
+                        <li><strong>Smoothing:</strong> Rolling average of up to 2 prior attempts</li>
+                    </ol>
+
+                    <h3>Weighted Scoring Matrix</h3>
+                    <table>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Weight</th>
+                            <th>Calculation Basis</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Pitch</strong></td>
+                            <td>40%</td>
+                            <td>Deviation from idealPitchHz with curved falloff</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tone Quality</strong></td>
+                            <td>30%</td>
+                            <td>40% MFCC similarity + 60% tonal metrics</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rhythm</strong></td>
+                            <td>20%</td>
+                            <td>Pulsed: tempo + regularity. Non-pulsed: 80% pitch stability + 20% vol consistency</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Duration & Volume</strong></td>
+                            <td>10%</td>
+                            <td>70% duration accuracy + 30% volume level</td>
+                        </tr>
+                    </table>
+
+                    <h3>March 2026 Retuning</h3>
+                    <p>After real-world calls scored only 24% when played through speakers into phone microphones:</p>
+                    <ul>
+                        <li><strong>Noise penalty:</strong> Threshold 25→15, multiplier 2.0x→0.8x (max ~12pt penalty)
+                        </li>
+                        <li><strong>MFCC weight:</strong> 60%→40% (less sensitivity to speaker distortion)</li>
+                        <li><strong>Pitch tolerance:</strong> 1.5x wider band, gradual inner-band curve, 2x falloff (was
+                            3x)</li>
+                        <li><strong>Signal floor:</strong> Minimum 25% score for reasonable recordings</li>
+                    </ul>
+
+                    <h3>AI Coach Feedback</h3>
+                    <p>When the Ollama LLM is unavailable, the AI Coach uses rule-based feedback:</p>
+                    <ul>
+                        <li>Identifies weakest and strongest metric from the four core scores</li>
+                        <li>Maps weakness to specific drill recommendation (pitch, tone, rhythm, breath control)</li>
+                        <li>Focuses on score-based metrics (0-100) not raw values</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ═══ ARCHITECTURE ═══ -->
+            <div class="article" id="page-architecture" data-tags="tech"
+                data-searchable="MVVM Riverpod provider architecture dependency injection DI clean architecture Firebase Crashlytics AppConfig splash screen home screen platform environment desktop mobile isolate state management">
+                <div class="article-header">
+                    <h2>App Architecture</h2>
+                    <div class="article-meta">
+                        <span class="article-tag tag-tech">Technical</span>
+                    </div>
+                </div>
+                <div class="article-body">
+                    <h3>Core Pattern: MVVM + Riverpod</h3>
+                    <p>OUTCALL follows a strict <strong>Model-View-ViewModel</strong> pattern with
+                        <strong>Riverpod</strong> for state management and dependency injection.</p>
+
+                    <h4>Layer Structure</h4>
+                    <ul>
+                        <li><strong>Presentation:</strong> Screens + Controllers/Notifiers (ViewModels)</li>
+                        <li><strong>Domain:</strong> Use cases, repositories (interfaces), entities</li>
+                        <li><strong>Data:</strong> Repository implementations, services, external APIs</li>
+                    </ul>
+
+                    <h3>Startup Sequence</h3>
+                    <ol>
+                        <li><code>main_free.dart</code> / <code>main_full.dart</code> → calls
+                            <code>AppConfig.create()</code></li>
+                        <li><code>mainCommon()</code> → Platform config → Reference DB → Firebase → Error handling →
+                            Analytics → Notifications → DI init</li>
+                        <li><code>HuntingCallsApp</code> widget → SplashScreen → AuthWrapper → HomeScreen</li>
+                    </ol>
+
+                    <h3>Key Services</h3>
+                    <table>
+                        <tr>
+                            <th>Service</th>
+                            <th>Purpose</th>
+                        </tr>
+                        <tr>
+                            <td><code>AnalyticsService</code></td>
+                            <td>Firebase Analytics event tracking</td>
+                        </tr>
+                        <tr>
+                            <td><code>NotificationService</code></td>
+                            <td>Push notification management</td>
+                        </tr>
+                        <tr>
+                            <td><code>RemoteConfigService</code></td>
+                            <td>Firebase Remote Config for feature flags</td>
+                        </tr>
+                        <tr>
+                            <td><code>CloudAudioService</code></td>
+                            <td>Cloud-hosted reference call management</td>
+                        </tr>
+                        <tr>
+                            <td><code>AudioRecorderService</code></td>
+                            <td>Recording capture with amplitude stream</td>
+                        </tr>
+                        <tr>
+                            <td><code>ReferenceDatabase</code></td>
+                            <td>Local SQLite reference call library</td>
+                        </tr>
+                    </table>
+
+                    <h3>Error Handling</h3>
+                    <ul>
+                        <li><strong>Sync errors:</strong> <code>FlutterError.onError</code> → Crashlytics</li>
+                        <li><strong>Widget errors:</strong> Custom <code>GlobalErrorView</code> widget</li>
+                        <li><strong>Async errors:</strong> <code>PlatformDispatcher.instance.onError</code> →
+                            Crashlytics</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ═══ BRANDING ═══ -->
+            <div class="article" id="page-branding" data-tags="business"
+                data-searchable="branding OUTCALL Gobble Guru rebranding gold charcoal logo design typography Oswald Inter colors premium aesthetic mountain elk">
+                <div class="article-header">
+                    <h2>Branding & Visual Identity</h2>
+                    <div class="article-meta">
+                        <span class="article-tag tag-business">Business</span>
+                    </div>
+                </div>
+                <div class="article-body">
+                    <h3>Brand Evolution</h3>
+                    <p><strong>Before:</strong> "Gobble Guru" — green turkey mascot, playful/casual tone</p>
+                    <p><strong>After:</strong> "OUTCALL" — gold mountain silhouette, premium outdoor aesthetic</p>
+
+                    <h3>Design System</h3>
+                    <table>
+                        <tr>
+                            <th>Token</th>
+                            <th>Value</th>
+                            <th>Usage</th>
+                        </tr>
+                        <tr>
+                            <td>Background</td>
+                            <td><code>#0C0E12</code></td>
+                            <td>App background, deep charcoal</td>
+                        </tr>
+                        <tr>
+                            <td>Surface</td>
+                            <td><code>#121212</code></td>
+                            <td>Cards, panels</td>
+                        </tr>
+                        <tr>
+                            <td>Accent</td>
+                            <td><code>#E8922D</code></td>
+                            <td>Primary gold, CTAs, highlights</td>
+                        </tr>
+                        <tr>
+                            <td>Accent Light</td>
+                            <td><code>#F0B860</code></td>
+                            <td>Hover states, gradients</td>
+                        </tr>
+                        <tr>
+                            <td>Text Primary</td>
+                            <td><code>#F5F5F5</code></td>
+                            <td>Headings, body text</td>
+                        </tr>
+                        <tr>
+                            <td>Text Muted</td>
+                            <td><code>rgba(255,255,255,0.7)</code></td>
+                            <td>Secondary text</td>
+                        </tr>
+                    </table>
+
+                    <h3>Typography</h3>
+                    <ul>
+                        <li><strong>Headings:</strong> Oswald (uppercase, 2px letter-spacing)</li>
+                        <li><strong>Body:</strong> Inter (system fallback)</li>
+                        <li><strong>Code:</strong> JetBrains Mono</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ═══ PAYMENT ═══ -->
+            <div class="article" id="page-payment" data-tags="business tech"
+                data-searchable="payment IAP in-app purchase subscription premium freemium entitlement Google Play billing paywall desktop mock">
+                <div class="article-header">
+                    <h2>Payment & IAP</h2>
+                    <div class="article-meta">
+                        <span class="article-tag tag-business">Business</span>
+                        <span class="article-tag tag-tech">Technical</span>
+                    </div>
+                </div>
+                <div class="article-body">
+                    <h3>Architecture</h3>
+                    <p>Uses native Google Play Billing via the <code>in_app_purchase</code> Flutter plugin with a hybrid
+                        entitlement system.</p>
+
+                    <h3>Entitlement Persistence</h3>
+                    <ul>
+                        <li><strong>Cloud:</strong> Firestore profile document stores <code>isPremium</code> flag</li>
+                        <li><strong>Local:</strong> SharedPreferences caches entitlement for offline access</li>
+                        <li><strong>Verification:</strong> Purchase tokens validated on each app launch</li>
+                    </ul>
+
+                    <h3>Desktop Handling</h3>
+                    <p>Desktop builds (Linux/Windows/macOS) use mock payment implementations since native IAP isn't
+                        available. All premium features are unlocked on desktop for development.</p>
+
+                    <h3>Freemium Model</h3>
+                    <table>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Free</th>
+                            <th>Premium</th>
+                        </tr>
+                        <tr>
+                            <td>Basic call library</td>
+                            <td>✅</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Full call library</td>
+                            <td>❌</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Leaderboards</td>
+                            <td>❌</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Social features</td>
+                            <td>❌</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Map features</td>
+                            <td>❌</td>
+                            <td>✅</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ═══ COMPETITIVE ═══ -->
+            <div class="article" id="page-competitive" data-tags="business"
+                data-searchable="competitive landscape iHunt HuntWise market analysis competition monetization strategy revenue pricing subscription freemium hunting app comparison features differentiation">
+                <div class="article-header">
+                    <h2>Competitive Landscape</h2>
+                    <div class="article-meta">
+                        <span class="article-tag tag-business">Business</span>
+                    </div>
+                </div>
+                <div class="article-body">
+                    <div class="info-box tip">
+                        <div class="info-box-title">Key Insight</div>
+                        OUTCALL is the <strong>only hunting call app</strong> that provides real-time audio analysis and
+                        scoring. No competitor offers call training.
+                    </div>
+
+                    <h3>Competitor Overview</h3>
+
+                    <h4>iHunt — Call Library (750+ calls)</h4>
+                    <ul>
+                        <li>59+ species, custom playlists, Bluetooth speaker integration</li>
+                        <li>Solunar tables, weather, GPS tracking</li>
+                        <li><strong>Pricing:</strong> Free (75 calls) + one-time IAP for full unlock</li>
+                        <li><strong>No training or scoring</strong></li>
+                    </ul>
+
+                    <h4>HuntWise — Data Intelligence</h4>
+                    <ul>
+                        <li>HuntCast™ predictive movement algorithm</li>
+                        <li>450+ mapping layers, property lines, 3D/LiDAR</li>
+                        <li>RutCast, WindCast, community feed</li>
+                        <li><strong>Pricing:</strong> Subscription (monthly/annual)</li>
+                        <li><strong>No call features at all</strong></li>
+                    </ul>
+
+                    <h3>Feature Comparison</h3>
+                    <table>
+                        <tr>
+                            <th>Feature</th>
+                            <th>OUTCALL</th>
+                            <th>iHunt</th>
+                            <th>HuntWise</th>
+                        </tr>
+                        <tr>
+                            <td>Call playback</td>
+                            <td>✅</td>
+                            <td>✅ (750+)</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Audio scoring</strong></td>
+                            <td>✅</td>
+                            <td>❌</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AI coaching</strong></td>
+                            <td>✅</td>
+                            <td>❌</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Waveform viz</strong></td>
+                            <td>✅</td>
+                            <td>❌</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td>Leaderboards</td>
+                            <td>✅</td>
+                            <td>❌</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td>Mapping/GPS</td>
+                            <td>❌</td>
+                            <td>✅</td>
+                            <td>✅ (best)</td>
+                        </tr>
+                        <tr>
+                            <td>Movement prediction</td>
+                            <td>❌</td>
+                            <td>❌</td>
+                            <td>✅</td>
+                        </tr>
+                    </table>
+
+                    <h3>Monetization Insights (2024–2025)</h3>
+                    <ul>
+                        <li>IAPs account for <strong>48.2%</strong> of all mobile app earnings</li>
+                        <li>Subscription apps: <strong>40%+</strong> of App Store revenue</li>
+                        <li><strong>90%</strong> of mobile revenue comes from free apps (freemium model wins)</li>
+                        <li>Hybrid models (freemium + subscription) recommended for max revenue</li>
+                    </ul>
+
+                    <h3>Opportunity Areas</h3>
+                    <ul>
+                        <li>🤝 Brand partnerships with hunting gear manufacturers</li>
+                        <li>📦 Seasonal content packs (spring turkey, fall elk)</li>
+                        <li>🏆 Competition mode with paid entry tournaments</li>
+                        <li>📱 Community feed for sharing results</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ═══ CHATBOT ═══ -->
+            <div class="article" id="page-chatbot" data-tags="tech"
+                data-searchable="chatbot AI Ollama Cloudflare tunnel FAQ LLM Gemma widget landing page">
+                <div class="article-header">
+                    <h2>AI Chatbot</h2>
+                    <div class="article-meta">
+                        <span class="article-tag tag-tech">Technical</span>
+                    </div>
+                </div>
+                <div class="article-body">
+                    <h3>Architecture: FAQ-First</h3>
+                    <p>The chatbot widget on the landing page uses a two-tier response strategy:</p>
+                    <ol>
+                        <li><strong>Instant FAQ match</strong> — Keyword-based lookup in a local FAQ database. Instant
+                            response with no latency.</li>
+                        <li><strong>LLM fallback</strong> — If no FAQ match, queries Ollama (Gemma 3 4B) via Cloudflare
+                            tunnel with a timeout.</li>
+                    </ol>
+
+                    <h3>Implementation Files</h3>
+                    <ul>
+                        <li><code>docs/chatbot.js</code> — Widget logic, FAQ database, LLM integration</li>
+                        <li><code>docs/style.css</code> — Chatbot UI styles (matches OUTCALL design system)</li>
+                        <li><code>docs/index.html</code> — Script include</li>
+                    </ul>
+
+                    <h3>Ollama Configuration</h3>
+                    <ul>
+                        <li><strong>Model:</strong> Gemma 3 4B (via local Ollama instance)</li>
+                        <li><strong>Tunnel:</strong> Cloudflare tunnel for public access</li>
+                        <li><strong>Timeout:</strong> Falls back to "try our FAQ" message on timeout</li>
+                        <li><strong>System prompt:</strong> Specialized for OUTCALL product knowledge</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ═══ AUDIT ═══ -->
+            <div class="article" id="page-audit" data-tags="tech"
+                data-searchable="audit Grok bug crash code review fact check scoring noise penalty MFCC WAV header app config splash screen Firebase AppCheck error handling">
+                <div class="article-header">
+                    <h2>Code Audit Report</h2>
+                    <div class="article-meta">
+                        <span class="article-tag tag-tech">Technical</span>
+                    </div>
+                </div>
+                <div class="article-body">
+                    <h3>Executive Summary</h3>
+                    <p>Deep section-by-section audit compared against Grok's shared conversation analysis.</p>
+                    <div class="info-box important">
+                        <div class="info-box-title">Key Finding</div>
+                        Of Grok's 10 identified issues, <strong>7 are incorrect</strong>. Grok analyzed a
+                        partial/outdated snapshot and hallucinated several non-existent issues.
+                    </div>
+
+                    <h3>Grok's Claims — Fact-Checked</h3>
+                    <table>
+                        <tr>
+                            <th>#</th>
+                            <th>Claim</th>
+                            <th>Verdict</th>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>Incomplete Provider in app_config.dart</td>
+                            <td>❌ FALSE — provider is valid</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Missing Math Import in splash</td>
+                            <td>❌ FALSE — dart:math is imported</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Splash Timeout Race Condition</td>
+                            <td>⚠️ PARTIAL — but services are non-critical</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>Early Native Splash Removal</td>
+                            <td>❌ FALSE — removed inside deferred init</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>Main Thread Audio Bottleneck</td>
+                            <td>❌ FALSE — runs in isolate via compute()</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>Unsafe AsyncValue in Home</td>
+                            <td>❌ FALSE — proper null/error/loading guards</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>No Global Async Error Handling</td>
+                            <td>❌ FALSE — PlatformDispatcher.onError is set</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>Debug Config in Release (AppCheck)</td>
+                            <td>❌ FALSE — !kDebugMode guard present</td>
+                        </tr>
+                    </table>
+
+                    <h3>Real Issues Found</h3>
+                    <ul>
+                        <li>🔴 <strong>Scoring pipeline</strong> — Noise penalty, MFCC weight, pitch tolerance all too
+                            harsh (FIXED)</li>
+                        <li>🟡 <strong>WAV header parsing</strong> — Hardcoded 44-byte offset, fragile for non-standard
+                            files</li>
+                        <li>🟡 <strong>Splash deferred services</strong> — Fire-and-forget on timer (minor)</li>
+                    </ul>
+
+                    <h3>Architecture Health</h3>
+                    <table>
+                        <tr>
+                            <th>Area</th>
+                            <th>Health</th>
+                        </tr>
+                        <tr>
+                            <td>Core / DI</td>
+                            <td>✅ Good</td>
+                        </tr>
+                        <tr>
+                            <td>Auth</td>
+                            <td>✅ Good</td>
+                        </tr>
+                        <tr>
+                            <td>Recording</td>
+                            <td>✅ Good</td>
+                        </tr>
+                        <tr>
+                            <td>Audio Analysis</td>
+                            <td>🟡 Good w/ caveats</td>
+                        </tr>
+                        <tr>
+                            <td>Scoring</td>
+                            <td>🟡 Fixed</td>
+                        </tr>
+                        <tr>
+                            <td>Payment / IAP</td>
+                            <td>✅ Good</td>
+                        </tr>
+                        <tr>
+                            <td>Cloud Functions</td>
+                            <td>✅ Good</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()">☰</button>
+
+    <script>
+        // ─── Navigation ─────────────────────────────────────────────────
+        function showPage(pageId) {
+            document.querySelectorAll('.article').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            const page = document.getElementById('page-' + pageId);
+            if (page) page.classList.add('active');
+
+            const nav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+            if (nav) nav.classList.add('active');
+
+            // Clear search when navigating
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').textContent = '';
+
+            // Close mobile sidebar
+            document.getElementById('sidebar').classList.remove('open');
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // ─── Search ─────────────────────────────────────────────────────
+        function handleSearch(query) {
+            const resultEl = document.getElementById('searchResults');
+            if (!query.trim()) {
+                resultEl.textContent = '';
+                // Show current page or home
+                return;
+            }
+
+            const q = query.toLowerCase();
+            const articles = document.querySelectorAll('.article[data-searchable]');
+            const matches = [];
+
+            articles.forEach(article => {
+                const searchable = (article.dataset.searchable || '').toLowerCase();
+                const bodyText = article.textContent.toLowerCase();
+                if (searchable.includes(q) || bodyText.includes(q)) {
+                    matches.push(article);
+                }
+            });
+
+            // Show matching articles
+            document.querySelectorAll('.article').forEach(a => a.classList.remove('active'));
+            if (matches.length === 1) {
+                matches[0].classList.add('active');
+                // Highlight nav
+                const pageId = matches[0].id.replace('page-', '');
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                const nav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+                if (nav) nav.classList.add('active');
+            } else if (matches.length > 1) {
+                matches.forEach(m => m.classList.add('active'));
+            } else {
+                // No matches — show home with message
+                document.getElementById('page-home').classList.add('active');
+            }
+
+            resultEl.textContent = matches.length === 0
+                ? `No results for "${query}"`
+                : `${matches.length} article${matches.length > 1 ? 's' : ''} found`;
+        }
+
+        // ─── Mobile Sidebar ─────────────────────────────────────────────
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+    </script>
+</body>
+
+</html>
