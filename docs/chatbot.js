@@ -10,7 +10,6 @@
     const OLLAMA_URL = 'https://farming-idaho-location-taste.trycloudflare.com/api/generate';
     const MODEL = 'outcall-coach';
     const MAX_TOKENS = 150;
-    const TIMEOUT_MS = 20000;
 
     const SYSTEM_PROMPT = `You are the OUTCALL AI Assistant on the OUTCALL landing page. OUTCALL is a premium hunting call training app.
 
@@ -45,18 +44,18 @@ RULES:
         'beta|early.*access|sign.*up|waitlist': 'You can join the beta right now! Just enter your email in the signup form above and you\'ll get early access.',
     };
 
-    function getFallbackAnswer(question) {
+    function getFaqAnswer(question) {
         const q = question.toLowerCase();
         for (const [pattern, answer] of Object.entries(FAQ)) {
             if (new RegExp(pattern, 'i').test(q)) return answer;
         }
-        return 'Great question! I\'m not 100% sure on that one. Drop your email in the beta signup above and our team will get back to you personally!';
+        return null; // No FAQ match — will route to LLM
     }
 
-    // ── Ollama API ─────────────────────────────────────────────────────
+    // ── Ollama API (only called when FAQ has no match) ──────────────────
     async function askOllama(question) {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+        const timer = setTimeout(() => controller.abort(), 30000);
 
         try {
             const res = await fetch(OLLAMA_URL, {
@@ -76,12 +75,12 @@ RULES:
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             const answer = (data.response || '').trim();
-            return answer.length > 10 ? answer : getFallbackAnswer(question);
+            if (answer.length > 10) return answer;
         } catch (e) {
             clearTimeout(timer);
-            console.log('Chatbot: Ollama unavailable, using fallback', e.message);
-            return getFallbackAnswer(question);
+            console.log('Chatbot: Ollama unavailable', e.message);
         }
+        return 'Great question! I\'m not 100% sure on that one. Drop your email in the beta signup above and our team will get back to you personally!';
     }
 
     // ── Chat Widget DOM ───────────────────────────────────────────────
@@ -196,8 +195,16 @@ RULES:
         if (chips) chips.remove();
 
         appendMessage(question, 'user');
-        const typing = appendTyping();
 
+        // FAQ-first: instant answer if we have a match
+        const faqAnswer = getFaqAnswer(question);
+        if (faqAnswer) {
+            appendMessage(faqAnswer, 'bot');
+            return;
+        }
+
+        // No FAQ match — ask the LLM (show typing while waiting)
+        const typing = appendTyping();
         const answer = await askOllama(question);
         typing.remove();
         appendMessage(answer, 'bot');
