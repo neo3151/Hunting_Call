@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:outcall/l10n/app_localizations.dart';
+import 'package:outcall/config/app_config.dart';
+import 'package:outcall/core/services/audio_service.dart';
+import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/core/utils/animal_image_alignment.dart';
+import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/widgets/upgrade_prompter.dart';
+import 'package:outcall/features/leaderboard/presentation/leaderboard_screen.dart';
 import 'package:outcall/features/library/domain/reference_call_model.dart';
 import 'package:outcall/features/library/presentation/acoustic_spectrum_widget.dart';
-
-import 'package:outcall/features/recording/presentation/recorder_page.dart';
-import 'package:outcall/features/leaderboard/presentation/leaderboard_screen.dart';
-import 'package:outcall/config/app_config.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:outcall/core/widgets/upgrade_prompter.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:outcall/core/services/audio_service.dart';
-import 'package:outcall/core/utils/app_logger.dart';
-import 'package:outcall/core/utils/animal_image_alignment.dart';
-import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/features/recording/presentation/recorder_page.dart';
+import 'package:outcall/l10n/app_localizations.dart';
 
 class CallDetailScreen extends ConsumerStatefulWidget {
   final ReferenceCall call;
@@ -46,20 +45,27 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     super.dispose();
   }
 
-  Future<void> _togglePlayback() async {
+  Future<void> _togglePlayback({bool isDiagnostic = false}) async {
     final audioService = ref.read(audioServiceProvider);
 
     try {
       setState(() => _isDownloading = true);
-      await audioService.play(widget.call.id, widget.call.audioAssetPath);
+
+      final assetPath = isDiagnostic && widget.call.diagnosticAudioAssetPath != null
+          ? widget.call.diagnosticAudioAssetPath!
+          : widget.call.audioAssetPath;
+
+      await audioService.play(
+        widget.call.id,
+        assetPath,
+        isDiagnostic: isDiagnostic,
+      );
       if (mounted) setState(() => _isDownloading = false);
     } catch (e) {
       if (mounted) {
         setState(() => _isDownloading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Could not play audio: $e'),
-              backgroundColor: Colors.red),
+          SnackBar(content: Text('Could not play audio: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -103,8 +109,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                             width: double.infinity,
                             height: 350,
                             fit: BoxFit.cover,
-                            alignment: AnimalImageAlignment.forImage(
-                                widget.call.imageUrl),
+                            alignment: AnimalImageAlignment.forImage(widget.call.imageUrl),
                           ),
                         ),
                       ),
@@ -126,8 +131,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                         top: MediaQuery.of(context).padding.top + 10,
                         left: 10,
                         child: IconButton(
-                          icon: Icon(Icons.arrow_back_ios_new,
-                              color: palette.textPrimary),
+                          icon: Icon(Icons.arrow_back_ios_new, color: palette.textPrimary),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
@@ -186,26 +190,21 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: _togglePlayback,
-                                icon: Icon(isPlaying
-                                    ? Icons.stop_rounded
-                                    : Icons.play_arrow_rounded),
+                                onPressed: () => _togglePlayback(isDiagnostic: false),
+                                icon:
+                                    Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
                                 label: Text(
                                   _isDownloading
                                       ? 'DOWNLOADING...'
                                       : isPlaying
                                           ? 'STOP REFERENCE'
                                           : 'LISTEN TO REFERENCE',
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).primaryColor,
+                                  backgroundColor: Theme.of(context).primaryColor,
                                   foregroundColor: Colors.black,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12)),
                                 ),
@@ -227,13 +226,38 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                     ),
                                   );
                                 },
-                                icon: Icon(Icons.mic,
-                                    color: palette.textSecondary),
+                                icon: Icon(Icons.mic, color: palette.textSecondary),
                                 tooltip: 'Start Practice',
                               ),
                             ),
                           ],
                         ),
+
+                        if (widget.call.diagnosticAudioAssetPath != null &&
+                            widget.call.diagnosticAudioAssetPath!.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () => _togglePlayback(isDiagnostic: true),
+                              icon: const Icon(Icons.tune_rounded, size: 20),
+                              label: Text(
+                                isPlaying ? 'STOP DIAGNOSTIC' : 'PLAY DIAGNOSTIC TONE',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: palette.textSecondary,
+                                side: BorderSide(color: palette.border),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape:
+                                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            ),
+                          ),
+                        ],
 
                         const SizedBox(height: 12),
 
@@ -247,8 +271,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                         // Leaderboard Action
                         // Leaderboard Action
                         Builder(builder: (context) {
-                          final showLeaderboard =
-                              AppConfig.instance.allowLeaderboard || isPremium;
+                          final showLeaderboard = AppConfig.instance.allowLeaderboard || isPremium;
 
                           if (showLeaderboard) {
                             return SizedBox(
@@ -267,15 +290,12 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                 },
                                 icon: const Icon(Icons.emoji_events_outlined,
                                     color: Colors.orangeAccent),
-                                label:
-                                    Text(S.of(context).viewGlobalExpertRankings),
+                                label: Text(S.of(context).viewGlobalExpertRankings),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: palette.textSecondary,
-                                  side: BorderSide(
-                                      color: Colors.orangeAccent
-                                          .withValues(alpha: 0.3)),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
+                                  side:
+                                      BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.3)),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12)),
                                 ),
@@ -286,19 +306,15 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                               width: double.infinity,
                               child: OutlinedButton.icon(
                                 onPressed: () async {
-                                  AppLogger.d(
-                                      '🔒 Locked Leaderboard clicked. Showing prompt...');
-                                  UpgradePrompter.show(context,
-                                      featureName: 'Global Leaderboards');
+                                  AppLogger.d('🔒 Locked Leaderboard clicked. Showing prompt...');
+                                  UpgradePrompter.show(context, featureName: 'Global Leaderboards');
                                 },
-                                icon: Icon(Icons.lock_outline,
-                                    color: palette.textSubtle),
+                                icon: Icon(Icons.lock_outline, color: palette.textSubtle),
                                 label: Text(S.of(context).globalRankingsLocked),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: palette.textSubtle,
                                   side: BorderSide(color: palette.border),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12)),
                                 ),
@@ -314,14 +330,10 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            _metricCard(
-                                'DOMINANT PITCH',
-                                '${widget.call.idealPitchHz.toInt()} Hz',
+                            _metricCard('DOMINANT PITCH', '${widget.call.idealPitchHz.toInt()} Hz',
                                 Icons.graphic_eq),
                             const SizedBox(width: 12),
-                            _metricCard(
-                                'DURATION',
-                                '${widget.call.idealDurationSec} Sec',
+                            _metricCard('DURATION', '${widget.call.idealDurationSec} Sec',
                                 Icons.timer_outlined),
                           ],
                         ),
@@ -338,8 +350,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                         const SizedBox(height: 12),
                         Text(
                           widget.call.description,
-                          style: TextStyle(
-                              color: palette.textSecondary, fontSize: 16, height: 1.6),
+                          style: TextStyle(color: palette.textSecondary, fontSize: 16, height: 1.6),
                         ),
 
                         const SizedBox(height: 30),
@@ -388,13 +399,8 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
             const SizedBox(height: 12),
             Text(value,
                 style: TextStyle(
-                    color: palette.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold)),
-            Text(label,
-                style: TextStyle(
-                    color: palette.textSubtle,
-                    fontSize: 10)),
+                    color: palette.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(label, style: TextStyle(color: palette.textSubtle, fontSize: 10)),
           ],
         ),
       ),
@@ -408,32 +414,25 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-            color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
+        border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.tips_and_updates_rounded,
-                  color: Theme.of(context).primaryColor),
+              Icon(Icons.tips_and_updates_rounded, color: Theme.of(context).primaryColor),
               const SizedBox(width: 12),
               Text(
                 'FIELD PRO TIPS',
-                style: GoogleFonts.oswald(
-                    color: palette.textPrimary,
-                    fontWeight: FontWeight.bold),
+                style: GoogleFonts.oswald(color: palette.textPrimary, fontWeight: FontWeight.bold),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             widget.call.proTips,
-            style: TextStyle(
-                color: palette.textSecondary,
-                fontSize: 15,
-                height: 1.5),
+            style: TextStyle(color: palette.textSecondary, fontSize: 15, height: 1.5),
           ),
         ],
       ),
@@ -465,8 +464,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
       ),
       child: Text(
         difficulty.toUpperCase(),
-        style:
-            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
       ),
     );
   }

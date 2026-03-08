@@ -9,6 +9,7 @@ class ReferenceCall {
   final double idealPitchHz;
   final double idealDurationSec;
   final String audioAssetPath;
+  final String? diagnosticAudioAssetPath; // The synthetic tone used for DTW calibration
   final double tolerancePitch; // +/- Hz allowed
   final double toleranceDuration; // +/- seconds allowed
   final String imageUrl; // Custom high-res image
@@ -30,6 +31,7 @@ class ReferenceCall {
     required this.idealPitchHz,
     required this.idealDurationSec,
     required this.audioAssetPath,
+    this.diagnosticAudioAssetPath,
     this.tolerancePitch = 50.0,
     this.toleranceDuration = 0.5,
     this.imageUrl = '',
@@ -52,6 +54,7 @@ class ReferenceCall {
     double? idealPitchHz,
     double? idealDurationSec,
     String? audioAssetPath,
+    String? diagnosticAudioAssetPath,
     double? tolerancePitch,
     double? toleranceDuration,
     String? imageUrl,
@@ -73,6 +76,7 @@ class ReferenceCall {
       idealPitchHz: idealPitchHz ?? this.idealPitchHz,
       idealDurationSec: idealDurationSec ?? this.idealDurationSec,
       audioAssetPath: audioAssetPath ?? this.audioAssetPath,
+      diagnosticAudioAssetPath: diagnosticAudioAssetPath ?? this.diagnosticAudioAssetPath,
       tolerancePitch: tolerancePitch ?? this.tolerancePitch,
       toleranceDuration: toleranceDuration ?? this.toleranceDuration,
       imageUrl: imageUrl ?? this.imageUrl,
@@ -97,6 +101,7 @@ class ReferenceCall {
       idealPitchHz: (json['idealPitchHz'] as num).toDouble(),
       idealDurationSec: (json['idealDurationSec'] as num).toDouble(),
       audioAssetPath: json['audioAssetPath'] as String,
+      diagnosticAudioAssetPath: json['diagnosticAudioAssetPath'] as String?,
       tolerancePitch: (json['tolerancePitch'] as num?)?.toDouble() ?? 50.0,
       toleranceDuration: (json['toleranceDuration'] as num?)?.toDouble() ?? 0.5,
       imageUrl: json['imageUrl'] as String? ?? '',
@@ -105,31 +110,34 @@ class ReferenceCall {
       isPulsedCall: json['isPulsedCall'] as bool? ?? false,
       idealTempo: (json['idealTempo'] as num?)?.toDouble() ?? 0.0,
       waveform: (json['waveform'] as List<dynamic>?)?.map((e) => (e as num).toDouble()).toList(),
-      spectrogram: (json['spectrogram'] as List<dynamic>?)?.map(
-        (row) => (row as List<dynamic>).map((e) => (e as num).toDouble()).toList(),
-      ).toList(),
+      spectrogram: (json['spectrogram'] as List<dynamic>?)
+          ?.map(
+            (row) => (row as List<dynamic>).map((e) => (e as num).toDouble()).toList(),
+          )
+          .toList(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'animalName': animalName,
-    'callType': callType,
-    'category': category,
-    'difficulty': difficulty,
-    'description': description,
-    'proTips': proTips,
-    'idealPitchHz': idealPitchHz,
-    'idealDurationSec': idealDurationSec,
-    'audioAssetPath': audioAssetPath,
-    'tolerancePitch': tolerancePitch,
-    'toleranceDuration': toleranceDuration,
-    'imageUrl': imageUrl,
-    'scientificName': scientificName,
-    'isLocked': isLocked,
-    'isPulsedCall': isPulsedCall,
-    'idealTempo': idealTempo,
-    if (waveform != null) 'waveform': waveform,
-    if (spectrogram != null) 'spectrogram': spectrogram,
-  };
+        'id': id,
+        'animalName': animalName,
+        'callType': callType,
+        'category': category,
+        'difficulty': difficulty,
+        'description': description,
+        'proTips': proTips,
+        'idealPitchHz': idealPitchHz,
+        'idealDurationSec': idealDurationSec,
+        'audioAssetPath': audioAssetPath,
+        if (diagnosticAudioAssetPath != null) 'diagnosticAudioAssetPath': diagnosticAudioAssetPath,
+        'tolerancePitch': tolerancePitch,
+        'toleranceDuration': toleranceDuration,
+        'imageUrl': imageUrl,
+        'scientificName': scientificName,
+        'isLocked': isLocked,
+        'isPulsedCall': isPulsedCall,
+        'idealTempo': idealTempo,
+        if (waveform != null) 'waveform': waveform,
+        if (spectrogram != null) 'spectrogram': spectrogram,
+      };
 }

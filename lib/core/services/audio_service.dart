@@ -1,39 +1,39 @@
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 /// Global audio service for playing reference call audio across the app.
 /// Prevents memory leaks by centralizing AudioPlayer lifecycle management.
-/// 
+///
 /// Supports both bundled assets AND cloud-downloaded cached files via CloudAudioService.
 class AudioService {
   final AudioPlayer _player = AudioPlayer();
   final CloudAudioService _cloudAudio;
   String? _currentlyPlayingId;
-  
+
   String? get currentlyPlayingId => _currentlyPlayingId;
   bool get isPlaying => _currentlyPlayingId != null;
-  
+
   AudioService(this._cloudAudio) {
     // Single listener for player completion - prevents listener leaks
     _player.onPlayerComplete.listen((_) {
       _currentlyPlayingId = null;
     });
   }
-  
+
   /// Play a call by resolving its source automatically.
   /// If the call is free, plays from bundled assets.
   /// If paid, downloads from cloud (or serves from cache) and plays.
-  Future<void> play(String callId, String assetPath) async {
+  Future<void> play(String callId, String assetPath, {bool isDiagnostic = false}) async {
     try {
       if (_currentlyPlayingId == callId) {
         await stop();
         return;
       }
-      
+
       await _player.stop();
-      
+
       final source = await _cloudAudio.resolveAudioSource(callId, assetPath);
       if (source.isAsset) {
         await _player.play(ap.AssetSource(source.path));
@@ -41,7 +41,8 @@ class AudioService {
         await _player.play(ap.DeviceFileSource(source.path));
       }
       _currentlyPlayingId = callId;
-      AppLogger.d('AudioService: Playing $callId (${source.isAsset ? "asset" : "cached"})');
+      AppLogger.d(
+          'AudioService: Playing $callId (${source.isAsset ? "asset" : "cached"}) [Diagnostic: $isDiagnostic]');
     } catch (e) {
       AppLogger.d('AudioService: Error playing $callId - $e');
       _currentlyPlayingId = null;
@@ -50,31 +51,31 @@ class AudioService {
   }
 
   /// Play an asset directly (legacy method, kept for compatibility).
-  Future<void> playAsset(String assetPath, String id) async {
+  Future<void> playAsset(String assetPath, String id, {bool isDiagnostic = false}) async {
     try {
       if (_currentlyPlayingId == id) {
         await stop();
         return;
       }
-      
+
       await _player.stop();
       await _player.play(ap.AssetSource(assetPath));
       _currentlyPlayingId = id;
-      AppLogger.d('AudioService: Playing $id');
+      AppLogger.d('AudioService: Playing $id [Diagnostic: $isDiagnostic]');
     } catch (e) {
       AppLogger.d('AudioService: Error playing $id - $e');
       _currentlyPlayingId = null;
       rethrow;
     }
   }
-  
+
   /// Stop current playback
   Future<void> stop() async {
     await _player.stop();
     _currentlyPlayingId = null;
     AppLogger.d('AudioService: Stopped');
   }
-  
+
   /// Dispose the audio player
   void dispose() {
     _player.dispose();
@@ -99,4 +100,5 @@ class CurrentlyPlayingIdNotifier extends Notifier<String?> {
   String? build() => null;
 }
 
-final currentlyPlayingIdProvider = NotifierProvider<CurrentlyPlayingIdNotifier, String?>(CurrentlyPlayingIdNotifier.new);
+final currentlyPlayingIdProvider =
+    NotifierProvider<CurrentlyPlayingIdNotifier, String?>(CurrentlyPlayingIdNotifier.new);

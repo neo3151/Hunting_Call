@@ -961,7 +961,8 @@
           0.725,
           0.668
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/duck_mallard_greeting_diagnostic.wav"
     },
     {
       "id": "duck_mallard_greeting_v2",
@@ -1924,7 +1925,8 @@
           0.333,
           0.321
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/duck_mallard_greeting_v2_diagnostic.wav"
     },
     {
       "id": "duck_wood_duck_whistle",
@@ -2887,7 +2889,8 @@
           0.567,
           0.815
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/wood_duck_diagnostic.wav"
     },
     {
       "id": "goose_canadian_honk",
@@ -3850,7 +3853,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/goose_canadian_honk_diagnostic.wav"
     },
     {
       "id": "goose_cluck",
@@ -4813,7 +4817,8 @@
           0.0,
           0.082
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/goose_cluck_diagnostic.wav"
     },
     {
       "id": "teal_blue_winged",
@@ -5776,7 +5781,8 @@
           0.239,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/teal_diagnostic.wav"
     },
     {
       "id": "specklebelly_yodel",
@@ -6739,7 +6745,8 @@
           0.78,
           0.607
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/specklebelly_diagnostic.wav"
     },
     {
       "id": "elk_bull_bugle",
@@ -7702,7 +7709,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/elk_bull_bugle_diagnostic.wav"
     },
     {
       "id": "deer_buck_grunt",
@@ -8665,7 +8673,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_buck_grunt_diagnostic.wav"
     },
     {
       "id": "deer_doe_bleat",
@@ -9628,7 +9637,8 @@
           0.476,
           0.359
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_doe_bleat_diagnostic.wav"
     },
     {
       "id": "deer_snort_wheeze",
@@ -10591,7 +10601,8 @@
           0.537,
           0.553
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_snort_wheeze_diagnostic.wav"
     },
     {
       "id": "coyote_howl",
@@ -11554,7 +11565,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/coyote_howl_diagnostic.wav"
     },
     {
       "id": "coyote_challenge",
@@ -12517,7 +12529,8 @@
           0.088,
           0.124
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/coyote_challenge_diagnostic.wav"
     },
     {
       "id": "red_fox_scream",
@@ -13480,7 +13493,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/fox_scream_diagnostic.wav"
     },
     {
       "id": "bobcat_growl",
@@ -14443,7 +14457,8 @@
           0.103,
           0.148
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/bobcat_growl_diagnostic.wav"
     },
     {
       "id": "rabbit_distress",
@@ -15406,7 +15421,8 @@
           0.511,
           0.498
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/rabbit_distress_diagnostic.wav"
     },
     {
       "id": "raccoon_squall",
@@ -16369,7 +16385,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/raccoon_squall_diagnostic.wav"
     },
     {
       "id": "turkey_hen_yelp",
@@ -17332,7 +17349,8 @@
           0.815,
           0.767
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/turkey_hen_yelp_diagnostic.wav"
     },
     {
       "id": "turkey_gobble",
@@ -18295,7 +18313,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/turkey_gobble_diagnostic.wav"
     },
     {
       "id": "turkey_cluck_purr",
@@ -19258,7 +19277,8 @@
           0.173,
           0.122
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/turkey_purr_diagnostic.wav"
     },
     {
       "id": "owl_barred_hoot",
@@ -20221,7 +20241,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/owl_barred_hoot_diagnostic.wav"
     },
     {
       "id": "quail_bobwhite",
@@ -21184,7 +21205,8 @@
           0.522,
           0.173
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/quail_diagnostic.wav"
     },
     {
       "id": "pheasant_crow",
@@ -22147,7 +22169,8 @@
           0.835,
           0.789
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/pheasant_diagnostic.wav"
     },
     {
       "id": "cougar_scream",
@@ -23110,7 +23133,8 @@
           0.09,
           0.176
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/cougar_diagnostic.wav"
     },
     {
       "id": "wood_duck_sit",
@@ -24073,7 +24097,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/wood_duck_sit_diagnostic.wav"
     },
     {
       "id": "mallard_lonesome",
@@ -25036,7 +25061,8 @@
           0.316,
           0.249
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/mallard_hen_diagnostic.wav"
     },
     {
       "id": "fallow_deer_groan",
@@ -25999,7 +26025,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/fallow_diagnostic.wav"
     },
     {
       "id": "mule_deer_grunt",
@@ -26962,7 +26989,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/mule_deer_diagnostic.wav"
     },
     {
       "id": "pintail_whistle",
@@ -27925,7 +27953,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/pintail_diagnostic.wav"
     },
     {
       "id": "woodcock_peent",
@@ -28888,7 +28917,8 @@
           0.831,
           0.851
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/woodcock_diagnostic.wav"
     },
     {
       "id": "dove_coo",
@@ -29851,7 +29881,8 @@
           0.163,
           0.102
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/dove_diagnostic.wav"
     },
     {
       "id": "canvasback_grunt",
@@ -30814,7 +30845,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/canvasback_diagnostic.wav"
     },
     {
       "id": "badger_growl",
@@ -31777,7 +31809,8 @@
           0.719,
           0.683
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/badger_diagnostic.wav"
     },
     {
       "id": "great_horned_owl",
@@ -32740,7 +32773,8 @@
           0.666,
           0.653
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/gho_diagnostic.wav"
     },
     {
       "id": "bobcat_vocalization",
@@ -33703,7 +33737,8 @@
           0.171,
           0.153
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/bobcat_vocalization_diagnostic.wav"
     },
     {
       "id": "bobcat_hiss",
@@ -34666,7 +34701,8 @@
           0.167,
           0.209
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/bobcat_hiss_diagnostic.wav"
     },
     {
       "id": "bobcat_growl_v2",
@@ -35629,7 +35665,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/bobcat_growl_v2_diagnostic.wav"
     },
     {
       "id": "bobcat_purr",
@@ -36592,7 +36629,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/bobcat_purr_diagnostic.wav"
     },
     {
       "id": "bobcat_yowl",
@@ -37555,7 +37593,8 @@
           0.416,
           0.243
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/bobcat_yowl_diagnostic.wav"
     },
     {
       "id": "wolf_howl",
@@ -38518,7 +38557,8 @@
           0.563,
           0.542
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/wolf_howl_diagnostic.wav"
     },
     {
       "id": "wolf_yelp",
@@ -39481,7 +39521,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/wolf_yelp_diagnostic.wav"
     },
     {
       "id": "wolf_growl",
@@ -40444,7 +40485,8 @@
           0.178,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/wolf_growl_diagnostic.wav"
     },
     {
       "id": "wolf_whine",
@@ -41407,7 +41449,8 @@
           0.251,
           0.154
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/wolf_whine_diagnostic.wav"
     },
     {
       "id": "hog_grunt",
@@ -42370,7 +42413,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/hog_grunt_diagnostic.wav"
     },
     {
       "id": "hog_bark",
@@ -43333,7 +43377,8 @@
           0.761,
           0.778
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/hog_bark_diagnostic.wav"
     },
     {
       "id": "hog_squeal_loud",
@@ -44296,7 +44341,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/hog_squeal_loud_diagnostic.wav"
     },
     {
       "id": "hog_squeal",
@@ -45259,7 +45305,8 @@
           0.0,
           0.095
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/hog_squeal_diagnostic.wav"
     },
     {
       "id": "deer_dominant_grunt",
@@ -46222,7 +46269,8 @@
           0.099,
           0.093
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_dominant_grunt_diagnostic.wav"
     },
     {
       "id": "deer_social_grunt",
@@ -47185,7 +47233,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_social_grunt_diagnostic.wav"
     },
     {
       "id": "deer_tending_grunt",
@@ -48148,7 +48197,8 @@
           0.55,
           0.537
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_tending_grunt_diagnostic.wav"
     },
     {
       "id": "deer_buck_challenge",
@@ -49111,7 +49161,8 @@
           0.0,
           0.0
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_buck_challenge_diagnostic.wav"
     },
     {
       "id": "deer_tending_grunt_v2",
@@ -50074,7 +50125,8 @@
           0.093,
           0.111
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_tending_grunt_v2_diagnostic.wav"
     },
     {
       "id": "deer_estrus_bleat",
@@ -51037,7 +51089,8 @@
           0.519,
           0.427
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_estrus_bleat_diagnostic.wav"
     },
     {
       "id": "deer_fawn_distress",
@@ -52000,7 +52053,8 @@
           0.189,
           0.22
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_fawn_distress_diagnostic.wav"
     },
     {
       "id": "deer_fawn_distress_v2",
@@ -52963,7 +53017,8 @@
           0.372,
           0.366
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_fawn_distress_v2_diagnostic.wav"
     },
     {
       "id": "deer_lost_fawn",
@@ -53926,7 +53981,8 @@
           0.884,
           0.755
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/deer_lost_fawn_diagnostic.wav"
     },
     {
       "id": "black_bear_cub_distress",
@@ -54889,7 +54945,8 @@
           0.636,
           0.519
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/black_bear_cub_distress_diagnostic.wav"
     },
     {
       "id": "crow_caw",
@@ -55852,7 +55909,8 @@
           0.146,
           0.156
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/crow_diagnostic.wav"
     },
     {
       "id": "coyote_yip",
@@ -56815,7 +56873,8 @@
           0.366,
           0.258
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/coyote_yip_diagnostic.wav"
     },
     {
       "id": "awebo_call",
@@ -57778,7 +57837,8 @@
           0.458,
           0.481
         ]
-      ]
+      ],
+      "diagnosticAudioAssetPath": "assets/audio/awebo_diagnostic.wav"
     }
   ]
 }
