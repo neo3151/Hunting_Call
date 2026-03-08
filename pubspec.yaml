@@ -1,7 +1,7 @@
 name: outcall
 description: OUTCALL — the ultimate hunting call training app.
 publish_to: 'none'
-version: 1.9.1+39
+version: 2.0.0+40
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

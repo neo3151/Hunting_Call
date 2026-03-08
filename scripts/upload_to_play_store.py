@@ -17,7 +17,9 @@ Requirements:
 
 import argparse
 import sys
+import socket
 from pathlib import Path
+socket.setdefaulttimeout(300)
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
