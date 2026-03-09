@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:fftea/fftea.dart';
 import 'package:flutter/foundation.dart';
+import 'package:outcall/core/services/bioacoustic_scorer.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/analysis/data/waveform_cache_database.dart';
 import 'package:outcall/features/analysis/domain/audio_analysis_model.dart';
@@ -99,6 +100,8 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     final rhythmAnalysis = _analyzeRhythm(cleanedSamples, sampleRate, noiseFloor);
     final quality = _assessQuality(cleanedSamples, sampleRate);
     final mfccs = _extractMFCCs(cleanedSamples, sampleRate);
+    final List<MapEntry<String, double>> speciesMatches =
+        await BioacousticScorer.identify(audioBuffer: cleanedSamples);
 
     // Generate waveform for UI (using cleaned so the visualizer doesn't look like static)
     final waveform = _extractWaveform(cleanedSamples, 100);
@@ -143,6 +146,9 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
 
       // Timbre - MFCC
       mfccCoefficients: mfccs,
+
+      // Bioacoustic ML Species Detection
+      topSpeciesMatches: Map.fromEntries(speciesMatches),
 
       // Visualization
       waveform: waveform,

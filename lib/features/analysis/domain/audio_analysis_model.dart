@@ -11,43 +11,46 @@ class AudioAnalysis {
   final List<double> frequencyPeaks; // Top 5 frequency peaks
   final double pitchStability; // 0-100, how stable the pitch is
   final List<double> pitchTrack; // Pitch over time
-  
+
   /// Volume Analysis
   final double averageVolume; // RMS amplitude 0-1
   final double peakVolume; // Maximum amplitude
   final double volumeConsistency; // 0-100, how consistent volume is
-  
+
   /// Tone Analysis
   final double toneClarity; // 0-100, how clear vs noisy
   final double harmonicRichness; // 0-100, presence of harmonics
   final Map<String, double> harmonics; // Harmonic frequencies detected
-  
+
   /// Timbre Analysis
   final double brightness; // 0-100, high frequency content
   final double warmth; // 0-100, low frequency content
   final double nasality; // 0-100, presence of nasal frequencies
   final List<double> spectralCentroid; // Brightness over time
-  
+
   /// Duration Analysis
   final double totalDurationSec;
   final double activeDurationSec; // Time above noise threshold
   final double silenceDurationSec; // Time below noise threshold
-  
+
   /// Rhythm Analysis
   final double tempo; // Calls per minute (if pulsed)
   final List<double> pulseTimes; // Timestamps of detected pulses
   final double rhythmRegularity; // 0-100, how regular the rhythm is
   final bool isPulsedCall; // Whether call has rhythmic pulses
-  
+
   final double callQualityScore; // 0-100, overall technical quality
   final double noiseLevel; // 0-100, background noise estimate
-  
+
   /// MFCC coefficients for timbre comparison (typically 13 values)
   final List<double> mfccCoefficients;
-  
+
+  /// Bioacoustic ML Classification (BirdNET/Merlin-style inference)
+  final Map<String, double> topSpeciesMatches;
+
   /// Visualization
   final List<double> waveform; // Normalized amplitudes for display
-  
+
   AudioAnalysis({
     required this.dominantFrequencyHz,
     required this.averageFrequencyHz,
@@ -74,12 +77,13 @@ class AudioAnalysis {
     required this.callQualityScore,
     required this.noiseLevel,
     required this.mfccCoefficients,
+    this.topSpeciesMatches = const {},
     required this.waveform,
   });
 
   factory AudioAnalysis.fromJson(Map<String, dynamic> json) => _$AudioAnalysisFromJson(json);
   Map<String, dynamic> toJson() => _$AudioAnalysisToJson(this);
-  
+
   /// Create a simplified analysis with defaults (for backward compatibility)
   factory AudioAnalysis.simple({
     required double frequencyHz,
@@ -112,6 +116,7 @@ class AudioAnalysis {
       callQualityScore: 50.0,
       noiseLevel: 20.0,
       mfccCoefficients: const [],
+      topSpeciesMatches: const {},
       waveform: List.filled(100, 0.1),
     );
   }
@@ -125,7 +130,7 @@ class AnalysisSummary {
   final String unit;
   final String description;
   final AnalysisRating rating;
-  
+
   AnalysisSummary({
     required this.category,
     required this.metric,
