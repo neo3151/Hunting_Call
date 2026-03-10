@@ -47,7 +47,7 @@ class RecorderVisualizerSection extends ConsumerWidget {
               children: [
                 Builder(
                   builder: (context) {
-                    final ampState = ref.watch(amplitudeStreamProvider);
+                    ref.watch(amplitudeStreamProvider); // Trigger rebuild on amplitude change
                     return LiveVisualizer(
                       amplitudes: amplitudeBuffer.map((s) => s.amplitude).toList(),
                       referencePattern: vizSettings.showReferenceOverlay ? selectedCall.waveform : null,

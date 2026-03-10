@@ -14,14 +14,6 @@ import 'package:outcall/features/rating/domain/rating_model.dart';
 /// Session history is injected into each prompt so the coach
 /// remembers past sessions and adapts its feedback.
 class AiCoachService {
-  // Cloudflare Tunnel to local Ollama instance
-  // This is just the fallback — the actual URL is fetched from Remote Config
-  // so it can be updated server-side when the tunnel changes.
-  // Local fallback: http://192.168.1.189:11434
-  static const String _fallbackBaseUrl = 'https://configuring-lions-wins-copper.trycloudflare.com';
-
-  // Custom model with baked-in hunting call knowledge
-  static const String _model = 'outcall-coach';
 
   /// Request AI coaching feedback based on rating results.
   ///
@@ -40,6 +32,7 @@ class AiCoachService {
   }) async {
     try {
       // Fetch session history for context (non-blocking fallback)
+      // ignore: unused_local_variable
       String historySummary = '';
       if (userId != null && userId.isNotEmpty) {
         try {
@@ -48,13 +41,6 @@ class AiCoachService {
           // History is nice-to-have, don't block coaching on it
         }
       }
-
-      final pitchDiff = (result.pitchHz - idealPitchHz).abs();
-      final pitchDirection = result.pitchHz > idealPitchHz ? 'too high' : 'too low';
-
-      final metricsBreakdown = result.metrics.entries
-          .map((e) => '  - ${e.key}: ${e.value.toStringAsFixed(1)}')
-          .join('\n');
 
       // Point to the new local Python microservice backend
       // (On an Android emulator, this might need to be 10.0.2.2)

@@ -34,7 +34,7 @@ class BioacousticScorer {
       // 1. Prepare raw audio input [1, 144000]
       // BirdNET handles the mel-spectrogram conversion internally via the TFLite graph.
       // We just need to zero-pad or truncate to exactly 3 seconds at 48kHz.
-      List<double> chunk = List.filled(inputSize, 0.0);
+      final chunk = List.filled(inputSize, 0.0);
       final int len = math.min(audioBuffer.length, inputSize);
       for (int i = 0; i < len; i++) {
         chunk[i] = audioBuffer[i];
@@ -48,7 +48,7 @@ class BioacousticScorer {
       ];
 
       // 3. Prepare output tensor [1, numClasses]
-      var output = List.filled(1, List.filled(_labels!.length, 0.0));
+      final output = List.filled(1, List.filled(_labels!.length, 0.0));
 
       // Run inference bridging both inputs
       _interpreter!.runForMultipleInputs([input0, input1], {0: output});
@@ -58,7 +58,7 @@ class BioacousticScorer {
 
       // Map indices back to labels
       for (int i = 0; i < probs.length; i++) {
-        double sigProb = _customSigmoid(probs[i]); // BirdNET requires a custom sigmoid scaler
+        final sigProb = _customSigmoid(probs[i]); // BirdNET requires a custom sigmoid scaler
         if (sigProb > 0.05) {
           // Confidence threshold filter
           results.add(MapEntry(

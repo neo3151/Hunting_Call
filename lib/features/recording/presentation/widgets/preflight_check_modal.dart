@@ -72,7 +72,7 @@ class _PreFlightCheckModalState extends ConsumerState<PreFlightCheckModal> {
           border: Border.all(color: AppColors.of(context).border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 20,
               spreadRadius: 5,
             )
