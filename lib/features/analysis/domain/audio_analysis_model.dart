@@ -51,6 +51,31 @@ class AudioAnalysis {
   /// Visualization
   final List<double> waveform; // Normalized amplitudes for display
 
+  // ─── New 7-Dimension Scoring Fields ─────────────────────────────
+
+  /// Pitch contour: per-onset pitch values (Hz) for shape comparison
+  final List<double> pitchContour;
+
+  /// Onset timestamps (seconds) detected via energy spikes
+  final List<double> onsetTimes;
+
+  /// Amplitude envelope ADSR (Attack/Sustain/Decay) metrics
+  final double attackTime;   // seconds to reach peak amplitude
+  final double sustainLevel; // 0-1 average level during sustain
+  final double decayRate;    // amplitude drop per second
+
+  /// Formant frequencies (F1, F2, F3) from LPC analysis
+  final List<double> formants;
+
+  /// Spectral flux: frame-by-frame spectral change rate (noise robustness)
+  final double spectralFlux;
+
+  /// Delta MFCCs: first derivative of MFCCs (how spectrum changes over time)
+  final List<double> deltaMfcc;
+
+  /// Delta-Delta MFCCs: acceleration of spectral change
+  final List<double> deltaDeltaMfcc;
+
   AudioAnalysis({
     required this.dominantFrequencyHz,
     required this.averageFrequencyHz,
@@ -79,6 +104,15 @@ class AudioAnalysis {
     required this.mfccCoefficients,
     this.topSpeciesMatches = const {},
     required this.waveform,
+    this.pitchContour = const [],
+    this.onsetTimes = const [],
+    this.attackTime = 0.0,
+    this.sustainLevel = 0.0,
+    this.decayRate = 0.0,
+    this.formants = const [],
+    this.spectralFlux = 0.0,
+    this.deltaMfcc = const [],
+    this.deltaDeltaMfcc = const [],
   });
 
   factory AudioAnalysis.fromJson(Map<String, dynamic> json) => _$AudioAnalysisFromJson(json);
@@ -118,6 +152,15 @@ class AudioAnalysis {
       mfccCoefficients: const [],
       topSpeciesMatches: const {},
       waveform: List.filled(100, 0.1),
+      pitchContour: const [],
+      onsetTimes: const [],
+      attackTime: 0.0,
+      sustainLevel: 0.0,
+      decayRate: 0.0,
+      formants: const [],
+      spectralFlux: 0.0,
+      deltaMfcc: const [],
+      deltaDeltaMfcc: const [],
     );
   }
 }

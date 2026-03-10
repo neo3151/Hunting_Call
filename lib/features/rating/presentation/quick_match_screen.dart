@@ -87,11 +87,12 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
   }
 
   String _getQuickTip(double score) {
-    if (score >= 90) return 'Incredible match! You sound just like the master.';
-    if (score >= 75) return 'Great call! Minor tweaks to nail it.';
-    if (score >= 50) return 'Good effort — try matching the rhythm and pitch more closely.';
-    if (score >= 25) return 'Keep practicing — listen to the reference a few times first.';
-    return 'Try again in a quieter spot, closer to the mic.';
+    if (score >= 90) return 'Nearly perfect! Competition-ready technique.';
+    if (score >= 80) return 'Great match — try opening your throat slightly for richer tone.';
+    if (score >= 70) return 'Solid call! Slow your cadence slightly on the second note.';
+    if (score >= 55) return 'Good start — focus on matching the pitch rise and rhythm pattern.';
+    if (score >= 35) return 'Listen to the reference closely, then match the timing and volume.';
+    return 'Try again in a quieter spot — relax your air pressure and let the call flow.';
   }
 
   Color _scoreColor(double score) {

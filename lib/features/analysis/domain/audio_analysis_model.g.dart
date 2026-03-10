@@ -53,6 +53,30 @@ AudioAnalysis _$AudioAnalysisFromJson(Map<String, dynamic> json) =>
       waveform: (json['waveform'] as List<dynamic>)
           .map((e) => (e as num).toDouble())
           .toList(),
+      pitchContour: (json['pitchContour'] as List<dynamic>?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          const [],
+      onsetTimes: (json['onsetTimes'] as List<dynamic>?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          const [],
+      attackTime: (json['attackTime'] as num?)?.toDouble() ?? 0.0,
+      sustainLevel: (json['sustainLevel'] as num?)?.toDouble() ?? 0.0,
+      decayRate: (json['decayRate'] as num?)?.toDouble() ?? 0.0,
+      formants: (json['formants'] as List<dynamic>?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          const [],
+      spectralFlux: (json['spectralFlux'] as num?)?.toDouble() ?? 0.0,
+      deltaMfcc: (json['deltaMfcc'] as List<dynamic>?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          const [],
+      deltaDeltaMfcc: (json['deltaDeltaMfcc'] as List<dynamic>?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$AudioAnalysisToJson(AudioAnalysis instance) =>
@@ -84,4 +108,13 @@ Map<String, dynamic> _$AudioAnalysisToJson(AudioAnalysis instance) =>
       'mfccCoefficients': instance.mfccCoefficients,
       'topSpeciesMatches': instance.topSpeciesMatches,
       'waveform': instance.waveform,
+      'pitchContour': instance.pitchContour,
+      'onsetTimes': instance.onsetTimes,
+      'attackTime': instance.attackTime,
+      'sustainLevel': instance.sustainLevel,
+      'decayRate': instance.decayRate,
+      'formants': instance.formants,
+      'spectralFlux': instance.spectralFlux,
+      'deltaMfcc': instance.deltaMfcc,
+      'deltaDeltaMfcc': instance.deltaDeltaMfcc,
     };

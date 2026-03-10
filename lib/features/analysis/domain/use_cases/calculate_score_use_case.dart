@@ -19,6 +19,12 @@ class CalculateScoreParams {
   final double scoreOffset;
   final double micSensitivity;
 
+  /// Fingerprint match percentage from the backend (null = offline/unavailable)
+  final double? fingerprintMatchPercent;
+
+  /// User's previous scores for this animal (for relative calibration)
+  final List<double>? userBaseline;
+
   const CalculateScoreParams({
     required this.userId,
     required this.recordingId,
@@ -27,6 +33,8 @@ class CalculateScoreParams {
     this.referenceAnalysis,
     this.scoreOffset = 0.0,
     this.micSensitivity = 1.0,
+    this.fingerprintMatchPercent,
+    this.userBaseline,
   });
 }
 
@@ -101,11 +109,39 @@ class CalculateScoreUseCase {
       reference,
     );
 
-    // Calculate overall score (weighted average)
-    double overallScore = (pitchScore.score * 0.40 +
-            toneScore.score * 0.30 +
-            rhythmScore.score * 0.20 +
-            (durationScore.score * 0.7 + volumeScore.score * 0.3) * 0.10)
+    // ─── New dimension scores ──────────────────────────────────────
+    final pitchContourScore = _calculatePitchContourScore(
+      params.userAnalysis,
+      params.referenceAnalysis,
+    );
+
+    final envelopeScore = _calculateEnvelopeScore(
+      params.userAnalysis,
+      params.referenceAnalysis,
+    );
+
+    final formantScore = _calculateFormantScore(
+      params.userAnalysis,
+      params.referenceAnalysis,
+    );
+
+    final noiseScore = _calculateNoiseScore(params.userAnalysis);
+
+    // ─── 7-Dimension Weighted Score ────────────────────────────────
+    // Grok spec: Fingerprint 40%, Cadence 15%, Pitch Contour 15%,
+    // Harmonic 10%, Envelope 10%, Formant 5%, Noise 5%
+    //
+    // When fingerprint % is available (from backend), use it at 40%.
+    // Otherwise fall back to on-device pitch accuracy at 40%.
+    final double primaryScore = params.fingerprintMatchPercent ?? pitchScore.score;
+
+    double overallScore = (primaryScore * 0.40 +
+            rhythmScore.score * 0.15 +
+            pitchContourScore.score * 0.15 +
+            toneScore.score * 0.10 +
+            envelopeScore.score * 0.10 +
+            formantScore.score * 0.05 +
+            noiseScore.score * 0.05)
         .clamp(0.0, 100.0);
 
     // Noise Penalty: punish broad-spectrum noise (wind/breathing) that truly
@@ -132,6 +168,28 @@ class CalculateScoreUseCase {
       overallScore = (overallScore + params.scoreOffset).clamp(0.0, 100.0);
     }
 
+    // ─── User Calibration Layer ───────────────────────────────────
+    // If we have 3+ baseline scores for this animal, compute relative
+    // improvement. If user is beating their personal average, boost by
+    // up to 15 points. This keeps beginners motivated.
+    if (params.userBaseline != null && params.userBaseline!.length >= 3) {
+      final baseline = params.userBaseline!;
+      final personalAvg = baseline.reduce((a, b) => a + b) / baseline.length;
+      final personalBest = baseline.reduce(max);
+
+      if (overallScore > personalAvg) {
+        // Improvement bonus: proportional to how much above average
+        final improvementRatio = (overallScore - personalAvg) / max(1.0, personalAvg);
+        final bonus = (improvementRatio * 50).clamp(0.0, 15.0);
+        overallScore = (overallScore + bonus).clamp(0.0, 100.0);
+      }
+
+      // If this is a new personal best, ensure score is at least 70
+      if (overallScore > personalBest && overallScore < 70) {
+        overallScore = max(overallScore, 70.0);
+      }
+    }
+
     return right(AnalysisResult(
       recordingId: params.recordingId,
       userId: params.userId,
@@ -142,6 +200,11 @@ class CalculateScoreUseCase {
       durationScore: durationScore,
       toneScore: toneScore,
       rhythmScore: rhythmScore,
+      pitchContourScore: pitchContourScore,
+      envelopeScore: envelopeScore,
+      formantScore: formantScore,
+      noiseScore: noiseScore,
+      fingerprintMatchPercent: params.fingerprintMatchPercent,
       analyzedAt: DateTime.now(),
     ));
   }
@@ -342,6 +405,164 @@ class CalculateScoreUseCase {
       stability: pitchStability,
       regularity: userAnalysis.rhythmRegularity,
       tempo: userAnalysis.tempo,
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // 7-DIMENSION SCORING — New Calculation Methods
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// Calculate pitch contour shape similarity.
+  /// Uses DTW on per-onset pitch sequences to measure how closely
+  /// the user's melodic shape matches the reference.
+  PitchContourScore _calculatePitchContourScore(
+    AudioAnalysis userAnalysis,
+    AudioAnalysis? referenceAnalysis,
+  ) {
+    final userContour = userAnalysis.pitchContour;
+
+    if (userContour.isEmpty) {
+      // Fall back to pitch track if no contour data
+      return const PitchContourScore(score: 50.0);
+    }
+
+    if (referenceAnalysis != null && referenceAnalysis.pitchContour.isNotEmpty) {
+      // DTW on pitch contours
+      final dtwDist = ComprehensiveAudioAnalyzer.calculateDtwDistance(
+        _normalizePitchSequence(userContour),
+        _normalizePitchSequence(referenceAnalysis.pitchContour),
+      );
+      // DTW distance of 0 = perfect, ~0.5 = acceptable, ~1.5 = poor
+      final score = max(0.0, 100.0 - dtwDist * 120.0);
+      return PitchContourScore(
+        score: score.clamp(0.0, 100.0),
+        contourSimilarity: dtwDist,
+      );
+    }
+
+    // No reference contour — score based on pitch stability (self-consistency)
+    if (userContour.length >= 2) {
+      final avg = userContour.reduce((a, b) => a + b) / userContour.length;
+      double variance = 0;
+      for (final p in userContour) {
+        variance += (p - avg) * (p - avg);
+      }
+      variance /= userContour.length;
+      final stdDev = sqrt(variance);
+      final deviationPct = avg > 0 ? (stdDev / avg) * 100.0 : 0.0;
+      return PitchContourScore(
+        score: max(0.0, 100.0 - deviationPct * 3).clamp(0.0, 100.0),
+        flatnessDeviation: deviationPct.toDouble(),
+      );
+    }
+
+    return const PitchContourScore(score: 50.0);
+  }
+
+  /// Normalize a pitch sequence to 0-1 range for fair DTW comparison.
+  List<double> _normalizePitchSequence(List<double> seq) {
+    if (seq.isEmpty) return seq;
+    final minVal = seq.reduce(min);
+    final maxVal = seq.reduce(max);
+    final range = maxVal - minVal;
+    if (range == 0) return List.filled(seq.length, 0.5);
+    return seq.map((v) => (v - minVal) / range).toList();
+  }
+
+  /// Calculate amplitude envelope (ADSR) similarity.
+  /// Compares attack time, sustain level, and decay rate against reference.
+  EnvelopeScore _calculateEnvelopeScore(
+    AudioAnalysis userAnalysis,
+    AudioAnalysis? referenceAnalysis,
+  ) {
+    if (referenceAnalysis == null) {
+      // No reference — score purely on having a clean envelope shape
+      // Good sustain (0.5-0.8) and moderate attack = high score
+      final sustainQuality = 1.0 - (userAnalysis.sustainLevel - 0.65).abs() * 3;
+      return EnvelopeScore(
+        score: (sustainQuality * 100).clamp(30.0, 100.0),
+      );
+    }
+
+    // Attack comparison (time to peak)
+    final attackDiff = (userAnalysis.attackTime - referenceAnalysis.attackTime).abs();
+    final attackMatch = max(0.0, 100.0 - attackDiff * 200); // 0.5s diff = 0 score
+
+    // Sustain comparison (average sustain level ratio)
+    final sustainDiff = (userAnalysis.sustainLevel - referenceAnalysis.sustainLevel).abs();
+    final sustainMatch = max(0.0, 100.0 - sustainDiff * 300); // 0.33 diff = 0
+
+    // Decay comparison
+    final refDecay = max(0.01, referenceAnalysis.decayRate);
+    final decayRatio = userAnalysis.decayRate / refDecay;
+    final decayMatch = max(0.0, 100.0 - (decayRatio - 1.0).abs() * 100);
+
+    final score = (attackMatch * 0.3 + sustainMatch * 0.4 + decayMatch * 0.3).clamp(0.0, 100.0);
+    return EnvelopeScore(
+      score: score,
+      attackMatch: attackMatch,
+      sustainMatch: sustainMatch,
+      decayMatch: decayMatch,
+    );
+  }
+
+  /// Calculate formant analysis score.
+  /// Compares user F1/F2/F3 against reference to evaluate mouth/throat position.
+  FormantScore _calculateFormantScore(
+    AudioAnalysis userAnalysis,
+    AudioAnalysis? referenceAnalysis,
+  ) {
+    final userFormants = userAnalysis.formants;
+    if (userFormants.isEmpty || userFormants.every((f) => f == 0)) {
+      return const FormantScore(score: 50.0);
+    }
+
+    if (referenceAnalysis != null && referenceAnalysis.formants.isNotEmpty) {
+      double totalDeviation = 0;
+      int count = 0;
+      for (int i = 0; i < min(userFormants.length, referenceAnalysis.formants.length); i++) {
+        if (userFormants[i] > 0 && referenceAnalysis.formants[i] > 0) {
+          final deviation = (userFormants[i] - referenceAnalysis.formants[i]).abs();
+          final refFreq = referenceAnalysis.formants[i];
+          totalDeviation += (deviation / refFreq) * 100; // percent deviation
+          count++;
+        }
+      }
+
+      if (count == 0) return const FormantScore(score: 50.0);
+      final avgDeviation = totalDeviation / count;
+      // 10% deviation = 70/100, 30% deviation = ~10/100
+      final score = max(0.0, 100.0 - avgDeviation * 3).clamp(0.0, 100.0);
+
+      return FormantScore(
+        score: score,
+        userFormants: userFormants,
+        refFormants: referenceAnalysis.formants,
+      );
+    }
+
+    // No reference — score on formant separation (well-formed vocal tract)
+    // F1 should be lowest, F2 mid, F3 highest
+    bool wellOrdered = true;
+    for (int i = 1; i < userFormants.length; i++) {
+      if (userFormants[i] > 0 && userFormants[i - 1] > 0 &&
+          userFormants[i] <= userFormants[i - 1]) {
+        wellOrdered = false;
+      }
+    }
+    return FormantScore(
+      score: wellOrdered ? 75.0 : 40.0,
+      userFormants: userFormants,
+    );
+  }
+
+  /// Calculate noise robustness score from spectral flux.
+  /// The spectral flux value from the analyzer is already 0-100
+  /// where higher = more stable (cleaner signal).
+  NoiseScore _calculateNoiseScore(AudioAnalysis userAnalysis) {
+    return NoiseScore(
+      score: userAnalysis.spectralFlux.clamp(0.0, 100.0),
+      spectralFlux: userAnalysis.spectralFlux,
     );
   }
 }

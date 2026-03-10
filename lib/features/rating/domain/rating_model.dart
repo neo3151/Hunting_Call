@@ -13,6 +13,13 @@ class RatingResult {
   final double? latitude;
   final double? longitude;
 
+  /// Feature vectors for long-term progress tracking.
+  /// Keys: 'pitchContour', 'formants', 'mfcc39', 'envelope'
+  final Map<String, List<double>>? featureVectors;
+
+  /// Closest archetype match label (e.g., "Rutting Mature Bull")
+  final String? archetypeLabel;
+
   RatingResult({
     required this.score,
     required this.feedback,
@@ -22,6 +29,8 @@ class RatingResult {
     this.referenceWaveform,
     this.latitude,
     this.longitude,
+    this.featureVectors,
+    this.archetypeLabel,
   });
 
   factory RatingResult.fromJson(Map<String, dynamic> json) => _$RatingResultFromJson(json);

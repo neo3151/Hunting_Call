@@ -86,8 +86,7 @@ class RatingActionButtons extends ConsumerWidget {
               width: double.infinity,
               child: TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white70,

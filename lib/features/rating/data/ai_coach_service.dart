@@ -42,9 +42,8 @@ class AiCoachService {
         }
       }
 
-      // Point to the new local Python microservice backend
-      // (On an Android emulator, this might need to be 10.0.2.2)
-      final targetUrl = baseUrl ?? 'http://127.0.0.1:8000';
+      // Fallback matches the Remote Config default so real devices still work
+      final targetUrl = baseUrl ?? 'https://wireless-donate-catalyst-rss.trycloudflare.com';
       
       final response = await http
           .post(

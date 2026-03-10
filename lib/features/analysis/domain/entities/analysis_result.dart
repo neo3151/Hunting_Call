@@ -86,6 +86,60 @@ class RhythmScore {
   String toString() => 'RhythmScore(score: $score)';
 }
 
+// ─── New 7-Dimension Score Components ─────────────────────────────
+
+/// Score component for pitch contour shape matching
+class PitchContourScore {
+  final double score;
+  final double contourSimilarity; // DTW distance on pitch sequences
+  final double flatnessDeviation; // how much the contour deviates from expected shape
+
+  const PitchContourScore({
+    required this.score,
+    this.contourSimilarity = 0,
+    this.flatnessDeviation = 0,
+  });
+}
+
+/// Score component for amplitude envelope (ADSR) match
+class EnvelopeScore {
+  final double score;
+  final double attackMatch; // 0-100 how close attack is to reference
+  final double sustainMatch; // 0-100 sustain level similarity
+  final double decayMatch; // 0-100 decay rate similarity
+
+  const EnvelopeScore({
+    required this.score,
+    this.attackMatch = 0,
+    this.sustainMatch = 0,
+    this.decayMatch = 0,
+  });
+}
+
+/// Score component for formant analysis (F1/F2/F3 resonances)
+class FormantScore {
+  final double score;
+  final List<double> userFormants; // [F1, F2, F3]
+  final List<double> refFormants;  // [F1, F2, F3]
+
+  const FormantScore({
+    required this.score,
+    this.userFormants = const [],
+    this.refFormants = const [],
+  });
+}
+
+/// Score component for noise robustness (spectral flux)
+class NoiseScore {
+  final double score;
+  final double spectralFlux; // raw flux value
+
+  const NoiseScore({
+    required this.score,
+    this.spectralFlux = 0,
+  });
+}
+
 /// Result of analyzing a user's call recording
 class AnalysisResult {
   final String recordingId;
@@ -97,6 +151,12 @@ class AnalysisResult {
   final DurationScore durationScore;
   final ToneScore toneScore;
   final RhythmScore rhythmScore;
+  // New 7-dimension scores
+  final PitchContourScore pitchContourScore;
+  final EnvelopeScore envelopeScore;
+  final FormantScore formantScore;
+  final NoiseScore noiseScore;
+  final double? fingerprintMatchPercent; // From backend, null if offline
   final DateTime analyzedAt;
   
   const AnalysisResult({
@@ -109,6 +169,11 @@ class AnalysisResult {
     required this.durationScore,
     required this.toneScore,
     required this.rhythmScore,
+    this.pitchContourScore = const PitchContourScore(score: 0),
+    this.envelopeScore = const EnvelopeScore(score: 0),
+    this.formantScore = const FormantScore(score: 0),
+    this.noiseScore = const NoiseScore(score: 0),
+    this.fingerprintMatchPercent,
     required this.analyzedAt,
   });
   

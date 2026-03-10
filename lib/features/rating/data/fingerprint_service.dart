@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:outcall/core/utils/app_logger.dart';
@@ -54,12 +55,12 @@ class FingerprintResult {
 
 /// Service that calls the Python backend's fingerprint matching endpoint.
 class FingerprintService {
-  static const String _fallbackBaseUrl = 'http://127.0.0.1:8000';
+  static const String _fallbackBaseUrl = 'https://wireless-donate-catalyst-rss.trycloudflare.com';
 
   /// Match a user's audio recording against the fingerprint database.
   ///
-  /// [audioPath] is the path to the WAV file on disk.
-  /// [baseUrl] can override the backend URL (from Remote Config).
+  /// Uploads the actual audio file as multipart form data since the
+  /// backend runs on a different machine and can't access phone paths.
   static Future<FingerprintResult> match(
     String audioPath, {
     String? baseUrl,
@@ -67,21 +68,39 @@ class FingerprintService {
     final targetUrl = baseUrl ?? _fallbackBaseUrl;
 
     try {
-      final response = await http
-          .post(
-            Uri.parse('$targetUrl/api/fingerprint'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'audioFilePath': audioPath}),
-          )
-          .timeout(const Duration(seconds: 10));
+      final file = File(audioPath);
+      if (!await file.exists()) {
+        AppLogger.d('Fingerprint: audio file not found at $audioPath');
+        return FingerprintResult.empty();
+      }
+
+      final fileSize = await file.length();
+      AppLogger.d('Fingerprint: sending $audioPath ($fileSize bytes) to $targetUrl/api/fingerprint');
+
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$targetUrl/api/fingerprint'),
+      );
+      request.files.add(
+        await http.MultipartFile.fromPath('audio', audioPath),
+      );
+
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 15),
+      );
+      final response = await http.Response.fromStream(streamedResponse);
+
+      AppLogger.d('Fingerprint: response ${response.statusCode}, body=${response.body.length > 200 ? response.body.substring(0, 200) : response.body}');
 
       if (response.statusCode != 200) {
-        AppLogger.d('Fingerprint API returned ${response.statusCode}');
+        AppLogger.d('Fingerprint API returned ${response.statusCode}: ${response.body}');
         return FingerprintResult.empty();
       }
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return FingerprintResult.fromJson(data);
+      final result = FingerprintResult.fromJson(data);
+      AppLogger.d('Fingerprint: score=${result.score}%, animal=${result.animal}, hashes=${result.totalUserHashes}');
+      return result;
     } catch (e) {
       AppLogger.d('Fingerprint match error: $e');
       return FingerprintResult.empty();

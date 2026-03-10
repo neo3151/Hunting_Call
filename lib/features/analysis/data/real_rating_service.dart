@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
 import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
 import 'package:outcall/features/analysis/domain/audio_analysis_model.dart';
 import 'package:outcall/features/analysis/domain/frequency_analyzer.dart';
 import 'package:outcall/features/analysis/domain/use_cases/analyze_audio_use_case.dart';
@@ -13,6 +14,7 @@ import 'package:outcall/features/leaderboard/domain/leaderboard_entry.dart';
 import 'package:outcall/features/leaderboard/domain/repositories/leaderboard_service.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
 import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
+import 'package:outcall/features/rating/data/fingerprint_service.dart';
 import 'package:outcall/features/rating/domain/personality_feedback_service.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/rating/domain/rating_service.dart';
@@ -127,7 +129,32 @@ class RealRatingService implements RatingService {
         AppLogger.d('RealRatingService: Using cached reference for $animalType');
       }
 
-      // 3. Calculate score (via use case - extracts all scoring logic to domain layer)
+      // Load user's calibration baseline for this animal
+      List<double>? userBaseline;
+      String? archetypeLabel;
+      double? fingerprintPct;
+      try {
+        final profile = await profileRepository.getProfile(userId);
+        final baselines = profile.calibrationBaselines;
+        if (baselines.containsKey(reference.id)) {
+          userBaseline = baselines[reference.id];
+        }
+      } catch (_) { /* first call, no profile yet */ }
+
+      // Extract archetype label from fingerprint result
+      try {
+        final fpResult = await FingerprintService.match(
+          audioPath,
+        ).timeout(const Duration(seconds: 10));
+        if (fpResult.hasMatch) {
+          fingerprintPct = fpResult.score;
+          archetypeLabel = fpResult.matchLabel;
+          AppLogger.d('Expert fingerprint: ${fpResult.matchLabel} ${fpResult.score}%');
+        }
+      } catch (e) {
+        AppLogger.d('Expert fingerprint failed (offline?), falling back to pitch: $e');
+      }
+
       final scoreResult = await _calculateUseCase.execute(
         CalculateScoreParams(
           userId: userId,
@@ -137,6 +164,8 @@ class RealRatingService implements RatingService {
           referenceAnalysis: refAnalysis,
           scoreOffset: scoreOffset,
           micSensitivity: micSensitivity,
+          fingerprintMatchPercent: fingerprintPct,
+          userBaseline: userBaseline,
         ),
       );
 
@@ -222,6 +251,11 @@ class RealRatingService implements RatingService {
           'score_timbre': timbreScore,
           'score_rhythm': rhythmScore,
           'score_duration': durationScore,
+          'score_pitch_contour': analysisResult.pitchContourScore.score,
+          'score_envelope': analysisResult.envelopeScore.score,
+          'score_formant': analysisResult.formantScore.score,
+          'score_noise': analysisResult.noiseScore.score,
+          'score_fingerprint': analysisResult.fingerprintMatchPercent ?? -1,
           'rawScore': rawScore,
           'avg_volume': userAnalysis.averageVolume * 100,
           'peak_volume': userAnalysis.peakVolume * 100,
@@ -234,9 +268,27 @@ class RealRatingService implements RatingService {
           'nasality': userAnalysis.nasality,
         },
         userWaveform: userAnalysis.waveform,
-        referenceWaveform: reference.waveform ?? refAnalysis?.waveform,
+        referenceWaveform: _crossCorrelateAlign(
+          userAnalysis.waveform,
+          reference.waveform ?? refAnalysis?.waveform,
+        ),
         latitude: _currentPosition?.latitude,
         longitude: _currentPosition?.longitude,
+        archetypeLabel: archetypeLabel,
+        featureVectors: {
+          'pitchContour': userAnalysis.pitchContour,
+          'formants': userAnalysis.formants,
+          'mfcc39': [
+            ...userAnalysis.mfccCoefficients,
+            ...userAnalysis.deltaMfcc,
+            ...userAnalysis.deltaDeltaMfcc,
+          ],
+          'envelope': [
+            userAnalysis.attackTime,
+            userAnalysis.sustainLevel,
+            userAnalysis.decayRate,
+          ],
+        },
       );
       AppLogger.d('RealRatingService: Pro-Grade Analysis complete. Score: ${result.score}');
 
@@ -285,5 +337,31 @@ class RealRatingService implements RatingService {
       AppLogger.d('RealRatingService: Analysis failed: $e');
       rethrow;
     }
+  }
+
+  /// Phase-align reference waveform to user waveform using cross-correlation.
+  static List<double>? _crossCorrelateAlign(
+    List<double> userWaveform,
+    List<double>? refWaveform,
+  ) {
+    if (refWaveform == null || refWaveform.isEmpty || userWaveform.isEmpty) {
+      return refWaveform;
+    }
+
+    final offset = ComprehensiveAudioAnalyzer.crossCorrelateOffset(
+      userWaveform, refWaveform,
+    );
+
+    if (offset == 0) return refWaveform;
+
+    // Shift the reference by the optimal lag
+    final aligned = List<double>.filled(refWaveform.length, 0.0);
+    for (int i = 0; i < refWaveform.length; i++) {
+      final srcIdx = i + offset;
+      if (srcIdx >= 0 && srcIdx < refWaveform.length) {
+        aligned[i] = refWaveform[srcIdx];
+      }
+    }
+    return aligned;
   }
 }

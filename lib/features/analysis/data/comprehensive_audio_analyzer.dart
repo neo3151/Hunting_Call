@@ -99,9 +99,20 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         _analyzeDuration(cleanedSamples, sampleRate, totalDuration, noiseFloor);
     final rhythmAnalysis = _analyzeRhythm(cleanedSamples, sampleRate, noiseFloor);
     final quality = _assessQuality(cleanedSamples, sampleRate);
-    final mfccs = _extractMFCCs(cleanedSamples, sampleRate);
+    final mfccResult = _extractMFCCsWithDeltas(cleanedSamples, sampleRate);
     final List<MapEntry<String, double>> speciesMatches =
         await BioacousticScorer.identify(audioBuffer: cleanedSamples);
+
+    // ─── New 7-Dimension Analyses ───────────────────────────────
+    final pitchContourResult = _analyzePitchContour(
+      cleanedSamples, sampleRate,
+      rhythmAnalysis['pulseTimes'] as List<double>, noiseFloor,
+    );
+    final envelopeResult = _analyzeAmplitudeEnvelope(
+      cleanedSamples, sampleRate, noiseFloor,
+    );
+    final formants = _extractFormants(cleanedSamples, sampleRate);
+    final spectralFlux = _calculateSpectralFlux(cleanedSamples, sampleRate);
 
     // Generate waveform for UI (using cleaned so the visualizer doesn't look like static)
     final waveform = _extractWaveform(cleanedSamples, 100);
@@ -144,8 +155,8 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       callQualityScore: quality['score']!,
       noiseLevel: quality['noise']!,
 
-      // Timbre - MFCC
-      mfccCoefficients: mfccs,
+      // Timbre - MFCC (static + dynamic)
+      mfccCoefficients: mfccResult['static']!,
 
       // Bioacoustic ML Species Detection
       topSpeciesMatches: Map.fromEntries(speciesMatches),
@@ -153,6 +164,19 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       // Visualization
       waveform: waveform,
       pitchTrack: pitchAnalysis['pitchTrack'] as List<double>,
+
+      // 7-Dimension Scoring
+      pitchContour: pitchContourResult,
+      onsetTimes: rhythmAnalysis['pulseTimes'] as List<double>,
+      attackTime: envelopeResult['attackTime']!,
+      sustainLevel: envelopeResult['sustainLevel']!,
+      decayRate: envelopeResult['decayRate']!,
+      formants: formants,
+      spectralFlux: spectralFlux,
+
+      // Dynamic MFCCs
+      deltaMfcc: mfccResult['delta']!,
+      deltaDeltaMfcc: mfccResult['deltaDelta']!,
     );
   }
 
@@ -616,6 +640,522 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       'score': quality,
       'noise': noise,
     };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // 7-DIMENSION SCORING — New Analysis Methods
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// Extract per-onset pitch values for contour shape comparison.
+  /// For each detected onset, takes a short window and finds the dominant freq.
+  static List<double> _analyzePitchContour(
+    Float64List samples, int sampleRate,
+    List<double> onsetTimes, double noiseFloor,
+  ) {
+    if (onsetTimes.isEmpty) {
+      // No onsets detected — fall back to coarser pitch track
+      // Use 100ms windows stepped every 50ms across the active signal
+      const windowSec = 0.1;
+      const hopSec = 0.05;
+      final windowSize = (sampleRate * windowSec).toInt();
+      final hopSize = (sampleRate * hopSec).toInt();
+      final contour = <double>[];
+
+      for (int offset = 0; offset + windowSize < samples.length; offset += hopSize) {
+        final freq = _dominantFreqInWindow(samples, offset, windowSize, sampleRate, noiseFloor);
+        if (freq > 0) contour.add(freq);
+      }
+      return contour;
+    }
+
+    final contour = <double>[];
+    // Window around each onset (100ms forward)
+    final windowSamples = (sampleRate * 0.1).toInt();
+
+    for (final onset in onsetTimes) {
+      final startIdx = (onset * sampleRate).toInt();
+      if (startIdx + windowSamples > samples.length) continue;
+
+      final freq = _dominantFreqInWindow(samples, startIdx, windowSamples, sampleRate, noiseFloor);
+      if (freq > 0) contour.add(freq);
+    }
+    return contour;
+  }
+
+  /// Helper: find dominant frequency in a sample window using FFT.
+  static double _dominantFreqInWindow(
+    Float64List samples, int offset, int windowSize, int sampleRate, double noiseFloor,
+  ) {
+    // Pad to next power of 2
+    int fftSize = 1;
+    while (fftSize < windowSize) fftSize <<= 1;
+
+    final windowed = Float64List(fftSize);
+    final end = min(offset + windowSize, samples.length);
+    for (int j = offset; j < end; j++) {
+      windowed[j - offset] = samples[j] * _hanningWindow(j - offset, windowSize);
+    }
+
+    // Check energy
+    double energy = 0;
+    for (int j = 0; j < windowSize; j++) {
+      energy += windowed[j] * windowed[j];
+    }
+    energy = sqrt(energy / windowSize);
+    if (energy < noiseFloor * 1.5) return 0;
+
+    final fft = FFT(fftSize);
+    final freq = fft.realFft(windowed);
+    final mags = freq.magnitudes();
+
+    // Find the lowest strong peak (fundamental preference)
+    double maxMag = 0;
+    for (int j = 2; j < mags.length ~/ 2; j++) {
+      if (mags[j] > maxMag) maxMag = mags[j];
+    }
+    if (maxMag == 0) return 0;
+
+    for (int j = 2; j < mags.length ~/ 2; j++) {
+      if (mags[j] > maxMag * 0.3) {
+        final hz = fft.frequency(j, sampleRate.toDouble());
+        if (hz > 50 && hz < 5000) return hz;
+      }
+    }
+    return 0;
+  }
+
+  /// Analyze amplitude envelope: attack, sustain, and decay characteristics.
+  static Map<String, double> _analyzeAmplitudeEnvelope(
+    Float64List samples, int sampleRate, double noiseFloor,
+  ) {
+    // Compute RMS envelope in 10ms frames
+    const frameSec = 0.01;
+    final frameSize = (sampleRate * frameSec).toInt();
+    final frameCount = samples.length ~/ frameSize;
+    if (frameCount < 3) {
+      return {'attackTime': 0.0, 'sustainLevel': 0.0, 'decayRate': 0.0};
+    }
+
+    final envelope = <double>[];
+    for (int i = 0; i < frameCount; i++) {
+      final start = i * frameSize;
+      double sum = 0;
+      for (int j = start; j < start + frameSize && j < samples.length; j++) {
+        sum += samples[j] * samples[j];
+      }
+      envelope.add(sqrt(sum / frameSize));
+    }
+
+    // Find peak amplitude frame
+    double peakVal = 0;
+    int peakIdx = 0;
+    for (int i = 0; i < envelope.length; i++) {
+      if (envelope[i] > peakVal) {
+        peakVal = envelope[i];
+        peakIdx = i;
+      }
+    }
+
+    if (peakVal < noiseFloor * 2) {
+      return {'attackTime': 0.0, 'sustainLevel': 0.0, 'decayRate': 0.0};
+    }
+
+    // Attack: time from first frame above noise floor to peak
+    int attackStart = 0;
+    for (int i = 0; i < peakIdx; i++) {
+      if (envelope[i] > noiseFloor * 2) {
+        attackStart = i;
+        break;
+      }
+    }
+    final attackTime = (peakIdx - attackStart) * frameSec;
+
+    // Sustain: average level of frames in the middle 50% of the active region
+    final activeStart = attackStart;
+    int activeEnd = envelope.length - 1;
+    for (int i = envelope.length - 1; i > peakIdx; i--) {
+      if (envelope[i] > noiseFloor * 2) {
+        activeEnd = i;
+        break;
+      }
+    }
+    final sustainStart = activeStart + ((activeEnd - activeStart) * 0.25).toInt();
+    final sustainEnd = activeStart + ((activeEnd - activeStart) * 0.75).toInt();
+    double sustainSum = 0;
+    int sustainCount = 0;
+    for (int i = sustainStart; i <= sustainEnd && i < envelope.length; i++) {
+      sustainSum += envelope[i];
+      sustainCount++;
+    }
+    final sustainLevel = sustainCount > 0 ? sustainSum / sustainCount / peakVal : 0.0;
+
+    // Decay: amplitude drop per second from peak to end
+    final decayFrames = activeEnd - peakIdx;
+    double decayRate = 0.0;
+    if (decayFrames > 0 && peakVal > 0) {
+      final endLevel = envelope[min(activeEnd, envelope.length - 1)];
+      decayRate = (peakVal - endLevel) / (decayFrames * frameSec);
+    }
+
+    return {
+      'attackTime': attackTime.clamp(0.0, 5.0),
+      'sustainLevel': sustainLevel.clamp(0.0, 1.0),
+      'decayRate': decayRate.clamp(0.0, 100.0),
+    };
+  }
+
+  /// Extract formant frequencies (F1, F2, F3) using Linear Predictive Coding.
+  /// Uses Levinson-Durbin recursion on autocorrelation to find LPC coefficients,
+  /// then finds resonant peaks in the LPC spectrum.
+  static List<double> _extractFormants(Float64List samples, int sampleRate) {
+    // Take a representative chunk from the middle of the signal
+    final chunkLen = min(4096, samples.length);
+    final startIdx = max(0, (samples.length - chunkLen) ~/ 2);
+    final chunk = samples.sublist(startIdx, startIdx + chunkLen);
+
+    // Pre-emphasis filter to boost high frequencies
+    final preEmph = Float64List(chunkLen);
+    preEmph[0] = chunk[0];
+    for (int i = 1; i < chunkLen; i++) {
+      preEmph[i] = chunk[i] - 0.97 * chunk[i - 1];
+    }
+
+    // Apply window
+    final windowed = Float64List(chunkLen);
+    for (int i = 0; i < chunkLen; i++) {
+      windowed[i] = preEmph[i] * _hanningWindow(i, chunkLen);
+    }
+
+    // Autocorrelation
+    const lpcOrder = 12; // Enough for F1-F3 plus headroom
+    final r = List<double>.filled(lpcOrder + 1, 0.0);
+    for (int k = 0; k <= lpcOrder; k++) {
+      for (int i = 0; i < chunkLen - k; i++) {
+        r[k] += windowed[i] * windowed[i + k];
+      }
+    }
+
+    if (r[0] == 0) return [0, 0, 0]; // Dead silence
+
+    // Levinson-Durbin recursion
+    final a = List<double>.filled(lpcOrder + 1, 0.0);
+    final aPrev = List<double>.filled(lpcOrder + 1, 0.0);
+    a[0] = 1.0;
+
+    double e = r[0];
+    for (int i = 1; i <= lpcOrder; i++) {
+      double lambda = 0;
+      for (int j = 1; j < i; j++) {
+        lambda += aPrev[j] * r[i - j];
+      }
+      lambda = (r[i] - lambda) / e;
+
+      a[i] = lambda;
+      for (int j = 1; j < i; j++) {
+        a[j] = aPrev[j] - lambda * aPrev[i - j];
+      }
+
+      e *= (1.0 - lambda * lambda);
+      if (e <= 0) break;
+
+      for (int j = 0; j <= i; j++) {
+        aPrev[j] = a[j];
+      }
+    }
+
+    // Evaluate LPC spectrum and find peaks (formants)
+    const specSize = 512;
+    final spectrum = List<double>.filled(specSize, 0.0);
+    for (int k = 0; k < specSize; k++) {
+      final freq = k * sampleRate / (2.0 * specSize);
+      if (freq > sampleRate / 2) break;
+
+      double realPart = 0, imagPart = 0;
+      for (int i = 0; i <= lpcOrder; i++) {
+        final angle = 2 * pi * freq * i / sampleRate;
+        realPart += a[i] * cos(angle);
+        imagPart -= a[i] * sin(angle);
+      }
+      final mag = sqrt(realPart * realPart + imagPart * imagPart);
+      spectrum[k] = mag > 0 ? 1.0 / mag : 0;
+    }
+
+    // Find peaks in LPC spectrum → formant candidates
+    final formants = <double>[];
+    for (int k = 2; k < specSize - 2; k++) {
+      if (spectrum[k] > spectrum[k - 1] && spectrum[k] > spectrum[k + 1] && spectrum[k] > 0.01) {
+        final hz = k * sampleRate / (2.0 * specSize);
+        if (hz > 90 && hz < 4000) {
+          formants.add(hz);
+        }
+      }
+    }
+
+    // Return first 3 (F1, F2, F3) or pad with zeros
+    while (formants.length < 3) formants.add(0);
+    return formants.take(3).toList();
+  }
+
+  /// Calculate spectral flux: average frame-to-frame spectral change.
+  /// High flux = noisy/chaotic signal. Low flux = clean, stable tonal signal.
+  /// Returns a 0-100 score where higher = more stable (less noisy).
+  static double _calculateSpectralFlux(Float64List samples, int sampleRate) {
+    const frameSize = 2048;
+    const hopSize = 1024;
+    final numFrames = (samples.length - frameSize) ~/ hopSize;
+    if (numFrames < 2) return 50.0;
+
+    final fft = FFT(frameSize);
+    List<double>? prevMags;
+    double totalFlux = 0;
+    int fluxCount = 0;
+
+    for (int f = 0; f < numFrames; f++) {
+      final offset = f * hopSize;
+      final windowed = Float64List(frameSize);
+      for (int j = 0; j < frameSize && (offset + j) < samples.length; j++) {
+        windowed[j] = samples[offset + j] * _hanningWindow(j, frameSize);
+      }
+
+      final freq = fft.realFft(windowed);
+      final mags = freq.magnitudes().toList();
+
+      if (prevMags != null) {
+        double flux = 0;
+        for (int k = 0; k < mags.length; k++) {
+          final diff = mags[k] - prevMags![k];
+          if (diff > 0) flux += diff; // Only positive changes (onset-focused)
+        }
+        totalFlux += flux;
+        fluxCount++;
+      }
+      prevMags = mags;
+    }
+
+    if (fluxCount == 0) return 50.0;
+    final avgFlux = totalFlux / fluxCount;
+
+    // Map to 0-100 score. Typical values: clean signal ~0.5, noisy ~5.0+
+    // Higher score = more stable = better noise robustness
+    return (100.0 - min(100.0, avgFlux * 20)).clamp(0.0, 100.0);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ROUND 2 — Delta MFCCs, A-Weighting, Cross-Correlation
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// Extract MFCCs with Δ (first derivative) and ΔΔ (second derivative).
+  /// Returns a map with 'static', 'delta', and 'deltaDelta' — each 13-dim.
+  /// Deltas capture how the spectrum changes over time (swoops, trills).
+  static Map<String, List<double>> _extractMFCCsWithDeltas(
+    Float64List samples, int sampleRate, {int numCoeffs = 13, int numFilters = 26,}
+  ) {
+    const frameLen = 0.025; // 25ms frames
+    const frameHop = 0.010; // 10ms hop
+    final frameSamples = (sampleRate * frameLen).toInt();
+    final hopSamples = (sampleRate * frameHop).toInt();
+    int fftSize = 1;
+    while (fftSize < frameSamples) fftSize <<= 1;
+
+    final int numFrames = (samples.length - frameSamples) ~/ hopSamples + 1;
+    if (numFrames <= 0) {
+      return {
+        'static': List.filled(numCoeffs, 0.0),
+        'delta': List.filled(numCoeffs, 0.0),
+        'deltaDelta': List.filled(numCoeffs, 0.0),
+      };
+    }
+
+    // Pre-compute Mel filter bank (same as _extractMFCCs)
+    double hzToMel(double hz) => 2595.0 * log(1.0 + hz / 700.0) / ln10;
+    double melToHz(double mel) => 700.0 * (pow(10.0, mel / 2595.0) - 1.0);
+
+    final double lowMel = hzToMel(80.0);
+    final double highMel = hzToMel(sampleRate / 2.0);
+    final melPoints = List.generate(
+      numFilters + 2,
+      (i) => melToHz(lowMel + (highMel - lowMel) * i / (numFilters + 1)),
+    );
+    final binPoints = melPoints
+        .map((hz) => ((hz / sampleRate) * fftSize).floor().clamp(0, fftSize ~/ 2))
+        .toList();
+
+    // Compute per-frame MFCCs into matrix [numFrames x numCoeffs]
+    final mfccMatrix = <List<double>>[];
+    final fft = FFT(fftSize);
+
+    for (int f = 0; f < numFrames; f++) {
+      final offset = f * hopSamples;
+      final windowed = Float64List(fftSize);
+      for (int j = 0; j < frameSamples && (offset + j) < samples.length; j++) {
+        windowed[j] = samples[offset + j] * _hanningWindow(j, frameSamples);
+      }
+
+      final freq = fft.realFft(windowed);
+      final magnitudes = freq.magnitudes();
+
+      // Apply Mel filter banks
+      final filterEnergies = List<double>.filled(numFilters, 0.0);
+      for (int m = 0; m < numFilters; m++) {
+        final startBin = binPoints[m];
+        final centerBin = binPoints[m + 1];
+        final endBin = binPoints[m + 2];
+
+        for (int k = startBin; k < centerBin && k < magnitudes.length; k++) {
+          final weight = (centerBin > startBin) ? (k - startBin) / (centerBin - startBin) : 0.0;
+          filterEnergies[m] += magnitudes[k] * weight;
+        }
+        for (int k = centerBin; k < endBin && k < magnitudes.length; k++) {
+          final weight = (endBin > centerBin) ? (endBin - k) / (endBin - centerBin) : 0.0;
+          filterEnergies[m] += magnitudes[k] * weight;
+        }
+      }
+
+      // Log energies
+      for (int m = 0; m < numFilters; m++) {
+        filterEnergies[m] = log(max(filterEnergies[m], 1e-10));
+      }
+
+      // DCT Type-II
+      final frameMfcc = List<double>.filled(numCoeffs, 0.0);
+      for (int c = 0; c < numCoeffs; c++) {
+        double sum = 0.0;
+        for (int m = 0; m < numFilters; m++) {
+          sum += filterEnergies[m] * cos(pi * c * (m + 0.5) / numFilters);
+        }
+        frameMfcc[c] = sum;
+      }
+      mfccMatrix.add(frameMfcc);
+    }
+
+    // Average static MFCCs across frames
+    final staticMfcc = List<double>.filled(numCoeffs, 0.0);
+    for (final frame in mfccMatrix) {
+      for (int c = 0; c < numCoeffs; c++) {
+        staticMfcc[c] += frame[c];
+      }
+    }
+    for (int c = 0; c < numCoeffs; c++) {
+      staticMfcc[c] /= numFrames;
+    }
+
+    // Compute Δ (first derivative) using ±2 frame window
+    final deltaMatrix = <List<double>>[];
+    for (int f = 0; f < numFrames; f++) {
+      final d = List<double>.filled(numCoeffs, 0.0);
+      double denom = 0;
+      for (int n = 1; n <= 2; n++) {
+        final prev = (f - n >= 0) ? f - n : 0;
+        final next = (f + n < numFrames) ? f + n : numFrames - 1;
+        for (int c = 0; c < numCoeffs; c++) {
+          d[c] += n * (mfccMatrix[next][c] - mfccMatrix[prev][c]);
+        }
+        denom += 2 * n * n;
+      }
+      if (denom > 0) {
+        for (int c = 0; c < numCoeffs; c++) d[c] /= denom;
+      }
+      deltaMatrix.add(d);
+    }
+
+    // Compute ΔΔ (second derivative) from deltas
+    final deltaDeltaMatrix = <List<double>>[];
+    for (int f = 0; f < numFrames; f++) {
+      final dd = List<double>.filled(numCoeffs, 0.0);
+      double denom = 0;
+      for (int n = 1; n <= 2; n++) {
+        final prev = (f - n >= 0) ? f - n : 0;
+        final next = (f + n < numFrames) ? f + n : numFrames - 1;
+        for (int c = 0; c < numCoeffs; c++) {
+          dd[c] += n * (deltaMatrix[next][c] - deltaMatrix[prev][c]);
+        }
+        denom += 2 * n * n;
+      }
+      if (denom > 0) {
+        for (int c = 0; c < numCoeffs; c++) dd[c] /= denom;
+      }
+      deltaDeltaMatrix.add(dd);
+    }
+
+    // Average Δ and ΔΔ across frames
+    final avgDelta = List<double>.filled(numCoeffs, 0.0);
+    final avgDeltaDelta = List<double>.filled(numCoeffs, 0.0);
+    for (int f = 0; f < numFrames; f++) {
+      for (int c = 0; c < numCoeffs; c++) {
+        avgDelta[c] += deltaMatrix[f][c];
+        avgDeltaDelta[c] += deltaDeltaMatrix[f][c];
+      }
+    }
+    for (int c = 0; c < numCoeffs; c++) {
+      avgDelta[c] /= numFrames;
+      avgDeltaDelta[c] /= numFrames;
+    }
+
+    return {
+      'static': staticMfcc,
+      'delta': avgDelta,
+      'deltaDelta': avgDeltaDelta,
+    };
+  }
+
+  /// IEC 61672 A-weighting curve: returns dB adjustment for a given frequency.
+  /// Models human hearing sensitivity — de-emphasizes very low and very high
+  /// frequencies that hunters can't hear well in the field.
+  static double _aWeight(double hz) {
+    if (hz <= 0) return -100.0;
+    final f2 = hz * hz;
+    final f4 = f2 * f2;
+    // A-weighting formula (IEC 61672:2003)
+    final ra = (12194.0 * 12194.0 * f4) /
+        ((f2 + 20.6 * 20.6) *
+            sqrt((f2 + 107.7 * 107.7) * (f2 + 737.9 * 737.9)) *
+            (f2 + 12194.0 * 12194.0));
+    // Convert to dB relative to 1kHz reference, clamp extremes
+    return (20.0 * log(ra) / ln10 + 2.0).clamp(-50.0, 5.0);
+  }
+
+  /// Apply A-weighting to a magnitude spectrum in-place.
+  /// Multiplies each bin's magnitude by the A-weight factor for its frequency.
+  static void applyAWeighting(List<double> magnitudes, int fftSize, int sampleRate) {
+    for (int k = 1; k < magnitudes.length; k++) {
+      final hz = k * sampleRate / fftSize;
+      final dbOffset = _aWeight(hz.toDouble());
+      // Convert dB offset to linear multiplier
+      magnitudes[k] *= pow(10.0, dbOffset / 20.0);
+    }
+  }
+
+  /// Cross-correlation phase alignment between two waveform sequences.
+  /// Returns the optimal sample lag (offset) that maximizes the correlation
+  /// between user and reference waveforms. Used for precise overlay alignment.
+  static int crossCorrelateOffset(List<double> user, List<double> ref) {
+    if (user.isEmpty || ref.isEmpty) return 0;
+
+    // Limit search window to ±25% of the shorter signal (prevent extreme shifts)
+    final maxLag = min(user.length, ref.length) ~/ 4;
+    double bestCorr = double.negativeInfinity;
+    int bestLag = 0;
+
+    for (int lag = -maxLag; lag <= maxLag; lag++) {
+      double corr = 0;
+      int count = 0;
+      for (int i = 0; i < user.length; i++) {
+        final refIdx = i + lag;
+        if (refIdx >= 0 && refIdx < ref.length) {
+          corr += user[i] * ref[refIdx];
+          count++;
+        }
+      }
+      if (count > 0) {
+        corr /= count; // Normalize by overlap length
+        if (corr > bestCorr) {
+          bestCorr = corr;
+          bestLag = lag;
+        }
+      }
+    }
+
+    return bestLag;
   }
 
   static double _hanningWindow(int n, int N) {

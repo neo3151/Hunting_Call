@@ -21,6 +21,11 @@ RatingResult _$RatingResultFromJson(Map<String, dynamic> json) => RatingResult(
           .toList(),
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
+      featureVectors: (json['featureVectors'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(
+            k, (e as List<dynamic>).map((e) => (e as num).toDouble()).toList()),
+      ),
+      archetypeLabel: json['archetypeLabel'] as String?,
     );
 
 Map<String, dynamic> _$RatingResultToJson(RatingResult instance) =>
@@ -33,4 +38,6 @@ Map<String, dynamic> _$RatingResultToJson(RatingResult instance) =>
       'referenceWaveform': instance.referenceWaveform,
       'latitude': instance.latitude,
       'longitude': instance.longitude,
+      'featureVectors': instance.featureVectors,
+      'archetypeLabel': instance.archetypeLabel,
     };

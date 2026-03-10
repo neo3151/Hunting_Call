@@ -46,6 +46,15 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
       lastActiveAt: json['lastActiveAt'] == null
           ? null
           : DateTime.parse(json['lastActiveAt'] as String),
+      calibrationBaselines:
+          (json['calibrationBaselines'] as Map<String, dynamic>?)?.map(
+                (k, e) => MapEntry(
+                    k,
+                    (e as List<dynamic>)
+                        .map((e) => (e as num).toDouble())
+                        .toList()),
+              ) ??
+              const {},
     );
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
@@ -74,6 +83,7 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'referredBy': instance.referredBy,
       'referralCount': instance.referralCount,
       'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
+      'calibrationBaselines': instance.calibrationBaselines,
     };
 
 HistoryItem _$HistoryItemFromJson(Map<String, dynamic> json) => HistoryItem(

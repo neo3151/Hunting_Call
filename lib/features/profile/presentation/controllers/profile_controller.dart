@@ -141,7 +141,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
           },
           (newAchievements) async {
             if (newAchievements.isNotEmpty) {
-              await _repo.saveAchievements(userId, newAchievements);
+              // Merge new with existing — don't wipe old achievements!
+              final merged = {...currentProfile.achievements, ...newAchievements}.toList();
+              await _repo.saveAchievements(userId, merged);
               // Reload again to get badges
               await loadProfile(userId);
             }

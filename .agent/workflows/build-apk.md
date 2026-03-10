@@ -9,7 +9,7 @@ flutter build apk --debug --split-per-abi --target-platform android-arm64
 
 2. Upload to Google Drive (optimized):
 ```powershell
-rclone copyto "build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk" "gdrive:OUTCALL/dev-builds/app-debug.apk" --progress --drive-chunk-size 256M --no-check-dest --stats 2s
+rclone copyto "build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk" "gdrive:OUTCALL/dev-builds/app-debug.apk" --progress --drive-chunk-size 64M --no-check-dest --stats 5s
 ```
 
 3. The APK will be available at:

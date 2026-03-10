@@ -29,6 +29,10 @@ class UserProfile {
   final int referralCount; // How many people used their code
   final DateTime? lastActiveAt; // Stamped each session for scrubber inactivity tracking
 
+  /// Personal calibration baselines per animal — stores last 5 scores.
+  /// After 3+ scores, scoring uses relative improvement vs personal best.
+  final Map<String, List<double>> calibrationBaselines;
+
   UserProfile({
     required this.id,
     required this.name,
@@ -53,6 +57,7 @@ class UserProfile {
     this.referredBy,
     this.referralCount = 0,
     this.lastActiveAt,
+    this.calibrationBaselines = const {},
   });
 
   factory UserProfile.guest() {
@@ -64,6 +69,7 @@ class UserProfile {
       isAlphaTester: false,
       nameRestricted: false,
       referralCount: 0,
+      calibrationBaselines: const {},
     );
   }
 
@@ -89,6 +95,7 @@ class UserProfile {
     String? referredBy,
     int? referralCount,
     DateTime? lastActiveAt,
+    Map<String, List<double>>? calibrationBaselines,
   }) {
     return UserProfile(
       id: id,
@@ -114,6 +121,7 @@ class UserProfile {
       referredBy: referredBy ?? this.referredBy,
       referralCount: referralCount ?? this.referralCount,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
+      calibrationBaselines: calibrationBaselines ?? this.calibrationBaselines,
     );
   }
 
