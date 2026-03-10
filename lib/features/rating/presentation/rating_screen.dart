@@ -408,6 +408,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                                         () => AiCoachCard(
                                               result: result,
                                               animalId: widget.animalId,
+                                              audioPath: widget.audioPath,
                                             ),
                                         'AI Coach'),
                                     const SizedBox(height: 32),

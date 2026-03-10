@@ -42,6 +42,7 @@ class CalculateScoreUseCase {
   ) async {
     // Get reference data
     final reference = ReferenceDatabase.getById(params.animalId);
+    final archetype = ReferenceDatabase.getArchetype(params.animalId);
 
     // Check if user analysis is valid
     if (params.userAnalysis.dominantFrequencyHz == 0 && params.userAnalysis.totalDurationSec == 0) {
@@ -79,14 +80,14 @@ class CalculateScoreUseCase {
 
     final pitchScore = _calculatePitchScore(
       params.userAnalysis.dominantFrequencyHz,
-      reference.idealPitchHz,
-      reference.tolerancePitch,
+      archetype?.averagePitchHz ?? reference.idealPitchHz,
+      archetype?.pitchTolerance ?? reference.tolerancePitch,
     );
 
     final durationScore = _calculateDurationScore(
       params.userAnalysis.activeDurationSec, // Use active (trimmed) duration, not file length
-      reference.idealDurationSec,
-      reference.toleranceDuration,
+      archetype?.averageDurationSec ?? reference.idealDurationSec,
+      archetype?.durationTolerance ?? reference.toleranceDuration,
     );
 
     final toneScore = _calculateToneScore(

@@ -18,7 +18,7 @@ class AiCoachService {
   // This is just the fallback — the actual URL is fetched from Remote Config
   // so it can be updated server-side when the tunnel changes.
   // Local fallback: http://192.168.1.189:11434
-  static const String _fallbackBaseUrl = 'https://farming-idaho-location-taste.trycloudflare.com';
+  static const String _fallbackBaseUrl = 'https://configuring-lions-wins-copper.trycloudflare.com';
 
   // Custom model with baked-in hunting call knowledge
   static const String _model = 'outcall-coach';
@@ -36,6 +36,7 @@ class AiCoachService {
     String? proTips,
     String? userId,
     String? baseUrl,
+    required String audioPath,
   }) async {
     try {
       // Fetch session history for context (non-blocking fallback)
@@ -55,60 +56,39 @@ class AiCoachService {
           .map((e) => '  - ${e.key}: ${e.value.toStringAsFixed(1)}')
           .join('\n');
 
-      final prompt = StringBuffer();
-      prompt.writeln('A hunter just practiced their $callType call for $animalName '
-          'and scored ${result.score.toStringAsFixed(0)}%.');
-      prompt.writeln();
-      prompt.writeln('Their pitch was ${result.pitchHz.toStringAsFixed(0)} Hz '
-          '(target: ${idealPitchHz.toStringAsFixed(0)} Hz — '
-          '${pitchDiff < 10 ? "right on target" : "${pitchDiff.toStringAsFixed(0)} Hz $pitchDirection"}).');
-      prompt.writeln();
-      prompt.writeln('Detailed metrics:');
-      prompt.writeln(metricsBreakdown);
-
-      if (proTips != null && proTips.isNotEmpty) {
-        prompt.writeln();
-        prompt.writeln('Reference tips for this call: $proTips');
-      }
-
-      if (historySummary.isNotEmpty) {
-        prompt.writeln();
-        prompt.writeln('SESSION HISTORY:');
-        prompt.writeln(historySummary);
-      }
-
-      prompt.writeln();
-      prompt.writeln('Give them personalized coaching feedback. What are they doing well? '
-          "What's the #1 thing they should focus on improving? "
-          'Give one specific, practical drill or technique they can try right now.');
-
+      // Point to the new local Python microservice backend
+      // (On an Android emulator, this might need to be 10.0.2.2)
+      final targetUrl = baseUrl ?? 'http://127.0.0.1:8000';
+      
       final response = await http
           .post(
-            Uri.parse('${baseUrl ?? _fallbackBaseUrl}/api/generate'),
+            Uri.parse('$targetUrl/api/coach'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
-              'model': _model,
-              'prompt': prompt.toString(),
-              'stream': false,
-              'options': {
-                'temperature': 0.7,
-                'top_p': 0.9,
-                'num_predict': 200,
-              },
+              'animalId': animalName.toLowerCase(),
+              'animalName': animalName,
+              'pitchScore': result.metrics['score_pitch'] ?? result.score,
+              'durationScore': result.metrics['score_duration'] ?? result.score,
+              'detectedPitchHz': result.pitchHz,
+              'idealPitchHz': idealPitchHz,
+              'detectedDurationSec': result.metrics['Duration (s)'] ?? 0.0,
+              'idealDurationSec': result.metrics['Duration (s)'] ?? 0.0,
+              'metrics': result.metrics,
+              'audioFilePath': audioPath,
             }),
           )
           .timeout(const Duration(seconds: 30));
 
       if (response.statusCode != 200) {
-        AppLogger.d('AI Coach: Ollama returned ${response.statusCode}');
+        AppLogger.d('AI Coach Backend returned ${response.statusCode}');
         return _fallback(
             result: result, idealPitchHz: idealPitchHz, animalName: animalName, callType: callType);
       }
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final coaching = (data['response'] as String?)?.trim() ?? '';
+      final coaching = (data['feedback'] as String?)?.trim() ?? '';
 
-      if (coaching.length < 20) {
+      if (coaching.length < 10) {
         return _fallback(
             result: result, idealPitchHz: idealPitchHz, animalName: animalName, callType: callType);
       }

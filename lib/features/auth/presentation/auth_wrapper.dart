@@ -197,6 +197,7 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       ),
       error: (error, stack) {
         final errorStr = error.toString();
+        AppLogger.d('AuthWrapper: Auth stream error: $errorStr');
         if (errorStr.contains('User signed out') || errorStr.contains('SignedOutException')) {
           AppLogger.d(
               'AuthWrapper: Detected signed out error ($errorStr). Invalidating provider to force retry.');
@@ -225,6 +226,17 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
                       color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: $errorStr',
+                    style: GoogleFonts.lato(
+                      fontSize: 12,
+                      color: Colors.white38,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 5,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(

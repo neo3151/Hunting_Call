@@ -1,16 +1,20 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/library/domain/reference_call_model.dart';
 import 'package:outcall/config/app_config.dart';
 import 'package:outcall/config/freemium_config.dart';
-import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/features/analysis/domain/animal_archetype.dart';
 
 class ReferenceDatabase {
   static List<ReferenceCall> _calls = [];
+  static Map<String, AnimalArchetype> _archetypes = {};
   static bool _isInitialized = false;
 
   static List<ReferenceCall> get calls => _calls;
+  
+  static AnimalArchetype? getArchetype(String callId) => _archetypes[callId];
   
   @visibleForTesting
   static set calls(List<ReferenceCall> value) {
@@ -32,6 +36,22 @@ class ReferenceDatabase {
     } catch (e) {
       AppLogger.d('ReferenceDatabase Error: Failed to load calls from JSON: $e');
       _calls = [];
+    }
+
+    // Try to load archetypes
+    try {
+      final archJsonString = await rootBundle.loadString('assets/data/archetypes.json');
+      final Map<String, dynamic> archData = json.decode(archJsonString);
+      final List<dynamic> archetypesJson = archData['archetypes'] ?? [];
+      
+      for (var jsonMap in archetypesJson) {
+        final archetype = AnimalArchetype.fromJson(jsonMap);
+        _archetypes[archetype.callId] = archetype;
+      }
+      AppLogger.d('ReferenceDatabase: Loaded ${_archetypes.length} archetypes from JSON.');
+    } catch (e) {
+      AppLogger.d('ReferenceDatabase Debug: No archetypes.json found or failed to load ($e). Using single-clip matching as fallback.');
+      _archetypes = {};
     }
 
     // Freemium Logic: Locks are now calculated dynamically, not mutated on load.

@@ -1,4 +1,4 @@
-FROM gemma3:4b
+FROM gemma3:1b
 
 PARAMETER temperature 0.7
 PARAMETER top_p 0.9

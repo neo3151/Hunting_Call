@@ -40,6 +40,17 @@ class GlobalErrorView extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 12),
+              Text(
+                'Details: ${details.exceptionAsString()}',
+                style: GoogleFonts.lato(
+                  fontSize: 10,
+                  color: Colors.white24,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
               const SizedBox(height: 48),
               SizedBox(
                 width: double.infinity,

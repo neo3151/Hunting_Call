@@ -180,8 +180,9 @@ class RealRatingService implements RatingService {
       } else {
         // Find the weakest link and deliver a highly specific mechanical critique
         if (pitchScore < timbreScore && pitchScore < rhythmScore) {
-          final hzDiff = (detectedPitch - reference.idealPitchHz).abs().toInt();
-          if (detectedPitch > reference.idealPitchHz) {
+          final idealPitch = analysisResult.pitchScore.idealHz;
+          final hzDiff = (detectedPitch - idealPitch).abs().toInt();
+          if (detectedPitch > idealPitch) {
             technicalFeedback =
                 'Pitch ceiling is $hzDiff Hz too high. Drop your jaw and loosen your tongue pressure.';
           } else {

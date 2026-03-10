@@ -13,11 +13,13 @@ import 'package:outcall/features/rating/domain/rating_model.dart';
 class AiCoachCard extends ConsumerStatefulWidget {
   final RatingResult result;
   final String animalId;
+  final String audioPath;
 
   const AiCoachCard({
     super.key,
     required this.result,
     required this.animalId,
+    required this.audioPath,
   });
 
   @override
@@ -81,6 +83,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
         proTips: proTips,
         userId: profile?.id,
         baseUrl: remoteConfig.aiCoachUrl,
+        audioPath: widget.audioPath,
       );
 
       if (mounted) {

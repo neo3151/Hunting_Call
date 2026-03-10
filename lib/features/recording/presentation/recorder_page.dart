@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,12 +16,15 @@ import 'package:outcall/features/library/data/reference_database.dart';
 import 'package:outcall/features/library/presentation/category_grid_screen.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/rating/presentation/rating_screen.dart';
+import 'package:outcall/features/rating/presentation/quick_match_screen.dart';
+import 'package:outcall/features/recording/domain/recording_mode.dart';
 import 'package:outcall/features/recording/presentation/controllers/recording_controller.dart';
 import 'package:outcall/features/recording/presentation/widgets/playback_review_dialog.dart';
 import 'package:outcall/features/recording/presentation/widgets/preflight_check_modal.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_coaching.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_dialogs.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_widgets.dart';
+import 'package:outcall/features/recording/domain/audio_sample.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -34,7 +38,7 @@ class RecorderPage extends ConsumerStatefulWidget {
   ConsumerState<RecorderPage> createState() => _RecorderPageState();
 }
 
-class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerProviderStateMixin {
+class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -42,15 +46,44 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   StreamSubscription? _playerCompleteSubscription;
   Timer? _autoStopTimer;
 
-  // New: Amplitude buffer for smooth visualization
-  final List<double> _amplitudeBuffer = [];
+  // Real-time synchronization
+  late Ticker _timeTicker;
+  double _elapsedTimeSec = 0.0;
+  DateTime? _recordingStartTime;
+
+  // Amplitude buffer for smooth visualization and sync
+  final List<AudioSample> _amplitudeBuffer = [];
   ProviderSubscription<AsyncValue<double>>? _amplitudeSubscription;
+
+  void _initAmplitudeListener() {
+    _amplitudeSubscription?.close();
+    ref.invalidate(amplitudeStreamProvider);
+    
+    _amplitudeSubscription = ref.listenManual(amplitudeStreamProvider, (prev, next) {
+      if (next.hasValue && next.value != null && mounted) {
+        setState(() {
+          // If not recording yet (e.g. countdown), time is negative based on countdown value
+          final state = ref.read(recordingNotifierProvider);
+          double sampleTime = _elapsedTimeSec;
+          if (state.isCountingDown) {
+             sampleTime = -(state.countdownValue?.toDouble() ?? 0.0);
+          }
+          
+          _amplitudeBuffer.add(AudioSample(sampleTime, next.value!));
+          // Keep buffer size manageable (approx 5 seconds of history at 50ms intervals = 100 samples)
+          if (_amplitudeBuffer.length > 100) {
+            _amplitudeBuffer.removeAt(0);
+          }
+        });
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize selected call
+    // Initialize selected call and amplitude listener
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.preselectedAnimalId != null) {
         ref.read(selectedCallIdProvider.notifier).setCallId(widget.preselectedAnimalId!);
@@ -66,6 +99,8 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
           ref.read(selectedCallIdProvider.notifier).setCallId(ReferenceDatabase.calls.first.id);
         }
       }
+      // Must be called after initState completes — uses ref.invalidate/listenManual
+      _initAmplitudeListener();
     });
 
     _pulseController = AnimationController(
@@ -78,15 +113,10 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
       if (mounted) setState(() => isPlayingReference = false);
     });
 
-    // Subscribe to amplitude stream
-    _amplitudeSubscription = ref.listenManual(amplitudeStreamProvider, (prev, next) {
-      if (next.hasValue && next.value != null && mounted) {
+    _timeTicker = createTicker((elapsed) {
+      if (mounted && _recordingStartTime != null) {
         setState(() {
-          _amplitudeBuffer.add(next.value!);
-          // Keep buffer size manageable (approx 5 seconds of history at 50ms intervals = 100 samples)
-          if (_amplitudeBuffer.length > 100) {
-            _amplitudeBuffer.removeAt(0);
-          }
+          _elapsedTimeSec = DateTime.now().difference(_recordingStartTime!).inMilliseconds / 1000.0;
         });
       }
     });
@@ -99,6 +129,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     _amplitudeSubscription?.close();
     _audioPlayer.dispose();
     _pulseController.dispose();
+    _timeTicker.dispose();
     super.dispose();
   }
 
@@ -111,7 +142,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
   // Coaching logic delegated to recorder_coaching.dart
   double _computeRefAvg(List<double>? waveform) => computeReferenceAverage(waveform);
   ({String text, Color color}) _getCoachingFeedback(double refAvg) =>
-      getCoachingFeedback(_amplitudeBuffer, refAvg);
+      getCoachingFeedback(_amplitudeBuffer.map((s) => s.amplitude).toList(), refAvg);
 
   bool isProcessing = false;
 
@@ -128,7 +159,11 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
         setState(() {
           _amplitudeBuffer.clear();
           isProcessing = false;
+          _timeTicker.stop();
+          _elapsedTimeSec = 0.0;
+          _recordingStartTime = null;
         });
+        _initAmplitudeListener();
       }
     }
   }
@@ -148,21 +183,52 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
 
         try {
           final path = await notifier.stopRecording();
+          _timeTicker.stop();
 
           if (mounted) {
             if (path != null && path.isNotEmpty && !path.contains('not open')) {
-              // Show playback review before analysis
-              final shouldAnalyze = await showPlaybackReviewDialog(context, path);
-              if (!mounted) return;
-              if (shouldAnalyze) {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => RatingScreen(
-                          audioPath: path,
-                          animalId: selectedCallId,
-                          userId: widget.userId,
-                        )));
+              final mode = ref.read(recordingModeProvider);
+
+              if (mode == RecordingMode.quickMatch) {
+                // Quick Match: go straight to fingerprint matching
+                final result = await Navigator.of(context).push<String>(
+                  MaterialPageRoute(
+                    builder: (_) => QuickMatchScreen(
+                      audioPath: path,
+                      animalId: selectedCallId,
+                    ),
+                  ),
+                );
+                if (mounted) {
+                  if (result == 'switch_to_expert') {
+                    // User tapped "Go Expert" — re-route to full analysis
+                    ref.read(recordingModeProvider.notifier).setMode(RecordingMode.expert);
+                    await Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => RatingScreen(
+                              audioPath: path,
+                              animalId: selectedCallId,
+                              userId: widget.userId,
+                            )));
+                  }
+                  _resetRecording();
+                }
               } else {
-                _resetRecording();
+                // Expert Mode: show playback review then full analysis
+                final shouldAnalyze = await showPlaybackReviewDialog(context, path);
+                if (!mounted) return;
+                if (shouldAnalyze) {
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => RatingScreen(
+                            audioPath: path,
+                            animalId: selectedCallId,
+                            userId: widget.userId,
+                          )));
+                  if (mounted) {
+                    _resetRecording();
+                  }
+                } else {
+                  _resetRecording();
+                }
               }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -202,8 +268,12 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
           }
         }
 
-        // Clear buffer on start
-        setState(() => _amplitudeBuffer.clear());
+        // Clear buffer and timer on start
+        setState(() {
+          _amplitudeBuffer.clear();
+          _elapsedTimeSec = 0.0;
+          _recordingStartTime = null;
+        });
 
         // Set controller-level max duration based on reference call
         final selectedCall = ReferenceDatabase.getById(selectedCallId);
@@ -222,6 +292,10 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
             ),
           );
         } else if (finalState.isRecording) {
+          // Recording actually started (countdown finished)
+          _recordingStartTime = DateTime.now();
+          _timeTicker.start();
+          
           final call = ReferenceDatabase.getById(selectedCallId);
           final autoStopSec = (call.idealDurationSec + 2).clamp(3, 60).toInt();
           _autoStopTimer?.cancel();
@@ -276,6 +350,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
     final selectedCallId = ref.watch(selectedCallIdProvider);
     final isRecording = recordingState.isRecording;
     final isCountingDown = recordingState.isCountingDown;
+    final currentMode = ref.watch(recordingModeProvider);
 
     final selectedCall = ReferenceDatabase.getById(selectedCallId);
 
@@ -383,6 +458,112 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with SingleTickerPr
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+
+                // 1.5. MODE TOGGLE — Quick Match / Expert
+                if (!isRecording && !isCountingDown)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.of(context).cardOverlay,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.of(context).border),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => ref
+                                      .read(recordingModeProvider.notifier)
+                                      .setMode(RecordingMode.quickMatch),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: currentMode == RecordingMode.quickMatch
+                                          ? const Color(0xFF5FF7B6).withValues(alpha: 0.2)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.bolt_rounded,
+                                          size: 16,
+                                          color: currentMode == RecordingMode.quickMatch
+                                              ? const Color(0xFF5FF7B6)
+                                              : AppColors.of(context).textSubtle,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'QUICK MATCH',
+                                          style: GoogleFonts.oswald(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1,
+                                            color: currentMode == RecordingMode.quickMatch
+                                                ? const Color(0xFF5FF7B6)
+                                                : AppColors.of(context).textSubtle,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => ref
+                                      .read(recordingModeProvider.notifier)
+                                      .setMode(RecordingMode.expert),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: currentMode == RecordingMode.expert
+                                          ? const Color(0xFFE8922D).withValues(alpha: 0.2)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.analytics_rounded,
+                                          size: 16,
+                                          color: currentMode == RecordingMode.expert
+                                              ? const Color(0xFFE8922D)
+                                              : AppColors.of(context).textSubtle,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'EXPERT',
+                                          style: GoogleFonts.oswald(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1,
+                                            color: currentMode == RecordingMode.expert
+                                                ? const Color(0xFFE8922D)
+                                                : AppColors.of(context).textSubtle,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 16),
 
                 // 2. LIVE VISUALIZER + COACHING

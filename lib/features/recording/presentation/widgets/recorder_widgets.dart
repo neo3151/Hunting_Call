@@ -7,10 +7,12 @@ import 'package:outcall/features/recording/presentation/widgets/live_visualizer.
 import 'package:outcall/features/library/domain/reference_call_model.dart';
 import 'package:outcall/features/recording/presentation/controllers/recording_controller.dart';
 
+import 'package:outcall/features/recording/domain/audio_sample.dart';
+
 /// Live visualizer container with mode toggles and coaching overlay.
 class RecorderVisualizerSection extends ConsumerWidget {
   final ReferenceCall selectedCall;
-  final List<double> amplitudeBuffer;
+  final List<AudioSample> amplitudeBuffer;
   final bool isRecording;
   final bool isCountingDown;
   final double Function(List<double>?) computeRefAvg;
@@ -46,15 +48,8 @@ class RecorderVisualizerSection extends ConsumerWidget {
                 Builder(
                   builder: (context) {
                     final ampState = ref.watch(amplitudeStreamProvider);
-                    if (ampState.hasValue && ampState.value != null) {
-                      amplitudeBuffer.add(ampState.value!);
-                      if (amplitudeBuffer.length > 100) {
-                        amplitudeBuffer.removeAt(0);
-                      }
-                    }
-
                     return LiveVisualizer(
-                      amplitudes: List<double>.from(amplitudeBuffer),
+                      amplitudes: amplitudeBuffer.map((s) => s.amplitude).toList(),
                       referencePattern: vizSettings.showReferenceOverlay ? selectedCall.waveform : null,
                       referenceSpectrogram: vizSettings.showReferenceOverlay ? selectedCall.spectrogram : null,
                       mode: vizSettings.mode,

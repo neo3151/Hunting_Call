@@ -27,7 +27,7 @@ class RemoteConfigService {
       await _remoteConfig!.setDefaults(const {
         'is_leaderboard_enabled': true,
         'profanity_blocklist': '', // Comma-separated extra blocked terms
-        'ai_coach_url': 'https://farming-idaho-location-taste.trycloudflare.com',
+        'ai_coach_url': 'https://configuring-lions-wins-copper.trycloudflare.com',
       });
 
       // Configure fetch interval (e.g., fetch every 1 hour, or 0 during dev)
@@ -53,7 +53,7 @@ class RemoteConfigService {
   /// Dynamic AI Coach URL — update in Firebase Console when tunnel changes
   String get aiCoachUrl => _remoteConfig?.getString('ai_coach_url').isNotEmpty == true
       ? _remoteConfig!.getString('ai_coach_url')
-      : 'https://farming-idaho-location-taste.trycloudflare.com';
+      : 'https://configuring-lions-wins-copper.trycloudflare.com';
 
   /// Parses the remote profanity blocklist and loads it into ProfanityFilter.
   void _loadProfanityTerms() {

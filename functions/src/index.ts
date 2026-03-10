@@ -422,7 +422,7 @@ Give them personalized coaching feedback. What are they doing well? What's the #
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                model: "gemma3:4b",
+                model: "outcall-coach",
                 prompt: userPrompt,
                 system: systemPrompt,
                 stream: false,
