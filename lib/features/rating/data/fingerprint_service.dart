@@ -85,6 +85,8 @@ class FingerprintService {
         'POST',
         Uri.parse('$targetUrl/api/fingerprint'),
       );
+      // Required for ngrok free tier — skip browser interstitial
+      request.headers['ngrok-skip-browser-warning'] = '1';
       request.files.add(
         await http.MultipartFile.fromPath('audio', audioPath),
       );

@@ -48,7 +48,10 @@ class AiCoachService {
       final response = await http
           .post(
             Uri.parse('$targetUrl/api/coach'),
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': '1',
+            },
             body: jsonEncode({
               'animalId': animalName.toLowerCase(),
               'animalName': animalName,
