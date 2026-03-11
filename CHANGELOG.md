@@ -1,5 +1,69 @@
 # 📋 Changelog - OUTCALL Updates
 
+## Version 2.0.0+40 - March 8, 2026
+
+### 🧠 V2 Pro Architecture — Complete DSP Overhaul
+- **DSP Engine**: Rewrote `comprehensive_audio_analyzer.dart` with 7 new static methods (~500 lines) — MFCC extraction, formant analysis (LPC Levinson-Durbin), A-weighting, cross-correlation.
+- **BirdNET ML**: Integrated `tflite_flutter` for on-device bird species classification (Phase 12).
+- **Diagnostic Tone**: Reimplemented Pillar 3 as an alternative diagnostic tone system.
+- **Splash Screen**: Fixed race condition by awaiting deferred services during startup.
+- **Version**: Bumped to `2.0.0+40` with updated Play Store upload scripts.
+
+### 📦 What's Changed
+```
+lib/features/analysis/data/comprehensive_audio_analyzer.dart  [MAJOR REWRITE]
+lib/features/analysis/domain/models/audio_analysis_model.dart  [UPDATED]
+android/app/build.gradle.kts                                   [UPDATED]
+pubspec.yaml                                                   [UPDATED]
+```
+
+---
+
+## Version 1.5.3 - March 10, 2026
+
+### 🎯 13-Dimension Scoring Engine
+- **Scoring Upgrade**: Expanded from 4-dimension to **13-dimension** analysis pipeline with 40/15/15/10/10/5/5 weighting across fingerprint match, cadence, pitch contour, harmonics, amplitude envelope, formant analysis, and noise robustness.
+- **Advanced Features**: Delta MFCCs (39-dim vectors), A-weighting (IEC 61672), cross-correlation for waveform phase alignment, user calibration baselines, and archetype matching.
+
+### 🎮 Quick Match Mode
+- **Quick Match**: End-to-end mode connecting Flutter app to Python AI backend via audio fingerprinting.
+- **UX Polish**: Animal emoji + name display, encouraging headlines based on score, instant retry button.
+- **Bug Fixes**: Resolved Quick Match crash, scoring issues, and reduced APK size.
+
+### 🧹 Maintenance
+- Fixed all Dart analysis warnings and infos.
+- Resolved Practice tab crash from `initState` lifecycle error.
+
+### 📦 What's Changed
+```
+lib/features/analysis/domain/use_cases/calculate_score_use_case.dart  [MAJOR UPDATE]
+lib/features/analysis/domain/entities/analysis_result.dart             [UPDATED]
+lib/features/analysis/data/real_rating_service.dart                    [UPDATED]
+lib/features/rating/presentation/quick_match_screen.dart               [UPDATED]
+lib/features/auth/domain/user_profile.dart                             [UPDATED]
+lib/features/rating/domain/rating_model.dart                           [UPDATED]
+```
+
+---
+
+## Version 1.5.1 - March 2, 2026
+
+### 🔐 Security Hardening
+- **Firestore rules**: Document-level ownership enforcement.
+- **Storage rules**: Restricted uploads/reads to authenticated users.
+- **PII migration**: Personal data moved from SharedPreferences to encrypted storage via `flutter_secure_storage`.
+
+### 🛡️ Authentication Overhaul
+- Real email/password authentication on Linux & desktop via Firedart.
+- Session persistence across app restarts on Linux.
+- Normalized error codes between Firebase SDK and Firedart REST API.
+
+### 🐛 Bug Fixes
+- Fixed "Guest Handler" profile bug — hunter name now displays correctly after signup.
+- Fixed race condition where home screen loaded before profile was written.
+
+---
+
 ## Version 1.5.0 - February 18, 2026
 
 ### 🦅 Revolutionary Rebrand: Welcome to OUTCALL
@@ -203,6 +267,6 @@ Planned features:
 
 ---
 
-**Last Updated**: February 3, 2026
+**Last Updated**: March 11, 2026
 **Maintainer**: Development Team
 **License**: MIT
