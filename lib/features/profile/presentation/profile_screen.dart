@@ -835,13 +835,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      'OUTCALL PRO',
-                      style: GoogleFonts.oswald(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.accentGold,
-                        letterSpacing: 1.2,
+                    Flexible(
+                      child: Text(
+                        'OUTCALL PRO',
+                        style: GoogleFonts.oswald(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.accentGold,
+                          letterSpacing: 1.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),

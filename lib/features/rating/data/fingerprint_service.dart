@@ -31,8 +31,12 @@ class FingerprintResult {
   /// Human-readable label for the matched call.
   String get matchLabel {
     if (!hasMatch) return 'No Match';
-    final animalCap = animal[0].toUpperCase() + animal.substring(1);
-    final callCap = callType[0].toUpperCase() + callType.substring(1);
+    final animalCap = animal.isNotEmpty
+        ? animal[0].toUpperCase() + animal.substring(1)
+        : 'Unknown';
+    final callCap = callType.isNotEmpty
+        ? callType[0].toUpperCase() + callType.substring(1)
+        : 'Call';
     return '$animalCap $callCap';
   }
 
@@ -55,7 +59,7 @@ class FingerprintResult {
 
 /// Service that calls the Python backend's fingerprint matching endpoint.
 class FingerprintService {
-  static const String _fallbackBaseUrl = 'https://wireless-donate-catalyst-rss.trycloudflare.com';
+  static const String _fallbackBaseUrl = 'https://corporate-kitty-principle-precipitation.trycloudflare.com';
 
   /// Match a user's audio recording against the fingerprint database.
   ///
@@ -85,8 +89,9 @@ class FingerprintService {
         await http.MultipartFile.fromPath('audio', audioPath),
       );
 
+      // Allow more time for first request (DB may be loading)
       final streamedResponse = await request.send().timeout(
-        const Duration(seconds: 15),
+        const Duration(seconds: 30),
       );
       final response = await http.Response.fromStream(streamedResponse);
 
