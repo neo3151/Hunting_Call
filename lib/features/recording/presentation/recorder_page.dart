@@ -209,8 +209,15 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
                               animalId: selectedCallId,
                               userId: widget.userId,
                             )));
+                    _resetRecording();
+                  } else if (result == 'retry') {
+                    // User tapped "Record Again" — reset and auto-start
+                    _resetRecording();
+                    await Future.delayed(const Duration(milliseconds: 400));
+                    if (mounted) _toggleRecording();
+                  } else {
+                    _resetRecording();
                   }
-                  _resetRecording();
                 }
               } else {
                 // Expert Mode: show playback review then full analysis

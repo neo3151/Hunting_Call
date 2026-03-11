@@ -95,6 +95,42 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     return 'Try again in a quieter spot — relax your air pressure and let the call flow.';
   }
 
+  /// Encouraging headline shown above the animal name.
+  String _scoreHeadline(double score) {
+    if (score >= 80) return '🔥 EXPERT LEVEL!';
+    if (score >= 60) return '🎯 NICE CALL!';
+    if (score >= 30) return '👏 GREAT START!';
+    if (score >= 10) return '💪 KEEP GOING!';
+    return '🎤 FIRST STEPS!';
+  }
+
+  /// Map animal name to emoji for visual flair.
+  String _animalEmoji(String animal) {
+    final key = animal.toLowerCase();
+    const map = {
+      'turkey': '🦃',
+      'elk': '🫎',
+      'deer': '🦌',
+      'duck': '🦆',
+      'goose': '🪿',
+      'owl': '🦉',
+      'hawk': '🦅',
+      'crow': '🐦‍⬛',
+      'coyote': '🐺',
+      'wolf': '🐺',
+      'bear': '🐻',
+      'fox': '🦊',
+      'bobcat': '🐱',
+      'cougar': '🐆',
+      'rabbit': '🐇',
+      'pheasant': '🐔',
+      'quail': '🐤',
+      'dove': '🕊️',
+      'hog': '🐗',
+    };
+    return map[key] ?? '🎯';
+  }
+
   Color _scoreColor(double score) {
     if (score >= 85) return const Color(0xFF5FF7B6);
     if (score >= 70) return const Color(0xFF4FC3F7);
@@ -310,12 +346,28 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
             ),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
-          // Matched animal
+          // Encouraging headline
+          Text(
+            _scoreHeadline(score),
+            style: GoogleFonts.oswald(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: color,
+              letterSpacing: 1.5,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Matched animal with emoji
           if (result.hasMatch) ...[
-            Icon(_scoreIcon(score), color: color, size: 32),
-            const SizedBox(height: 12),
+            Text(
+              _animalEmoji(result.animal),
+              style: const TextStyle(fontSize: 48),
+            ),
+            const SizedBox(height: 8),
             Text(
               result.matchLabel,
               style: GoogleFonts.oswald(
@@ -326,25 +378,45 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'Matched in ${result.elapsedMs.toStringAsFixed(0)}ms',
-                style: GoogleFonts.lato(
-                  fontSize: 12,
-                  color: color,
-                  fontWeight: FontWeight.w600,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Matched in ${result.elapsedMs.toStringAsFixed(0)}ms',
+                    style: GoogleFonts.lato(
+                      fontSize: 12,
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${result.matchedHashes} hashes',
+                    style: GoogleFonts.lato(
+                      fontSize: 12,
+                      color: Colors.white54,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ] else ...[
-            const Icon(Icons.help_outline_rounded,
-                color: Colors.white38, size: 32),
-            const SizedBox(height: 12),
+            const Text('🤔', style: TextStyle(fontSize: 48)),
+            const SizedBox(height: 8),
             Text(
               'No Match Found',
               style: GoogleFonts.oswald(
@@ -353,6 +425,11 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                 color: Colors.white54,
                 letterSpacing: 1,
               ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try a cleaner call or move to a quieter spot',
+              style: GoogleFonts.lato(fontSize: 14, color: Colors.white38),
             ),
           ],
 
@@ -393,11 +470,11 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.replay_rounded),
-              label: Text('TRY AGAIN',
+              onPressed: () => Navigator.of(context).pop('retry'),
+              icon: const Icon(Icons.mic_rounded),
+              label: Text('RECORD AGAIN',
                   style: GoogleFonts.oswald(
-                      letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+                      fontSize: 16, letterSpacing: 1.5, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF5FF7B6),
                 foregroundColor: Colors.black,
@@ -408,25 +485,44 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
             ),
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                // Pop back to recorder, user can switch to Expert mode
-                Navigator.of(context).pop('switch_to_expert');
-              },
-              icon: const Icon(Icons.analytics_rounded),
-              label: Text('GO EXPERT',
-                  style: GoogleFonts.oswald(
-                      letterSpacing: 1.5, fontWeight: FontWeight.bold)),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white24),
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop('switch_to_expert');
+                  },
+                  icon: const Icon(Icons.analytics_rounded, size: 18),
+                  label: Text('GO EXPERT',
+                      style: GoogleFonts.oswald(
+                          letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white24),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.check_rounded, size: 18),
+                  label: Text('DONE',
+                      style: GoogleFonts.oswald(
+                          letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: Colors.white12),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 40),
         ],
