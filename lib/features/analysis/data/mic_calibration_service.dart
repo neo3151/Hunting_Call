@@ -50,12 +50,10 @@ class MicCalibrationServiceImpl implements MicCalibrationService {
   Future<CalibrationProfile> executePreFlightCheck() async {
     _logger.log('Starting Mic Calibration Pre-Flight Check...');
 
-    // We expect the user is in a quiet room or the woods.
-    // 1. Ask the hardware to start listening purely for amplitude, not saving to file.
-    // Actually our current recorder expects a file path. We'll use a temp file
-    // and delete it immediately after calibration.
-
-    const tempPath = '/data/user/0/com.neo3151.outcall/cache/calibration_temp.wav';
+    // Use path_provider equivalent — the recorder will create the file at this path.
+    // We use a temp directory approach that works on both Android and Windows.
+    final tempDir = Directory.systemTemp;
+    final tempPath = '${tempDir.path}/calibration_temp_${DateTime.now().millisecondsSinceEpoch}.wav';
 
     try {
       await _recorder.startRecorder(tempPath);
@@ -63,14 +61,28 @@ class MicCalibrationServiceImpl implements MicCalibrationService {
       final amplitudes = <double>[];
 
       // Sample for exactly 3 seconds
-      final sub = _recorder.onAmplitudeChanged.listen((amp) {
-        amplitudes.add(amp);
+      // NOTE: AudioRecorderService.onAmplitudeChanged emits NORMALIZED values
+      // (0.0 = silence, 1.0 = max), not raw dB. We convert back to dB here.
+      final sub = _recorder.onAmplitudeChanged.listen((normalizedAmp) {
+        // Convert 0.0-1.0 back to approximate dBFS
+        // The recorder normalizes using floor of -55dB:
+        //   normalized = (dBFS - (-55)) / 55 → dBFS = normalized * 55 + (-55)
+        final dBFS = normalizedAmp > 0.001
+            ? (normalizedAmp * 55.0) - 55.0
+            : -60.0;
+        amplitudes.add(dBFS);
       });
 
       await Future.delayed(const Duration(seconds: 3));
 
       await sub.cancel();
       await _recorder.stopRecorder();
+
+      // Clean up temp file
+      try {
+        final tempFile = File(tempPath);
+        if (await tempFile.exists()) await tempFile.delete();
+      } catch (_) {}
 
       // Calculate calibration metrics
       if (amplitudes.isEmpty) {
