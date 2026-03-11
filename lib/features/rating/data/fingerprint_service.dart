@@ -59,7 +59,7 @@ class FingerprintResult {
 
 /// Service that calls the Python backend's fingerprint matching endpoint.
 class FingerprintService {
-  static const String _fallbackBaseUrl = 'https://mercy-norman-sin-extensions.trycloudflare.com';
+  static const String _fallbackBaseUrl = 'https://ruttish-incontrollably-christina.ngrok-free.dev';
 
   /// Match a user's audio recording against the fingerprint database.
   ///

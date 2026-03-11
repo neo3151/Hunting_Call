@@ -43,7 +43,7 @@ class AiCoachService {
       }
 
       // Fallback matches the Remote Config default so real devices still work
-      final targetUrl = baseUrl ?? 'https://mercy-norman-sin-extensions.trycloudflare.com';
+      final targetUrl = baseUrl ?? 'https://ruttish-incontrollably-christina.ngrok-free.dev';
       
       final response = await http
           .post(
