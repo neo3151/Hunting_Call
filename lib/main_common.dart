@@ -23,6 +23,8 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/core/services/notification_service.dart';
+import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/features/settings/presentation/controllers/settings_controller.dart';
 
 import 'package:outcall/core/services/simple_storage.dart';
 // removed revenuecat
@@ -199,6 +201,11 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
     final themeNotifier = ref.read(themeNotifierProvider.notifier);
     final themeMode = ref.watch(themeModeProvider);
 
+    // Wire up high-contrast mode from settings
+    final settingsAsync = ref.watch(settingsNotifierProvider);
+    settingsAsync.whenData((settings) {
+      AppColors.setHighContrast(settings.highContrast);
+    });
 
     return MaterialApp(
       title: AppConfig.instance.appName,
@@ -206,6 +213,19 @@ class _HuntingCallsAppState extends ConsumerState<HuntingCallsApp> {
       theme: themeNotifier.lightTheme,
       darkTheme: themeNotifier.darkTheme,
       themeMode: themeMode,
+      // Clamp text scaling to prevent layout overflow on large accessibility
+      // settings, while still allowing moderate enlargement (up to 1.35x).
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        final clampedScaler = mediaQuery.textScaler.clamp(
+          minScaleFactor: 0.8,
+          maxScaleFactor: 1.35,
+        );
+        return MediaQuery(
+          data: mediaQuery.copyWith(textScaler: clampedScaler),
+          child: child!,
+        );
+      },
       localizationsDelegates: const [
         S.delegate,
         GlobalMaterialLocalizations.delegate,

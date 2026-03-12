@@ -1,4 +1,4 @@
-﻿import 'package:audioplayers/audioplayers.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -488,6 +488,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 FloatingActionButton.large(
                   heroTag: 'play_user_audio_btn',
                   onPressed: _toggleUserPlayback,
+                  tooltip: _isUserPlaying ? 'Stop playback' : 'Play your recording',
                   backgroundColor: _isUserPlaying ? Colors.white : const Color(0xFF5FF7B6),
                   child: Icon(
                     _isUserPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
@@ -751,14 +752,17 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   }
 
   Widget _buildMetricRow(String label, String sublabel, String value) {
-    return Container(
+    return Semantics(
+      label: '$label: $value',
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
-      child: Row(
+      child: ExcludeSemantics(
+        child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
@@ -785,6 +789,8 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           ),
         ],
       ),
+      ),
+    ),
     );
   }
 

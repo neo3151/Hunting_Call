@@ -39,7 +39,8 @@ class HomeHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Column(
+                child: MergeSemantics(
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(S.of(context).welcomeBack,
@@ -57,6 +58,7 @@ class HomeHeader extends StatelessWidget {
                             color: palette.textPrimary,
                             height: 1.1)),
                   ],
+                ),
                 ),
               ),
               Row(
@@ -86,7 +88,9 @@ class HomeHeader extends StatelessWidget {
     final label = isCloudMode ? 'CLOUD' : 'OFF-GRID';
     final icon = isCloudMode ? Icons.cloud_done : Icons.wifi_off;
 
-    return Container(
+    return Semantics(
+      label: isCloudMode ? 'Cloud sync enabled' : 'Offline mode',
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: bgColor,
@@ -96,9 +100,12 @@ class HomeHeader extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: badgeColor),
+          ExcludeSemantics(
+            child: Icon(icon, size: 12, color: badgeColor),
+          ),
           const SizedBox(width: 6),
-          Text(
+          ExcludeSemantics(
+            child: Text(
             label,
             style: GoogleFonts.lato(
               fontSize: 10,
@@ -107,8 +114,10 @@ class HomeHeader extends StatelessWidget {
               letterSpacing: 1.0,
             ),
           ),
+          ),
         ],
       ),
+    ),
     );
   }
 

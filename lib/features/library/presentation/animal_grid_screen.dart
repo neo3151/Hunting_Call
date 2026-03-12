@@ -41,6 +41,7 @@ class AnimalGridScreen extends ConsumerWidget {
     'Black Bear': 'assets/images/animals/black_bear.jpg',
     'Coyote': 'assets/images/animals/coyote.jpg',
     'Red Fox': 'assets/images/animals/red_fox.jpg',
+    'Arctic Fox': 'assets/images/animals/arctic_fox.png',
     'Cottontail Rabbit': 'assets/images/animals/cottontail_rabbit.jpg',
     'Raccoon': 'assets/images/animals/raccoon.jpg',
     'American Badger': 'assets/images/animals/badger.jpg',

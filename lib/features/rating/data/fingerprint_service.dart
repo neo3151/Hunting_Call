@@ -59,7 +59,7 @@ class FingerprintResult {
 
 /// Service that calls the Python backend's fingerprint matching endpoint.
 class FingerprintService {
-  static const String _fallbackBaseUrl = 'https://ruttish-incontrollably-christina.ngrok-free.dev';
+  static const String _fallbackBaseUrl = 'https://huntingcallaibackend-production.up.railway.app';
 
   /// Match a user's audio recording against the fingerprint database.
   ///
@@ -85,8 +85,7 @@ class FingerprintService {
         'POST',
         Uri.parse('$targetUrl/api/fingerprint'),
       );
-      // Required for ngrok free tier — skip browser interstitial
-      request.headers['ngrok-skip-browser-warning'] = '1';
+      // No special headers needed for Railway
       request.files.add(
         await http.MultipartFile.fromPath('audio', audioPath),
       );

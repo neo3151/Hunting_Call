@@ -30,9 +30,17 @@ class ReferenceDatabase {
       final Map<String, dynamic> data = json.decode(jsonString);
       final List<dynamic> callsJson = data['calls'];
       
-      _calls = callsJson.map((json) => ReferenceCall.fromJson(json)).toList();
+      final allCalls = callsJson.map((json) => ReferenceCall.fromJson(json)).toList();
+      
+      // Filter out staged calls whose releaseVersion exceeds the current app version.
+      _calls = allCalls.where((call) {
+        if (call.releaseVersion == null) return true; // No version gate → always show
+        return _isVersionMet(call.releaseVersion!);
+      }).toList();
+      
+      final stagedCount = allCalls.length - _calls.length;
       _isInitialized = true;
-      AppLogger.d('ReferenceDatabase: Loaded ${_calls.length} calls from JSON.');
+      AppLogger.d('ReferenceDatabase: Loaded ${_calls.length} calls ($stagedCount staged for future).');
     } catch (e) {
       AppLogger.d('ReferenceDatabase Error: Failed to load calls from JSON: $e');
       _calls = [];
@@ -89,5 +97,30 @@ class ReferenceDatabase {
       );
     }
     return _calls.firstWhere((c) => c.id == id, orElse: () => _calls.first);
+  }
+
+  /// Current app version used for staging filter.
+  /// Bump this when releasing a new version to unlock staged calls.
+  static const String _appVersion = '2.0.0';
+
+  /// Returns true if the current app version meets or exceeds [requiredVersion].
+  /// Compares major.minor.patch numerically (e.g., "2.1.0" >= "2.0.5").
+  static bool _isVersionMet(String requiredVersion) {
+    try {
+      final current = _appVersion.split('.').map(int.parse).toList();
+      final required = requiredVersion.split('.').map(int.parse).toList();
+      
+      // Pad to 3 components
+      while (current.length < 3) current.add(0);
+      while (required.length < 3) required.add(0);
+      
+      for (int i = 0; i < 3; i++) {
+        if (current[i] > required[i]) return true;
+        if (current[i] < required[i]) return false;
+      }
+      return true; // Equal versions
+    } catch (_) {
+      return true; // If parsing fails, show the call
+    }
   }
 }

@@ -17,6 +17,7 @@ class FreemiumConfig {
     'coyote_howl',              // Coyote Lone Howl
     'rabbit_distress',          // Rabbit Distress
     'red_fox_scream',           // Red Fox Scream
+    'arctic_fox_bark',          // Arctic Fox Bark
 
     // Land Birds
     'turkey_gobble',            // Turkey Gobble

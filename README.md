@@ -58,9 +58,16 @@
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="assets/images/screenshots/login.png" width="250" alt="Login Screen">
-  <img src="assets/images/screenshots/home.png" width="250" alt="Dashboard">
-  <img src="assets/images/screenshots/recorder.png" width="250" alt="Recorder Screen">
+  <img src="assets/play_store/screenshots/screenshot_01_login.png" width="200" alt="Login Screen">
+  <img src="assets/play_store/screenshots/screenshot_03_home.png" width="200" alt="Dashboard">
+  <img src="assets/play_store/screenshots/screenshot_04_practice.png" width="200" alt="Practice & Recording">
+  <img src="assets/play_store/screenshots/screenshot_05_library.png" width="200" alt="Animal Library">
+</p>
+
+<p align="center">
+  <img src="assets/play_store/screenshots/screenshot_06_daily_challenge.png" width="200" alt="Daily Challenge">
+  <img src="assets/play_store/screenshots/screenshot_07_profile.png" width="200" alt="Hunter Profile">
+  <img src="assets/play_store/screenshots/screenshot_08_tablet_library.png" width="400" alt="Tablet Library View">
 </p>
 
 ## 📄 License

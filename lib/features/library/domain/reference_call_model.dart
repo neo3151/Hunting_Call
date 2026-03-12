@@ -19,6 +19,7 @@ class ReferenceCall {
   final double idealTempo; // Calls per minute (if pulsed)
   final List<double>? waveform; // Pre-computed waveform data for visualization
   final List<List<double>>? spectrogram; // Real FFT spectrogram: [time][freq_band]
+  final String? releaseVersion; // If set, call is staged and hidden until app >= this version
 
   const ReferenceCall({
     required this.id,
@@ -41,6 +42,7 @@ class ReferenceCall {
     this.idealTempo = 0.0,
     this.waveform,
     this.spectrogram,
+    this.releaseVersion,
   });
 
   ReferenceCall copyWith({
@@ -64,6 +66,7 @@ class ReferenceCall {
     double? idealTempo,
     List<double>? waveform,
     List<List<double>>? spectrogram,
+    String? releaseVersion,
   }) {
     return ReferenceCall(
       id: id ?? this.id,
@@ -86,6 +89,7 @@ class ReferenceCall {
       idealTempo: idealTempo ?? this.idealTempo,
       waveform: waveform ?? this.waveform,
       spectrogram: spectrogram ?? this.spectrogram,
+      releaseVersion: releaseVersion ?? this.releaseVersion,
     );
   }
 
@@ -115,6 +119,7 @@ class ReferenceCall {
             (row) => (row as List<dynamic>).map((e) => (e as num).toDouble()).toList(),
           )
           .toList(),
+      releaseVersion: json['releaseVersion'] as String?,
     );
   }
 
@@ -139,5 +144,6 @@ class ReferenceCall {
         'idealTempo': idealTempo,
         if (waveform != null) 'waveform': waveform,
         if (spectrogram != null) 'spectrogram': spectrogram,
+        if (releaseVersion != null) 'releaseVersion': releaseVersion,
       };
 }

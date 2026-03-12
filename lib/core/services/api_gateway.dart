@@ -88,16 +88,22 @@ class FirebaseApiGateway implements ApiGateway {
 
   @override
   Future<List<Map<String, dynamic>>> getCollection(String collection) async {
+    // Server-first for collection queries: the cache may only contain a
+    // subset of documents (those previously fetched on this device).
     try {
       final query =
-          await _firestore.collection(collection).get(const GetOptions(source: Source.cache));
-      if (query.docs.isNotEmpty) {
+          await _firestore.collection(collection).get(const GetOptions(source: Source.server));
+      return query.docs.map((d) => d.data()).toList();
+    } catch (_) {
+      // Offline fallback — return whatever is cached
+      try {
+        final query =
+            await _firestore.collection(collection).get(const GetOptions(source: Source.cache));
         return query.docs.map((d) => d.data()).toList();
+      } catch (_) {
+        return [];
       }
-    } catch (_) {}
-    final query =
-        await _firestore.collection(collection).get(const GetOptions(source: Source.server));
-    return query.docs.map((d) => d.data()).toList();
+    }
   }
 
   @override
@@ -122,22 +128,29 @@ class FirebaseApiGateway implements ApiGateway {
   @override
   Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField,
       {int limit = 50}) async {
+    // Server-first for ranking queries: the cache typically only contains
+    // the current user's profile, making it useless for global rankings.
     try {
       final query = await _firestore
           .collection(collection)
           .orderBy(orderByField, descending: true)
           .limit(limit)
-          .get(const GetOptions(source: Source.cache));
-      if (query.docs.isNotEmpty) {
+          .get(const GetOptions(source: Source.server));
+      return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
+    } catch (_) {
+      // Offline fallback — return whatever is cached (partial data is
+      // better than nothing when there's no network).
+      try {
+        final query = await _firestore
+            .collection(collection)
+            .orderBy(orderByField, descending: true)
+            .limit(limit)
+            .get(const GetOptions(source: Source.cache));
         return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
+      } catch (_) {
+        return [];
       }
-    } catch (_) {}
-    final query = await _firestore
-        .collection(collection)
-        .orderBy(orderByField, descending: true)
-        .limit(limit)
-        .get(const GetOptions(source: Source.server));
-    return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
+    }
   }
 }
 

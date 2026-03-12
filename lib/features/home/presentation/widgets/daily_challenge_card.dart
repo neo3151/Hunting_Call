@@ -50,11 +50,15 @@ class DailyChallengeCard extends StatelessWidget {
           // Content
           Material(
             color: Colors.transparent,
-            child: InkWell(
+            child: Semantics(
+              label: 'Daily Challenge: Master the ${challengeCall.animalName}. Plus 500 XP bonus. Tap to start.',
+              button: true,
+              child: InkWell(
               onTap: onTap,
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: Row(
+                child: ExcludeSemantics(
+                  child: Row(
                   children: [
                     Expanded(
                       child: Column(
@@ -110,7 +114,9 @@ class DailyChallengeCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                ),
               ),
+            ),
             ),
           ),
         ],

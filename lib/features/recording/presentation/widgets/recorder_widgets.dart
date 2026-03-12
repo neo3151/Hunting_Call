@@ -36,7 +36,12 @@ class RecorderVisualizerSection extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Container(
+          child: Semantics(
+            label: vizSettings.mode == VisualizationMode.waveform
+                ? 'Live waveform visualizer'
+                : 'Spectral sync visualizer',
+            liveRegion: true,
+            child: Container(
             height: 140,
             decoration: BoxDecoration(
               color: Colors.black26,
@@ -48,7 +53,8 @@ class RecorderVisualizerSection extends ConsumerWidget {
                 Builder(
                   builder: (context) {
                     ref.watch(amplitudeStreamProvider); // Trigger rebuild on amplitude change
-                    return LiveVisualizer(
+                    return ExcludeSemantics(
+                      child: LiveVisualizer(
                       amplitudes: amplitudeBuffer.map((s) => s.amplitude).toList(),
                       referencePattern: vizSettings.showReferenceOverlay ? selectedCall.waveform : null,
                       referenceSpectrogram: vizSettings.showReferenceOverlay ? selectedCall.spectrogram : null,
@@ -56,6 +62,7 @@ class RecorderVisualizerSection extends ConsumerWidget {
                       color: (isRecording || isCountingDown) ? Colors.tealAccent : Colors.teal.withValues(alpha: 0.5),
                       isRecording: isRecording || isCountingDown,
                       referenceAvgAmplitude: computeRefAvg(selectedCall.waveform),
+                    ),
                     );
                   },
                 ),
@@ -91,13 +98,16 @@ class RecorderVisualizerSection extends ConsumerWidget {
                 Positioned(
                   top: 8,
                   left: 12,
-                  child: Text(
+                  child: ExcludeSemantics(
+                    child: Text(
                     vizSettings.mode == VisualizationMode.waveform ? 'WAVEFORM' : 'SPECTRAL SYNC',
                     style: GoogleFonts.oswald(color: Colors.white24, fontSize: 10, letterSpacing: 1),
+                  ),
                   ),
                 ),
               ],
             ),
+          ),
           ),
         ),
         // Coaching feedback
@@ -106,7 +116,10 @@ class RecorderVisualizerSection extends ConsumerWidget {
             final refAvg = computeRefAvg(selectedCall.waveform);
             final feedback = getCoachingFeedback(refAvg);
             if (feedback.text.isEmpty) return const SizedBox.shrink();
-            return Padding(
+            return Semantics(
+              liveRegion: true,
+              label: 'Coaching: ${feedback.text}',
+              child: Padding(
               padding: const EdgeInsets.only(top: 8),
               child: AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 200),
@@ -118,6 +131,7 @@ class RecorderVisualizerSection extends ConsumerWidget {
                 ),
                 child: Text(feedback.text),
               ),
+            ),
             );
           },
         ),
@@ -155,7 +169,8 @@ class RecorderMicButton extends StatelessWidget {
         children: [
           // Outer decorative ring
           if (!isRecording && !isCountingDown && !isProcessing)
-            Container(
+            ExcludeSemantics(
+              child: Container(
               width: 150,
               height: 150,
               decoration: BoxDecoration(
@@ -166,9 +181,11 @@ class RecorderMicButton extends StatelessWidget {
                 ),
               ),
             ),
+            ),
           // Inner decorative ring
           if (!isRecording && !isCountingDown && !isProcessing)
-            Container(
+            ExcludeSemantics(
+              child: Container(
               width: 125,
               height: 125,
               decoration: BoxDecoration(
@@ -178,6 +195,7 @@ class RecorderMicButton extends StatelessWidget {
                   width: 2,
                 ),
               ),
+            ),
             ),
           if (isRecording)
             ScaleTransition(
@@ -254,7 +272,10 @@ class RecordingTimerBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Semantics(
+      label: 'Recording time: $formattedDuration',
+      liveRegion: true,
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.red.withValues(alpha: 0.2),
@@ -264,7 +285,9 @@ class RecordingTimerBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.circle, color: Colors.red, size: 12),
+          ExcludeSemantics(
+            child: const Icon(Icons.circle, color: Colors.red, size: 12),
+          ),
           const SizedBox(width: 8),
           Text(
             formattedDuration,
@@ -277,6 +300,7 @@ class RecordingTimerBadge extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

@@ -448,7 +448,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildGlassStatCard(String label, String value, IconData icon) {
-    return ClipRRect(
+    return Semantics(
+      label: '$label: $value',
+      child: ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -459,7 +461,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.of(context).border),
           ),
-          child: Column(
+          child: ExcludeSemantics(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(icon, color: AppColors.of(context).textTertiary, size: 20),
@@ -476,16 +479,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       fontWeight: FontWeight.bold)),
             ],
           ),
+          ),
         ),
       ),
+    ),
     );
   }
 
   Widget _buildAchievementBadge(Achievement achievement) {
-    return Container(
+    return Semantics(
+      label: 'Achievement: ${achievement.name}. ${achievement.description}',
+      child: Container(
       width: 80,
       margin: const EdgeInsets.only(right: 16),
-      child: Column(
+      child: ExcludeSemantics(
+        child: Column(
         children: [
           Container(
             height: 60,
@@ -511,12 +519,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ],
       ),
+      ),
+    ),
     );
   }
 
   Widget _buildHistoryCard(HistoryItem item) {
     final call = ReferenceDatabase.getById(item.animalId);
-    return Container(
+    return Semantics(
+      label: '${call.animalName}, score ${item.result.score.toStringAsFixed(0)} percent',
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -570,6 +582,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 

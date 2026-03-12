@@ -54,6 +54,28 @@ class RealRatingService implements RatingService {
   }) async {
     AppLogger.d('RealRatingService: rateCall started for $animalType at $audioPath');
 
+    // Global timeout to prevent infinite spinner
+    return await _rateCallInternal(userId, audioPath, animalType,
+        scoreOffset: scoreOffset, micSensitivity: micSensitivity)
+      .timeout(
+        const Duration(seconds: 45),
+        onTimeout: () {
+          AppLogger.d('RealRatingService: TIMEOUT after 45s');
+          throw Exception('Analysis timed out. Please try again.');
+        },
+      );
+  }
+
+  Future<RatingResult> _rateCallInternal(
+    String userId,
+    String audioPath,
+    String animalType, {
+    double scoreOffset = 0.0,
+    double micSensitivity = 1.0,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    AppLogger.d('RealRatingService: _rateCallInternal started');
+
     // Try to get location (fire and forget or await briefly?)
     // Await briefly so we have it for the result
     try {
@@ -71,6 +93,7 @@ class RealRatingService implements RatingService {
     } catch (e) {
       AppLogger.d('Error getting location: $e');
     }
+    AppLogger.d('RealRatingService: Location done in ${stopwatch.elapsedMilliseconds}ms');
 
     try {
       // 1. Get the ideal metrics
@@ -78,6 +101,7 @@ class RealRatingService implements RatingService {
 
       // 2. Analyze the user's audio (via use case)
       final userAnalysisResult = await _analyzeUseCase.execute(audioPath);
+      AppLogger.d('RealRatingService: User audio analysis done in ${stopwatch.elapsedMilliseconds}ms');
       final userAnalysis = userAnalysisResult.fold(
         (failure) => throw Exception(failure.message),
         (analysis) => analysis,
@@ -142,10 +166,12 @@ class RealRatingService implements RatingService {
       } catch (_) { /* first call, no profile yet */ }
 
       // Extract archetype label from fingerprint result
+      AppLogger.d('RealRatingService: Starting fingerprint at ${stopwatch.elapsedMilliseconds}ms');
       try {
         final fpResult = await FingerprintService.match(
           audioPath,
         ).timeout(const Duration(seconds: 10));
+        AppLogger.d('RealRatingService: Fingerprint done in ${stopwatch.elapsedMilliseconds}ms');
         if (fpResult.hasMatch) {
           fingerprintPct = fpResult.score;
           archetypeLabel = fpResult.matchLabel;

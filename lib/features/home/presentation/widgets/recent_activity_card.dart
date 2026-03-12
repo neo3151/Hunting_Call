@@ -12,7 +12,9 @@ class RecentActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = AppColors.of(context);
-    return ClipRRect(
+    return Semantics(
+      label: 'Last session: ${historyItem.animalId}, score ${historyItem.result.score.toStringAsFixed(0)} percent',
+      child: ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -57,6 +59,7 @@ class RecentActivityCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

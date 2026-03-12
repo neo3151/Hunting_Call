@@ -10,7 +10,7 @@ final leaderboardScoresProvider = StreamProvider.family<List<LeaderboardEntry>, 
   return service.getTopScores(animalId);
 });
 
-final globalLeaderboardProvider = FutureProvider<List<UserProfile>>((ref) async {
+final globalLeaderboardProvider = FutureProvider.autoDispose<List<UserProfile>>((ref) async {
   final repo = ref.watch(profileRepositoryProvider);
   return repo.getTopGlobalUsers();
 });

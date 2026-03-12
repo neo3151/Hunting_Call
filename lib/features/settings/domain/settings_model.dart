@@ -13,6 +13,7 @@ class AppSettings {
   final String imageQuality; // 'high' | 'medium' | 'low'
   final int autoCleanupHours;
   final CalibrationProfile calibration;
+  final bool highContrast;
 
   const AppSettings({
     this.theme = AppTheme.classic,
@@ -24,6 +25,7 @@ class AppSettings {
     this.imageQuality = 'high',
     this.autoCleanupHours = 24,
     this.calibration = const CalibrationProfile(),
+    this.highContrast = false,
   });
 
   AppSettings copyWith({
@@ -36,6 +38,7 @@ class AppSettings {
     String? imageQuality,
     int? autoCleanupHours,
     CalibrationProfile? calibration,
+    bool? highContrast,
   }) {
     return AppSettings(
       theme: theme ?? this.theme,
@@ -47,6 +50,7 @@ class AppSettings {
       imageQuality: imageQuality ?? this.imageQuality,
       autoCleanupHours: autoCleanupHours ?? this.autoCleanupHours,
       calibration: calibration ?? this.calibration,
+      highContrast: highContrast ?? this.highContrast,
     );
   }
 
@@ -60,6 +64,7 @@ class AppSettings {
         'imageQuality': imageQuality,
         'autoCleanupHours': autoCleanupHours,
         'calibration': calibration.toMap(),
+        'highContrast': highContrast,
       };
 
   factory AppSettings.fromMap(Map<String, dynamic> map) {
@@ -81,6 +86,7 @@ class AppSettings {
       calibration: map['calibration'] != null
           ? CalibrationProfile.fromMap(Map<String, dynamic>.from(map['calibration']))
           : const CalibrationProfile(),
+      highContrast: map['highContrast'] as bool? ?? false,
     );
   }
 }

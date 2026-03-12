@@ -7,9 +7,7 @@
     'use strict';
 
     // ── Config ─────────────────────────────────────────────────────────
-    const GEMINI_API_KEY = 'AIzaSyD16qlWIGzsPVcutDNlzLat4WLfKXJWSzw';
-    const GEMINI_MODEL = 'gemini-2.0-flash';
-    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+    const BACKEND_URL = 'https://huntingcallaibackend-production.up.railway.app';
     const MAX_TOKENS = 250;
 
     const SYSTEM_PROMPT = `You are the OUTCALL AI Assistant on the landing page. OUTCALL is a premium hunting call training app built by hunters, for hunters.
@@ -139,35 +137,30 @@ OUTCALL promotes responsible, ethical hunting. Over-calling educates wildlife an
         return null;
     }
 
-    // ── Gemini API (only called when FAQ has no match) ───────────────
-    async function askGemini(question) {
+    // ── Backend Chat API (proxied through Railway) ─────────────────────
+    async function askBackend(question) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 15000);
 
         try {
-            const res = await fetch(GEMINI_URL, {
+            const res = await fetch(`${BACKEND_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 signal: controller.signal,
                 body: JSON.stringify({
-                    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-                    contents: [{ parts: [{ text: question }] }],
-                    generationConfig: {
-                        temperature: 0.7,
-                        topP: 0.9,
-                        maxOutputTokens: MAX_TOKENS,
-                    },
+                    message: question,
+                    history: [],
                 }),
             });
             clearTimeout(timer);
 
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
-            const answer = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+            const answer = (data.response || '').trim();
             if (answer.length > 10) return answer;
         } catch (e) {
             clearTimeout(timer);
-            console.log('Chatbot: Gemini unavailable', e.message);
+            console.log('Chatbot: Backend unavailable', e.message);
         }
         return 'Great question! I\'m not 100% sure on that one. Drop your email in the beta signup above and our team will get back to you personally!';
     }
@@ -286,7 +279,7 @@ OUTCALL promotes responsible, ethical hunting. Over-calling educates wildlife an
         }
 
         const typing = appendTyping();
-        const answer = await askGemini(question);
+        const answer = await askBackend(question);
         typing.remove();
         appendMessage(answer, 'bot');
     }

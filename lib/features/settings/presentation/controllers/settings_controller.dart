@@ -67,6 +67,10 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     await updateSetting((s) => s.copyWith(autoCleanupHours: value));
   }
 
+  Future<void> setHighContrast(bool value) async {
+    await updateSetting((s) => s.copyWith(highContrast: value));
+  }
+
   Future<void> resetToDefaults() async {
     const defaults = AppSettings();
     state = const AsyncValue.data(defaults);

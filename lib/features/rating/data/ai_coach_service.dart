@@ -5,11 +5,11 @@ import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/rating/data/coaching_session_history.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 
-/// Service that calls Ollama directly from the app to get
-/// personalized AI coaching from the custom outcall-coach model.
+/// Service that calls the Railway AI backend to get personalized
+/// AI coaching powered by Gemini 2.0 Flash.
 ///
-/// The outcall-coach model is based on Gemma 3 4B with the full
-/// hunting call knowledge base baked into its system prompt.
+/// The backend uses Gemini with a hunting-specific system prompt
+/// covering species techniques, scoring metrics, and field strategy.
 ///
 /// Session history is injected into each prompt so the coach
 /// remembers past sessions and adapts its feedback.
@@ -43,14 +43,13 @@ class AiCoachService {
       }
 
       // Fallback matches the Remote Config default so real devices still work
-      final targetUrl = baseUrl ?? 'https://ruttish-incontrollably-christina.ngrok-free.dev';
+      final targetUrl = baseUrl ?? 'https://huntingcallaibackend-production.up.railway.app';
       
       final response = await http
           .post(
             Uri.parse('$targetUrl/api/coach'),
             headers: {
               'Content-Type': 'application/json',
-              'ngrok-skip-browser-warning': '1',
             },
             body: jsonEncode({
               'animalId': animalName.toLowerCase(),
@@ -96,7 +95,7 @@ class AiCoachService {
 
       return coaching;
     } catch (e) {
-      AppLogger.d('AI Coach: Ollama unreachable: $e');
+      AppLogger.d('AI Coach: Backend unreachable: $e');
       return _fallback(
           result: result, idealPitchHz: idealPitchHz, animalName: animalName, callType: callType);
     }

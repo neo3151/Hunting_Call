@@ -8,10 +8,16 @@ class AppColors {
   AppColors._(); // prevent instantiation
 
   // ─── Theme-aware helper ───────────────────────────────────────────────────
+  /// Whether high-contrast mode is active (set from settings).
+  static bool _highContrast = false;
+  static void setHighContrast(bool value) => _highContrast = value;
+
   static AppColorPalette of(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? _darkPalette
-        : _lightPalette;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    if (_highContrast) {
+      return isDarkMode ? _highContrastDarkPalette : _highContrastLightPalette;
+    }
+    return isDarkMode ? _darkPalette : _lightPalette;
   }
 
   static bool isDark(BuildContext context) =>
@@ -68,6 +74,39 @@ class AppColors {
     icon: Color(0xFF4A4A4A),
     iconSubtle: Color(0xFF999999),
     cardOverlay: Color(0x0D000000), // black 5%
+  );
+
+  // ─── High Contrast Palettes ──────────────────────────────────────────────
+  static const _highContrastDarkPalette = AppColorPalette(
+    background: Color(0xFF000000),
+    surface: Color(0xFF0A0A0A),
+    surfaceLight: Color(0xFF1A1A1A),
+    surfaceDark: Color(0xFF050505),
+    textPrimary: Colors.white,
+    textSecondary: Color(0xFFE0E0E0),
+    textTertiary: Color(0xFFBBBBBB),
+    textSubtle: Color(0xFF999999),
+    divider: Color(0xFF555555),
+    border: Color(0x4DFFFFFF), // white 30%
+    icon: Colors.white,
+    iconSubtle: Color(0xFFBBBBBB),
+    cardOverlay: Color(0x1AFFFFFF), // white 10%
+  );
+
+  static const _highContrastLightPalette = AppColorPalette(
+    background: Color(0xFFFFFFFF),
+    surface: Color(0xFFFFFFFF),
+    surfaceLight: Color(0xFFF5F5F5),
+    surfaceDark: Color(0xFFE0E0E0),
+    textPrimary: Color(0xFF000000),
+    textSecondary: Color(0xFF1A1A1A),
+    textTertiary: Color(0xFF333333),
+    textSubtle: Color(0xFF555555),
+    divider: Color(0xFF333333),
+    border: Color(0x4D000000), // black 30%
+    icon: Color(0xFF000000),
+    iconSubtle: Color(0xFF333333),
+    cardOverlay: Color(0x1A000000), // black 10%
   );
 
   // ─── Legacy static accessors (dark-only, for backwards compat) ────────────

@@ -141,6 +141,20 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                           ),
                           Divider(color: colors.divider),
+                          _settingsTile(
+                            context: context,
+                            icon: Icons.contrast,
+                            title: 'High Contrast',
+                            subtitle: settings.highContrast
+                                ? 'Enhanced visibility active'
+                                : 'Increase text and border contrast',
+                            trailing: Switch(
+                              value: settings.highContrast,
+                              onChanged: notifier.setHighContrast,
+                              activeThumbColor: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          Divider(color: colors.divider),
 
                           _sectionTitle(context, S.of(context).preferences),
                           _settingsTile(
@@ -413,7 +427,9 @@ class SettingsScreen extends ConsumerWidget {
     VoidCallback? onTap,
   }) {
     final colors = AppColors.of(context);
-    return InkWell(
+    return Semantics(
+      label: '$title. $subtitle',
+      child: InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -422,7 +438,8 @@ class SettingsScreen extends ConsumerWidget {
             final maxTrailingWidth = (constraints.maxWidth - 56) * 0.55;
             return Row(
               children: [
-                Container(
+                ExcludeSemantics(
+                  child: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
@@ -431,9 +448,11 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   child: Icon(icon, color: colors.textTertiary, size: 20),
                 ),
+                ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Column(
+                  child: ExcludeSemantics(
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title,
@@ -447,6 +466,7 @@ class SettingsScreen extends ConsumerWidget {
                               color: colors.textSubtle, fontSize: 12)),
                     ],
                   ),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 ConstrainedBox(
@@ -458,6 +478,7 @@ class SettingsScreen extends ConsumerWidget {
           },
         ),
       ),
+    ),
     );
   }
 
