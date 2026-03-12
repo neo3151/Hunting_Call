@@ -3,7 +3,7 @@ name: Build Debug APK
 on:
   workflow_dispatch:  # Manual trigger only
   push:
-    branches: [master]
+    branches: [main]
     paths:
       - 'lib/**'
       - 'pubspec.yaml'
