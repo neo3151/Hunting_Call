@@ -20,7 +20,11 @@ bool isVersionOlder(String current, String minimum) {
 
 Future<void> main() async {
   const projectId = 'hunting-call-perfection';
-  const apiKey = 'AIzaSyC7zcpxfRV13kHdI6yUzIKzDxWcgWm-EFQ';
+  final apiKey = Platform.environment['FIREBASE_API_KEY'];
+  if (apiKey == null) {
+    print('❌ Set FIREBASE_API_KEY env var first');
+    exit(1);
+  }
 
   print('--- 🌐 OUTCALL LIVE GATEKEEPER PROOF ---');
   print('Step 1: Connecting to Live Firestore...');

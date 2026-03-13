@@ -3,7 +3,11 @@ import 'dart:io';
 
 Future<void> main() async {
   const projectId = 'hunting-call-perfection';
-  const apiKey = 'AIzaSyC7zcpxfRV13kHdI6yUzIKzDxWcgWm-EFQ';
+  final apiKey = Platform.environment['FIREBASE_API_KEY'];
+  if (apiKey == null) {
+    print('❌ Set FIREBASE_API_KEY env var first');
+    exit(1);
+  }
 
   print('Initializing Firedart...');
   FirebaseAuth.initialize(apiKey, VolatileStore());
