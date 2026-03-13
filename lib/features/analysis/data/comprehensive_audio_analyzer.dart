@@ -688,7 +688,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   ) {
     // Pad to next power of 2
     int fftSize = 1;
-    while (fftSize < windowSize) fftSize <<= 1;
+    while (fftSize < windowSize) { fftSize <<= 1; }
 
     final windowed = Float64List(fftSize);
     final end = min(offset + windowSize, samples.length);
@@ -892,7 +892,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     }
 
     // Return first 3 (F1, F2, F3) or pad with zeros
-    while (formants.length < 3) formants.add(0);
+    while (formants.length < 3) { formants.add(0); }
     return formants.take(3).toList();
   }
 
@@ -923,7 +923,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
       if (prevMags != null) {
         double flux = 0;
         for (int k = 0; k < mags.length; k++) {
-          final diff = mags[k] - prevMags![k];
+          final diff = mags[k] - prevMags[k];
           if (diff > 0) flux += diff; // Only positive changes (onset-focused)
         }
         totalFlux += flux;
@@ -955,7 +955,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     final frameSamples = (sampleRate * frameLen).toInt();
     final hopSamples = (sampleRate * frameHop).toInt();
     int fftSize = 1;
-    while (fftSize < frameSamples) fftSize <<= 1;
+    while (fftSize < frameSamples) { fftSize <<= 1; }
 
     final int numFrames = (samples.length - frameSamples) ~/ hopSamples + 1;
     if (numFrames <= 0) {
@@ -1053,7 +1053,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         denom += 2 * n * n;
       }
       if (denom > 0) {
-        for (int c = 0; c < numCoeffs; c++) d[c] /= denom;
+        for (int c = 0; c < numCoeffs; c++) { d[c] /= denom; }
       }
       deltaMatrix.add(d);
     }
@@ -1072,7 +1072,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
         denom += 2 * n * n;
       }
       if (denom > 0) {
-        for (int c = 0; c < numCoeffs; c++) dd[c] /= denom;
+        for (int c = 0; c < numCoeffs; c++) { dd[c] /= denom; }
       }
       deltaDeltaMatrix.add(dd);
     }
@@ -1162,89 +1162,7 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     return 0.5 * (1 - cos(2 * pi * n / (N - 1)));
   }
 
-  /// Extract Mel-Frequency Cepstral Coefficients (MFCC) for timbre comparison.
-  /// Returns averaged MFCC vector across all frames.
-  static List<double> _extractMFCCs(Float64List samples, int sampleRate,
-      {int numCoeffs = 13, int numFilters = 26}) {
-    const frameLen = 0.025; // 25ms frames
-    const frameHop = 0.010; // 10ms hop
-    final frameSamples = (sampleRate * frameLen).toInt();
-    final hopSamples = (sampleRate * frameHop).toInt();
-    // Round up to next power-of-2 for FFT
-    int fftSize = 1;
-    while (fftSize < frameSamples) {
-      fftSize <<= 1;
-    }
 
-    final int numFrames = (samples.length - frameSamples) ~/ hopSamples + 1;
-    if (numFrames <= 0) return List.filled(numCoeffs, 0.0);
-
-    // Pre-compute Mel filter bank
-    double hzToMel(double hz) => 2595.0 * log(1.0 + hz / 700.0) / ln10;
-    double melToHz(double mel) => 700.0 * (pow(10.0, mel / 2595.0) - 1.0);
-
-    final double lowMel = hzToMel(80.0);
-    final double highMel = hzToMel(sampleRate / 2.0);
-    final List<double> melPoints = List.generate(
-      numFilters + 2,
-      (i) => melToHz(lowMel + (highMel - lowMel) * i / (numFilters + 1)),
-    );
-    final List<int> binPoints = melPoints
-        .map((hz) => ((hz / sampleRate) * fftSize).floor().clamp(0, fftSize ~/ 2))
-        .toList();
-
-    // Accumulate MFCCs across frames
-    final List<double> mfccSum = List.filled(numCoeffs, 0.0);
-    final fft = FFT(fftSize);
-
-    for (int f = 0; f < numFrames; f++) {
-      final offset = f * hopSamples;
-      final windowed = Float64List(fftSize);
-      for (int j = 0; j < frameSamples && (offset + j) < samples.length; j++) {
-        windowed[j] = samples[offset + j] * _hanningWindow(j, frameSamples);
-      }
-
-      final freq = fft.realFft(windowed);
-      final magnitudes = freq.magnitudes();
-
-      // Apply Mel filter banks
-      final List<double> filterEnergies = List.filled(numFilters, 0.0);
-      for (int m = 0; m < numFilters; m++) {
-        final int startBin = binPoints[m];
-        final int centerBin = binPoints[m + 1];
-        final int endBin = binPoints[m + 2];
-
-        for (int k = startBin; k < centerBin && k < magnitudes.length; k++) {
-          final weight = (centerBin > startBin) ? (k - startBin) / (centerBin - startBin) : 0.0;
-          filterEnergies[m] += magnitudes[k] * weight;
-        }
-        for (int k = centerBin; k < endBin && k < magnitudes.length; k++) {
-          final weight = (endBin > centerBin) ? (endBin - k) / (endBin - centerBin) : 0.0;
-          filterEnergies[m] += magnitudes[k] * weight;
-        }
-      }
-
-      // Log energies (with floor to avoid log(0))
-      for (int m = 0; m < numFilters; m++) {
-        filterEnergies[m] = log(max(filterEnergies[m], 1e-10));
-      }
-
-      // DCT Type-II to get cepstral coefficients
-      for (int c = 0; c < numCoeffs; c++) {
-        double sum = 0.0;
-        for (int m = 0; m < numFilters; m++) {
-          sum += filterEnergies[m] * cos(pi * c * (m + 0.5) / numFilters);
-        }
-        mfccSum[c] += sum;
-      }
-    }
-
-    // Average across frames
-    for (int c = 0; c < numCoeffs; c++) {
-      mfccSum[c] /= numFrames;
-    }
-    return mfccSum;
-  }
 
   /// Dynamic Time Warping (DTW) Algorithm for Rhythmic Alignment.
   /// Compare two sequences (e.g. Volume Envelope or Pitch Track) and find the optimal

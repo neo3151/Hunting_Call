@@ -285,8 +285,8 @@ class RecordingTimerBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ExcludeSemantics(
-            child: const Icon(Icons.circle, color: Colors.red, size: 12),
+          const ExcludeSemantics(
+            child: Icon(Icons.circle, color: Colors.red, size: 12),
           ),
           const SizedBox(width: 8),
           Text(

@@ -111,8 +111,8 @@ class ReferenceDatabase {
       final required = requiredVersion.split('.').map(int.parse).toList();
       
       // Pad to 3 components
-      while (current.length < 3) current.add(0);
-      while (required.length < 3) required.add(0);
+      while (current.length < 3) { current.add(0); }
+      while (required.length < 3) { required.add(0); }
       
       for (int i = 0; i < 3; i++) {
         if (current[i] > required[i]) return true;

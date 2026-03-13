@@ -138,12 +138,8 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     return const Color(0xFFFF5252);
   }
 
-  IconData _scoreIcon(double score) {
-    if (score >= 85) return Icons.emoji_events_rounded;
-    if (score >= 70) return Icons.thumb_up_rounded;
-    if (score >= 50) return Icons.trending_up_rounded;
-    return Icons.refresh_rounded;
-  }
+
+
 
   @override
   Widget build(BuildContext context) {
