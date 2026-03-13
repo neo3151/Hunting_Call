@@ -1,0 +1,104 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "🔨 Build APK",
+            "type": "shell",
+            "command": "flutter build apk --release",
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "📦 Build AAB",
+            "type": "shell",
+            "command": "flutter build appbundle --release --obfuscate --split-debug-info=build/app/outputs/symbols",
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "🐧 Build Linux",
+            "type": "shell",
+            "command": "flutter build linux --release",
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "🧹 Clean & Get",
+            "type": "shell",
+            "command": "flutter clean && flutter pub get",
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "🔄 Build Runner",
+            "type": "shell",
+            "command": "dart run build_runner build --delete-conflicting-outputs",
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "🧪 Run Tests",
+            "type": "shell",
+            "command": "flutter test",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "📊 Analyze",
+            "type": "shell",
+            "command": "flutter analyze",
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "🚀 Deploy Firebase",
+            "type": "shell",
+            "command": "source $HOME/.nvm/nvm.sh && firebase deploy",
+            "group": "none",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        }
+    ]
+}

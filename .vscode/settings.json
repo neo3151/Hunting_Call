@@ -1,160 +1,18 @@
 {
-    "window.title": "Dark Purple & Gold${separator}${activeEditorShort}",
-    "cmake.sourceDirectory": "C:/Users/neo31/Hunting_Call/linux",
-    "dart.flutterSdkPath": "C:\\Users\\neo31\\.puro\\envs\\stable\\flutter",
-    "dart.sdkPath": "C:\\Users\\neo31\\.puro\\envs\\stable\\flutter\\bin\\cache\\dart-sdk",
-    "java.configuration.updateBuildConfiguration": "automatic",
-    "workbench.colorTheme": "Bearded Theme Black & Gold",
-    // --- Typography & Readability ---
-    "editor.fontFamily": "'Fira Code', 'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace",
-    "editor.fontLigatures": true,
-    "editor.fontSize": 14,
-    "editor.lineHeight": 1.6,
-    "editor.letterSpacing": 0.5,
-    "editor.fontWeight": "400",
-    "editor.semanticHighlighting.enabled": true,
-    // --- Smooth Animations & Micro-Interactions ---
-    "editor.cursorBlinking": "phase",
-    "editor.cursorSmoothCaretAnimation": "on",
-    "editor.smoothScrolling": true,
-    "workbench.list.smoothScrolling": true,
-    "terminal.integrated.smoothScrolling": true,
-    "window.dialogStyle": "custom",
-    // --- Workspace Clutter Reduction ---
-    "workbench.startupEditor": "none",
-    "workbench.editor.showTabs": "multiple",
-    "explorer.compactFolders": false,
-    "workbench.tree.indent": 16,
-    "breadcrumbs.enabled": true,
-    "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/CVS": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true,
-        "**/.dart_tool": true,
-        "**/.idea": true,
-        "**/build": true,
-        "**/.fvm": true
-    },
-    "search.exclude": {
-        "**/build": true,
-        "**/.dart_tool": true
-    },
-    "editor.bracketPairColorization.enabled": true,
-    "editor.guides.bracketPairs": "active",
-    // --- Functional Enhancements & Automation ---
-    // 1. Format and Organize on Save
-    // Automatically formats your code and cleans up unused imports when you hit Ctrl+S
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll": "explicit",
-        "source.organizeImports": "explicit"
-    },
-    // 2. Intelligent Code Completion & Suggestions
-    // Speeds up suggestions and pre-selects the most recently used options
-    "editor.suggestSelection": "recentlyUsed",
-    "editor.suggest.insertMode": "replace",
-    "editor.suggest.preview": true,
-    "editor.acceptSuggestionOnCommitCharacter": true,
-    "editor.quickSuggestionsDelay": 10,
-    // 3. Fast File Navigation & Refactoring
-    // Makes dragging/dropping safe (asks first) and links followable via Ctrl+Click
-    "editor.dragAndDrop": false,
-    "explorer.confirmDragAndDrop": false, // Let's drag without an annoying prompt
-    "explorer.confirmDelete": false, // Skip trash warnings if you hit delete
-    "editor.links": true,
-    "editor.multiCursorModifier": "ctrlCmd",
-    // 4. Integrated Terminal Perfection
-    // Right-clicks paste instantly in the terminal
-    "terminal.integrated.rightClickBehavior": "paste",
-    "terminal.integrated.defaultProfile.linux": "bash",
-    "terminal.integrated.enableMultiLinePasteWarning": false,
-    // 5. Dart & Flutter Specific Power Features
-    "dart.previewFlutterUiGuides": true,
-    "dart.previewFlutterUiGuidesCustomTracking": true,
-    "dart.lineLength": 100, // Lets Dart code breathe a bit wider
-    "dart.openDevTools": "flutter", // Opens DevTools automatically when debugging
-    "dart.showInspectorWarnings": true,
-    "dart.warnWhenEditingFilesOutsideWorkspace": true,
-    // 6. Inline Error Lens (If Error Lens Extension is installed)
-    // Instantly shows compiler errors on the line instead of making you hover
-    "errorLens.fontWeight": "bold",
-    "errorLens.messageBackgroundMode": "message",
-    "errorLens.alignMessage": {
-        "lineLength": 80,
-        "alignment": "right",
-        "pad": 4
-    },
-    // --- Advanced Power User Features ---
-    // 7. Inlay Hints (Inline Parameter Names)
-    // Injects ghost text showing parameter names directly in your method calls
-    "editor.inlayHints.enabled": "onUnlessPressed",
-    "dart.inlayHints.showParameterNames": true,
-    "dart.inlayHints.showTypeHints": true,
-    // 8. Sticky Scroll
-    // Keeps the current class/method signature stuck to the top of the editor as you scroll down
-    "editor.stickyScroll.enabled": true,
-    "editor.stickyScroll.maxLineCount": 5,
-    // 9. File Nesting (Declutter Explorer)
-    // Hides generated files like .g.dart under their parent file
-    "explorer.fileNesting.enabled": true,
-    "explorer.fileNesting.expand": false,
-    "explorer.fileNesting.patterns": {
-        "*.dart": "${capture}.g.dart, ${capture}.freezed.dart, ${capture}.part.dart",
-        "pubspec.yaml": "pubspec.lock, .packages, .flutter-plugins, .flutter-plugins-dependencies, build.yaml"
-    },
-    // 10. Minimap Enhancements
-    // Makes the minimap actually readable and highlights errors
-    "editor.minimap.enabled": true,
-    "editor.minimap.renderCharacters": true,
-    "editor.minimap.showSlider": "always",
-    "editor.minimap.maxColumn": 120,
-    // 11. Git / Source Control UX
-    // Clean diffs and inline blame (if GitLens is installed)
-    "diffEditor.ignoreTrimWhitespace": true,
-    "git.decorations.enabled": true,
-    "git.enableSmartCommit": true,
-    "workbench.colorCustomizations": {
-        "[*]": {
-            // Backgrounds - A much deeper, muted dark grape/plum (almost black)
-            "editor.background": "#120E1A",
-            "sideBar.background": "#0F0B17",
-            "activityBar.background": "#0C0913",
-            "panel.background": "#100D18",
-            "terminal.background": "#120E1A",
-            "editorWidget.background": "#1A1425",
-            // Accents - A softer, matte pale gold/champagne instead of harsh yellow
-            "activityBar.activeBorder": "#CFAF75",
-            "tab.activeBorderTop": "#CFAF75",
-            "focusBorder": "#CFAF7540",
-            // UI Borders - Barely visible, smooth rendering
-            "statusBar.border": "#1A1425",
-            "sideBar.border": "#1A1425",
-            "panel.border": "#1A1425",
-            "editorGroup.border": "#1A1425",
-            "editorWidget.border": "#CFAF7530",
-            // Typography - Softer lavender greys
-            "editor.foreground": "#D1CDDA",
-            "sideBar.foreground": "#A7A0B5",
-            "terminal.foreground": "#D1CDDA",
-            "statusBar.foreground": "#8F889E",
-            "statusBar.background": "#0C0913",
-            // Clean up buttons and active states
-            "list.activeSelectionBackground": "#CFAF7525",
-            "list.hoverBackground": "#FFFFFF0A",
-            "button.background": "#CFAF75",
-            "button.foreground": "#120E1A",
-            "button.hoverBackground": "#E4C795",
-            // Bracket Pair Colorization (Royal Metals)
-            "editorBracketHighlight.foreground1": "#E6B800",
-            "editorBracketHighlight.foreground2": "#CFAF75",
-            "editorBracketHighlight.foreground3": "#D1CDDA",
-            "editorBracketHighlight.unexpectedBracket.foreground": "#FF3366"
-        }
-    },
-    "python.autoComplete.extraPaths": [
-        "c:\\Users\\neo31\\.antigravity\\extensions\\continue.continue-0.1.5-win32-x64"
-    ]
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🎯  WORKSPACE-SPECIFIC SETTINGS — Hunting_Call / OUTCALL
+    // ═══════════════════════════════════════════════════════════════════════
+
+    "window.title": "OUTCALL${separator}${activeEditorShort}",
+
+    // CMake (for Linux desktop build)
+    "cmake.sourceDirectory": "/home/neo/OUTCALL/Hunting_Call/linux",
+
+    // Dart & Flutter — project-specific
+    "dart.flutterSdkPath": "/home/neo/development/flutter",
+    "dart.sdkPath": "/home/neo/development/flutter/bin/cache/dart-sdk",
+    "dart.lineLength": 100,
+
+    // Java / Android
+    "java.configuration.updateBuildConfiguration": "automatic"
 }
