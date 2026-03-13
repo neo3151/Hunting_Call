@@ -44,17 +44,20 @@ class RecentActivityCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(historyItem.animalId.toUpperCase(),
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: palette.textPrimary)),
-                  Text('Last Session',
-                      style: TextStyle(color: palette.textSecondary, fontSize: 12)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(historyItem.animalId.toUpperCase(),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: palette.textPrimary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    Text('Last Session',
+                        style: TextStyle(color: palette.textSecondary, fontSize: 12)),
+                  ],
+                ),
               ),
-              const Spacer(),
               Icon(Icons.chevron_right, color: palette.textTertiary),
             ],
           ),

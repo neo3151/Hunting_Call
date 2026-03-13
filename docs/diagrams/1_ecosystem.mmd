@@ -1,0 +1,37 @@
+graph TB
+    subgraph TEAM["🧑‍💻 Team & AI Tooling"]
+        SAM["🎯 Sam<br/>Co-Founder / Product Lead<br/>aka Chief Yell Officer"]
+        JOSEPH["🛠️ Joseph<br/>Co-Founder / Developer<br/>aka VP of Turkey Noises"]
+        ANTI["🤖 Antigravity<br/>AI Pair Programmer<br/>aka The Unpaid Intern That Never Sleeps"]
+        GROK["🧪 Grok<br/>External AI Auditor<br/>aka That Guy Who Shows Up Uninvited"]
+    end
+
+    subgraph USER["👤 User's Device"]
+        APP["📱 OUTCALL Flutter App<br/>Android / iOS / Linux Desktop"]
+    end
+
+    subgraph RAILWAY["🚂 Railway Cloud"]
+        API["FastAPI Backend<br/>huntingcallaibackend-production.up.railway.app"]
+    end
+
+    subgraph GOOGLE["☁️ Google Cloud Platform"]
+        GEMINI["🧠 Gemini 2.0 Flash<br/>LLM Coaching + Chatbot"]
+        FIREBASE["🔥 Firebase Suite<br/>Auth, Firestore, Crashlytics<br/>Remote Config, Analytics"]
+        GCS["📦 Cloud Storage<br/>ML Models via GCS"]
+    end
+
+    subgraph WEB["🌐 Landing Page"]
+        SITE["GitHub Pages<br/>Chatbot Widget"]
+    end
+
+    SAM -->|"Direction + QA"| APP
+    JOSEPH -->|"Development"| APP
+    ANTI -->|"Pair Programming"| APP
+    ANTI -->|"Pair Programming"| API
+    GROK -.->|"Audits"| APP
+
+    APP <-->|"REST API<br/>/api/coach, /api/fingerprint"| API
+    API <-->|"genai SDK"| GEMINI
+    API -.->|"Startup: download .pkl + .json"| GCS
+    APP <-->|"Firebase SDK<br/>Auth, Firestore, Crashlytics"| FIREBASE
+    SITE -->|"/api/chat"| API

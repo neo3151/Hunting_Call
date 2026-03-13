@@ -7,6 +7,11 @@ import 'package:path/path.dart';
 class WaveformCacheDatabase {
   static Database? _database;
   static const String tableName = 'waveform_cache';
+  static const String metaTable = 'cache_meta';
+
+  /// Bump this when the waveform normalization algorithm changes.
+  /// Any cached data from a previous version will be purged on next open.
+  static const int currentCacheVersion = 2;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -27,7 +32,7 @@ class WaveformCacheDatabase {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE $tableName (
@@ -36,8 +41,43 @@ class WaveformCacheDatabase {
             timestamp INTEGER NOT NULL
           )
         ''');
+        await db.execute('''
+          CREATE TABLE $metaTable (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+          )
+        ''');
+        await db.insert(metaTable, {'key': 'cache_version', 'value': '$currentCacheVersion'});
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS $metaTable (
+              key TEXT PRIMARY KEY,
+              value TEXT NOT NULL
+            )
+          ''');
+          // Purge stale data from v1 (old normalization)
+          await db.delete(tableName);
+          await db.insert(metaTable, {'key': 'cache_version', 'value': '$currentCacheVersion'},
+              conflictAlgorithm: ConflictAlgorithm.replace);
+        }
       },
     );
+  }
+
+  /// Check if cached data was produced by a different algorithm version.
+  /// If so, purge stale entries and update the stored version.
+  Future<void> migrateIfNeeded() async {
+    final db = await database;
+    final rows = await db.query(metaTable, where: 'key = ?', whereArgs: ['cache_version']);
+    final storedVersion = rows.isNotEmpty ? int.tryParse(rows.first['value'] as String) ?? 0 : 0;
+
+    if (storedVersion < currentCacheVersion) {
+      await db.delete(tableName);
+      await db.insert(metaTable, {'key': 'cache_version', 'value': '$currentCacheVersion'},
+          conflictAlgorithm: ConflictAlgorithm.replace);
+    }
   }
 
   Future<void> cacheWaveform(String id, List<double> waveform) async {

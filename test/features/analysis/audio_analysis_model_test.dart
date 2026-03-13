@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:outcall/features/analysis/domain/audio_analysis_model.dart';
 
 void main() {
-  AudioAnalysis _makeFullAnalysis() {
+  AudioAnalysis makeFullAnalysis() {
     return AudioAnalysis(
       dominantFrequencyHz: 440.0,
       averageFrequencyHz: 435.0,
@@ -35,7 +35,7 @@ void main() {
 
   group('AudioAnalysis', () {
     test('constructs with all required fields', () {
-      final analysis = _makeFullAnalysis();
+      final analysis = makeFullAnalysis();
 
       expect(analysis.dominantFrequencyHz, 440.0);
       expect(analysis.averageFrequencyHz, 435.0);
@@ -66,7 +66,7 @@ void main() {
     });
 
     test('JSON roundtrip preserves all fields', () {
-      final original = _makeFullAnalysis();
+      final original = makeFullAnalysis();
       final json = original.toJson();
       final restored = AudioAnalysis.fromJson(json);
 
@@ -99,7 +99,7 @@ void main() {
     });
 
     test('toJson produces correct keys', () {
-      final json = _makeFullAnalysis().toJson();
+      final json = makeFullAnalysis().toJson();
 
       expect(json.containsKey('dominantFrequencyHz'), isTrue);
       expect(json.containsKey('averageFrequencyHz'), isTrue);

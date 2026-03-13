@@ -1,0 +1,35 @@
+graph TB
+    subgraph BOOT["🚀 Boot Sequence"]
+        MAIN["main_*.dart<br/>Flavor Entry"] --> IC["injection_container.dart<br/>Firedart + SQLite FFI<br/>+ HuntingLog DB"]
+        IC --> DI["di_providers.dart<br/>Riverpod Provider Matrix"]
+        DI --> AW["AuthWrapper<br/>Auth State → Login or Home"]
+    end
+
+    subgraph FEATURES["📦 Feature Modules - Feature-First DDD"]
+        direction TB
+        AUTH["🔐 Auth<br/>Firebase/Firedart/Google Sign-In<br/>AuthController StreamNotifier"]
+        HOME["�� Home<br/>HomeNotifier, DailyChallenge<br/>RecentActivity, Header"]
+        LIB["📚 Library<br/>135+ Reference Calls<br/>CategoryGrid → AnimalGrid → CallDetail"]
+        REC["🎙️ Recording<br/>AudioRecorder Service<br/>PreflightCheck → RecorderPage"]
+        RATE["⭐ Rating<br/>RatingNotifier<br/>AI Coach Card, Analytics"]
+        PROF["👤 Profile<br/>ProfileNotifier, Achievements<br/>HistoryDashboard, AttemptDetail"]
+        SET["⚙️ Settings<br/>SettingsNotifier<br/>CalibrationNotifier"]
+        PAY["💳 Payment<br/>In-App Purchase native<br/>Paywall UI, Entitlements"]
+        MAP["🗺️ Progress Map<br/>3D Isometric World<br/>Region Unlocking"]
+        LOG["📓 Hunting Log<br/>Local SQLite<br/>GPS + Weather"]
+        BOARD["🏆 Leaderboard<br/>Cloud Firestore<br/>Global Rankings"]
+        WEATHER["🌤️ Weather<br/>Solunar Model<br/>Geolocator + HTTP"]
+    end
+
+    AW --> AUTH
+    AW --> HOME
+    HOME --> LIB
+    HOME --> REC
+    REC --> RATE
+    HOME --> PROF
+    HOME --> SET
+    HOME --> PAY
+    HOME --> MAP
+    HOME --> LOG
+    HOME --> BOARD
+    HOME --> WEATHER

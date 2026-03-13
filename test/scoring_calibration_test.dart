@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:outcall/features/library/data/reference_database.dart';
-import 'package:outcall/features/library/domain/reference_call_model.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
 import 'package:outcall/features/analysis/domain/use_cases/calculate_score_use_case.dart';
-import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/library/domain/reference_call_model.dart';
 
 /// Manual calibration test — only runs when the audio fixture exists.
 /// Place a WAV file at `scripts/perfect_mallard.wav` to use this test.
@@ -31,7 +32,7 @@ void main() {
 
     // 2. Initialize Analyzer and Use Case
     final analyzer = ComprehensiveAudioAnalyzer();
-    final useCase = CalculateScoreUseCase();
+    const useCase = CalculateScoreUseCase();
 
     // 3. Analyze the perfect audio file
     final audioPath = audioFile.path;

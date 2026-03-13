@@ -1,0 +1,32 @@
+flowchart LR
+    subgraph DEVICE["📱 On-Device Processing"]
+        MIC["🎙️ Microphone<br/>record package<br/>44.1kHz WAV"] --> CAL["🔧 Calibration<br/>Noise Floor Check<br/>Safety Halt if dB > -30"]
+        CAL --> ISO["⚡ Isolate<br/>compute - off main thread"]
+        ISO --> WAV["📄 RIFF Parser<br/>Chunk walker<br/>finds data offset"]
+        WAV --> DSP["🧹 Spectral Subtraction<br/>Wind and AC hum removal"]
+        DSP --> PITCH["🎵 Pitch - YIN<br/>Noise-gated detection"]
+        DSP --> MFCC["🔬 MFCC Timbre<br/>Spectral similarity"]
+        DSP --> DTW["📐 DTW<br/>Rhythmic cadence<br/>Tempo-independent"]
+        DSP --> VOL["📊 Volume Envelope"]
+        DSP --> TONE["🎶 Tone Quality<br/>FFT harmonics"]
+        DSP --> DUR["⏱️ Duration<br/>Active sound detection"]
+
+        PITCH --> SCORE["📈 Composite Score<br/>Pitch 40% + Tone 30%<br/>+ Rhythm 20% + Duration 10%"]
+        MFCC --> SCORE
+        DTW --> SCORE
+        VOL --> SCORE
+        TONE --> SCORE
+        DUR --> SCORE
+
+        DSP --> BNET["🐦 BirdNET-Lite<br/>TFLite on-device<br/>144K PCM → Species ID"]
+    end
+
+    subgraph CLOUD["☁️ Railway Backend"]
+        SCORE -->|"REST POST"| COACH["🤖 AI Coach<br/>Random Forest diagnosis<br/>+ Gemini LLM feedback"]
+        MIC -->|"REST POST multipart"| FP["🔍 Fingerprint Match<br/>Spectral hash DB<br/>135+ reference clips"]
+    end
+
+    SCORE --> UI["📊 Analytics Screen"]
+    COACH --> UI
+    FP --> UI
+    BNET --> UI
