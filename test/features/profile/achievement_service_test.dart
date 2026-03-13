@@ -4,8 +4,8 @@ import '../../helpers/test_factories.dart';
 
 void main() {
   group('AchievementService', () {
-    test('has 30 achievements defined', () {
-      expect(AchievementService.achievements.length, 30);
+    test('has 31 achievements defined', () {
+      expect(AchievementService.achievements.length, 31);
     });
 
     test('all achievements have unique IDs', () {

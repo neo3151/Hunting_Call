@@ -17,7 +17,7 @@ class ProfanityFilter {
 
   static const _blockedTerms = <String>[
     // Profanity (English)
-    'fuck', 'shit', 'bitch', 'bastard', 'dick', 'cock', 'pussy', 'cunt',
+    'fuck', 'shit', 'ass', 'bitch', 'bastard', 'dick', 'cock', 'pussy', 'cunt',
     'piss', 'whore', 'slut', 'fag', 'faggot', 'wanker', 'twat', 'bollocks',
     'arse', 'arsehole', 'asshole', 'motherfucker', 'fucker', 'bullshit',
     'dumbass', 'jackass', 'dipshit', 'shithead', 'douchebag', 'douche',
@@ -216,6 +216,15 @@ class ProfanityFilter {
 
     // Check whitelist first — if the whole name is whitelisted, allow it
     if (_isWhitelisted(text)) return false;
+
+    // Layer 0: Direct lowercase check (catches 'kkk', 'nazi', etc. before
+    // the normaliser's repeated-character collapsing strips them)
+    final lower = text.toLowerCase();
+    for (final pattern in _patterns) {
+      if (pattern.hasMatch(lower)) {
+        if (!_isWhitelisted(lower)) return true;
+      }
+    }
 
     // Layer 1: Normalised blocklist matching
     final normalised = _normalise(text);

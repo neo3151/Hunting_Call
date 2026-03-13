@@ -66,6 +66,18 @@ void main() {
         name: 'Secure Hunter',
         joinedDate: DateTime(2023, 1, 1),
         isPremium: true,
+        history: [
+          HistoryItem(
+            animalId: 'elk',
+            timestamp: DateTime(2023, 2, 1),
+            result: RatingResult(
+              score: 90.0,
+              feedback: 'Great',
+              pitchHz: 400.0,
+              metrics: {'pitch': 0.9},
+            ),
+          ),
+        ],
       );
       when(() => mockSecureStorage.read(key: 'user_profile_$userId'))
           .thenAnswer((_) async => json.encode(secureProfile.toJson()));
@@ -103,7 +115,7 @@ void main() {
 
       // Assert
       expect(result.id, userId);
-      expect(result.isPremium, true);
+      expect(result.isPremium, false); // Migration forces isPremium=false (cloud is source of truth)
       expect(result.history.length, 1);
       expect(result.name, 'Legacy Hunter');
       
