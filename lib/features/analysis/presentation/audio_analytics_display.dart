@@ -21,7 +21,7 @@ class AudioAnalyticsDisplay extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (analysis.topSpeciesMatches.isNotEmpty) ...[
-          _sectionHeader('ML CLASSIFICATION'),
+          _sectionHeader('ML CLASSIFICATION (Bayesian)'),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),

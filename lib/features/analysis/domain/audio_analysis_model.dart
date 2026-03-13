@@ -118,6 +118,51 @@ class AudioAnalysis {
   factory AudioAnalysis.fromJson(Map<String, dynamic> json) => _$AudioAnalysisFromJson(json);
   Map<String, dynamic> toJson() => _$AudioAnalysisToJson(this);
 
+  /// Creates a copy with optional field overrides.
+  /// Primarily used by the Bayesian fusion layer to inject enhanced species matches.
+  AudioAnalysis copyWith({
+    Map<String, double>? topSpeciesMatches,
+  }) {
+    return AudioAnalysis(
+      dominantFrequencyHz: dominantFrequencyHz,
+      averageFrequencyHz: averageFrequencyHz,
+      frequencyPeaks: frequencyPeaks,
+      pitchStability: pitchStability,
+      pitchTrack: pitchTrack,
+      averageVolume: averageVolume,
+      peakVolume: peakVolume,
+      volumeConsistency: volumeConsistency,
+      toneClarity: toneClarity,
+      harmonicRichness: harmonicRichness,
+      harmonics: harmonics,
+      brightness: brightness,
+      warmth: warmth,
+      nasality: nasality,
+      spectralCentroid: spectralCentroid,
+      totalDurationSec: totalDurationSec,
+      activeDurationSec: activeDurationSec,
+      silenceDurationSec: silenceDurationSec,
+      tempo: tempo,
+      pulseTimes: pulseTimes,
+      rhythmRegularity: rhythmRegularity,
+      isPulsedCall: isPulsedCall,
+      callQualityScore: callQualityScore,
+      noiseLevel: noiseLevel,
+      mfccCoefficients: mfccCoefficients,
+      topSpeciesMatches: topSpeciesMatches ?? this.topSpeciesMatches,
+      waveform: waveform,
+      pitchContour: pitchContour,
+      onsetTimes: onsetTimes,
+      attackTime: attackTime,
+      sustainLevel: sustainLevel,
+      decayRate: decayRate,
+      formants: formants,
+      spectralFlux: spectralFlux,
+      deltaMfcc: deltaMfcc,
+      deltaDeltaMfcc: deltaDeltaMfcc,
+    );
+  }
+
   /// Create a simplified analysis with defaults (for backward compatibility)
   factory AudioAnalysis.simple({
     required double frequencyHz,
