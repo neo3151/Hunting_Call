@@ -151,31 +151,25 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   }
 
   /// Check for newly earned achievements after analysis and show celebration overlays.
+  /// #7: Optimized from 3 Firestore round-trips to 1 save operation.
   Future<void> _checkForAchievements() async {
     final profile = ref.read(profileNotifierProvider).profile;
     if (profile == null || profile.id == 'guest') return;
 
-    // Reload the profile to get the freshest achievements list from Firestore
-    await ref.read(profileNotifierProvider.notifier).loadProfile(profile.id);
-    final freshProfile = ref.read(profileNotifierProvider).profile;
-    if (freshProfile == null) return;
-
+    // Use the current in-memory profile instead of re-loading from Firestore
     final newIds = AchievementService.getNewAchievementIds(
-      freshProfile,
-      freshProfile.achievements,
+      profile,
+      profile.achievements,
     );
 
     if (newIds.isEmpty) return;
 
-    // Persist new achievements BEFORE showing overlays,
-    // so they won't re-trigger on next analysis.
-    final allAchievements = {...freshProfile.achievements, ...newIds}.toList();
+    // Persist new achievements (single Firestore write)
+    final allAchievements = {...profile.achievements, ...newIds}.toList();
     await ref.read(profileNotifierProvider.notifier).saveAchievementsForUser(
-          freshProfile.id,
+          profile.id,
           allAchievements,
         );
-    // Reload once more so the profile state is fully up-to-date
-    await ref.read(profileNotifierProvider.notifier).loadProfile(freshProfile.id);
 
     // Show each new achievement with staggered delay
     for (int i = 0; i < newIds.length; i++) {
@@ -621,16 +615,26 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
               const SizedBox(height: 24),
               _buildPitchSlider(userPitch, targetPitch, reference.tolerancePitch),
               const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5FF7B6).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text('Within tolerance âœ“',
+              Builder(builder: (_) {
+                final isWithinTolerance = (userPitch - targetPitch).abs() <= reference.tolerancePitch;
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isWithinTolerance
+                        ? const Color(0xFF5FF7B6).withValues(alpha: 0.15)
+                        : Colors.redAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    isWithinTolerance ? 'Within tolerance ✔' : 'Outside tolerance ✘',
                     style: GoogleFonts.lato(
-                        fontSize: 10, color: const Color(0xFF5FF7B6), fontWeight: FontWeight.w600)),
-              ),
+                      fontSize: 10,
+                      color: isWithinTolerance ? const Color(0xFF5FF7B6) : Colors.redAccent,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              }),
             ],
           ),
         );

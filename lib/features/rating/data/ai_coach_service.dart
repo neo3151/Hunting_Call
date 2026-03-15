@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/rating/data/coaching_session_history.dart';
@@ -31,6 +32,14 @@ class AiCoachService {
     required String audioPath,
   }) async {
     try {
+      // #5: Check connectivity before making network request
+      final connectivityResults = await Connectivity().checkConnectivity();
+      final isOffline = connectivityResults.isEmpty ||
+          connectivityResults.every((r) => r == ConnectivityResult.none);
+      if (isOffline) {
+        AppLogger.d('AI Coach: Device is offline, using fallback');
+        return '${_fallback(result: result, idealPitchHz: idealPitchHz, animalName: animalName, callType: callType)}\n\n(Offline — connect to get AI-powered coaching)';
+      }
       // Fetch session history for context (non-blocking fallback)
       // ignore: unused_local_variable
       String historySummary = '';

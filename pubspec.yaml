@@ -91,6 +91,10 @@ flutter:
     - assets/images/animals/
     - assets/data/
     - assets/models/
+# Pinned overrides — record_linux 1.3.0 is required because later versions
+# have a breaking change in the audio stream API that causes recording to fail
+# on Ubuntu 22.04+. Remove this override when record_linux 1.4+ is released
+# with the fix. Last checked: March 2026.
 dependency_overrides:
   record_linux: 1.3.0
 flutter_launcher_icons:

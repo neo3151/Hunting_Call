@@ -248,6 +248,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
 
   Widget _buildCallCard(ReferenceCall call, bool isPlaying, bool isLocked) {
     final palette = AppColors.of(context);
+    final hasImage = call.imageUrl.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Semantics(
@@ -258,96 +259,117 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
         borderRadius: BorderRadius.circular(16),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isLocked
-                    ? Colors.black.withValues(alpha: 0.2)
-                    : isPlaying
-                        ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
-                        : palette.cardOverlay,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isLocked
-                      ? palette.cardOverlay
-                      : isPlaying
-                          ? Theme.of(context)
-                              .primaryColor
-                              .withValues(alpha: 0.5)
-                          : palette.border,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      _buildPlayButton(call, isPlaying, isLocked),
-                      const SizedBox(width: 16),
-                      // Names
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              call.animalName,
-                              style: GoogleFonts.oswald(
-                              color: palette.textPrimary,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              call.callType,
-                              style: TextStyle(
-                                color: isLocked
-                                    ? palette.textSubtle
-                                    : palette.textSecondary,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Difficulty Badge
-                      _buildDifficultyBadge(call.difficulty),
-                      const SizedBox(width: 8),
-                      // Favorite button
-                      _buildFavoriteButton(call),
-                    ],
+          child: SizedBox(
+            height: 140,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Background animal image
+                if (hasImage)
+                  Image.asset(
+                    call.imageUrl,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Container(color: palette.cardOverlay),
                   ),
-                  if (call.description.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      call.description,
-                      style: TextStyle(
-                          color: palette.textTertiary,
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic),
+                // Dark gradient overlay for text readability
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Colors.black.withValues(alpha: isLocked ? 0.85 : 0.75),
+                        Colors.black.withValues(alpha: isLocked ? 0.7 : 0.45),
+                      ],
                     ),
-                  ],
-                  const SizedBox(height: 12),
-                  Row(
+                  ),
+                ),
+                // Playing/selected highlight overlay
+                if (isPlaying)
+                  Container(
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
+                  ),
+                // Border overlay
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isLocked
+                          ? palette.cardOverlay
+                          : isPlaying
+                              ? Theme.of(context)
+                                  .primaryColor
+                                  .withValues(alpha: 0.5)
+                              : Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                ),
+                // Card content
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildMetricChip(
-                          Icons.music_note, '${call.idealPitchHz.toInt()} Hz'),
-                      const SizedBox(width: 8),
-                      _buildMetricChip(
-                          Icons.timer_outlined, '${call.idealDurationSec}s'),
-                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          _buildPlayButton(call, isPlaying, isLocked),
+                          const SizedBox(width: 16),
+                          // Names
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  call.animalName,
+                                  style: GoogleFonts.oswald(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  call.callType,
+                                  style: TextStyle(
+                                    color: isLocked
+                                        ? Colors.white38
+                                        : Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Difficulty Badge
+                          _buildDifficultyBadge(call.difficulty),
+                          const SizedBox(width: 8),
+                          // Favorite button
+                          _buildFavoriteButton(call),
+                        ],
+                      ),
                       const Spacer(),
-                      // Learn More Indicator
-                      if (call.proTips.isNotEmpty)
-                        Icon(Icons.info_outline,
-                            size: 16,
-                            color: palette.textSubtle),
+                      Row(
+                        children: [
+                          _buildMetricChip(
+                              Icons.music_note, '${call.idealPitchHz.toInt()} Hz'),
+                          const SizedBox(width: 8),
+                          _buildMetricChip(
+                              Icons.timer_outlined, '${call.idealDurationSec}s'),
+                          const SizedBox(width: 8),
+                          const Spacer(),
+                          // Learn More Indicator
+                          if (call.proTips.isNotEmpty)
+                            Icon(Icons.info_outline,
+                                size: 16,
+                                color: Colors.white38),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
          ),

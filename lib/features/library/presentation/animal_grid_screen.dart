@@ -29,7 +29,7 @@ class AnimalGridScreen extends ConsumerWidget {
     'Mallard Duck': 'assets/images/animals/mallard.jpg',
     'Wood Duck': 'assets/images/animals/wood_duck.jpg',
     'Canada Goose': 'assets/images/animals/canada_goose.jpg',
-    'Blue-Winged Teal': 'assets/images/animals/teal.jpg',
+    'Blue-Winged Teal': 'assets/images/animals/blue_winged_teal.png',
     'Specklebelly Goose': 'assets/images/animals/specklebelly_goose.jpg',
     'Pintail Duck': 'assets/images/animals/pintail.jpg',
     'Canvasback Duck': 'assets/images/animals/canvasback.jpg',
@@ -56,6 +56,18 @@ class AnimalGridScreen extends ConsumerWidget {
     'Mourning Dove': 'assets/images/animals/mourning_dove.jpg',
     'Great Horned Owl': 'assets/images/animals/great_horned_owl.jpg',
     'American Crow': 'assets/images/animals/crow.jpg',
+    // New animals (March 2026)
+    'Fulvous Whistling-Duck': 'assets/images/animals/fulvous_whistling_duck.png',
+    'Muscovy Duck': 'assets/images/animals/muscovy_duck.png',
+    'Cinnamon Teal': 'assets/images/animals/cinnamon_teal.png',
+    'Egyptian Goose': 'assets/images/animals/egyptian_goose.png',
+    'Snow Goose': 'assets/images/animals/snow_goose.png',
+    'Emperor Goose': 'assets/images/animals/emperor_goose.png',
+    'Greater White-fronted Goose': 'assets/images/animals/white_fronted_goose.png',
+    'Trumpeter Swan': 'assets/images/animals/trumpeter_swan.png',
+    'Tundra Swan': 'assets/images/animals/tundra_swan.png',
+    'Moose': 'assets/images/animals/moose.png',
+    'American Beaver': 'assets/images/animals/beaver.png',
   };
 
   /// Gradient color pairs per category for visual consistency.

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OUTCALL Deep Audit — March 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap');
+
+  :root {
+    --gold: #CFAF75;
+    --gold-dark: #8B6914;
+    --charcoal: #1a1a2e;
+    --red: #E74C3C;
+    --orange: #F39C12;
+    --green: #27AE60;
+    --blue: #3498DB;
+    --bg: #FAFAF8;
+    --text: #2C2C2C;
+    --muted: #6B7280;
+    --border: #E5E7EB;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page {
+    size: A4;
+    margin: 0.6in 0.7in;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--text);
+    background: white;
+    max-width: 8.5in;
+    margin: 0 auto;
+    padding: 0.5in 0.7in;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--gold);
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 28pt;
+    color: var(--charcoal);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .header .subtitle {
+    font-size: 11pt;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+  .header .meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 10px;
+    font-size: 9pt;
+    color: var(--muted);
+  }
+  .header .meta span { display: inline-flex; align-items: center; gap: 4px; }
+
+  /* ─── Section Headers ─── */
+  h2 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 15pt;
+    color: var(--charcoal);
+    letter-spacing: 0.5px;
+    margin-top: 28px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--gold);
+    page-break-after: avoid;
+  }
+
+  /* ─── Finding Cards ─── */
+  .finding {
+    background: #FEFEFE;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--muted);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    page-break-inside: avoid;
+  }
+  .finding.critical { border-left-color: var(--red); }
+  .finding.important { border-left-color: var(--orange); }
+  .finding.polish { border-left-color: var(--green); }
+
+  .finding .number {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 11pt;
+    margin-bottom: 2px;
+  }
+  .finding.critical .number { color: var(--red); }
+  .finding.important .number { color: var(--orange); }
+  .finding.polish .number { color: var(--green); }
+
+  .finding .title {
+    font-weight: 600;
+    font-size: 11pt;
+    color: var(--charcoal);
+    display: inline;
+  }
+
+  .finding .file {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 8.5pt;
+    color: var(--muted);
+    background: #F3F4F6;
+    padding: 1px 6px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+
+  .finding .desc {
+    margin-top: 6px;
+    font-size: 10pt;
+    color: #444;
+    line-height: 1.5;
+  }
+
+  .finding .fix {
+    margin-top: 6px;
+    font-size: 9.5pt;
+    color: var(--charcoal);
+    background: #F0FAF0;
+    border-left: 3px solid var(--green);
+    padding: 4px 10px;
+    border-radius: 0 4px 4px 0;
+  }
+  .finding .fix strong { color: var(--green); }
+
+  .finding .effort {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 8.5pt;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #F3F4F6;
+    color: var(--muted);
+  }
+
+  /* ─── Summary Table ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 10pt;
+  }
+  th {
+    background: var(--charcoal);
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 9pt;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:nth-child(even) td { background: #FAFAFA; }
+  td:first-child { font-weight: 500; }
+
+  /* ─── Strengths Grid ─── */
+  .strengths-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .strength {
+    background: #F0FAF0;
+    border: 1px solid #D4EDDA;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 9.5pt;
+  }
+  .strength .label {
+    font-weight: 600;
+    color: var(--green);
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── Roadmap ─── */
+  .roadmap {
+    background: linear-gradient(135deg, #1a1a2e, #2a2d33);
+    color: white;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .roadmap h3 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13pt;
+    color: var(--gold);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+  .roadmap .phase {
+    margin-bottom: 14px;
+  }
+  .roadmap .phase-title {
+    font-weight: 700;
+    font-size: 9.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .roadmap .phase-title.now { color: var(--red); }
+  .roadmap .phase-title.next { color: var(--orange); }
+  .roadmap .phase-title.ongoing { color: var(--green); }
+  .roadmap ol {
+    padding-left: 20px;
+    font-size: 9.5pt;
+    color: #D1D5DB;
+    line-height: 1.6;
+  }
+  .roadmap .time {
+    color: #9CA3AF;
+    font-size: 8.5pt;
+  }
+
+  /* ─── Severity Tags ─── */
+  .tag {
+    display: inline-block;
+    font-size: 8pt;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
+  .tag.critical { background: #FDE8E8; color: var(--red); }
+  .tag.important { background: #FEF3C7; color: #92400E; }
+  .tag.polish { background: #D1FAE5; color: #065F46; }
+
+  .page-break { page-break-before: always; }
+
+  .footer {
+    margin-top: 32px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 8.5pt;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<div class="header">
+  <h1>OUTCALL DEEP AUDIT</h1>
+  <div class="subtitle">Comprehensive Stability & UX Assessment</div>
+  <div class="meta">
+    <span>📅 March 13, 2026</span>
+    <span>🤖 Auditor: Antigravity AI</span>
+    <span>📂 243 Flutter + 6 Backend source files</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════ OVERVIEW TABLE ═══════════════════════ -->
+<table>
+  <tr>
+    <th>Severity</th>
+    <th>Count</th>
+    <th>Categories</th>
+  </tr>
+  <tr>
+    <td><span class="tag critical">Critical</span></td>
+    <td><strong>4</strong> findings</td>
+    <td>Stability (1), UX (1), Security (2)</td>
+  </tr>
+  <tr>
+    <td><span class="tag important">Important</span></td>
+    <td><strong>6</strong> findings</td>
+    <td>Stability (4), UX (1), Quality (1)</td>
+  </tr>
+  <tr>
+    <td><span class="tag polish">Polish</span></td>
+    <td><strong>5</strong> findings</td>
+    <td>Stability (2), UX (2), Quality (1)</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════ CRITICAL ═══════════════════════ -->
+<h2>🔴 Critical — Fix Before Launch</h2>
+
+<div class="finding critical">
+  <div class="number">#1 <span class="title">Splash Screen Shows Wrong Version</span></div>
+  <div class="file">splash_screen.dart — line 235</div>
+  <div class="desc">The splash screen displays a hardcoded <code>'v1.5.0'</code>, but <code>pubspec.yaml</code> says <code>version: 2.0.0+40</code>. Every user sees a stale version on the very first screen.</div>
+  <div class="fix"><strong>Fix:</strong> Replace with <code>PackageInfo.fromPlatform()</code> to dynamically fetch the real version.</div>
+  <span class="effort">⏱ 15 min</span>
+</div>
+
+<div class="finding critical">
+  <div class="number">#2 <span class="title">No Rate Limiting on API Endpoints</span></div>
+  <div class="file">main.py — /api/coach, /api/chat, /api/fingerprint</div>
+  <div class="desc">All three endpoints have zero rate limiting. A bad actor or stuck retry loop could spam the Gemini API and burn through your quota or rack up charges.</div>
+  <div class="fix"><strong>Fix:</strong> Add <code>slowapi</code> middleware (e.g., 10 req/min per IP for chat, 30/min for coach).</div>
+  <span class="effort">⏱ 1 hour</span>
+</div>
+
+<div class="finding critical">
+  <div class="number">#3 <span class="title">AI Coach System Prompt Is Only 3 Sentences</span></div>
+  <div class="file">services.py — lines 95–98</div>
+  <div class="desc">This is the app's core differentiator and it has less instruction than the chatbot widget. No species-specific knowledge, no call technique context, no mistake-to-fix mappings, no guardrails against off-topic answers.</div>
+  <div class="fix"><strong>Fix:</strong> Expand with species-specific coaching (reed pressure, tongue positioning, air flow), common mistakes per animal, and strict guardrails.</div>
+  <span class="effort">⏱ 2–3 hours</span>
+</div>
+
+<div class="finding critical">
+  <div class="number">#4 <span class="title">CORS Could Allow Wildcard in Production</span></div>
+  <div class="file">main.py — lines 12–28</div>
+  <div class="desc">If <code>ALLOWED_ORIGINS=*</code> is accidentally set in Railway env vars, the backend accepts requests from any website — letting third parties use your Gemini API for free.</div>
+  <div class="fix"><strong>Fix:</strong> Block <code>*</code> when <code>RAILWAY_ENVIRONMENT=production</code>. Log a warning if detected.</div>
+  <span class="effort">⏱ 15 min</span>
+</div>
+
+<!-- ═══════════════════════ IMPORTANT ═══════════════════════ -->
+<h2>🟡 Important — Improve Stability & UX</h2>
+
+<div class="finding important">
+  <div class="number">#5 <span class="title">Offline State Doesn't Guard API Calls</span></div>
+  <div class="file">connectivity_provider.dart, offline_banner.dart</div>
+  <div class="desc"><code>isOfflineProvider</code> exists but only powers a passive UI banner. AI coach, leaderboard submit, and fingerprint calls fire without connectivity checks — resulting in raw HTTP errors instead of friendly offline messaging.</div>
+  <div class="fix"><strong>Fix:</strong> Wrap all REST calls with <code>isOfflineProvider</code> checks and show graceful fallback UI.</div>
+  <span class="effort">⏱ 2–3 hours</span>
+</div>
+
+<div class="finding important">
+  <div class="number">#6 <span class="title">No Retry on Cloud Audio Download Failure</span></div>
+  <div class="file">cloud_audio_service.dart — lines 69–103</div>
+  <div class="desc">Premium calls' audio downloads have no retry logic. In the field (literal hunting fields), network is spotty — users get a hard error with no recourse.</div>
+  <div class="fix"><strong>Fix:</strong> Add exponential backoff retry (3 attempts) and "Tap to retry" UI state.</div>
+  <span class="effort">⏱ 1–2 hours</span>
+</div>
+
+<div class="finding important">
+  <div class="number">#7 <span class="title">Achievement Check Fires 3 Sequential Firestore Round-Trips</span></div>
+  <div class="file">rating_screen.dart — lines 154–196</div>
+  <div class="desc"><code>_checkForAchievements()</code> calls <code>loadProfile</code> → <code>saveAchievements</code> → <code>loadProfile</code> again, adding 3+ seconds of latency to every analysis result screen on slow connections.</div>
+  <div class="fix"><strong>Fix:</strong> Batch into a single write transaction or optimistically update local state.</div>
+  <span class="effort">⏱ 1 hour</span>
+</div>
+
+<div class="finding important">
+  <div class="number">#8 <span class="title">Possible Feature Extraction Mismatch (RF Classifier)</span></div>
+  <div class="file">services.py vs training_pipeline.py</div>
+  <div class="desc">Training and inference may extract different feature counts. If they don't match exactly, the Random Forest produces garbage predictions silently.</div>
+  <div class="fix"><strong>Fix:</strong> Assert <code>len(features) == clf.n_features_in_</code> and run a round-trip validation test.</div>
+  <span class="effort">⏱ 1 hour</span>
+</div>
+
+<div class="finding important">
+  <div class="number">#9 <span class="title">RF Classifier Likely Never Runs in Production</span></div>
+  <div class="file">services.py — line 205</div>
+  <div class="desc">The classifier needs <code>audioFilePath</code> to extract features, but the Flutter app sends only metrics to <code>/api/coach</code> — not the raw audio file. The classifier always returns <code>"unknown", 0.0</code>.</div>
+  <div class="fix"><strong>Fix:</strong> Architectural decision needed — upload WAV, restructure RF to use metrics, or document as inert.</div>
+  <span class="effort">⏱ Discussion required</span>
+</div>
+
+<div class="finding important">
+  <div class="number">#10 <span class="title">Deprecated FastAPI Startup Event Pattern</span></div>
+  <div class="file">main.py — line 30</div>
+  <div class="desc"><code>@app.on_event("startup")</code> is deprecated. Future FastAPI versions will drop support.</div>
+  <div class="fix"><strong>Fix:</strong> Migrate to <code>@asynccontextmanager lifespan(app)</code> pattern.</div>
+  <span class="effort">⏱ 15 min</span>
+</div>
+
+<!-- ═══════════════════════ POLISH ═══════════════════════ -->
+<div class="page-break"></div>
+<h2>🟢 Polish — Nice-to-Have</h2>
+
+<div class="finding polish">
+  <div class="number">#11 <span class="title">Test Coverage: 20%</span></div>
+  <div class="file">test/ — 48 test files vs 243 source files</div>
+  <div class="desc">Recording, payment, cloud audio, fingerprint, daily challenge, leaderboard, and progress map features have minimal or no dedicated tests.</div>
+  <div class="fix"><strong>Priority:</strong> Recording lifecycle, payment flow, CloudAudioService resolution, AI coach fallback.</div>
+  <span class="effort">⏱ Days (ongoing)</span>
+</div>
+
+<div class="finding polish">
+  <div class="number">#12 <span class="title">Chat Ignores Conversation History</span></div>
+  <div class="file">services.py — line 289</div>
+  <div class="desc"><code>get_chat_response()</code> accepts a <code>history</code> parameter but only passes the current message to Gemini — multi-turn conversations are incoherent.</div>
+  <div class="fix"><strong>Fix:</strong> Format history into Gemini's <code>contents</code> array as alternating user/model turns.</div>
+  <span class="effort">⏱ 1 hour</span>
+</div>
+
+<div class="finding polish">
+  <div class="number">#13 <span class="title">"Within Tolerance ✔" Badge Is Always Shown</span></div>
+  <div class="file">rating_screen.dart — line 630</div>
+  <div class="desc">The tolerance badge is hardcoded to always display. A user 300Hz off-target still sees "Within tolerance ✔".</div>
+  <div class="fix"><strong>Fix:</strong> Conditionally render based on <code>(userPitch - targetPitch).abs() <= tolerancePitch</code>.</div>
+  <span class="effort">⏱ 15 min</span>
+</div>
+
+<div class="finding polish">
+  <div class="number">#14 <span class="title">Undocumented record_linux Override</span></div>
+  <div class="file">pubspec.yaml — dependency_overrides</div>
+  <div class="desc"><code>record_linux: 1.3.0</code> is pinned without documentation. Could mask future breaking changes.</div>
+  <span class="effort">⏱ 5 min</span>
+</div>
+
+<div class="finding polish">
+  <div class="number">#15 <span class="title">Splash Not Clamped by Text Scaler</span></div>
+  <div class="file">splash_screen.dart</div>
+  <div class="desc">Text scaling clamp (0.8–1.35x) only applies inside <code>MaterialApp</code>, but splash renders before it. Extreme accessibility settings could break layout.</div>
+  <span class="effort">⏱ 15 min (low priority)</span>
+</div>
+
+<!-- ═══════════════════════ STRENGTHS ═══════════════════════ -->
+<h2>✅ What's Already Done Well</h2>
+
+<div class="strengths-grid">
+  <div class="strength">
+    <div class="label">🛡️ Error Handling</div>
+    Global <code>PlatformDispatcher.onError</code> + Crashlytics + <code>FlutterError.onError</code> trifecta
+  </div>
+  <div class="strength">
+    <div class="label">🧩 DI Architecture</div>
+    Clean platform-aware DI matrix (Firebase / Firedart / Mock) with proper dispose
+  </div>
+  <div class="strength">
+    <div class="label">🎵 Audio Analysis</div>
+    1,336-line analyzer with chunk-based WAV parsing, isolate compute, spectral subtraction
+  </div>
+  <div class="strength">
+    <div class="label">💳 Payment</div>
+    Proper IAP lifecycle with stream subscription, pending tracking, desktop mock
+  </div>
+  <div class="strength">
+    <div class="label">🎨 UI Polish</div>
+    Safe <code>_tryRender</code> wrapper, haptics, animated splash, achievement celebrations
+  </div>
+  <div class="strength">
+    <div class="label">🔐 Auth</div>
+    Multi-platform auth with proper pre-initialization on desktop
+  </div>
+  <div class="strength">
+    <div class="label">🔄 Gemini Failover</div>
+    Primary/backup API key rotation with automatic switch-on-failure
+  </div>
+  <div class="strength">
+    <div class="label">📱 Accessibility</div>
+    Text scaling clamp, semantic labels, 48×48 touch targets documented
+  </div>
+</div>
+
+<!-- ═══════════════════════ ROADMAP ═══════════════════════ -->
+<div class="roadmap">
+  <h3>🎯 RECOMMENDED FIX ORDER</h3>
+  <div class="phase">
+    <div class="phase-title now">▸ Before Launch (This Week)</div>
+    <ol>
+      <li>Fix splash version string <span class="time">— 15 min</span></li>
+      <li>Fix "Within tolerance" hardcoded badge <span class="time">— 15 min</span></li>
+      <li>Add rate limiting to backend <span class="time">— 1 hour</span></li>
+      <li>Validate CORS in production <span class="time">— 15 min</span></li>
+    </ol>
+  </div>
+  <div class="phase">
+    <div class="phase-title next">▸ Before Scaling (Next Sprint)</div>
+    <ol start="5">
+      <li>Expand COACH_SYSTEM_PROMPT <span class="time">— 2–3 hours</span></li>
+      <li>Guard API calls with offline checks <span class="time">— 2–3 hours</span></li>
+      <li>Add retry to CloudAudioService <span class="time">— 1–2 hours</span></li>
+      <li>Fix achievement Firestore round-trips <span class="time">— 1 hour</span></li>
+      <li>Wire chat history into Gemini <span class="time">— 1 hour</span></li>
+      <li>Resolve RF classifier architecture <span class="time">— discussion</span></li>
+    </ol>
+  </div>
+  <div class="phase">
+    <div class="phase-title ongoing">▸ Ongoing</div>
+    <ol start="11">
+      <li>Expand test coverage (critical paths first)</li>
+    </ol>
+  </div>
+</div>
+
+<div class="footer">
+  OUTCALL Deep Audit — Prepared by Antigravity AI · March 13, 2026 · Confidential
+</div>
+
+</body>
+</html>

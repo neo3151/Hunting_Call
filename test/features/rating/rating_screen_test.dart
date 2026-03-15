@@ -25,10 +25,10 @@ void main() {
           sharedPreferences: mockPrefs,
         )),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        home: const RatingScreen(
+        home: RatingScreen(
           audioPath: '/test/dummy.wav',
           animalId: 'turkey_yelp',
           userId: 'test_user',
