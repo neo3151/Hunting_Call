@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 import 'package:outcall/features/rating/data/fingerprint_service.dart';
 
 /// Lightweight results screen for Quick Match mode.
@@ -55,10 +54,8 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
 
   Future<void> _runFingerprint() async {
     try {
-      final remoteConfig = ref.read(remoteConfigServiceProvider);
       final result = await FingerprintService.match(
         widget.audioPath,
-        baseUrl: remoteConfig.aiCoachUrl,
       );
       if (mounted) {
         setState(() {
@@ -79,7 +76,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Could not reach the AI backend. Make sure it\'s running.';
+          _error = 'Scoring is running in offline mode.';
           _isLoading = false;
         });
       }

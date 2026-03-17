@@ -21,7 +21,7 @@ flowchart LR
         DSP --> BNET["🐦 BirdNET-Lite<br/>TFLite on-device<br/>144K PCM → Species ID"]
     end
 
-    subgraph CLOUD["☁️ Railway Backend"]
+    subgraph CLOUD["☁️ Cloud Backend"]
         SCORE -->|"REST POST"| COACH["🤖 AI Coach<br/>Random Forest diagnosis<br/>+ Gemini LLM feedback"]
         MIC -->|"REST POST multipart"| FP["🔍 Fingerprint Match<br/>Spectral hash DB<br/>135+ reference clips"]
     end

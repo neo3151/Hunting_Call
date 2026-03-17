@@ -26,11 +26,11 @@
 | Component | Technology |
 |---|---|
 | Frontend | Flutter (Dart) — Android + Windows |
-| Backend | FastAPI (Python) on Railway |
+| Backend | FastAPI (Python) via Docker |
 | Database | Firestore (with offline persistence) |
 | Auth | Firebase Auth (Google + Anonymous) |
 | Remote Config | Firebase Remote Config |
-| AI Coaching | Google Gemini API (`gemini-2.0-flash`) via Railway |
+| AI Coaching | Google Gemini API (`gemini-2.0-flash`) via Cloud Backend |
 | Fingerprint DB | GCS (public bucket, downloaded at server startup) |
 | Audio Storage | Firebase Storage (paid calls), bundled assets (free calls) |
 | CI/CD | GitHub Actions (APK builds, model training pipeline) |
@@ -60,17 +60,16 @@
 
 ## Infrastructure & Hosting
 
-### Railway (AI Backend)
-- **URL**: `huntingcallaibackend-production.up.railway.app`
-- **Plan**: Hobby ($5/mo), warm always-on container
-- **Env vars**: `GEMINI_API_KEY`, `PORT` (set by Railway)
+### Cloud Backend (AI Backend)
+- **URL**: `api.huntingcalls.app`
+- **Env vars**: `GEMINI_API_KEY`, `PORT`, `APP_ENVIRONMENT`
 - **Startup**: `_ensure_models()` downloads fingerprint_db.json, coach_classifier.pkl, label_encoder.pkl from GCS if missing or detected as LFS pointer files
 - **Dockerfile**: Python 3.11 + FastAPI + Uvicorn
 - Response times: AI coaching ~1.2s, fingerprint ~200-500ms
 
 ### Google Cloud Storage (Models)
 - Public bucket with model files
-- Downloaded at Railway startup via `urllib.request.urlretrieve`
+- Downloaded at startup via `urllib.request.urlretrieve`
 - Files: `fingerprint_db.json` (~161MB), `coach_classifier.pkl`, `label_encoder.pkl`
 
 ### Firebase Services
@@ -159,7 +158,7 @@ python scripts/upload_play.py --track alpha --aab build/.../app-release.aab --na
 1. **Record** audio on phone (WAV)
 2. **Local analysis** (`_analyzeUseCase.execute()`) — FFT, MFCC, spectrogram on device
 3. **Reference analysis** — cached per animal, loaded from bundled assets (free) or Firebase Storage (paid)
-4. **Fingerprint match** — sends audio to Railway `/api/fingerprint` (10s timeout, optional)
+4. **Fingerprint match** — sends audio to backend `/api/fingerprint` (10s timeout, optional)
 5. **Score calculation** — pitch, timbre, rhythm, duration, envelope, formant, noise scoring
 6. **Personality feedback** — `PersonalityFeedbackService` generates critique
 7. **Save** to profile history, submit to leaderboard if score ≥ 60
@@ -191,7 +190,7 @@ python scripts/upload_play.py --track alpha --aab build/.../app-release.aab --na
 
 ## AI Coaching System
 
-### Current: Gemini API via Railway
+### Current: Gemini API via Cloud Backend
 - Model: `gemini-2.0-flash`
 - Endpoint: `POST /api/coaching`
 - Response time: ~1.2 seconds
@@ -281,7 +280,7 @@ Multi-stage approach:
 
 ### Chatbot (UPDATED)
 - **Previous**: Local Ollama via Cloudflare tunnel (DEPRECATED)
-- **Current**: Should be updated to use Railway/Gemini endpoint
+- **Current**: Uses Gemini API via cloud backend endpoint
 
 ---
 
@@ -301,7 +300,7 @@ Multi-stage approach:
 
 ### Backend
 - LFS pointer files: `_ensure_models()` checks file size <1000 bytes to detect pointers
-- Railway reads `PORT` from `os.environ` (no shell expansion)
+- Backend reads `PORT` from `os.environ` (no shell expansion)
 - `docker-compose.yml` for local development parity
 
 ### Accessibility

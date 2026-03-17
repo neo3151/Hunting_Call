@@ -42,7 +42,6 @@ void main() {
         callType: 'Yelp',
         result: result,
         idealPitchHz: 700.0,
-        baseUrl: 'http://localhost:1', // unreachable → triggers fallback
         audioPath: '/nonexistent.wav',
       );
 
@@ -62,7 +61,6 @@ void main() {
         callType: 'Bugle',
         result: result,
         idealPitchHz: 700.0,
-        baseUrl: 'http://localhost:1',
         audioPath: '/nonexistent.wav',
       );
 
@@ -78,7 +76,6 @@ void main() {
         callType: 'Grunt',
         result: result,
         idealPitchHz: 700.0,
-        baseUrl: 'http://localhost:1',
         audioPath: '/nonexistent.wav',
       );
 
@@ -102,7 +99,6 @@ void main() {
         callType: 'Bugle',
         result: result,
         idealPitchHz: 700.0,
-        baseUrl: 'http://localhost:1',
         audioPath: '/nonexistent.wav',
       );
 
@@ -127,7 +123,6 @@ void main() {
         callType: 'Gobble',
         result: result,
         idealPitchHz: 700.0,
-        baseUrl: 'http://localhost:1',
         audioPath: '/nonexistent.wav',
       );
 
@@ -152,7 +147,6 @@ void main() {
         callType: 'Quack',
         result: result,
         idealPitchHz: 700.0,
-        baseUrl: 'http://localhost:1',
         audioPath: '/nonexistent.wav',
       );
 
@@ -177,7 +171,6 @@ void main() {
         callType: 'Yelp',
         result: result,
         idealPitchHz: 700.0,
-        baseUrl: 'http://localhost:1',
         audioPath: '/nonexistent.wav',
       );
 

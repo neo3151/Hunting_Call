@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -361,7 +360,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
                           const Spacer(),
                           // Learn More Indicator
                           if (call.proTips.isNotEmpty)
-                            Icon(Icons.info_outline,
+                            const Icon(Icons.info_outline,
                                 size: 16,
                                 color: Colors.white38),
                         ],

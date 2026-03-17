@@ -23,31 +23,31 @@ class CategoryGridScreen extends ConsumerWidget {
     _CategoryItem(
       name: 'Waterfowl',
       icon: Icons.water,
-      imagePath: 'assets/images/animals/mallard.jpg',
+      imagePath: 'assets/images/animals/mallard.png',
       gradientColors: [Color(0xFF0D4F4F), Color(0xFF1A6B5A)],
     ),
     _CategoryItem(
       name: 'Big Game',
       icon: Icons.terrain,
-      imagePath: 'assets/images/animals/elk.jpg',
+      imagePath: 'assets/images/animals/elk.png',
       gradientColors: [Color(0xFF4A2C17), Color(0xFF6B3E1F)],
     ),
     _CategoryItem(
       name: 'Predators',
       icon: Icons.pets,
-      imagePath: 'assets/images/animals/coyote.jpg',
+      imagePath: 'assets/images/animals/coyote.png',
       gradientColors: [Color(0xFF2C3E50), Color(0xFF34495E)],
     ),
     _CategoryItem(
       name: 'Big Cats',
       icon: Icons.cruelty_free,
-      imagePath: 'assets/images/animals/bobcat.jpg',
+      imagePath: 'assets/images/animals/bobcat.png',
       gradientColors: [Color(0xFF5D3A1A), Color(0xFF8B5E3C)],
     ),
     _CategoryItem(
       name: 'Land Birds',
       icon: Icons.flutter_dash,
-      imagePath: 'assets/images/animals/turkey.jpg',
+      imagePath: 'assets/images/animals/turkey.png',
       gradientColors: [Color(0xFF2E4A1E), Color(0xFF4A6B2E)],
     ),
   ];

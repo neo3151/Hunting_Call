@@ -1,7 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:http/http.dart' as http;
 import 'package:outcall/core/utils/app_logger.dart';
 
 /// Result from a fingerprint match against the backend.
@@ -57,59 +53,23 @@ class FingerprintResult {
   }
 }
 
-/// Service that calls the Python backend's fingerprint matching endpoint.
+/// Service that provides audio fingerprint matching.
+///
+/// Previously this uploaded audio to the Python backend's `/api/fingerprint`
+/// endpoint (Railway). Now runs in offline mode — returns empty results.
+/// The Expert scoring pipeline gracefully falls back to pitch-based scoring
+/// when fingerprint data is unavailable.
 class FingerprintService {
-  static const String _fallbackBaseUrl = 'https://huntingcallaibackend-production.up.railway.app';
-
   /// Match a user's audio recording against the fingerprint database.
   ///
-  /// Uploads the actual audio file as multipart form data since the
-  /// backend runs on a different machine and can't access phone paths.
+  /// Currently returns empty (backend offline). The calling code in
+  /// [RealRatingService] and [QuickMatchScreen] handles empty results
+  /// gracefully by falling back to on-device scoring.
   static Future<FingerprintResult> match(
     String audioPath, {
     String? baseUrl,
   }) async {
-    final targetUrl = baseUrl ?? _fallbackBaseUrl;
-
-    try {
-      final file = File(audioPath);
-      if (!await file.exists()) {
-        AppLogger.d('Fingerprint: audio file not found at $audioPath');
-        return FingerprintResult.empty();
-      }
-
-      final fileSize = await file.length();
-      AppLogger.d('Fingerprint: sending $audioPath ($fileSize bytes) to $targetUrl/api/fingerprint');
-
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$targetUrl/api/fingerprint'),
-      );
-      // No special headers needed for Railway
-      request.files.add(
-        await http.MultipartFile.fromPath('audio', audioPath),
-      );
-
-      // Allow more time for first request (DB may be loading)
-      final streamedResponse = await request.send().timeout(
-        const Duration(seconds: 30),
-      );
-      final response = await http.Response.fromStream(streamedResponse);
-
-      AppLogger.d('Fingerprint: response ${response.statusCode}, body=${response.body.length > 200 ? response.body.substring(0, 200) : response.body}');
-
-      if (response.statusCode != 200) {
-        AppLogger.d('Fingerprint API returned ${response.statusCode}: ${response.body}');
-        return FingerprintResult.empty();
-      }
-
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final result = FingerprintResult.fromJson(data);
-      AppLogger.d('Fingerprint: score=${result.score}%, animal=${result.animal}, hashes=${result.totalUserHashes}');
-      return result;
-    } catch (e) {
-      AppLogger.d('Fingerprint match error: $e');
-      return FingerprintResult.empty();
-    }
+    AppLogger.d('Fingerprint: running in offline mode (server-side matching not available)');
+    return FingerprintResult.empty();
   }
 }
