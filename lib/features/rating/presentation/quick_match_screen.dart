@@ -56,18 +56,8 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     try {
       final result = await FingerprintService.match(
         widget.audioPath,
+        animalId: widget.animalId,
       );
-
-      // Fingerprint is in offline mode — redirect user to Expert mode
-      if (!result.hasMatch && result.score == 0) {
-        if (mounted) {
-          setState(() {
-            _error = 'Quick Match uses server-based fingerprinting which is currently offline.\n\nUse Expert mode for full on-device analysis with AI coaching.';
-            _isLoading = false;
-          });
-        }
-        return;
-      }
 
       if (mounted) {
         setState(() {
@@ -88,7 +78,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Scoring is running in offline mode.';
+          _error = 'Analysis failed. Please try recording again.';
           _isLoading = false;
         });
       }
@@ -216,7 +206,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            'Comparing against master fingerprints...',
+            'Analyzing your call...',
             style: GoogleFonts.lato(fontSize: 13, color: Colors.white60),
           ),
         ],

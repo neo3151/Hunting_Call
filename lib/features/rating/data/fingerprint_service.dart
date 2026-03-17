@@ -1,6 +1,10 @@
-import 'package:outcall/core/utils/app_logger.dart';
+import 'dart:io';
 
-/// Result from a fingerprint match against the backend.
+import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+
+/// Result from on-device audio fingerprint matching.
 class FingerprintResult {
   final String? clipId;
   final String animal;
@@ -53,23 +57,174 @@ class FingerprintResult {
   }
 }
 
-/// Service that provides audio fingerprint matching.
+/// On-device audio fingerprint matching service.
 ///
-/// Previously this uploaded audio to the Python backend's `/api/fingerprint`
-/// endpoint (Railway). Now runs in offline mode — returns empty results.
-/// The Expert scoring pipeline gracefully falls back to pitch-based scoring
-/// when fingerprint data is unavailable.
+/// Replaces the server-side librosa fingerprinting with local BirdNET ML
+/// species identification + pitch/spectral similarity analysis.
+///
+/// Uses [ComprehensiveAudioAnalyzer] (which includes BirdNET TFLite) to
+/// identify the species and compare the user's audio against the reference.
 class FingerprintService {
-  /// Match a user's audio recording against the fingerprint database.
+  /// Singleton analyzer instance reused across calls for speed.
+  static ComprehensiveAudioAnalyzer? _analyzer;
+
+  /// Match a user's audio recording against the reference database.
   ///
-  /// Currently returns empty (backend offline). The calling code in
-  /// [RealRatingService] and [QuickMatchScreen] handles empty results
-  /// gracefully by falling back to on-device scoring.
+  /// Runs BirdNET species classification + pitch analysis on-device.
+  /// Returns a [FingerprintResult] with the matched species and score.
   static Future<FingerprintResult> match(
     String audioPath, {
-    String? baseUrl,
+    String? animalId,
+    String? baseUrl, // kept for API compat, ignored
   }) async {
-    AppLogger.d('Fingerprint: running in offline mode (server-side matching not available)');
-    return FingerprintResult.empty();
+    final stopwatch = Stopwatch()..start();
+    AppLogger.d('QuickMatch: starting on-device analysis for $audioPath');
+
+    try {
+      final file = File(audioPath);
+      if (!await file.exists()) {
+        AppLogger.d('QuickMatch: audio file not found at $audioPath');
+        return FingerprintResult.empty();
+      }
+
+      // Lazy-init the analyzer
+      _analyzer ??= ComprehensiveAudioAnalyzer();
+
+      // Run the full on-device analysis (BirdNET + pitch + spectral)
+      final analysis = await _analyzer!.analyzeAudio(audioPath);
+      final elapsed = stopwatch.elapsedMilliseconds.toDouble();
+
+      // Check if we got any signal at all
+      if (analysis.dominantFrequencyHz == 0 && analysis.totalDurationSec == 0) {
+        AppLogger.d('QuickMatch: no audio signal detected');
+        return FingerprintResult(
+          score: 0,
+          elapsedMs: elapsed,
+          animal: 'unknown',
+        );
+      }
+
+      // BirdNET species identification
+      final speciesMatches = analysis.topSpeciesMatches;
+      if (speciesMatches.isEmpty) {
+        AppLogger.d('QuickMatch: BirdNET returned no species matches');
+        // Still return a result based on audio quality
+        return FingerprintResult(
+          score: analysis.callQualityScore.clamp(0, 100),
+          elapsedMs: elapsed,
+          animal: 'unknown',
+          callType: 'call',
+          clipId: 'local_${DateTime.now().millisecondsSinceEpoch}',
+          totalUserHashes: 1,
+        );
+      }
+
+      // Top species from BirdNET
+      final topSpecies = speciesMatches.entries.first;
+      final birdnetConfidence = topSpecies.value; // 0-100%
+      final speciesName = topSpecies.key;
+
+      // Find the closest matching reference call in our database
+      final allCalls = ReferenceDatabase.calls;
+      String matchedAnimal = speciesName;
+      String matchedCallType = 'call';
+      String? matchedClipId;
+      double pitchScore = 50.0;
+
+      // Try to match BirdNET species name to our reference database
+      for (final ref in allCalls) {
+        final refName = ref.animalName.toLowerCase();
+        final birdName = speciesName.toLowerCase();
+
+        // Fuzzy match: BirdNET label might be "Wild Turkey" while ref is "Wild Turkey"
+        // or "Mallard" while ref is "Mallard Duck"
+        if (refName.contains(birdName) ||
+            birdName.contains(refName) ||
+            _fuzzyMatch(refName, birdName)) {
+          matchedAnimal = ref.animalName;
+          matchedCallType = ref.callType;
+          matchedClipId = ref.id;
+
+          // Calculate pitch similarity to this reference
+          final idealPitch = ref.idealPitchHz;
+          if (idealPitch > 0 && analysis.dominantFrequencyHz > 0) {
+            final pitchDiff =
+                (analysis.dominantFrequencyHz - idealPitch).abs();
+            final maxDiff = idealPitch * 0.5; // 50% tolerance
+            pitchScore =
+                ((1.0 - (pitchDiff / maxDiff).clamp(0.0, 1.0)) * 100);
+          }
+          break;
+        }
+      }
+
+      // If we have an explicit animalId hint, use it for pitch comparison
+      if (animalId != null && matchedClipId == null) {
+        try {
+          final ref = ReferenceDatabase.getById(animalId);
+          matchedAnimal = ref.animalName;
+          matchedCallType = ref.callType;
+          matchedClipId = ref.id;
+
+          final idealPitch = ref.idealPitchHz;
+          if (idealPitch > 0 && analysis.dominantFrequencyHz > 0) {
+            final pitchDiff =
+                (analysis.dominantFrequencyHz - idealPitch).abs();
+            final maxDiff = idealPitch * 0.5;
+            pitchScore =
+                ((1.0 - (pitchDiff / maxDiff).clamp(0.0, 1.0)) * 100);
+          }
+        } catch (_) {
+          // Unknown animalId
+        }
+      }
+
+      // Composite score: BirdNET confidence (40%) + pitch accuracy (30%)
+      //                  + call quality (20%) + tone clarity (10%)
+      final compositeScore = (birdnetConfidence * 0.4 +
+              pitchScore * 0.3 +
+              analysis.callQualityScore.clamp(0, 100) * 0.2 +
+              analysis.toneClarity.clamp(0, 100) * 0.1)
+          .clamp(0.0, 100.0);
+
+      AppLogger.d(
+          'QuickMatch: $matchedAnimal ($matchedCallType) — BirdNET=${birdnetConfidence.toStringAsFixed(0)}%, '
+          'pitch=${pitchScore.toStringAsFixed(0)}%, quality=${analysis.callQualityScore.toStringAsFixed(0)}%, '
+          'composite=${compositeScore.toStringAsFixed(0)}% in ${elapsed.toStringAsFixed(0)}ms');
+
+      return FingerprintResult(
+        clipId: matchedClipId ?? 'local_${DateTime.now().millisecondsSinceEpoch}',
+        animal: matchedAnimal,
+        callType: matchedCallType,
+        score: compositeScore,
+        matchedHashes: speciesMatches.length, // number of species detected
+        elapsedMs: elapsed,
+        totalUserHashes: 1,
+      );
+    } catch (e) {
+      AppLogger.d('QuickMatch: analysis failed: $e');
+      return FingerprintResult(
+        score: 0,
+        elapsedMs: stopwatch.elapsedMilliseconds.toDouble(),
+      );
+    }
+  }
+
+  /// Simple fuzzy matching for BirdNET labels vs reference names.
+  static bool _fuzzyMatch(String a, String b) {
+    // Normalize
+    final aNorm = a.replaceAll(RegExp(r'[^a-z]'), '');
+    final bNorm = b.replaceAll(RegExp(r'[^a-z]'), '');
+
+    // Check if either contains 60%+ of the other
+    if (aNorm.length < 3 || bNorm.length < 3) return false;
+
+    int matches = 0;
+    final shorter = aNorm.length <= bNorm.length ? aNorm : bNorm;
+    final longer = aNorm.length > bNorm.length ? aNorm : bNorm;
+    for (int i = 0; i <= shorter.length - 3; i++) {
+      if (longer.contains(shorter.substring(i, i + 3))) matches++;
+    }
+    return matches / (shorter.length - 2) > 0.6;
   }
 }
