@@ -58518,23 +58518,6 @@
       "isLocked": false
     },
     {
-      "id": "beaver_tail_slap",
-      "animalName": "American Beaver",
-      "callType": "Tail Slap Alarm",
-      "category": "Predators",
-      "difficulty": "Easy",
-      "description": "The distinctive loud crack of a beaver slapping its tail on the water surface — a universal alarm signal that sends the whole colony diving.",
-      "proTips": "A sharp, percussive crack followed by a splash. Don't try to sustain it — it's a single emphatic impact.",
-      "idealPitchHz": 500.0,
-      "idealDurationSec": 11.2,
-      "audioAssetPath": "assets/audio/beaver_slap.mp3",
-      "tolerancePitch": 200.0,
-      "toleranceDuration": 2.0,
-      "scientificName": "Castor canadensis",
-      "imageUrl": "assets/images/animals/beaver.png",
-      "isLocked": false
-    },
-    {
       "id": "raccoon_hiss",
       "animalName": "Raccoon",
       "callType": "Defensive Hiss",

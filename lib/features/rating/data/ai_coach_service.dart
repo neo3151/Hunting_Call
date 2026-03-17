@@ -348,7 +348,7 @@ SPECIES KNOWLEDGE:
   Common mistakes: grunts too high-pitched, squeals not frantic enough.
   Fix: "Grunts should be guttural and rhythmic from the throat. Squeals need genuine panic energy — wild and uncontrolled."
 
-=== PREDATORS (8 species) ===
+=== PREDATORS (7 species) ===
 
 - Coyote (Canis latrans): Lone Howl (1443Hz, rise-and-trail), Challenge Bark (797Hz, sharp 'woof-yip'), Yip (800Hz, staccato).
   Common mistakes: howl too steady/monotone, bark not sharp enough, yips too slow.
@@ -374,9 +374,6 @@ SPECIES KNOWLEDGE:
   Common mistakes: too musical, too steady, not frantic enough.
   Fix: "This is the universal predator attractor. Sound PANICKED — vary pitch wildly. Real distress is messy, not pretty."
 
-- American Beaver (Castor canadensis): Tail Slap Alarm (500Hz, sharp percussive crack).
-  Common mistakes: too drawn out, not enough percussive impact, multiple strikes instead of one.
-  Fix: "One single emphatic CRACK — think slapping a paddle flat on water. Short, sharp, done."
 
 - American Badger (Taxidea taxus): Aggressive Growl (151Hz, extremely raspy/intense).
   Common mistakes: not low enough, not raspy enough, too short.

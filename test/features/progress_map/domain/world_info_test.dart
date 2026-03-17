@@ -3,8 +3,8 @@ import 'package:outcall/features/progress_map/domain/world_info.dart';
 
 void main() {
   group('WorldInfo', () {
-    test('has 5 worlds defined', () {
-      expect(worlds.length, 5);
+    test('has 7 worlds defined', () {
+      expect(worlds.length, 7);
     });
 
     test('each world has a unique name', () {
@@ -15,6 +15,8 @@ void main() {
     test('world names match expected roster', () {
       final names = worlds.map((w) => w.name).toList();
       expect(names, contains('MARSHLANDS'));
+      expect(names, contains('BAYOU'));
+      expect(names, contains('FLYWAY'));
       expect(names, contains('THE RIDGE'));
       expect(names, contains('HOWL CANYON'));
       expect(names, contains('SHADOW PEAK'));

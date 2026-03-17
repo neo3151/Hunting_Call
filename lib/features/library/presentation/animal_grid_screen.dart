@@ -67,7 +67,7 @@ class AnimalGridScreen extends ConsumerWidget {
     'Trumpeter Swan': 'assets/images/animals/trumpeter_swan.png',
     'Tundra Swan': 'assets/images/animals/tundra_swan.png',
     'Moose': 'assets/images/animals/moose.png',
-    'American Beaver': 'assets/images/animals/beaver.png',
+    'Awebo': 'assets/images/animals/willow_ptarmigan.png',
     'American Wigeon': 'assets/images/animals/american_wigeon.png',
     'Bufflehead': 'assets/images/animals/bufflehead.png',
     'Gadwall': 'assets/images/animals/gadwall.png',
