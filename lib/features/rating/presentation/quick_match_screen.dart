@@ -57,6 +57,18 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
       final result = await FingerprintService.match(
         widget.audioPath,
       );
+
+      // Fingerprint is in offline mode — redirect user to Expert mode
+      if (!result.hasMatch && result.score == 0) {
+        if (mounted) {
+          setState(() {
+            _error = 'Quick Match uses server-based fingerprinting which is currently offline.\n\nUse Expert mode for full on-device analysis with AI coaching.';
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
       if (mounted) {
         setState(() {
           _result = result;
@@ -222,15 +234,15 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.redAccent.withValues(alpha: 0.1),
+                color: const Color(0xFFFFD54F).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.wifi_off_rounded,
-                  color: Colors.redAccent, size: 64),
+              child: const Icon(Icons.cloud_off_rounded,
+                  color: Color(0xFFFFD54F), size: 64),
             ),
             const SizedBox(height: 32),
             Text(
-              'CONNECTION ERROR',
+              'OFFLINE MODE',
               style: GoogleFonts.oswald(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -242,21 +254,15 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: GoogleFonts.lato(fontSize: 16, color: Colors.white70),
+              style: GoogleFonts.lato(fontSize: 15, color: Colors.white70, height: 1.5),
             ),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _isLoading = true;
-                    _error = null;
-                  });
-                  _runFingerprint();
-                },
-                icon: const Icon(Icons.refresh_rounded),
-                label: Text('TRY AGAIN',
+                onPressed: () => Navigator.of(context).pop('switch_to_expert'),
+                icon: const Icon(Icons.analytics_rounded),
+                label: Text('SWITCH TO EXPERT',
                     style: GoogleFonts.oswald(
                         letterSpacing: 1.5, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
@@ -267,6 +273,12 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                       borderRadius: BorderRadius.circular(12)),
                 ),
               ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Go Back',
+                  style: GoogleFonts.lato(color: Colors.white38, fontSize: 14)),
             ),
           ],
         ),

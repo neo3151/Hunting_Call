@@ -68,6 +68,11 @@ class AnimalGridScreen extends ConsumerWidget {
     'Tundra Swan': 'assets/images/animals/tundra_swan.png',
     'Moose': 'assets/images/animals/moose.png',
     'American Beaver': 'assets/images/animals/beaver.png',
+    'American Wigeon': 'assets/images/animals/american_wigeon.png',
+    'Bufflehead': 'assets/images/animals/bufflehead.png',
+    'Gadwall': 'assets/images/animals/gadwall.png',
+    'Green-Winged Teal': 'assets/images/animals/green_winged_teal.png',
+    'Northern Shoveler': 'assets/images/animals/northern_shoveler.png',
   };
 
   /// Gradient color pairs per category for visual consistency.
