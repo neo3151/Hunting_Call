@@ -270,41 +270,46 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
             ? _buildReviewState()
             : isLoading
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          width: 80,
-                          height: 80,
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF5FF7B6),
-                            strokeWidth: 6,
-                          ),
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 80),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              width: 80,
+                              height: 80,
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF5FF7B6),
+                                strokeWidth: 6,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            Text(
+                              'ANALYZING YOUR CALL',
+                              style: GoogleFonts.oswald(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Extracting frequency patterns...',
+                              style: GoogleFonts.lato(
+                                fontSize: 13,
+                                color: Colors.white60,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 32),
-                        Text(
-                          'ANALYZING YOUR CALL',
-                          style: GoogleFonts.oswald(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Extracting frequency patterns...',
-                          style: GoogleFonts.lato(
-                            fontSize: 13,
-                            color: Colors.white60,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   )
                 : error != null
                     ? Center(
-                        child: Padding(
+                        child: SingleChildScrollView(
                           padding: const EdgeInsets.all(32.0),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -446,7 +451,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
 
   Widget _buildReviewState() {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

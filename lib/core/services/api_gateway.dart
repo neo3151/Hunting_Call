@@ -218,6 +218,6 @@ class FiredartApiGateway implements ApiGateway {
         .orderBy(orderByField, descending: true)
         .limit(limit)
         .get();
-    return query.map((d) => d.map).toList();
+    return query.map((d) => {...d.map, 'id': d.id}).toList();
   }
 }

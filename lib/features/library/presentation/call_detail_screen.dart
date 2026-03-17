@@ -110,6 +110,13 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                             height: 350,
                             fit: BoxFit.cover,
                             alignment: AnimalImageAlignment.forImage(widget.call.imageUrl),
+                            errorBuilder: (_, __, ___) => Container(
+                              width: double.infinity,
+                              height: 350,
+                              color: palette.surface,
+                              child: Icon(Icons.image_not_supported_outlined,
+                                  color: palette.textSubtle, size: 48),
+                            ),
                           ),
                         ),
                       ),

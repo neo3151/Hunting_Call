@@ -425,7 +425,9 @@ class UnifiedProfileRepository implements ProfileRepository {
           .getTopDocuments(_collectionPath, 'averageScore', limit: limit)
           .timeout(const Duration(seconds: 8));
 
-      return query
+      AppLogger.d('📊 getTopGlobalUsers: orderBy query returned ${query.length} docs');
+
+      List<UserProfile> profiles = query
           .map((data) {
             final id = data['id'] as String? ?? 'unknown';
             _sanitizeProfileData(data, id);
@@ -444,6 +446,7 @@ class UnifiedProfileRepository implements ProfileRepository {
               }
               return profile;
             } catch (e) {
+              AppLogger.d('⚠️ Failed to parse profile $id: $e');
               return UserProfile(
                 id: id,
                 name: data['name'] ?? 'Error Profile',
@@ -453,8 +456,24 @@ class UnifiedProfileRepository implements ProfileRepository {
           })
           .where((p) => p.totalCalls > 0)
           .toList();
-    } catch (e) {
-      AppLogger.d('❌ Error getting top global users: $e');
+
+      // Fallback: if orderBy query returned nothing (profiles may lack the
+      // 'averageScore' field), fetch all profiles and sort client-side.
+      if (profiles.isEmpty) {
+        AppLogger.d('📊 getTopGlobalUsers: orderBy empty, falling back to getAllProfiles');
+        final allProfiles = await getAllProfiles();
+        profiles = allProfiles
+            .where((p) => p.totalCalls > 0)
+            .toList()
+          ..sort((a, b) => b.averageScore.compareTo(a.averageScore));
+        if (profiles.length > limit) {
+          profiles = profiles.sublist(0, limit);
+        }
+      }
+
+      return profiles;
+    } catch (e, st) {
+      AppLogger.d('❌ Error getting top global users: $e\n$st');
       return [];
     }
   }

@@ -183,40 +183,42 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
 
   Widget _buildLoading() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(
-            width: 80,
-            height: 80,
-            child: CircularProgressIndicator(
-              color: Color(0xFF5FF7B6),
-              strokeWidth: 6,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(
+              width: 80,
+              height: 80,
+              child: CircularProgressIndicator(
+                color: Color(0xFF5FF7B6),
+                strokeWidth: 6,
+              ),
             ),
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'MATCHING YOUR CALL',
-            style: GoogleFonts.oswald(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 2,
+            const SizedBox(height: 32),
+            Text(
+              'MATCHING YOUR CALL',
+              style: GoogleFonts.oswald(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Analyzing your call...',
-            style: GoogleFonts.lato(fontSize: 13, color: Colors.white60),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              'Analyzing your call...',
+              style: GoogleFonts.lato(fontSize: 13, color: Colors.white60),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildError() {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

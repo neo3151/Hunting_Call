@@ -182,6 +182,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                       child: Image.asset(
                         'assets/images/splash_logo.png',
                         fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                       ),
                     ),
 

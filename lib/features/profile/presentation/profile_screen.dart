@@ -231,6 +231,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ? CircleAvatar(
                       radius: 50,
                       backgroundImage: NetworkImage(profile.avatarUrl!),
+                      onBackgroundImageError: (_, __) {},
+                      backgroundColor: AppColors.of(context).surface,
+                      child: Icon(Icons.person, size: 50, color: AppColors.of(context).textSecondary),
                     )
                   : CircleAvatar(
                       radius: 50,
