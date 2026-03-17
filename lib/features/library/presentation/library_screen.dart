@@ -26,10 +26,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
   final List<String> _categories = [
     'All',
     'Favorites',
-    'Waterfowl',
+    'Ducks',
+    'Geese',
+    'Diving',
     'Big Game',
     'Predators',
-    'Land Birds'
+    'Land Birds',
   ];
   AudioService? _audioService;
 

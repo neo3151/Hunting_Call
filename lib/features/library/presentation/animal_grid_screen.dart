@@ -77,7 +77,9 @@ class AnimalGridScreen extends ConsumerWidget {
 
   /// Gradient color pairs per category for visual consistency.
   static const Map<String, List<Color>> _categoryGradients = {
-    'Waterfowl': [Color(0xFF0D4F4F), Color(0xFF1A6B5A)],
+    'Ducks': [Color(0xFF0D4F4F), Color(0xFF1A6B5A)],
+    'Geese': [Color(0xFF0A3D4F), Color(0xFF126B6B)],
+    'Diving': [Color(0xFF0A2A4F), Color(0xFF1A4B7A)],
     'Big Game': [Color(0xFF4A2C17), Color(0xFF6B3E1F)],
     'Predators': [Color(0xFF2C3E50), Color(0xFF34495E)],
     'Big Cats': [Color(0xFF5D3A1A), Color(0xFF8B5E3C)],

@@ -246,9 +246,13 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
 
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
+      case 'ducks': return Icons.water;
+      case 'geese': return Icons.water;
+      case 'diving': return Icons.waves;
       case 'waterfowl': return Icons.water;
       case 'big game': return Icons.landscape;
       case 'predators': return Icons.security;
+      case 'big cats': return Icons.cruelty_free;
       case 'land birds': return Icons.forest;
       default: return Icons.category;
     }

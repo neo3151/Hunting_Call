@@ -21,10 +21,22 @@ class CategoryGridScreen extends ConsumerWidget {
   /// Map of category names to representative animal images and gradient colors.
   static const List<_CategoryItem> _categories = [
     _CategoryItem(
-      name: 'Waterfowl',
+      name: 'Ducks',
       icon: Icons.water,
       imagePath: 'assets/images/animals/mallard.png',
       gradientColors: [Color(0xFF0D4F4F), Color(0xFF1A6B5A)],
+    ),
+    _CategoryItem(
+      name: 'Geese',
+      icon: Icons.water,
+      imagePath: 'assets/images/animals/canada_goose.png',
+      gradientColors: [Color(0xFF0A3D4F), Color(0xFF126B6B)],
+    ),
+    _CategoryItem(
+      name: 'Diving',
+      icon: Icons.waves,
+      imagePath: 'assets/images/animals/bufflehead.png',
+      gradientColors: [Color(0xFF0A2A4F), Color(0xFF1A4B7A)],
     ),
     _CategoryItem(
       name: 'Big Game',

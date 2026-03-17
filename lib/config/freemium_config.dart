@@ -3,7 +3,7 @@ class FreemiumConfig {
   /// These IDs are UNLOCKED in the Free version.
   /// All other calls will be locked behind Premium.
   static const Set<String> freeCallIds = {
-    // Waterfowl
+    // Ducks
     'duck_mallard_greeting',    // Mallard Greeting
     'goose_canadian_honk',      // Canada Goose Honk
     'duck_wood_duck_whistle',   // Wood Duck Whistle
