@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
@@ -108,9 +109,16 @@ class FingerprintService {
       final speciesMatches = analysis.topSpeciesMatches;
       if (speciesMatches.isEmpty) {
         AppLogger.d('QuickMatch: BirdNET returned no species matches');
-        // Still return a result based on audio quality
+        // No species identified — BirdNET=0, pitch=0, only quality/clarity
+        // contribute. The sigmoid curve will push this low (~5-15%).
+        final noMatchScore = computeScore(
+          birdnetConfidence: 0,
+          pitchScore: 0,
+          callQuality: analysis.callQualityScore.clamp(0, 100),
+          toneClarity: analysis.toneClarity.clamp(0, 100),
+        );
         return FingerprintResult(
-          score: analysis.callQualityScore.clamp(0, 100),
+          score: noMatchScore,
           elapsedMs: elapsed,
           animal: 'unknown',
           callType: 'call',
@@ -129,7 +137,7 @@ class FingerprintService {
       String matchedAnimal = speciesName;
       String matchedCallType = 'call';
       String? matchedClipId;
-      double pitchScore = 50.0;
+      double pitchScore = 25.0;
 
       // Try to match BirdNET species name to our reference database
       for (final ref in allCalls) {
@@ -179,18 +187,17 @@ class FingerprintService {
         }
       }
 
-      // Composite score: BirdNET confidence (40%) + pitch accuracy (30%)
-      //                  + call quality (20%) + tone clarity (10%)
-      final compositeScore = (birdnetConfidence * 0.4 +
-              pitchScore * 0.3 +
-              analysis.callQualityScore.clamp(0, 100) * 0.2 +
-              analysis.toneClarity.clamp(0, 100) * 0.1)
-          .clamp(0.0, 100.0);
+      final compositeScore = computeScore(
+        birdnetConfidence: birdnetConfidence,
+        pitchScore: pitchScore,
+        callQuality: analysis.callQualityScore,
+        toneClarity: analysis.toneClarity,
+      );
 
       AppLogger.d(
           'QuickMatch: $matchedAnimal ($matchedCallType) — BirdNET=${birdnetConfidence.toStringAsFixed(0)}%, '
           'pitch=${pitchScore.toStringAsFixed(0)}%, quality=${analysis.callQualityScore.toStringAsFixed(0)}%, '
-          'composite=${compositeScore.toStringAsFixed(0)}% in ${elapsed.toStringAsFixed(0)}ms');
+          'score=${compositeScore.toStringAsFixed(0)}% in ${elapsed.toStringAsFixed(0)}ms');
 
       return FingerprintResult(
         clipId: matchedClipId ?? 'local_${DateTime.now().millisecondsSinceEpoch}',
@@ -208,6 +215,31 @@ class FingerprintService {
         elapsedMs: stopwatch.elapsedMilliseconds.toDouble(),
       );
     }
+  }
+
+  /// Compute the Quick Match composite score.
+  ///
+  /// Combines four sub-scores with weighted averages, then applies a
+  /// sigmoid contrast curve to spread results away from 50%.
+  /// All inputs should be 0-100.
+  ///
+  /// Returns the final curved score (0-100).
+  static double computeScore({
+    required double birdnetConfidence,
+    required double pitchScore,
+    required double callQuality,
+    required double toneClarity,
+  }) {
+    // Weighted average: BirdNET 35% + pitch 35% + quality 15% + clarity 15%
+    final rawScore = (birdnetConfidence.clamp(0, 100) * 0.35 +
+            pitchScore.clamp(0, 100) * 0.35 +
+            callQuality.clamp(0, 100) * 0.15 +
+            toneClarity.clamp(0, 100) * 0.15)
+        .clamp(0.0, 100.0);
+
+    // Sigmoid contrast: pushes scores away from 50%
+    //   20 raw → ~8, 30 → ~17, 50 → 50, 70 → ~83, 85 → ~94
+    return (100.0 / (1.0 + exp(-0.08 * (rawScore - 50.0)))).clamp(0.0, 100.0);
   }
 
   /// Simple fuzzy matching for BirdNET labels vs reference names.
