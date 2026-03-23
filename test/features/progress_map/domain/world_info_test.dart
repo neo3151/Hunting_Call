@@ -3,8 +3,8 @@ import 'package:outcall/features/progress_map/domain/world_info.dart';
 
 void main() {
   group('WorldInfo', () {
-    test('has 5 worlds defined', () {
-      expect(worlds.length, 5);
+    test('has 8 worlds defined', () {
+      expect(worlds.length, 8);
     });
 
     test('each world has a unique name', () {
@@ -15,15 +15,23 @@ void main() {
     test('world names match expected roster', () {
       final names = worlds.map((w) => w.name).toList();
       expect(names, contains('MARSHLANDS'));
+      expect(names, contains('TIDEWATER BAY'));
+      expect(names, contains('BAYOU CROSSING'));
+      expect(names, contains('FLYWAY DELTA'));
       expect(names, contains('THE RIDGE'));
       expect(names, contains('HOWL CANYON'));
       expect(names, contains('SHADOW PEAK'));
       expect(names, contains('TIMBER HOLLOW'));
     });
 
-    test('each world maps to a unique category', () {
-      final categories = worlds.map((w) => w.category).toSet();
-      expect(categories.length, worlds.length);
+    test('each world has either animalNames or categories', () {
+      for (final w in worlds) {
+        expect(
+          w.animalNames.isNotEmpty || w.categories.isNotEmpty,
+          isTrue,
+          reason: '${w.name} should have animalNames or categories',
+        );
+      }
     });
   });
 
@@ -62,6 +70,10 @@ void main() {
       expect(getAnimalEmoji('Mountain Cougar'), '🐆');
     });
 
+    test('returns lion emoji for lion', () {
+      expect(getAnimalEmoji('Lion Scream'), '🦁');
+    });
+
     test('returns turkey emoji for turkey', () {
       expect(getAnimalEmoji('Wild Turkey Gobble'), '🦃');
     });
@@ -74,6 +86,10 @@ void main() {
 
     test('returns hog emoji for hogs', () {
       expect(getAnimalEmoji('Wild Hog Squeal'), '🐗');
+    });
+
+    test('returns sparkle emoji for awebo', () {
+      expect(getAnimalEmoji('Awebo'), '✨');
     });
 
     test('returns default target emoji for unknown animals', () {

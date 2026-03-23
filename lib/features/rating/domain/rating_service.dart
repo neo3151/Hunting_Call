@@ -4,5 +4,6 @@ abstract class RatingService {
   Future<RatingResult> rateCall(String userId, String audioPath, String animalType, {
     double scoreOffset = 0.0,
     double micSensitivity = 1.0,
+    bool skipFingerprint = false,
   });
 }

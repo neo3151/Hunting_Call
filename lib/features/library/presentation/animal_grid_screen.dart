@@ -56,6 +56,15 @@ class AnimalGridScreen extends ConsumerWidget {
     'Mourning Dove': 'assets/images/animals/mourning_dove.jpg',
     'Great Horned Owl': 'assets/images/animals/great_horned_owl.jpg',
     'American Crow': 'assets/images/animals/crow.jpg',
+    'Green-Winged Teal': 'assets/images/animals/green_winged_teal.png',
+    'American Wigeon': 'assets/images/animals/american_wigeon.png',
+    'Bufflehead': 'assets/images/animals/bufflehead.png',
+    'Gadwall': 'assets/images/animals/gadwall.png',
+    'Northern Shoveler': 'assets/images/animals/northern_shoveler.png',
+    'Muscovy Duck': 'assets/images/animals/muscovy_duck.png',
+    'Fulvous Whistling-Duck': 'assets/images/animals/fulvous_whistling_duck.png',
+    'Lion': 'assets/images/animals/lion.png',
+    'Awebo': 'assets/images/animals/awebo.png',
   };
 
   /// Gradient color pairs per category for visual consistency.

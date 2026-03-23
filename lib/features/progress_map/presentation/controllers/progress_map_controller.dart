@@ -104,7 +104,7 @@ class ProgressMapNotifier extends Notifier<ProgressMapState> {
 
           for (final world in worlds) {
             final calls = allCalls
-                .where((c) => c.category == world.category)
+                .where((c) => world.containsCall(c))
                 .toList();
             final nodes = <MapNode>[];
             for (int i = 0; i < calls.length; i++) {

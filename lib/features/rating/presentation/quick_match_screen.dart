@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:outcall/core/services/remote_config/remote_config_service.dart';
-import 'package:outcall/features/rating/data/fingerprint_service.dart';
+import 'package:outcall/di_providers.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
+import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/rating/domain/rating_model.dart';
 
 /// Lightweight results screen for Quick Match mode.
 ///
-/// Shows the fingerprint match result with a large animated score,
-/// matched animal identification, and a simple tip. No waveform,
-/// no AI coach, no detailed analytics — just fast results.
+/// Runs on-device scoring (DSP analysis) to produce a fast match result.
+/// Shows the score, matched animal, and a simple tip.
 class QuickMatchScreen extends ConsumerStatefulWidget {
   final String audioPath;
   final String animalId;
@@ -26,7 +27,7 @@ class QuickMatchScreen extends ConsumerStatefulWidget {
 
 class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     with SingleTickerProviderStateMixin {
-  FingerprintResult? _result;
+  RatingResult? _result;
   bool _isLoading = true;
   String? _error;
 
@@ -44,7 +45,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
       parent: _scoreAnimController,
       curve: Curves.elasticOut,
     );
-    _runFingerprint();
+    _runAnalysis();
   }
 
   @override
@@ -53,13 +54,19 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     super.dispose();
   }
 
-  Future<void> _runFingerprint() async {
+  Future<void> _runAnalysis() async {
     try {
-      final remoteConfig = ref.read(remoteConfigServiceProvider);
-      final result = await FingerprintService.match(
+      final ratingService = ref.read(ratingServiceProvider);
+      final profile = ref.read(profileNotifierProvider).profile;
+      final userId = profile?.id ?? 'guest';
+
+      final result = await ratingService.rateCall(
+        userId,
         widget.audioPath,
-        baseUrl: remoteConfig.aiCoachUrl,
+        widget.animalId,
+        skipFingerprint: true, // Quick Match runs pure on-device DSP
       );
+
       if (mounted) {
         setState(() {
           _result = result;
@@ -79,7 +86,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Could not reach the AI backend. Make sure it\'s running.';
+          _error = 'Analysis failed: ${e.toString().replaceAll('Exception: ', '')}';
           _isLoading = false;
         });
       }
@@ -128,7 +135,11 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
       'dove': '🕊️',
       'hog': '🐗',
     };
-    return map[key] ?? '🎯';
+    // Check if any key is contained in the animal name
+    for (final entry in map.entries) {
+      if (key.contains(entry.key)) return entry.value;
+    }
+    return '🎯';
   }
 
   Color _scoreColor(double score) {
@@ -137,9 +148,6 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     if (score >= 50) return const Color(0xFFFFD54F);
     return const Color(0xFFFF5252);
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +205,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
           ),
           const SizedBox(height: 32),
           Text(
-            'MATCHING YOUR CALL',
+            'ANALYZING YOUR CALL',
             style: GoogleFonts.oswald(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -207,7 +215,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            'Comparing against master fingerprints...',
+            'Running on-device DSP analysis...',
             style: GoogleFonts.lato(fontSize: 13, color: Colors.white60),
           ),
         ],
@@ -228,12 +236,12 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                 color: Colors.redAccent.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.wifi_off_rounded,
+              child: const Icon(Icons.error_outline_rounded,
                   color: Colors.redAccent, size: 64),
             ),
             const SizedBox(height: 32),
             Text(
-              'CONNECTION ERROR',
+              'ANALYSIS ERROR',
               style: GoogleFonts.oswald(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -256,7 +264,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                     _isLoading = true;
                     _error = null;
                   });
-                  _runFingerprint();
+                  _runAnalysis();
                 },
                 icon: const Icon(Icons.refresh_rounded),
                 label: Text('TRY AGAIN',
@@ -281,6 +289,11 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     final result = _result!;
     final score = result.score;
     final color = _scoreColor(score);
+
+    // Get the animal name from the reference database
+    final reference = ReferenceDatabase.getById(widget.animalId);
+    final animalName = reference.animalName;
+    final callType = reference.callType;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -358,76 +371,20 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
           const SizedBox(height: 16),
 
           // Matched animal with emoji
-          if (result.hasMatch) ...[
-            Text(
-              _animalEmoji(result.animal),
-              style: const TextStyle(fontSize: 48),
+          Text(
+            _animalEmoji(animalName),
+            style: const TextStyle(fontSize: 48),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$animalName $callType',
+            style: GoogleFonts.oswald(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1,
             ),
-            const SizedBox(height: 8),
-            Text(
-              result.matchLabel,
-              style: GoogleFonts.oswald(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 1,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Matched in ${result.elapsedMs.toStringAsFixed(0)}ms',
-                    style: GoogleFonts.lato(
-                      fontSize: 12,
-                      color: color,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${result.matchedHashes} hashes',
-                    style: GoogleFonts.lato(
-                      fontSize: 12,
-                      color: Colors.white54,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ] else ...[
-            const Text('🤔', style: TextStyle(fontSize: 48)),
-            const SizedBox(height: 8),
-            Text(
-              'No Match Found',
-              style: GoogleFonts.oswald(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white54,
-                letterSpacing: 1,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Try a cleaner call or move to a quieter spot',
-              style: GoogleFonts.lato(fontSize: 14, color: Colors.white38),
-            ),
-          ],
+          ),
 
           const SizedBox(height: 32),
 
@@ -447,13 +404,31 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                     color: Color(0xFFFFD54F), size: 24),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    _getQuickTip(score),
-                    style: GoogleFonts.lato(
-                      fontSize: 15,
-                      color: Colors.white70,
-                      height: 1.4,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _getQuickTip(score),
+                        style: GoogleFonts.lato(
+                          fontSize: 15,
+                          color: Colors.white70,
+                          height: 1.4,
+                        ),
+                      ),
+                      if (result.feedback.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          result.feedback,
+                          style: GoogleFonts.lato(
+                            fontSize: 13,
+                            color: Colors.white38,
+                            height: 1.3,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],

@@ -1,0 +1,9 @@
+﻿
+Name: google-api-pytho
+n-client
+Version: 2.190.0
+Name: 
+google-auth-oauthlib
+Version: 1.2.4
+
+

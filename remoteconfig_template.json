@@ -1,0 +1,22 @@
+{
+  "parameters": {
+    "ai_coach_url": {
+      "defaultValue": {
+        "value": "https://ruttish-incontrollably-christina.ngrok-free.dev"
+      },
+      "description": "Base URL for the AI backend (fingerprint, coach, chat). Update here when the server moves."
+    },
+    "is_leaderboard_enabled": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Kill switch for leaderboard feature"
+    },
+    "profanity_blocklist": {
+      "defaultValue": {
+        "value": ""
+      },
+      "description": "Comma-separated extra blocked terms for profanity filter"
+    }
+  }
+}

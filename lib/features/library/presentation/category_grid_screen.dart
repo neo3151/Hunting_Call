@@ -40,13 +40,13 @@ class CategoryGridScreen extends ConsumerWidget {
     ),
     _CategoryItem(
       name: 'Big Cats',
-      icon: Icons.cruelty_free,
+      icon: Icons.pets_rounded,
       imagePath: 'assets/images/animals/bobcat.jpg',
       gradientColors: [Color(0xFF5D3A1A), Color(0xFF8B5E3C)],
     ),
     _CategoryItem(
       name: 'Land Birds',
-      icon: Icons.flutter_dash,
+      icon: Icons.forest_rounded,
       imagePath: 'assets/images/animals/turkey.jpg',
       gradientColors: [Color(0xFF2E4A1E), Color(0xFF4A6B2E)],
     ),

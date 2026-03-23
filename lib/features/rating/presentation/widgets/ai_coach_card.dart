@@ -8,7 +8,7 @@ import 'package:outcall/features/rating/data/ai_coach_service.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 
 /// "Coach's Corner" — AI-powered coaching card shown after rating.
-/// Calls Gemma 3 4B via Cloud Function to generate personalized feedback.
+/// Calls Gemini 2.0 Flash via backend to generate personalized feedback.
 /// Gated behind isPremium.
 class AiCoachCard extends ConsumerStatefulWidget {
   final RatingResult result;
@@ -168,7 +168,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
               ),
               const Spacer(),
               Text(
-                'GEMMA 3',
+                'GEMINI',
                 style: GoogleFonts.lato(
                   fontSize: 9,
                   color: const Color(0xFFD4AF37).withValues(alpha: 0.5),

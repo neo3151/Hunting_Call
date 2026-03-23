@@ -232,7 +232,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                   );
                 },
                 child: const Text(
-                  'v1.5.0',
+                  'v2.1.0',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Color(0xFF3A3D44),

@@ -1,0 +1,11 @@
+{
+  "parameters": {
+    "ai_coach_url": {
+      "defaultValue": {
+        "value": "https://huntingcallaibackend-production.up.railway.app"
+      },
+      "description": "Dynamic AI backend URL (auto-updated by start_server.py)",
+      "valueType": "STRING"
+    }
+  }
+}

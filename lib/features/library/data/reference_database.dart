@@ -101,7 +101,7 @@ class ReferenceDatabase {
 
   /// Current app version used for staging filter.
   /// Bump this when releasing a new version to unlock staged calls.
-  static const String _appVersion = '2.0.0';
+  static const String _appVersion = '2.1.0';
 
   /// Returns true if the current app version meets or exceeds [requiredVersion].
   /// Compares major.minor.patch numerically (e.g., "2.1.0" >= "2.0.5").

@@ -5,8 +5,8 @@ import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/rating/data/coaching_session_history.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 
-/// Service that calls the Railway AI backend to get personalized
-/// AI coaching powered by Gemini 2.0 Flash.
+/// Service that calls the AI backend to get personalized
+/// coaching powered by Gemini 2.0 Flash.
 ///
 /// The backend uses Gemini with a hunting-specific system prompt
 /// covering species techniques, scoring metrics, and field strategy.
@@ -19,7 +19,7 @@ class AiCoachService {
   ///
   /// [baseUrl] should come from RemoteConfigService.aiCoachUrl for dynamic updates.
   /// Injects user's session history for personalized, adaptive coaching.
-  /// Returns the coaching text, or a fallback string if Ollama is unreachable.
+  /// Returns the coaching text, or a fallback string if backend is unreachable.
   static Future<String> getCoaching({
     required String animalName,
     required String callType,
@@ -42,8 +42,8 @@ class AiCoachService {
         }
       }
 
-      // Fallback matches the Remote Config default so real devices still work
-      final targetUrl = baseUrl ?? 'https://huntingcallaibackend-production.up.railway.app';
+      // baseUrl comes from RemoteConfig — fallback only used on desktop/tests
+      final targetUrl = baseUrl ?? 'https://ruttish-incontrollably-christina.ngrok-free.dev';
       
       final response = await http
           .post(

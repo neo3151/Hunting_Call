@@ -1,4 +1,4 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firedart/firedart.dart' as fd;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/services/api_gateway.dart';
@@ -6,6 +6,7 @@ import 'package:outcall/core/services/cloud_audio_service.dart';
 import 'package:outcall/core/services/file_service.dart';
 import 'package:outcall/core/services/simple_storage.dart';
 import 'package:outcall/core/services/version_check_service.dart';
+import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
 import 'package:outcall/features/analysis/data/real_rating_service.dart';
 import 'package:outcall/features/analysis/domain/frequency_analyzer.dart';
@@ -186,6 +187,7 @@ final ratingServiceProvider = Provider<RatingService>((ref) {
     profileRepository: ref.watch(profileRepositoryProvider),
     leaderboardService: ref.watch(leaderboardServiceProvider),
     cloudAudioService: ref.watch(cloudAudioServiceProvider),
+    backendBaseUrl: ref.watch(remoteConfigServiceProvider).aiCoachUrl,
   );
 });
 

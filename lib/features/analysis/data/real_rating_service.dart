@@ -27,6 +27,7 @@ class RealRatingService implements RatingService {
   final ProfileRepository profileRepository;
   final LeaderboardService? leaderboardService;
   final CloudAudioService? cloudAudioService;
+  final String? backendBaseUrl;
 
   Position? _currentPosition;
 
@@ -38,6 +39,7 @@ class RealRatingService implements RatingService {
     required this.profileRepository,
     this.leaderboardService,
     this.cloudAudioService,
+    this.backendBaseUrl,
   })  : _analyzeUseCase = analyzeUseCase,
         _calculateUseCase = calculateUseCase,
         _getDailyChallengeUseCase = getDailyChallengeUseCase;
@@ -51,12 +53,14 @@ class RealRatingService implements RatingService {
     String animalType, {
     double scoreOffset = 0.0,
     double micSensitivity = 1.0,
+    bool skipFingerprint = false,
   }) async {
     AppLogger.d('RealRatingService: rateCall started for $animalType at $audioPath');
 
     // Global timeout to prevent infinite spinner
     return await _rateCallInternal(userId, audioPath, animalType,
-        scoreOffset: scoreOffset, micSensitivity: micSensitivity)
+        scoreOffset: scoreOffset, micSensitivity: micSensitivity,
+        skipFingerprint: skipFingerprint)
       .timeout(
         const Duration(seconds: 45),
         onTimeout: () {
@@ -72,28 +76,29 @@ class RealRatingService implements RatingService {
     String animalType, {
     double scoreOffset = 0.0,
     double micSensitivity = 1.0,
+    bool skipFingerprint = false,
   }) async {
     final stopwatch = Stopwatch()..start();
     AppLogger.d('RealRatingService: _rateCallInternal started');
 
-    // Try to get location (fire and forget or await briefly?)
-    // Await briefly so we have it for the result
-    try {
-      final hasPermission = await Geolocator.checkPermission();
-      if (hasPermission == LocationPermission.always ||
-          hasPermission == LocationPermission.whileInUse) {
-        // High accuracy might take time, use medium
-        _currentPosition = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.medium,
-            timeLimit: Duration(seconds: 2),
-          ),
-        );
+    // Skip location for Quick Match — saves 2s
+    if (!skipFingerprint) {
+      try {
+        final hasPermission = await Geolocator.checkPermission();
+        if (hasPermission == LocationPermission.always ||
+            hasPermission == LocationPermission.whileInUse) {
+          _currentPosition = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+              timeLimit: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        AppLogger.d('Error getting location: $e');
       }
-    } catch (e) {
-      AppLogger.d('Error getting location: $e');
+      AppLogger.d('RealRatingService: Location done in ${stopwatch.elapsedMilliseconds}ms');
     }
-    AppLogger.d('RealRatingService: Location done in ${stopwatch.elapsedMilliseconds}ms');
 
     try {
       // 1. Get the ideal metrics
@@ -125,9 +130,10 @@ class RealRatingService implements RatingService {
           AppLogger.d('RealRatingService: Analyzing reference for $animalType (not cached)');
           final assetPath = reference.audioAssetPath;
 
-          // Use CloudAudioService if available, otherwise fall back to rootBundle
+          // Quick Match: always use rootBundle (fast, no network)
+          // Expert Mode: try CloudAudioService first (may have higher quality)
           String refFilePath;
-          if (cloudAudioService != null) {
+          if (cloudAudioService != null && !skipFingerprint) {
             refFilePath = await cloudAudioService!.resolveFilePath(reference.id, assetPath);
           } else {
             final ByteData data = await rootBundle.load(assetPath);
@@ -165,20 +171,26 @@ class RealRatingService implements RatingService {
         }
       } catch (_) { /* first call, no profile yet */ }
 
-      // Extract archetype label from fingerprint result
-      AppLogger.d('RealRatingService: Starting fingerprint at ${stopwatch.elapsedMilliseconds}ms');
-      try {
-        final fpResult = await FingerprintService.match(
-          audioPath,
-        ).timeout(const Duration(seconds: 10));
-        AppLogger.d('RealRatingService: Fingerprint done in ${stopwatch.elapsedMilliseconds}ms');
-        if (fpResult.hasMatch) {
-          fingerprintPct = fpResult.score;
-          archetypeLabel = fpResult.matchLabel;
-          AppLogger.d('Expert fingerprint: ${fpResult.matchLabel} ${fpResult.score}%');
+      // Fingerprint matching via ngrok-tunneled local backend
+      // Quick Match skips this for instant on-device results
+      if (!skipFingerprint) {
+        AppLogger.d('RealRatingService: Starting fingerprint at ${stopwatch.elapsedMilliseconds}ms');
+        try {
+          final fpResult = await FingerprintService.match(
+            audioPath,
+            baseUrl: backendBaseUrl,
+          ).timeout(const Duration(seconds: 15));
+          AppLogger.d('RealRatingService: Fingerprint done in ${stopwatch.elapsedMilliseconds}ms');
+          if (fpResult.hasMatch) {
+            fingerprintPct = fpResult.score;
+            archetypeLabel = fpResult.matchLabel;
+            AppLogger.d('Expert fingerprint: ${fpResult.matchLabel} ${fpResult.score}%');
+          }
+        } catch (e) {
+          AppLogger.d('Expert fingerprint failed, falling back to pitch: $e');
         }
-      } catch (e) {
-        AppLogger.d('Expert fingerprint failed (offline?), falling back to pitch: $e');
+      } else {
+        AppLogger.d('RealRatingService: Fingerprint skipped (Quick Match mode)');
       }
 
       final scoreResult = await _calculateUseCase.execute(

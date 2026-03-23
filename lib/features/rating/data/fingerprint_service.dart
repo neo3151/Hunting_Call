@@ -59,7 +59,7 @@ class FingerprintResult {
 
 /// Service that calls the Python backend's fingerprint matching endpoint.
 class FingerprintService {
-  static const String _fallbackBaseUrl = 'https://huntingcallaibackend-production.up.railway.app';
+  static const String _fallbackBaseUrl = 'https://ruttish-incontrollably-christina.ngrok-free.dev';
 
   /// Match a user's audio recording against the fingerprint database.
   ///
@@ -85,7 +85,7 @@ class FingerprintService {
         'POST',
         Uri.parse('$targetUrl/api/fingerprint'),
       );
-      // No special headers needed for Railway
+      // Standard multipart upload
       request.files.add(
         await http.MultipartFile.fromPath('audio', audioPath),
       );
