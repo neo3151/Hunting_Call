@@ -38,13 +38,17 @@ class SettingsScreen extends ConsumerWidget {
                       onPressed: () => Navigator.pop(context),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      'SETTINGS',
-                      style: GoogleFonts.oswald(
-                        color: colors.textPrimary,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
+                    Flexible(
+                      child: Text(
+                        'SETTINGS',
+                        style: GoogleFonts.oswald(
+                          color: colors.textPrimary,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

@@ -4,6 +4,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/profanity_filter.dart';
+import 'package:outcall/features/rating/data/ai_coach_service.dart';
 
 /// Provider for the RemoteConfigService
 final remoteConfigServiceProvider = Provider<RemoteConfigService>((ref) {
@@ -41,6 +42,9 @@ class RemoteConfigService {
 
       // Load remote profanity terms into the filter
       _loadProfanityTerms();
+
+      // Inject Gemini API key into the AI Coach service
+      _loadGeminiApiKey();
     } catch (e) {
       // If fetching fails (e.g., no internet), it will safely use the defaults
       AppLogger.d('Remote Config fetch failed: $e');
@@ -65,6 +69,15 @@ class RemoteConfigService {
 
     if (terms.isNotEmpty) {
       ProfanityFilter.loadRemoteTerms(terms);
+    }
+  }
+
+  /// Loads the Gemini API key from Remote Config and injects it into the AI Coach.
+  void _loadGeminiApiKey() {
+    final key = geminiApiKey;
+    if (key.isNotEmpty) {
+      AiCoachService.setApiKey(key);
+      AppLogger.d('Gemini API key loaded from Remote Config');
     }
   }
 }

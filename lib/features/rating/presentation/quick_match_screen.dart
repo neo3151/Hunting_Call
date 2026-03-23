@@ -192,15 +192,17 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
 
   Widget _buildLoading() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(
-            width: 80,
-            height: 80,
-            child: CircularProgressIndicator(
-              color: Color(0xFF5FF7B6),
-              strokeWidth: 6,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(
+              width: 80,
+              height: 80,
+              child: CircularProgressIndicator(
+                color: Color(0xFF5FF7B6),
+                strokeWidth: 6,
+              ),
             ),
           ),
           const SizedBox(height: 32),
@@ -225,7 +227,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
 
   Widget _buildError() {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -233,7 +235,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.redAccent.withValues(alpha: 0.1),
+                color: const Color(0xFFFFD54F).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.error_outline_rounded,
@@ -253,7 +255,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: GoogleFonts.lato(fontSize: 16, color: Colors.white70),
+              style: GoogleFonts.lato(fontSize: 15, color: Colors.white70, height: 1.5),
             ),
             const SizedBox(height: 40),
             SizedBox(
@@ -278,6 +280,12 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                       borderRadius: BorderRadius.circular(12)),
                 ),
               ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Go Back',
+                  style: GoogleFonts.lato(color: Colors.white38, fontSize: 14)),
             ),
           ],
         ),

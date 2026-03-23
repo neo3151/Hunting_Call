@@ -231,6 +231,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ? CircleAvatar(
                       radius: 50,
                       backgroundImage: NetworkImage(profile.avatarUrl!),
+                      onBackgroundImageError: (_, __) {},
+                      backgroundColor: AppColors.of(context).surface,
+                      child: Icon(Icons.person, size: 50, color: AppColors.of(context).textSecondary),
                     )
                   : CircleAvatar(
                       radius: 50,
@@ -260,6 +263,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               fontWeight: FontWeight.bold,
               color: AppColors.of(context).textPrimary,
               letterSpacing: 1.0),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         if (profile.nickname?.isNotEmpty == true && profile.name != profile.nickname)
           Text(
@@ -471,12 +476,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: GoogleFonts.oswald(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.of(context).textPrimary)),
+                      color: AppColors.of(context).textPrimary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis),
               Text(label,
                   style: GoogleFonts.lato(
                       fontSize: 10,
                       color: AppColors.of(context).textSubtle,
-                      fontWeight: FontWeight.bold)),
+                      fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis),
             ],
           ),
           ),
@@ -567,12 +576,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       Text(call.animalName.toUpperCase(),
                           style: GoogleFonts.oswald(
                               color: AppColors.of(context).textPrimary,
-                              fontWeight: FontWeight.bold)),
+                              fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                       Text(DateFormat.yMMMd().add_jm().format(item.timestamp).toUpperCase(),
                           style: GoogleFonts.lato(
                               color: AppColors.of(context).textSubtle,
                               fontSize: 10,
-                              fontWeight: FontWeight.bold)),
+                              fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),

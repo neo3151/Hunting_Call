@@ -202,6 +202,8 @@ class AchievementsScreen extends ConsumerWidget {
                     fontSize: 13,
                     color: palette.textSecondary,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -326,6 +328,8 @@ class AchievementsScreen extends ConsumerWidget {
                             ? palette.textPrimary
                             : palette.textSubtle,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -336,6 +340,8 @@ class AchievementsScreen extends ConsumerWidget {
                             ? palette.textSecondary
                             : palette.textSubtle.withValues(alpha: 0.6),
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

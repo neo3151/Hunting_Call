@@ -9,6 +9,7 @@ import 'package:outcall/core/services/cloud_audio_service.dart';
 import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/auth/presentation/auth_wrapper.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -22,10 +23,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
   late final AnimationController _shimmerController;
   late final Animation<double> _logoScale;
   late final Animation<double> _logoOpacity;
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
+
+    // Load real version from pubspec.yaml
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) setState(() => _appVersion = 'v${info.version}');
+    });
 
     // Logo entrance animation
     _logoController = AnimationController(
@@ -108,7 +115,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // #15: Clamp text scale on splash to prevent accessibility breakage
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaler: MediaQuery.of(context).textScaler.clamp(
+          minScaleFactor: 0.8,
+          maxScaleFactor: 1.35,
+        ),
+      ),
+      child: Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -167,6 +182,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                       child: Image.asset(
                         'assets/images/splash_logo.png',
                         fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                       ),
                     ),
 
@@ -234,7 +250,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                 child: const Text(
                   'v2.1.0',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Color(0xFF3A3D44),
                     fontSize: 12,
                     letterSpacing: 1.5,
@@ -245,6 +261,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
           ],
         ),
       ),
+    ),
     );
   }
 }

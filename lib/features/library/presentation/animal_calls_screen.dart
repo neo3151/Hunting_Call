@@ -313,6 +313,8 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
                                     fontWeight: FontWeight.w500,
                                     letterSpacing: 0.5,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                               Text(
@@ -322,6 +324,8 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -337,6 +341,8 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
                         call.description,
                         style: TextStyle(
                             color: palette.textTertiary, fontSize: 13, fontStyle: FontStyle.italic),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                     const SizedBox(height: 12),

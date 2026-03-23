@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
   firebase_auth
   firebase_core
+  firebase_remote_config
   firebase_storage
   flutter_secure_storage_windows
   geolocator_windows

@@ -65,41 +65,53 @@ class CloudAudioService {
       return AudioSource.file(cachePath);
     }
 
-    // Download from Firebase Storage
+    // Download from Firebase Storage with retry
     AppLogger.d('CloudAudioService: Downloading $callId from cloud...');
-    try {
-      final fileName = assetPath.split('/').last;
-      final file = File(cachePath);
-      
-      if (Platform.isWindows || Platform.isLinux) {
-        const bucket = 'hunting-call-perfection.firebasestorage.app';
-        final path = Uri.encodeComponent('$_storagePath/$fileName');
-        final url = 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$path?alt=media';
-        
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          await file.writeAsBytes(response.bodyBytes);
-        } else {
-          throw Exception('Failed to download audio: Http status ${response.statusCode}');
-        }
-      } else {
-        final ref = FirebaseStorage.instance.ref('$_storagePath/$fileName');
-        await ref.writeToFile(file);
-      }
-      
-      AppLogger.d('CloudAudioService: Downloaded $callId (${await file.length()} bytes)');
-      return AudioSource.file(cachePath);
-    } catch (e) {
-      AppLogger.d('CloudAudioService: Download failed for $callId: $e');
-      // Fallback: try to load from assets anyway (in case the file is still bundled)
+    const maxRetries = 3;
+    Exception? lastError;
+    
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        final strippedPath = assetPath.replaceFirst('assets/', '');
-        await rootBundle.load('assets/$strippedPath');
-        return AudioSource.asset(strippedPath);
+        final fileName = assetPath.split('/').last;
+        final file = File(cachePath);
+        
+        if (Platform.isWindows || Platform.isLinux) {
+          const bucket = 'hunting-call-perfection.firebasestorage.app';
+          final path = Uri.encodeComponent('$_storagePath/$fileName');
+          final url = 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$path?alt=media';
+          
+          final response = await http.get(Uri.parse(url));
+          if (response.statusCode == 200) {
+            await file.writeAsBytes(response.bodyBytes);
+          } else {
+            throw Exception('Failed to download audio: Http status ${response.statusCode}');
+          }
+        } else {
+          final ref = FirebaseStorage.instance.ref('$_storagePath/$fileName');
+          await ref.writeToFile(file);
+        }
+        
+        AppLogger.d('CloudAudioService: Downloaded $callId (${await file.length()} bytes)');
+        return AudioSource.file(cachePath);
       } catch (e) {
-        AppLogger.d('CloudAudioService: Fallback asset load also failed for $callId: $e');
-        rethrow;
+        lastError = e is Exception ? e : Exception(e.toString());
+        if (attempt < maxRetries) {
+          final delay = Duration(seconds: 1 << (attempt - 1)); // 1s, 2s, 4s
+          AppLogger.d('CloudAudioService: Download attempt $attempt failed for $callId, retrying in ${delay.inSeconds}s...');
+          await Future.delayed(delay);
+        }
       }
+    }
+    
+    // All retries exhausted — try bundled asset fallback
+    AppLogger.d('CloudAudioService: All $maxRetries download attempts failed for $callId: $lastError');
+    try {
+      final strippedPath = assetPath.replaceFirst('assets/', '');
+      await rootBundle.load('assets/$strippedPath');
+      return AudioSource.asset(strippedPath);
+    } catch (e) {
+      AppLogger.d('CloudAudioService: Fallback asset load also failed for $callId: $e');
+      rethrow;
     }
   }
 

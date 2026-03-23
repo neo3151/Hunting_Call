@@ -1,0 +1,182 @@
+{
+  "project_info": {
+    "project_number": "654995904748",
+    "project_id": "hunting-call-perfection",
+    "storage_bucket": "hunting-call-perfection.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654995904748:android:2e7e1da02e9b271482adc9",
+        "android_client_info": {
+          "package_name": "com.example.hunting_calls_perfection"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "654995904748-po26enttpuvabeuftm3tlsagof8o4ff2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hunting_calls_perfection",
+            "certificate_hash": "10e399e90e59095c7ac6626e1acbca412002fd41"
+          }
+        },
+        {
+          "client_id": "654995904748-4ng8c4m5k870eo0qjkjb991v5u2igmo1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHJwRjQq0nUA7LRrQL80XJ-spZGWsOwLs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "654995904748-4ng8c4m5k870eo0qjkjb991v5u2igmo1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "654995904748-o1q1bhsbf5n6gig6bbkfftvoosl9jo48.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.huntingCallsPerfection"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654995904748:android:97999200e4dd9deb82adc9",
+        "android_client_info": {
+          "package_name": "com.neo3151.huntingcalls"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "654995904748-6r4ncpb7h5uo5mvp44drqnn5lndvq25j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neo3151.huntingcalls",
+            "certificate_hash": "4d68a934e8b3b95a0842e0b809634f5d7214c17e"
+          }
+        },
+        {
+          "client_id": "654995904748-b1cubl61t4nu59jl735a3dhves2ughls.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neo3151.huntingcalls",
+            "certificate_hash": "d7ecd27839dd64e1eb7abee50865f2b1924ce448"
+          }
+        },
+        {
+          "client_id": "654995904748-ckgpl0tk2kj5gc2bc7n855jvq7ko5uht.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neo3151.huntingcalls",
+            "certificate_hash": "c0e2173907dce7e10d05eba458df55770d015bce"
+          }
+        },
+        {
+          "client_id": "654995904748-k968vpccc8m7j2bfe6nolcvj68avglf3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neo3151.huntingcalls",
+            "certificate_hash": "90e11b97d84fb83c6d211f83a99e131492f44ac0"
+          }
+        },
+        {
+          "client_id": "654995904748-m21vmhrvvvmqbq9ec8a2fo1cgpsr3csq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neo3151.huntingcalls",
+            "certificate_hash": "b6fdcf75b80fff434037146fc655adb65cc34b41"
+          }
+        },
+        {
+          "client_id": "654995904748-4ng8c4m5k870eo0qjkjb991v5u2igmo1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHJwRjQq0nUA7LRrQL80XJ-spZGWsOwLs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "654995904748-4ng8c4m5k870eo0qjkjb991v5u2igmo1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "654995904748-o1q1bhsbf5n6gig6bbkfftvoosl9jo48.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.huntingCallsPerfection"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654995904748:android:e8f02f7018cd3ab982adc9",
+        "android_client_info": {
+          "package_name": "com.neo3151.huntingcalls.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "654995904748-bcflmrl2snvh6dt18ildm0j5o04n8htc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neo3151.huntingcalls.dev",
+            "certificate_hash": "b6fdcf75b80fff434037146fc655adb65cc34b41"
+          }
+        },
+        {
+          "client_id": "654995904748-o9ghrh708aqecq201scfh09n1fcsp1s4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neo3151.huntingcalls.dev",
+            "certificate_hash": "10e399e90e59095c7ac6626e1acbca412002fd41"
+          }
+        },
+        {
+          "client_id": "654995904748-4ng8c4m5k870eo0qjkjb991v5u2igmo1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHJwRjQq0nUA7LRrQL80XJ-spZGWsOwLs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "654995904748-4ng8c4m5k870eo0qjkjb991v5u2igmo1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "654995904748-o1q1bhsbf5n6gig6bbkfftvoosl9jo48.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.huntingCallsPerfection"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

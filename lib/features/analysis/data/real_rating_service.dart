@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:outcall/core/services/bayesian_fusion_service.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
@@ -122,6 +123,18 @@ class RealRatingService implements RatingService {
         );
       }
 
+      // Bayesian Fusion: enhance BirdNET's blind classification with
+      // contextual priors from the species the user selected.
+      final enhancedAnalysis = userAnalysis.topSpeciesMatches.isNotEmpty
+          ? userAnalysis.copyWith(
+              topSpeciesMatches: BayesianFusionService.applyPriors(
+                rawResults: userAnalysis.topSpeciesMatches,
+                scientificName: reference.scientificName,
+                commonName: reference.animalName,
+              ),
+            )
+          : userAnalysis;
+
       // 3. Get or Analyze the reference audio
       AudioAnalysis? refAnalysis = _refCache[animalType];
 
@@ -198,7 +211,7 @@ class RealRatingService implements RatingService {
           userId: userId,
           recordingId: DateTime.now().millisecondsSinceEpoch.toString(),
           animalId: reference.id,
-          userAnalysis: userAnalysis,
+          userAnalysis: enhancedAnalysis,
           referenceAnalysis: refAnalysis,
           scoreOffset: scoreOffset,
           micSensitivity: micSensitivity,
@@ -257,7 +270,7 @@ class RealRatingService implements RatingService {
                 'Pitch floor is $hzDiff Hz too low. Increase your diaphragm pressure and tighten your air channel.';
           }
         } else if (timbreScore < pitchScore && timbreScore < rhythmScore) {
-          if (userAnalysis.nasality > (refAnalysis?.nasality ?? 50) + 15) {
+          if (enhancedAnalysis.nasality > (refAnalysis?.nasality ?? 50) + 15) {
             technicalFeedback =
                 'Critical spectral failure: too nasal. Open your nasal passages and resonate in your chest.';
           } else {
@@ -295,36 +308,36 @@ class RealRatingService implements RatingService {
           'score_noise': analysisResult.noiseScore.score,
           'score_fingerprint': analysisResult.fingerprintMatchPercent ?? -1,
           'rawScore': rawScore,
-          'avg_volume': userAnalysis.averageVolume * 100,
-          'peak_volume': userAnalysis.peakVolume * 100,
-          'consistency': userAnalysis.volumeConsistency,
-          'tone_clarity': userAnalysis.toneClarity,
-          'harmonic_richness': userAnalysis.harmonicRichness,
-          'call_quality': userAnalysis.callQualityScore,
-          'brightness': userAnalysis.brightness,
-          'warmth': userAnalysis.warmth,
-          'nasality': userAnalysis.nasality,
+          'avg_volume': enhancedAnalysis.averageVolume * 100,
+          'peak_volume': enhancedAnalysis.peakVolume * 100,
+          'consistency': enhancedAnalysis.volumeConsistency,
+          'tone_clarity': enhancedAnalysis.toneClarity,
+          'harmonic_richness': enhancedAnalysis.harmonicRichness,
+          'call_quality': enhancedAnalysis.callQualityScore,
+          'brightness': enhancedAnalysis.brightness,
+          'warmth': enhancedAnalysis.warmth,
+          'nasality': enhancedAnalysis.nasality,
         },
-        userWaveform: userAnalysis.waveform,
+        userWaveform: enhancedAnalysis.waveform,
         referenceWaveform: _crossCorrelateAlign(
-          userAnalysis.waveform,
+          enhancedAnalysis.waveform,
           reference.waveform ?? refAnalysis?.waveform,
         ),
         latitude: _currentPosition?.latitude,
         longitude: _currentPosition?.longitude,
         archetypeLabel: archetypeLabel,
         featureVectors: {
-          'pitchContour': userAnalysis.pitchContour,
-          'formants': userAnalysis.formants,
+          'pitchContour': enhancedAnalysis.pitchContour,
+          'formants': enhancedAnalysis.formants,
           'mfcc39': [
-            ...userAnalysis.mfccCoefficients,
-            ...userAnalysis.deltaMfcc,
-            ...userAnalysis.deltaDeltaMfcc,
+            ...enhancedAnalysis.mfccCoefficients,
+            ...enhancedAnalysis.deltaMfcc,
+            ...enhancedAnalysis.deltaDeltaMfcc,
           ],
           'envelope': [
-            userAnalysis.attackTime,
-            userAnalysis.sustainLevel,
-            userAnalysis.decayRate,
+            enhancedAnalysis.attackTime,
+            enhancedAnalysis.sustainLevel,
+            enhancedAnalysis.decayRate,
           ],
         },
       );

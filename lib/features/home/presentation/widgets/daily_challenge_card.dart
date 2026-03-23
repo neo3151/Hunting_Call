@@ -29,6 +29,7 @@ class DailyChallengeCard extends StatelessWidget {
                 challengeCall.imageUrl,
                 fit: BoxFit.cover,
                 alignment: AnimalImageAlignment.forImage(challengeCall.imageUrl),
+                errorBuilder: (_, __, ___) => Container(color: Colors.black54),
               ),
             ),
           ),

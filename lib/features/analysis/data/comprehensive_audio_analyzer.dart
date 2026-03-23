@@ -13,10 +13,10 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
   final _cache = WaveformCacheDatabase();
 
   ComprehensiveAudioAnalyzer() {
-    // Clear ALL cached waveforms — normalization curve changed from sqrt to
-    // pow(1.5), so every cached waveform is stale and must be recomputed.
-    _cache.clearCache().then((_) {
-      AppLogger.d('WaveformCache: Cleared all entries (normalization update)');
+    // Versioned migration: only clears cache when the normalization
+    // algorithm changes (version bump in WaveformCacheDatabase).
+    _cache.migrateIfNeeded().then((_) {
+      AppLogger.d('WaveformCache: Migration check complete');
     });
   }
 
@@ -56,6 +56,63 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     }
   }
 
+  /// Parses a WAV/RIFF file header by walking the chunk structure.
+  ///
+  /// Standard WAV layout:
+  ///   [RIFF header 12B] → [fmt chunk] → [optional chunks] → [data chunk]
+  /// The 'data' chunk can appear at any offset — not always byte 44.
+  /// Files with ID3 tags, LIST/INFO metadata, or bext chunks will push
+  /// the data start past the assumed 44-byte boundary.
+  static _WavInfo _parseWavHeader(Uint8List bytes) {
+    const fallback = _WavInfo(sampleRate: 44100, bitsPerSample: 16, dataOffset: 44);
+    if (bytes.length < 44) return fallback;
+
+    final view = bytes.buffer.asByteData();
+
+    // Verify RIFF magic: bytes 0-3 = 'RIFF', bytes 8-11 = 'WAVE'
+    final riff = String.fromCharCodes(bytes.sublist(0, 4));
+    final wave = String.fromCharCodes(bytes.sublist(8, 12));
+    if (riff != 'RIFF' || wave != 'WAVE') return fallback;
+
+    int sampleRate = 44100;
+    int bitsPerSample = 16;
+    int dataOffset = -1;
+
+    // Walk chunks starting at byte 12 (after RIFF header)
+    int offset = 12;
+    while (offset + 8 <= bytes.length) {
+      final chunkId = String.fromCharCodes(bytes.sublist(offset, offset + 4));
+      final chunkSize = view.getUint32(offset + 4, Endian.little);
+
+      if (chunkId == 'fmt ') {
+        // fmt chunk: offset+8 = audio format, +10 = channels,
+        //            +12 = sample rate, +20 = bits per sample
+        if (offset + 24 <= bytes.length) {
+          sampleRate = view.getUint32(offset + 12, Endian.little);
+        }
+        if (offset + 22 <= bytes.length) {
+          bitsPerSample = view.getUint16(offset + 22, Endian.little);
+        }
+      } else if (chunkId == 'data') {
+        dataOffset = offset + 8; // PCM data starts right after chunk header
+        break;
+      }
+
+      // Advance to next chunk (chunks are word-aligned: pad odd sizes)
+      offset += 8 + chunkSize;
+      if (chunkSize.isOdd) offset++;
+    }
+
+    // If we never found a data chunk, fall back to 44
+    if (dataOffset < 0) dataOffset = 44;
+
+    return _WavInfo(
+      sampleRate: sampleRate,
+      bitsPerSample: bitsPerSample,
+      dataOffset: dataOffset,
+    );
+  }
+
   /// Static entry point for the isolate
   static Future<AudioAnalysis> _runAnalysisInIsolate(String audioPath) async {
     final file = File(audioPath);
@@ -66,20 +123,20 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
 
     final ByteData view = bytes.buffer.asByteData();
 
-    // Parse WAV header
-    int sampleRate = 44100;
-    if (bytes.length >= 28) {
-      sampleRate = view.getUint32(24, Endian.little);
-    }
+    // Parse WAV header — walks RIFF chunks to find actual data offset
+    final wavInfo = _parseWavHeader(bytes);
+    final sampleRate = wavInfo.sampleRate;
+    final dataOffset = wavInfo.dataOffset;
+    final bytesPerSample = wavInfo.bitsPerSample ~/ 8;
 
     // Extract PCM data
-    final numSamples = (bytes.length - 44) ~/ 2;
+    final numSamples = (bytes.length - dataOffset) ~/ bytesPerSample;
     final totalDuration = numSamples / sampleRate;
 
-    // Convert to float samples
+    // Convert to float samples (16-bit PCM)
     final samples = Float64List(numSamples);
     for (var i = 0; i < numSamples; i++) {
-      final int sample = view.getInt16(44 + (i * 2), Endian.little);
+      final int sample = view.getInt16(dataOffset + (i * bytesPerSample), Endian.little);
       samples[i] = sample / 32768.0;
     }
 
@@ -1262,4 +1319,17 @@ class ComprehensiveAudioAnalyzer implements FrequencyAnalyzer {
     await _cache.cacheWaveform(path, waveform);
     return waveform;
   }
+}
+
+/// Parsed WAV file header info returned by [ComprehensiveAudioAnalyzer._parseWavHeader].
+class _WavInfo {
+  final int sampleRate;
+  final int bitsPerSample;
+  final int dataOffset;
+
+  const _WavInfo({
+    required this.sampleRate,
+    required this.bitsPerSample,
+    required this.dataOffset,
+  });
 }

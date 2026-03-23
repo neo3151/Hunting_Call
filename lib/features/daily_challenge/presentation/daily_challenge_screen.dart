@@ -66,6 +66,7 @@ class DailyChallengeScreen extends ConsumerWidget {
                     alignment: AnimalImageAlignment.forImage(challengeCall.imageUrl),
                     color: Colors.black87,
                     colorBlendMode: BlendMode.darken,
+                    errorBuilder: (_, __, ___) => Container(color: Colors.black87),
                   ),
                 ),
               ),
@@ -73,7 +74,7 @@ class DailyChallengeScreen extends ConsumerWidget {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 600),
                   child: SafeArea(
-                    child: Padding(
+                    child: SingleChildScrollView(
                       padding: const EdgeInsets.all(24.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +138,7 @@ class DailyChallengeScreen extends ConsumerWidget {
                           },
                         );
                       }),
-                      const Spacer(),
+                      const SizedBox(height: 24),
                       LeaderboardPreview(animalId: challengeCall.id),
                       const SizedBox(height: 24),
                     ],
@@ -175,21 +176,23 @@ class DailyChallengeScreen extends ConsumerWidget {
         centerTitle: true,
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 64),
-            const SizedBox(height: 16),
-            Text(
-              "Unable to load today's challenge",
-              style: GoogleFonts.lato(color: palette.textSecondary, fontSize: 16),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('GO BACK'),
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                "Unable to load today's challenge",
+                style: GoogleFonts.lato(color: palette.textSecondary, fontSize: 16),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('GO BACK'),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,0 +1,13 @@
+graph TB
+    PE["platformEnvironmentProvider<br/>isFirebase, isDesktop, useMocks"] --> AR["authRepositoryProvider<br/>Firebase / Firedart / Mock"]
+    PE --> PR["profileRepositoryProvider<br/>Firestore / Firedart / Mock"]
+    PE --> SS["simpleStorageProvider<br/>SharedPreferences"]
+
+    AR --> AC["authControllerProvider<br/>StreamNotifier of AuthUser"]
+    PR --> PN["profileNotifierProvider<br/>Notifier of ProfileState"]
+    SS --> SR["settingsRepositoryProvider"]
+    SR --> SN["settingsNotifierProvider<br/>AsyncNotifier of AppSettings"]
+    SN --> CN["calibrationNotifierProvider<br/>Notifier of CalibrationState"]
+
+    PN --> HN["homeNotifierProvider<br/>Notifier of HomeState"]
+    SN --> RN["ratingNotifierProvider<br/>Notifier of RatingState"]

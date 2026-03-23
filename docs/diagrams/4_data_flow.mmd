@@ -1,0 +1,23 @@
+flowchart TB
+    subgraph LOCAL["📱 Local Storage"]
+        SP["SharedPreferences<br/>Settings, Calibration<br/>Onboarding flags"]
+        SQDB["SQLite via sqflite<br/>HuntingLog entries<br/>Waveform cache - versioned"]
+        SEC["FlutterSecureStorage<br/>Auth tokens"]
+    end
+
+    subgraph CLOUD_DATA["☁️ Cloud - Firebase"]
+        FA["Firebase Auth<br/>Google Sign-In<br/>Anonymous - desktop"]
+        FS["Firestore<br/>User profiles<br/>Achievements, Attempts<br/>Daily challenges<br/>Leaderboard scores"]
+        FC["Crashlytics<br/>Silent error tracking"]
+        FRC["Remote Config<br/>AI coach URL<br/>Feature flags"]
+        FAN["Analytics<br/>Event tracking"]
+        FCM["Cloud Messaging<br/>Push notifications"]
+    end
+
+    subgraph BACKEND_DATA["☁️ Cloud Backend"]
+        GCS_M["GCS Models<br/>coach_classifier.pkl<br/>label_encoder.pkl<br/>fingerprint_db.json"]
+    end
+
+    FA <-->|"Auth State Stream"| FS
+    SP <-->|"Hydrate on boot"| FS
+    LOCAL <--> CLOUD_DATA

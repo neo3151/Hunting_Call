@@ -7,7 +7,7 @@
     'use strict';
 
     // ── Config ─────────────────────────────────────────────────────────
-    const BACKEND_URL = 'https://huntingcallaibackend-production.up.railway.app';
+    const BACKEND_URL = 'https://api.huntingcalls.app';
     const MAX_TOKENS = 250;
 
     const SYSTEM_PROMPT = `You are the OUTCALL AI Assistant on the landing page. OUTCALL is a premium hunting call training app built by hunters, for hunters.
@@ -137,7 +137,7 @@ OUTCALL promotes responsible, ethical hunting. Over-calling educates wildlife an
         return null;
     }
 
-    // ── Backend Chat API (proxied through Railway) ─────────────────────
+    // ── Backend Chat API ──────────────────────────────────────────────
     async function askBackend(question) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 15000);

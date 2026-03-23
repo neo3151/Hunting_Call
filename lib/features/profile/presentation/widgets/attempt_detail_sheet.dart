@@ -171,6 +171,8 @@ class AttemptDetailSheet extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                   color: palette.textPrimary,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               if (callType.isNotEmpty)
                 Padding(
@@ -178,6 +180,8 @@ class AttemptDetailSheet extends ConsumerWidget {
                   child: Text(
                     callType,
                     style: GoogleFonts.lato(fontSize: 14, color: palette.textSecondary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               const SizedBox(height: 4),
@@ -211,11 +215,17 @@ class AttemptDetailSheet extends ConsumerWidget {
       children: [
         Icon(Icons.calendar_today, size: 14, color: palette.textSubtle),
         const SizedBox(width: 6),
-        Text(dateStr, style: GoogleFonts.lato(fontSize: 13, color: palette.textSecondary)),
+        Flexible(
+          child: Text(dateStr, style: GoogleFonts.lato(fontSize: 13, color: palette.textSecondary),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
         const SizedBox(width: 16),
         Icon(Icons.access_time, size: 14, color: palette.textSubtle),
         const SizedBox(width: 6),
-        Text(timeStr, style: GoogleFonts.lato(fontSize: 13, color: palette.textSecondary)),
+        Flexible(
+          child: Text(timeStr, style: GoogleFonts.lato(fontSize: 13, color: palette.textSecondary),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
       ],
     );
   }
@@ -364,9 +374,13 @@ class AttemptDetailSheet extends ConsumerWidget {
               ],
             ),
           ),
-          Text(
-            'Target: ${idealPitch.toInt()} Hz',
-            style: GoogleFonts.lato(fontSize: 11, color: palette.textSubtle),
+          Flexible(
+            child: Text(
+              'Target: ${idealPitch.toInt()} Hz',
+              style: GoogleFonts.lato(fontSize: 11, color: palette.textSubtle),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
@@ -436,9 +450,13 @@ class AttemptDetailSheet extends ConsumerWidget {
             children: [
               Icon(trendIcon, color: trendColor, size: 18),
               const SizedBox(width: 8),
-              Text(trendText,
-                  style: GoogleFonts.lato(
-                      fontSize: 13, color: trendColor, fontWeight: FontWeight.w600)),
+              Flexible(
+                child: Text(trendText,
+                    style: GoogleFonts.lato(
+                        fontSize: 13, color: trendColor, fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+              ),
             ],
           ),
           const SizedBox(height: 16),
