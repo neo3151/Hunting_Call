@@ -301,10 +301,6 @@ SPECIES KNOWLEDGE:
   Common mistakes: too loud, too much air pressure, forcing the sound.
   Fix: "This is the quietest duck call — barely a whisper. Relax your throat completely and just let air leak through."
 
-- Pintail Duck (Anas acuta): Drake Whistle (2051Hz, sharp whistle + trill).
-  Common mistakes: missing the trill at the end, whistle too breathy.
-  Fix: "Start with a clean, sharp whistle then flutter your tongue for the trill. Two distinct phases."
-
 - Canvasback Duck (Aythya valisineria): Grunt (560Hz, raspy 'kuk-kuk').
   Common mistakes: pitch too high, not enough rasp, spacing too even.
   Fix: "Deeper and raspier than a mallard quack. Grunt from your chest, not your throat."

@@ -31,7 +31,6 @@ class AnimalGridScreen extends ConsumerWidget {
     'Canada Goose': 'assets/images/animals/canada_goose.png',
     'Blue-Winged Teal': 'assets/images/animals/blue_winged_teal.png',
     'Specklebelly Goose': 'assets/images/animals/specklebelly_goose.png',
-    'Pintail Duck': 'assets/images/animals/pintail.png',
     'Canvasback Duck': 'assets/images/animals/canvasback.png',
     'Rocky Mountain Elk': 'assets/images/animals/elk.png',
     'Whitetail Deer': 'assets/images/animals/whitetail_buck.png',

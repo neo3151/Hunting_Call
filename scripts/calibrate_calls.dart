@@ -123,9 +123,6 @@ Future<AnalysisResult?> analyzeWav(File file, String id) async {
     } else if (id.contains('duck_mallard')) {
       minFreq = 300.0;
       maxFreq = 1200.0;
-    } else if (id.contains('pintail')) {
-      minFreq = 2000.0; // Target the 2.5k-7k whistle range
-      maxFreq = 8000.0;
     } else if (id.contains('deer_snort_wheeze')) {
       minFreq = 2000.0; // Target the high-freq wheeze
       maxFreq = 8000.0;

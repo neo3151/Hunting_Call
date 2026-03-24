@@ -55,8 +55,8 @@ class WorldInfo {
 /// All available worlds in the progress map.
 /// Balanced to ~10-14 calls per world for an even progression.
 const worlds = [
-  // ─── W1: MARSHLANDS — Dabbling Ducks (12 calls) ───────
-  // Mallard(8) + Gadwall(3) + Pintail(1) = 12
+  // ─── W1: MARSHLANDS — Dabbling Ducks (11 calls) ───────
+  // Mallard(8) + Gadwall(3) = 11
   WorldInfo(
     name: 'MARSHLANDS',
     subtitle: 'Dabbling Ducks',
@@ -69,7 +69,7 @@ const worlds = [
     pathBorder: Color(0xFF3E2723),
     treeColors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF388E3C)],
     groundColors: [Color(0xFF1A3A2A), Color(0xFF0D4420), Color(0xFF2196F3)],
-    animalNames: ['Mallard Duck', 'Gadwall', 'Pintail Duck'],
+    animalNames: ['Mallard Duck', 'Gadwall'],
   ),
 
   // ─── W2: TIDEWATER BAY — Teal & Small Ducks (13 calls) ──
@@ -255,7 +255,7 @@ class MapNode {
 /// Maps animal names to emoji for map display.
 String getAnimalEmoji(String animalName) {
   final lower = animalName.toLowerCase();
-  if (lower.contains('mallard') || lower.contains('pintail') || lower.contains('canvasback') || lower.contains('shoveler') || lower.contains('gadwall')) return '🦆';
+  if (lower.contains('mallard') || lower.contains('canvasback') || lower.contains('shoveler') || lower.contains('gadwall')) return '🦆';
   if (lower.contains('teal') || lower.contains('wigeon') || lower.contains('bufflehead')) return '🦆';
   if (lower.contains('wood duck')) return '🦆';
   if (lower.contains('muscovy') || lower.contains('fulvous')) return '🦆';

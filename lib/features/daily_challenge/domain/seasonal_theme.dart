@@ -45,7 +45,7 @@ class SeasonalThemeService {
       description: 'Master your duck and goose calls this week!',
       startDate: DateTime(2026, 3, 10),
       endDate: DateTime(2026, 3, 17),
-      animalIds: ['mallard_drake', 'mallard_hen', 'canada_goose', 'wood_duck', 'pintail'],
+      animalIds: ['mallard_drake', 'mallard_hen', 'canada_goose', 'wood_duck'],
     ),
     SeasonalTheme(
       id: 'predator_month',

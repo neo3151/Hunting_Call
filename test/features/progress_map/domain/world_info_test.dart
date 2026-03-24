@@ -49,7 +49,6 @@ void main() {
     test('returns duck emoji for waterfowl', () {
       expect(getAnimalEmoji('Mallard Duck'), '🦆');
       expect(getAnimalEmoji('Green-winged Teal'), '🦆');
-      expect(getAnimalEmoji('Northern Pintail'), '🦆');
       expect(getAnimalEmoji('Canvasback'), '🦆');
     });
 
