@@ -305,12 +305,16 @@ class HistoryDashboardScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Text(title,
-            style: GoogleFonts.oswald(
-                fontSize: 12,
-                letterSpacing: 1.5,
-                color: palette.textPrimary,
-                fontWeight: FontWeight.bold)),
+        Flexible(
+          child: Text(title,
+              style: GoogleFonts.oswald(
+                  fontSize: 12,
+                  letterSpacing: 1.5,
+                  color: palette.textPrimary,
+                  fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
+        ),
       ],
     );
   }

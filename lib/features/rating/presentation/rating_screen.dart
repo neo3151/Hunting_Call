@@ -774,18 +774,24 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label,
-                  style: GoogleFonts.oswald(
-                      fontSize: 10,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1)),
-              Text(sublabel, style: GoogleFonts.lato(fontSize: 9, color: Colors.white38)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: GoogleFonts.oswald(
+                        fontSize: 10,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                Text(sublabel, style: GoogleFonts.lato(fontSize: 9, color: Colors.white38),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(

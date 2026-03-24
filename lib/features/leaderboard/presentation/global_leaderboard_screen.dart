@@ -100,13 +100,16 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                             leading: _buildRankBadge(rank, colors),
                             title: Row(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  user.name,
-                                  style: GoogleFonts.lato(
-                                    color: colors.textPrimary,
-                                    fontWeight: FontWeight.bold,
+                                Flexible(
+                                  child: Text(
+                                    user.name,
+                                    style: GoogleFonts.lato(
+                                      color: colors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 if (user.isAlphaTester) ...[

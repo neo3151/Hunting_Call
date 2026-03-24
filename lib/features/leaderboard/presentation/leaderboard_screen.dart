@@ -76,11 +76,14 @@ class LeaderboardScreen extends ConsumerWidget {
               return ListTile(
                 leading: _buildRankBadge(context, index + 1),
                 title: Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      entry.userName,
-                      style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.of(context).textPrimary),
+                    Flexible(
+                      child: Text(
+                        entry.userName,
+                        style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.of(context).textPrimary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     if (entry.isAlphaTester) ...[
                       const SizedBox(width: 4),

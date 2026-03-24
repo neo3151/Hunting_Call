@@ -54,7 +54,10 @@ class ComprehensiveAnalyticsSection extends StatelessWidget {
       children: [
         Container(width: 3, height: 14, decoration: const BoxDecoration(color: Color(0xFF5FF7B6), borderRadius: BorderRadius.all(Radius.circular(2)))),
         const SizedBox(width: 8),
-        Text(title, style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
+        Flexible(
+          child: Text(title, style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
       ],
     );
   }
@@ -74,7 +77,10 @@ class ComprehensiveAnalyticsSection extends StatelessWidget {
             children: [
               Icon(icon, color: const Color(0xFF5FF7B6), size: 14),
               const SizedBox(width: 8),
-              Text(title, style: GoogleFonts.oswald(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              Flexible(
+                child: Text(title, style: GoogleFonts.oswald(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 1),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
             ],
           ),
           const SizedBox(height: 16),

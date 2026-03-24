@@ -76,12 +76,16 @@ class LeaderboardPreview extends ConsumerWidget {
                 color: palette.textSubtle, fontWeight: FontWeight.bold),
           ),
           const SizedBox(width: 16),
-          Text(
-            name,
-            style:
-                GoogleFonts.lato(color: palette.textSecondary, fontSize: 14),
+          Expanded(
+            child: Text(
+              name,
+              style:
+                  GoogleFonts.lato(color: palette.textSecondary, fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           Text(
             score,
             style: GoogleFonts.oswald(

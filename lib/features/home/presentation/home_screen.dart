@@ -383,6 +383,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Text(
                     title,
                     textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.oswald(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -394,6 +396,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Text(
                     subtitle,
                     textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.lato(
                       fontSize: 11,
                       color: AppColors.of(context).textTertiary,

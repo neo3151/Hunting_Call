@@ -178,10 +178,14 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          world.subtitle.toUpperCase(),
-                          style: GoogleFonts.pressStart2p(
-                              color: AppColors.of(context).textSubtle, fontSize: 6),
+                        Flexible(
+                          child: Text(
+                            world.subtitle.toUpperCase(),
+                            style: GoogleFonts.pressStart2p(
+                                color: AppColors.of(context).textSubtle, fontSize: 6),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -729,18 +733,22 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(
+                  Text(
                   node.call.animalName,
                   style: GoogleFonts.oswald(
                     color: AppColors.of(context).textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   node.call.callType,
                   style: GoogleFonts.lato(
                       color: AppColors.of(context).textTertiary, fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 if (node.bestScore != null) ...[
                   const SizedBox(height: 4),

@@ -85,19 +85,26 @@ class WeatherScreen extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${temp.toStringAsFixed(1)}$unitLabel',
-                    style: GoogleFonts.oswald(fontSize: 48, color: Colors.white),
-                  ),
-                  Text(
-                    weather.condition.toUpperCase(),
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${temp.toStringAsFixed(1)}$unitLabel',
+                      style: GoogleFonts.oswald(fontSize: 48, color: Colors.white),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      weather.condition.toUpperCase(),
+                      style: const TextStyle(color: Colors.white70, fontSize: 16),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 12),
               const Icon(Icons.wb_sunny, color: Colors.yellowAccent, size: 64),
             ],
           ),
@@ -151,8 +158,13 @@ class WeatherScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(S.of(context).solunarActivity, style: GoogleFonts.oswald(color: Colors.white70)),
+                Flexible(
+                  child: Text(S.of(context).solunarActivity, style: GoogleFonts.oswald(color: Colors.white70),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+                const SizedBox(width: 8),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: List.generate(5, (index) => Icon(
                     Icons.star,
                     color: index < solunar.overallRating ? Colors.orangeAccent : Colors.white10,
@@ -207,12 +219,16 @@ class WeatherScreen extends ConsumerWidget {
             color: color,
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(period.type.toUpperCase(), style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 11)),
-              Text('$startTime - $endTime', style: const TextStyle(color: Colors.white, fontSize: 13)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(period.type.toUpperCase(), style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 11),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text('$startTime - $endTime', style: const TextStyle(color: Colors.white, fontSize: 13),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ],
+            ),
           ),
         ],
       ),
