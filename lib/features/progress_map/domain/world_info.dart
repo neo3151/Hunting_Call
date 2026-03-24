@@ -129,7 +129,7 @@ const worlds = [
   WorldInfo(
     name: 'BAYOU',
     subtitle: 'Geese & Swans',
-    category: 'Geese',
+    categories: ['Geese'],
     emoji: '🪿',
     primaryColor: Color(0xFF00838F),
     accentColor: Color(0xFF80DEEA),
@@ -143,7 +143,7 @@ const worlds = [
   WorldInfo(
     name: 'FLYWAY',
     subtitle: 'Diving Ducks',
-    category: 'Diving',
+    categories: ['Diving'],
     emoji: '🦢',
     primaryColor: Color(0xFF0277BD),
     accentColor: Color(0xFF4FC3F7),

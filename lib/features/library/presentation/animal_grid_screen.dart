@@ -62,7 +62,14 @@ class AnimalGridScreen extends ConsumerWidget {
     'Northern Shoveler': 'assets/images/animals/northern_shoveler.png',
     'Muscovy Duck': 'assets/images/animals/muscovy_duck.png',
     'Fulvous Whistling-Duck': 'assets/images/animals/fulvous_whistling_duck.png',
-    'Lion': 'assets/images/animals/lion.png',
+    'Cinnamon Teal': 'assets/images/animals/cinnamon_teal.png',
+    'Egyptian Goose': 'assets/images/animals/egyptian_goose.png',
+    'Emperor Goose': 'assets/images/animals/emperor_goose.png',
+    'Greater White-fronted Goose': 'assets/images/animals/white_fronted_goose.png',
+    'Snow Goose': 'assets/images/animals/snow_goose.png',
+    'Trumpeter Swan': 'assets/images/animals/trumpeter_swan.png',
+    'Tundra Swan': 'assets/images/animals/tundra_swan.png',
+    'Moose': 'assets/images/animals/moose.png',
     'Awebo': 'assets/images/animals/awebo.png',
   };
 

@@ -204,23 +204,23 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                 strokeWidth: 6,
               ),
             ),
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'ANALYZING YOUR CALL',
-            style: GoogleFonts.oswald(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 2,
+            const SizedBox(height: 32),
+            Text(
+              'ANALYZING YOUR CALL',
+              style: GoogleFonts.oswald(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Running on-device DSP analysis...',
-            style: GoogleFonts.lato(fontSize: 13, color: Colors.white60),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              'Running on-device DSP analysis...',
+              style: GoogleFonts.lato(fontSize: 13, color: Colors.white60),
+            ),
+          ],
+        ),
       ),
     );
   }

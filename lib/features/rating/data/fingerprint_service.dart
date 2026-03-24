@@ -66,7 +66,6 @@ class FingerprintResult {
 /// Uses [ComprehensiveAudioAnalyzer] (which includes BirdNET TFLite) to
 /// identify the species and compare the user's audio against the reference.
 class FingerprintService {
-  static const String _fallbackBaseUrl = 'https://ruttish-incontrollably-christina.ngrok-free.dev';
 
   /// Match a user's audio recording against the reference database.
   ///
@@ -87,17 +86,10 @@ class FingerprintService {
         return FingerprintResult.empty();
       }
 
-      // Lazy-init the analyzer
-      _analyzer ??= ComprehensiveAudioAnalyzer();
-
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$targetUrl/api/fingerprint'),
-      );
-      // Standard multipart upload
-      request.files.add(
-        await http.MultipartFile.fromPath('audio', audioPath),
-      );
+      // Run on-device audio analysis
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final analysis = await analyzer.analyzeAudio(audioPath);
+      final elapsed = stopwatch.elapsedMilliseconds.toDouble();
 
       // Check if we got any signal at all
       if (analysis.dominantFrequencyHz == 0 && analysis.totalDurationSec == 0) {

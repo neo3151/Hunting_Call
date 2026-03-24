@@ -82,29 +82,12 @@ class AiCoachService {
         }
       }
 
-      // baseUrl comes from RemoteConfig — fallback only used on desktop/tests
-      final targetUrl = baseUrl ?? 'https://ruttish-incontrollably-christina.ngrok-free.dev';
-      
-      final response = await http
-          .post(
-            Uri.parse('$targetUrl/api/coach'),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode({
-              'animalId': animalName.toLowerCase(),
-              'animalName': animalName,
-              'pitchScore': result.metrics['score_pitch'] ?? result.score,
-              'durationScore': result.metrics['score_duration'] ?? result.score,
-              'detectedPitchHz': result.pitchHz,
-              'idealPitchHz': idealPitchHz,
-              'detectedDurationSec': result.metrics['Duration (s)'] ?? 0.0,
-              'idealDurationSec': result.metrics['Duration (s)'] ?? 0.0,
-              'metrics': result.metrics,
-              'audioFilePath': audioPath,
-            }),
-          )
-          .timeout(const Duration(seconds: 30));
+      // Create Gemini model
+      final model = GenerativeModel(
+        model: 'gemini-2.0-flash',
+        apiKey: _apiKey!,
+        systemInstruction: Content.text(_systemPrompt),
+      );
 
       final userPrompt = '''
 Animal: $animalName

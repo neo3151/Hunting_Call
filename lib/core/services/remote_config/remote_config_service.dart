@@ -74,7 +74,7 @@ class RemoteConfigService {
 
   /// Loads the Gemini API key from Remote Config and injects it into the AI Coach.
   void _loadGeminiApiKey() {
-    final key = geminiApiKey;
+    final key = _remoteConfig?.getString('gemini_api_key') ?? '';
     if (key.isNotEmpty) {
       AiCoachService.setApiKey(key);
       AppLogger.d('Gemini API key loaded from Remote Config');
