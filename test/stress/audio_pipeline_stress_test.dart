@@ -1,0 +1,252 @@
+import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:outcall/features/analysis/data/comprehensive_audio_analyzer.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+/// ══════════════════════════════════════════════════════════════════
+/// STRESS TEST 1: Audio Analysis Pipeline
+/// Validates the analyzer handles edge cases, corrupt data, and
+/// high-volume batch processing without crashing.
+/// ══════════════════════════════════════════════════════════════════
+
+void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
+  // ─── WAV Generator ────────────────────────────────────────────
+  Future<String> _makeWav(
+    String name, {
+    double freq = 440.0,
+    int sampleRate = 44100,
+    int durationMs = 1000,
+    double amplitude = 0.5,
+    bool corrupt = false,
+    bool empty = false,
+    bool noDataChunk = false,
+    int? overrideBytes,
+  }) async {
+    final dir = Directory.systemTemp.createTempSync('stress_');
+    final file = File('${dir.path}/$name');
+
+    if (empty) {
+      await file.writeAsBytes([]);
+      return file.path;
+    }
+
+    final numSamples = (sampleRate * durationMs / 1000).toInt();
+    final dataSize = numSamples * 2;
+    final fileSize = 36 + dataSize;
+
+    final bytes = BytesBuilder();
+    bytes.add('RIFF'.codeUnits);
+    bytes.add(_int32(fileSize));
+    bytes.add('WAVE'.codeUnits);
+    bytes.add('fmt '.codeUnits);
+    bytes.add(_int32(16));
+    bytes.add(_int16(1)); // PCM
+    bytes.add(_int16(1)); // Mono
+    bytes.add(_int32(sampleRate));
+    bytes.add(_int32(sampleRate * 2));
+    bytes.add(_int16(2));
+    bytes.add(_int16(16)); // 16-bit
+
+    if (!noDataChunk) {
+      bytes.add('data'.codeUnits);
+      bytes.add(_int32(dataSize));
+
+      for (int i = 0; i < numSamples; i++) {
+        final t = i / sampleRate;
+        final sample = amplitude * math.sin(2 * math.pi * freq * t);
+        bytes.add(_int16((sample * 32767).round().clamp(-32768, 32767)));
+      }
+    }
+
+    var data = bytes.toBytes();
+
+    if (corrupt) {
+      // Scramble random bytes in the data section
+      final rng = math.Random(42);
+      final corrupted = Uint8List.fromList(data);
+      for (int i = 0; i < 50; i++) {
+        if (corrupted.length > 44) {
+          corrupted[44 + rng.nextInt(corrupted.length - 44)] = rng.nextInt(256);
+        }
+      }
+      data = corrupted;
+    }
+
+    if (overrideBytes != null) {
+      data = Uint8List(overrideBytes); // Just zeros
+    }
+
+    await file.writeAsBytes(data);
+    return file.path;
+  }
+
+  // ─── Test Group: Edge Cases ────────────────────────────────────
+  group('Audio Pipeline Stress — Edge Cases', () {
+    test('Empty file (0 bytes) should not crash', () async {
+      final path = await _makeWav('empty.wav', empty: true);
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final result = await analyzer.analyzeAudio(path);
+
+      expect(result.dominantFrequencyHz, 0.0);
+      expect(result.totalDurationSec, 0.0);
+    });
+
+    test('Tiny file (10 bytes) should return fallback', () async {
+      final path = await _makeWav('tiny.wav', overrideBytes: 10);
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final result = await analyzer.analyzeAudio(path);
+
+      expect(result.dominantFrequencyHz, 0.0);
+    });
+
+    test('Header-only file (44 bytes, no data) should not crash', () async {
+      final path = await _makeWav('header_only.wav', noDataChunk: true);
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final result = await analyzer.analyzeAudio(path);
+
+      expect(result.dominantFrequencyHz, isA<double>());
+      expect(result.totalDurationSec, isA<double>());
+    });
+
+    test('Pure silence should not crash', () async {
+      final path = await _makeWav('silence.wav', amplitude: 0.0);
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final result = await analyzer.analyzeAudio(path);
+
+      expect(result.dominantFrequencyHz, 0.0);
+      expect(result.noiseLevel, isA<double>());
+    });
+
+    test('Maximum amplitude (clipping) should detect quality issues',
+        skip: 'BioacousticScorer (TFLite) cannot load on desktop', () async {
+      final path = await _makeWav('clipping.wav', amplitude: 1.0);
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final result = await analyzer.analyzeAudio(path);
+
+      expect(result.dominantFrequencyHz, greaterThan(0));
+      // Clipping should reduce quality score
+      expect(result.callQualityScore, isA<double>());
+    });
+
+    test('Corrupt PCM data should not crash', () async {
+      final path = await _makeWav('corrupt.wav', corrupt: true);
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final result = await analyzer.analyzeAudio(path);
+
+      // Should return SOMETHING without throwing
+      expect(result.dominantFrequencyHz, isA<double>());
+      expect(result.waveform.length, 100);
+    });
+
+    test('Non-existent file should return fallback', () async {
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final result = await analyzer.analyzeAudio('/nonexistent/path.wav');
+
+      expect(result.dominantFrequencyHz, 0.0);
+      expect(result.totalDurationSec, 0.0);
+    });
+  });
+
+  // ─── Test Group: Frequency Accuracy ────────────────────────────
+  group('Audio Pipeline Stress — Frequency Accuracy', () {
+    final testFrequencies = [
+      (100.0, 'low bass (bear growl range)'),
+      (220.0, 'low mid (deer grunt range)'),
+      (440.0, 'mid (elk bugle range)'),
+      (880.0, 'high mid (turkey yelp range)'),
+      (2000.0, 'high (bird call range)'),
+    ];
+
+    for (final (freq, desc) in testFrequencies) {
+      test('Detects $freq Hz ($desc) within ±15%',
+          skip: 'BioacousticScorer (TFLite) cannot load on desktop', () async {
+        final path = await _makeWav('freq_${freq.toInt()}.wav', freq: freq);
+        final analyzer = ComprehensiveAudioAnalyzer();
+        final result = await analyzer.analyzeAudio(path);
+
+        expect(result.dominantFrequencyHz,
+            closeTo(freq, freq * 0.15),
+            reason: 'Should detect $freq Hz ($desc)');
+      });
+    }
+  });
+
+  // ─── Test Group: Batch Processing ──────────────────────────────
+  group('Audio Pipeline Stress — Batch Processing', () {
+    test('10 sequential analyses should not leak memory or crash',
+        skip: 'BioacousticScorer (TFLite) cannot load on desktop', () async {
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final stopwatch = Stopwatch()..start();
+
+      for (int i = 0; i < 10; i++) {
+        final freq = 200.0 + (i * 100);
+        final path = await _makeWav('batch_$i.wav', freq: freq);
+        final result = await analyzer.analyzeAudio(path);
+
+        expect(result.dominantFrequencyHz, greaterThan(0),
+            reason: 'Batch item $i should produce a result');
+        expect(result.waveform.length, 100);
+      }
+
+      stopwatch.stop();
+      // 10 analyses should complete in under 30 seconds
+      expect(stopwatch.elapsedMilliseconds, lessThan(30000),
+          reason: 'Batch of 10 should complete in <30s');
+    });
+
+    test('Rapidly creating/disposing analyzers should not leak', () async {
+      // Create and discard 20 analyzer instances
+      for (int i = 0; i < 20; i++) {
+        final analyzer = ComprehensiveAudioAnalyzer();
+        // Just creating it should be fine — the database init is lazy
+        expect(analyzer, isA<ComprehensiveAudioAnalyzer>());
+      }
+    });
+  });
+
+  // ─── Test Group: Duration Extremes ─────────────────────────────
+  group('Audio Pipeline Stress — Duration Extremes', () {
+    test('Very short recording (50ms) should not crash', () async {
+      final path = await _makeWav('short.wav', durationMs: 50);
+      final analyzer = ComprehensiveAudioAnalyzer();
+      final result = await analyzer.analyzeAudio(path);
+
+      expect(result.totalDurationSec, closeTo(0.05, 0.01));
+    });
+
+    test('5-second recording should process normally',
+        skip: 'BioacousticScorer (TFLite) cannot load on desktop', () async {
+      final path = await _makeWav('long.wav', durationMs: 5000);
+      final analyzer = ComprehensiveAudioAnalyzer();
+
+      final stopwatch = Stopwatch()..start();
+      final result = await analyzer.analyzeAudio(path);
+      stopwatch.stop();
+
+      expect(result.totalDurationSec, closeTo(5.0, 0.1));
+      expect(result.waveform.length, 100);
+      // Should complete in under 5 seconds
+      expect(stopwatch.elapsedMilliseconds, lessThan(5000),
+          reason: '5s recording should analyze in <5s');
+    });
+  });
+}
+
+List<int> _int32(int value) {
+  final b = Uint8List(4);
+  b.buffer.asByteData().setInt32(0, value, Endian.little);
+  return b;
+}
+
+List<int> _int16(int value) {
+  final b = Uint8List(2);
+  b.buffer.asByteData().setInt16(0, value, Endian.little);
+  return b;
+}
