@@ -340,11 +340,29 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
                                     fontSize: 14,
                                   ),
                                 ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    if (call.scientificName.isNotEmpty)
+                                      Flexible(
+                                        child: Text(
+                                          call.scientificName,
+                                          style: const TextStyle(
+                                            color: Colors.white38,
+                                            fontSize: 11,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    if (call.scientificName.isNotEmpty)
+                                      const SizedBox(width: 8),
+                                    _buildDifficultyBadge(call.difficulty),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
-                          // Difficulty Badge
-                          _buildDifficultyBadge(call.difficulty),
                           const SizedBox(width: 8),
                           // Favorite button
                           _buildFavoriteButton(call),

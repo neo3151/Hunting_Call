@@ -327,10 +327,29 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  if (call.scientificName.isNotEmpty)
+                                    Flexible(
+                                      child: Text(
+                                        call.scientificName,
+                                        style: TextStyle(
+                                          color: palette.textSubtle,
+                                          fontSize: 11,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  if (call.scientificName.isNotEmpty)
+                                    const SizedBox(width: 8),
+                                  _buildDifficultyBadge(call.difficulty),
+                                ],
+                              ),
                             ],
                           ),
                         ),
-                        _buildDifficultyBadge(call.difficulty),
                         const SizedBox(width: 8),
                         _buildFavoriteButton(call),
                       ],

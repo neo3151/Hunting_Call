@@ -165,28 +165,27 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Names Section
+                        Text(
+                          widget.call.animalName,
+                          style: GoogleFonts.oswald(
+                              fontSize: 32,
+                              color: palette.textPrimary,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.call.animalName,
-                                  style: GoogleFonts.oswald(
-                                      fontSize: 32,
-                                      color: palette.textPrimary,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  widget.call.scientificName,
-                                  style: TextStyle(
-                                      color: palette.textTertiary,
-                                      fontSize: 16,
-                                      fontStyle: FontStyle.italic),
-                                ),
-                              ],
+                            Flexible(
+                              child: Text(
+                                widget.call.scientificName,
+                                style: TextStyle(
+                                    color: palette.textTertiary,
+                                    fontSize: 16,
+                                    fontStyle: FontStyle.italic),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
+                            const SizedBox(width: 12),
                             _buildDifficultyBadge(widget.call.difficulty),
                           ],
                         ),
