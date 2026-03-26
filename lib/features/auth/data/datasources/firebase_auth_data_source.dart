@@ -73,7 +73,9 @@ class FirebaseAuthDataSource implements AuthRemoteDataSource {
     if (!_googleSignInInitialized) {
       try {
         await _googleSignIn!.initialize();
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.d('GoogleSignIn.initialize() failed (non-critical): $e');
+      }
       _googleSignInInitialized = true;
     }
 

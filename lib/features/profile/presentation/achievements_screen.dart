@@ -17,7 +17,7 @@ class AchievementsScreen extends ConsumerWidget {
       title: 'MILESTONES',
       subtitle: 'Recording progression',
       icon: Icons.flag_rounded,
-      color: Color(0xFF5FF7B6),
+      color: AppColors.success,
       achievementIds: ['first_call', 'getting_started', 'dedicated_hunter', 'marathon_hunter', 'centurion', 'legend'],
     ),
     _AchievementCategory(
@@ -98,6 +98,7 @@ class AchievementsScreen extends ConsumerWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: ListView(
+            addAutomaticKeepAlives: false,
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
             children: [
               // Header — progress ring + earned count
@@ -145,7 +146,7 @@ class AchievementsScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: palette.surfaceLight,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF5FF7B6).withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -163,7 +164,7 @@ class AchievementsScreen extends ConsumerWidget {
                     value: progress,
                     strokeWidth: 6,
                     backgroundColor: palette.border,
-                    color: const Color(0xFF5FF7B6),
+                    color: AppColors.success,
                     strokeCap: StrokeCap.round,
                   ),
                 ),

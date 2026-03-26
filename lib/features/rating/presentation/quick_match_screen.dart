@@ -6,6 +6,7 @@ import 'package:outcall/di_providers.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Lightweight results screen for Quick Match mode.
 ///
@@ -143,10 +144,10 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
   }
 
   Color _scoreColor(double score) {
-    if (score >= 85) return const Color(0xFF5FF7B6);
+    if (score >= 85) return AppColors.success;
     if (score >= 70) return const Color(0xFF4FC3F7);
-    if (score >= 50) return const Color(0xFFFFD54F);
-    return const Color(0xFFFF5252);
+    if (score >= 50) return AppColors.warning;
+    return AppColors.error;
   }
 
   @override
@@ -174,7 +175,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/forest_background.png'),
+            image: AssetImage('assets/images/forest_background.webp'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
           ),
@@ -200,7 +201,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
               width: 80,
               height: 80,
               child: CircularProgressIndicator(
-                color: Color(0xFF5FF7B6),
+                color: AppColors.success,
                 strokeWidth: 6,
               ),
             ),
@@ -235,7 +236,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFD54F).withValues(alpha: 0.1),
+                color: AppColors.warning.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.error_outline_rounded,
@@ -273,7 +274,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                     style: GoogleFonts.oswald(
                         letterSpacing: 1.5, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5FF7B6),
+                  backgroundColor: AppColors.success,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(
@@ -409,7 +410,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(Icons.lightbulb_outline_rounded,
-                    color: Color(0xFFFFD54F), size: 24),
+                    color: AppColors.warning, size: 24),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -455,7 +456,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                   style: GoogleFonts.oswald(
                       fontSize: 16, letterSpacing: 1.5, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5FF7B6),
+                backgroundColor: AppColors.success,
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(

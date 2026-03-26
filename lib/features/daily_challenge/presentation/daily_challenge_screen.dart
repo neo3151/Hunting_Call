@@ -86,9 +86,9 @@ class DailyChallengeScreen extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF5FF7B6).withValues(alpha: 0.1),
+                            color: AppColors.success.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF5FF7B6).withValues(alpha: 0.3)),
+                            border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             children: [
@@ -99,7 +99,7 @@ class DailyChallengeScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(SeasonalThemeService.activeTheme!.name,
-                                        style: GoogleFonts.oswald(color: const Color(0xFF5FF7B6), fontSize: 13, fontWeight: FontWeight.bold)),
+                                        style: GoogleFonts.oswald(color: AppColors.success, fontSize: 13, fontWeight: FontWeight.bold)),
                                     Text(S.of(context).daysRemaining(SeasonalThemeService.activeTheme!.daysRemaining),
                                         style: GoogleFonts.lato(color: AppColors.of(context).textSubtle, fontSize: 11)),
                                   ],

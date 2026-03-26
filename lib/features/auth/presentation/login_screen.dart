@@ -12,6 +12,7 @@ import 'package:outcall/features/profile/presentation/controllers/profile_contro
 import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:outcall/core/utils/app_logger.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -343,7 +344,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 onPressed: _createNewProfile,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Theme.of(context).primaryColor,
-                                  foregroundColor: const Color(0xFF121212),
+                                  foregroundColor: AppColors.background,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   elevation: 0,
@@ -440,11 +441,11 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
             colorScheme: ColorScheme.dark(
               primary: Theme.of(context).primaryColor,
               onPrimary: Colors.black,
-              surface: const Color(0xFF1A1A1A),
+              surface: AppColors.surface,
               onSurface: Colors.white,
             ),
             dialogTheme: const DialogThemeData(
-              backgroundColor: Color(0xFF121212),
+              backgroundColor: AppColors.background,
             ),
           ),
           child: child!,
@@ -467,7 +468,7 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
         top: 24, left: 24, right: 24
       ),
       decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A),
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -569,7 +570,7 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
             }) : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: const Color(0xFF121212),
+              foregroundColor: AppColors.background,
               disabledBackgroundColor: Colors.grey.shade700,
               disabledForegroundColor: Colors.grey.shade400,
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -619,7 +620,7 @@ class _LoginSheetState extends State<_LoginSheet> {
         top: 24, left: 24, right: 24
       ),
       decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A),
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -676,7 +677,7 @@ class _LoginSheetState extends State<_LoginSheet> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: const Color(0xFF121212),
+              foregroundColor: AppColors.background,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             child: const Text('LOG IN', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -743,7 +744,7 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
         top: 24, left: 24, right: 24
       ),
       decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A),
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -795,13 +796,13 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
             onPressed: _isLoading ? null : _sendResetEmail,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: const Color(0xFF121212),
+              foregroundColor: AppColors.background,
               padding: const EdgeInsets.symmetric(vertical: 18),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 0,
             ),
             child: _isLoading 
-                ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Color(0xFF121212), strokeWidth: 2.5))
+                ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: AppColors.background, strokeWidth: 2.5))
                 : Text(
                     'SEND RESET LINK', 
                     style: GoogleFonts.oswald(

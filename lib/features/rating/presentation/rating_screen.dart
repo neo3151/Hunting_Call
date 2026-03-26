@@ -20,6 +20,7 @@ import 'package:outcall/features/rating/presentation/widgets/rating_analytics_wi
 import 'package:outcall/features/rating/presentation/widgets/rating_feedback_widgets.dart';
 import 'package:outcall/features/rating/presentation/widgets/waveform_overlay.dart';
 import 'package:outcall/l10n/app_localizations.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class RatingScreen extends ConsumerStatefulWidget {
   final String audioPath;
@@ -261,7 +262,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/forest_background.png'),
+            image: AssetImage('assets/images/forest_background.webp'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
           ),
@@ -280,7 +281,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                               width: 80,
                               height: 80,
                               child: CircularProgressIndicator(
-                                color: Color(0xFF5FF7B6),
+                                color: AppColors.success,
                                 strokeWidth: 6,
                               ),
                             ),
@@ -368,7 +369,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                                       style: GoogleFonts.oswald(
                                           letterSpacing: 1.5, fontWeight: FontWeight.bold)),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF5FF7B6),
+                                    backgroundColor: AppColors.success,
                                     foregroundColor: Colors.black,
                                     padding: const EdgeInsets.symmetric(vertical: 20),
                                     shape: RoundedRectangleBorder(
@@ -381,7 +382,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                         ),
                       )
                     : result == null
-                        ? const Center(child: CircularProgressIndicator(color: Color(0xFF5FF7B6)))
+                        ? const Center(child: CircularProgressIndicator(color: AppColors.success))
                         : Center(
                             child: ConstrainedBox(
                               constraints: const BoxConstraints(maxWidth: 600),
@@ -392,6 +393,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                                 child: ListView(
                                   controller: _scrollController,
                                   primary: false,
+                                  addAutomaticKeepAlives: false,
                                   padding: EdgeInsets.fromLTRB(20, topPadding, 20, 80),
                                   children: [
                                     _tryRender(() => OverallProficiency(score: result.score),
@@ -459,10 +461,10 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFF5FF7B6).withValues(alpha: 0.1),
+                color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.headphones_rounded, color: Color(0xFF5FF7B6), size: 64),
+              child: const Icon(Icons.headphones_rounded, color: AppColors.success, size: 64),
             ),
             const SizedBox(height: 32),
             Text(
@@ -488,7 +490,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   heroTag: 'play_user_audio_btn',
                   onPressed: _toggleUserPlayback,
                   tooltip: _isUserPlaying ? 'Stop playback' : 'Play your recording',
-                  backgroundColor: _isUserPlaying ? Colors.white : const Color(0xFF5FF7B6),
+                  backgroundColor: _isUserPlaying ? Colors.white : AppColors.success,
                   child: Icon(
                     _isUserPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
                     color: Colors.black,
@@ -595,7 +597,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   Column(
                     children: [
                       Icon(isTooHigh ? Icons.arrow_upward : Icons.arrow_downward,
-                          color: const Color(0xFF5FF7B6), size: 20),
+                          color: AppColors.success, size: 20),
                       const SizedBox(height: 2),
                       Text(isTooHigh ? 'TOO HIGH' : 'TOO LOW',
                           style: GoogleFonts.oswald(
@@ -626,7 +628,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: isWithinTolerance
-                        ? const Color(0xFF5FF7B6).withValues(alpha: 0.15)
+                        ? AppColors.success.withValues(alpha: 0.15)
                         : Colors.redAccent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -634,7 +636,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                     isWithinTolerance ? 'Within tolerance ✔' : 'Outside tolerance ✘',
                     style: GoogleFonts.lato(
                       fontSize: 10,
-                      color: isWithinTolerance ? const Color(0xFF5FF7B6) : Colors.redAccent,
+                      color: isWithinTolerance ? AppColors.success : Colors.redAccent,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -687,10 +689,10 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 height: 6,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF5FF7B6).withValues(alpha: 0.2),
+                    color: AppColors.success.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(3),
                     border: Border.all(
-                        color: const Color(0xFF5FF7B6).withValues(alpha: 0.1), width: 0.5),
+                        color: AppColors.success.withValues(alpha: 0.1), width: 0.5),
                   ),
                 ),
               ),
@@ -718,11 +720,11 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                     height: 8,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFF5FF7B6),
+                        color: AppColors.success,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                              color: const Color(0xFF5FF7B6).withValues(alpha: 0.5),
+                              color: AppColors.success.withValues(alpha: 0.5),
                               blurRadius: 8,
                               spreadRadius: 2)
                         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Compute average amplitude from reference waveform, ignoring silence.
 ///
@@ -40,10 +41,10 @@ double computeReferenceAverage(List<double>? waveform) {
   final zoneHigh = refAvg * 1.5;
 
   if (currentAvg >= zoneLow && currentAvg <= zoneHigh) {
-    return (text: '🎯 IN RANGE', color: const Color(0xFF5FF7B6));
+    return (text: '🎯 IN RANGE', color: AppColors.success);
   } else if (currentAvg < zoneLow) {
-    return (text: '🔇 TOO QUIET', color: const Color(0xFFFFD54F));
+    return (text: '🔇 TOO QUIET', color: AppColors.warning);
   } else {
-    return (text: '📢 TOO LOUD', color: const Color(0xFFFF5252));
+    return (text: '📢 TOO LOUD', color: AppColors.error);
   }
 }

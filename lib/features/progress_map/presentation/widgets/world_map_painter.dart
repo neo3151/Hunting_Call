@@ -114,22 +114,25 @@ class WorldMapPainter extends CustomPainter {
 
   void _drawDecorations(Canvas canvas, Size size) {
     final rng = Random(world.name.hashCode + 99);
+    _drawTrees(canvas, size, rng);
+    _drawBushes(canvas, size, rng);
+    _drawRocks(canvas, size, rng);
+  }
 
-    // Large trees
+  bool _isTooCloseToNode(double x, double y, Size size, {double threshold = 55}) {
+    for (final n in nodes) {
+      final nx = n.position.dx * size.width;
+      final ny = n.position.dy * size.height;
+      if ((x - nx).abs() < threshold && (y - ny).abs() < threshold) return true;
+    }
+    return false;
+  }
+
+  void _drawTrees(Canvas canvas, Size size, Random rng) {
     for (int i = 0; i < 18; i++) {
       final tx = rng.nextDouble() * size.width;
       final ty = rng.nextDouble() * size.height;
-
-      bool tooClose = false;
-      for (final n in nodes) {
-        final nx = n.position.dx * size.width;
-        final ny = n.position.dy * size.height;
-        if ((tx - nx).abs() < 55 && (ty - ny).abs() < 55) {
-          tooClose = true;
-          break;
-        }
-      }
-      if (tooClose) continue;
+      if (_isTooCloseToNode(tx, ty, size)) continue;
 
       final treeHeight = 12.0 + rng.nextDouble() * 18;
       final treeColor = world.treeColors[rng.nextInt(world.treeColors.length)];
@@ -160,7 +163,7 @@ class WorldMapPainter extends CustomPainter {
         trunkPaint,
       );
 
-      // Three layered triangles (Mario style)
+      // Three layered triangles
       for (int layer = 0; layer < 3; layer++) {
         final layerOffset = layer * treeHeight * 0.22;
         final layerWidth = treeHeight * (0.7 - layer * 0.08);
@@ -175,22 +178,13 @@ class WorldMapPainter extends CustomPainter {
         canvas.drawPath(path, treePaint);
       }
     }
+  }
 
-    // Small bushes
+  void _drawBushes(Canvas canvas, Size size, Random rng) {
     for (int i = 0; i < 10; i++) {
       final bx = rng.nextDouble() * size.width;
       final by = rng.nextDouble() * size.height;
-
-      bool tooClose = false;
-      for (final n in nodes) {
-        final nx = n.position.dx * size.width;
-        final ny = n.position.dy * size.height;
-        if ((bx - nx).abs() < 45 && (by - ny).abs() < 45) {
-          tooClose = true;
-          break;
-        }
-      }
-      if (tooClose) continue;
+      if (_isTooCloseToNode(bx, by, size, threshold: 45)) continue;
 
       final bushSize = 6.0 + rng.nextDouble() * 10;
       final bushColor = world.treeColors[rng.nextInt(world.treeColors.length)];
@@ -200,22 +194,13 @@ class WorldMapPainter extends CustomPainter {
       canvas.drawCircle(Offset(bx + bushSize * 0.3, by), bushSize * 0.5, paint);
       canvas.drawCircle(Offset(bx, by - bushSize * 0.3), bushSize * 0.55, paint);
     }
+  }
 
-    // Rocks
+  void _drawRocks(Canvas canvas, Size size, Random rng) {
     for (int i = 0; i < 6; i++) {
       final rx = rng.nextDouble() * size.width;
       final ry = rng.nextDouble() * size.height;
-
-      bool tooClose = false;
-      for (final n in nodes) {
-        final nx = n.position.dx * size.width;
-        final ny = n.position.dy * size.height;
-        if ((rx - nx).abs() < 45 && (ry - ny).abs() < 45) {
-          tooClose = true;
-          break;
-        }
-      }
-      if (tooClose) continue;
+      if (_isTooCloseToNode(rx, ry, size, threshold: 45)) continue;
 
       final rockSize = 4.0 + rng.nextDouble() * 8;
 
@@ -237,6 +222,13 @@ class WorldMapPainter extends CustomPainter {
   }
 
   void _drawPath(Canvas canvas, Size size) {
+    final path = _buildConnectionPath(size);
+    _drawPathLayers(canvas, path);
+    _drawPathDots(canvas, path);
+    _drawMasteredSegments(canvas, size);
+  }
+
+  Path _buildConnectionPath(Size size) {
     final path = Path();
     path.moveTo(
       nodes.first.position.dx * size.width,
@@ -244,28 +236,31 @@ class WorldMapPainter extends CustomPainter {
     );
 
     for (int i = 1; i < nodes.length; i++) {
-      final prev = nodes[i - 1].position;
-      final curr = nodes[i].position;
-
-      final px = prev.dx * size.width;
-      final py = prev.dy * size.height;
-      final cx = curr.dx * size.width;
-      final cy = curr.dy * size.height;
-
-      final midX = (px + cx) / 2;
-      final midY = (py + cy) / 2;
-      final dx = cx - px;
-      final dy = cy - py;
-      final curveOffset = (i.isEven ? 1 : -1) * 20.0;
-
-      path.quadraticBezierTo(
-        midX + (dy.abs() > 10 ? curveOffset : 0),
-        midY + (dx.abs() > 10 ? curveOffset : 0),
-        cx,
-        cy,
-      );
+      _curvedSegment(path, nodes[i - 1].position, nodes[i].position, size, i);
     }
+    return path;
+  }
 
+  void _curvedSegment(Path path, Offset prev, Offset curr, Size size, int i) {
+    final px = prev.dx * size.width;
+    final py = prev.dy * size.height;
+    final cx = curr.dx * size.width;
+    final cy = curr.dy * size.height;
+    final midX = (px + cx) / 2;
+    final midY = (py + cy) / 2;
+    final dx = cx - px;
+    final dy = cy - py;
+    final curveOffset = (i.isEven ? 1 : -1) * 20.0;
+
+    path.quadraticBezierTo(
+      midX + (dy.abs() > 10 ? curveOffset : 0),
+      midY + (dx.abs() > 10 ? curveOffset : 0),
+      cx,
+      cy,
+    );
+  }
+
+  void _drawPathLayers(Canvas canvas, Path path) {
     // Shadow
     canvas.drawPath(
       path,
@@ -310,8 +305,9 @@ class WorldMapPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );
+  }
 
-    // Dotted centre line
+  void _drawPathDots(Canvas canvas, Path path) {
     final dotPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.12)
       ..style = PaintingStyle.fill;
@@ -327,31 +323,17 @@ class WorldMapPainter extends CustomPainter {
         distance += 12;
       }
     }
+  }
 
-    // Mastered path segments (green overlay)
+  void _drawMasteredSegments(Canvas canvas, Size size) {
     for (int i = 1; i < nodes.length; i++) {
       if (nodes[i - 1].state == NodeState.mastered &&
           nodes[i].state == NodeState.mastered) {
         final segPath = Path();
         final prev = nodes[i - 1].position;
         final curr = nodes[i].position;
-        final px = prev.dx * size.width;
-        final py = prev.dy * size.height;
-        final cx = curr.dx * size.width;
-        final cy = curr.dy * size.height;
-        final midX = (px + cx) / 2;
-        final midY = (py + cy) / 2;
-        final dx = cx - px;
-        final dy = cy - py;
-        final curveOffset = (i.isEven ? 1 : -1) * 20.0;
-
-        segPath.moveTo(px, py);
-        segPath.quadraticBezierTo(
-          midX + (dy.abs() > 10 ? curveOffset : 0),
-          midY + (dx.abs() > 10 ? curveOffset : 0),
-          cx,
-          cy,
-        );
+        segPath.moveTo(prev.dx * size.width, prev.dy * size.height);
+        _curvedSegment(segPath, prev, curr, size, i);
 
         canvas.drawPath(
           segPath,

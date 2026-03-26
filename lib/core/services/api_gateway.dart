@@ -48,14 +48,16 @@ class FirebaseApiGateway implements ApiGateway {
       if (doc.exists && doc.data() != null) {
         return doc.data();
       }
-    } catch (_) {
+    } catch (e) {
       // Cache miss or empty — fall through to server
+      // Intentional: cache misses are expected on first load
     }
     // No cache hit — fetch from server (first-ever load or cleared cache)
     final doc = await _firestore
         .collection(collection)
         .doc(documentId)
-        .get(const GetOptions(source: Source.server));
+        .get(const GetOptions(source: Source.server))
+        .timeout(const Duration(seconds: 4));
     return doc.data();
   }
 
@@ -92,7 +94,8 @@ class FirebaseApiGateway implements ApiGateway {
     // subset of documents (those previously fetched on this device).
     try {
       final query =
-          await _firestore.collection(collection).get(const GetOptions(source: Source.server));
+          await _firestore.collection(collection).get(const GetOptions(source: Source.server))
+              .timeout(const Duration(seconds: 4));
       return query.docs.map((d) => d.data()).toList();
     } catch (_) {
       // Offline fallback — return whatever is cached
@@ -117,11 +120,14 @@ class FirebaseApiGateway implements ApiGateway {
       if (query.docs.isNotEmpty) {
         return query.docs.map((d) => d.data()).toList();
       }
-    } catch (_) {}
+    } catch (e) {
+      // Cache miss — fall through to server
+    }
     final query = await _firestore
         .collection(collection)
         .where(field, isEqualTo: value)
-        .get(const GetOptions(source: Source.server));
+        .get(const GetOptions(source: Source.server))
+        .timeout(const Duration(seconds: 4));
     return query.docs.map((d) => d.data()).toList();
   }
 
@@ -135,7 +141,8 @@ class FirebaseApiGateway implements ApiGateway {
           .collection(collection)
           .orderBy(orderByField, descending: true)
           .limit(limit)
-          .get(const GetOptions(source: Source.server));
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 4));
       return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
     } catch (_) {
       // Offline fallback — return whatever is cached (partial data is

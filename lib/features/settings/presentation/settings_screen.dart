@@ -112,7 +112,7 @@ class SettingsScreen extends ConsumerWidget {
                                 ),
                                 ButtonSegment(
                                   value: AppTheme.midnight,
-                                  label: Container(width: 16, height: 16, decoration: const BoxDecoration(color: Color(0xFF3A86FF), shape: BoxShape.circle)),
+                                  label: Container(width: 16, height: 16, decoration: const BoxDecoration(color: AppColors.accentBlue, shape: BoxShape.circle)),
                                 ),
                                 ButtonSegment(
                                   value: AppTheme.forest,

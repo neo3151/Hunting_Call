@@ -23,13 +23,13 @@ class CategoryGridScreen extends ConsumerWidget {
     _CategoryItem(
       name: 'Ducks',
       icon: Icons.water,
-      imagePath: 'assets/images/animals/mallard.png',
+      imagePath: 'assets/images/animals/mallard.webp',
       gradientColors: [Color(0xFF0D4F4F), Color(0xFF1A6B5A)],
     ),
     _CategoryItem(
       name: 'Geese',
       icon: Icons.water,
-      imagePath: 'assets/images/animals/canada_goose.png',
+      imagePath: 'assets/images/animals/canada_goose.webp',
       gradientColors: [Color(0xFF0A3D4F), Color(0xFF126B6B)],
     ),
     _CategoryItem(
@@ -41,13 +41,13 @@ class CategoryGridScreen extends ConsumerWidget {
     _CategoryItem(
       name: 'Big Game',
       icon: Icons.terrain,
-      imagePath: 'assets/images/animals/elk.png',
+      imagePath: 'assets/images/animals/elk.webp',
       gradientColors: [Color(0xFF4A2C17), Color(0xFF6B3E1F)],
     ),
     _CategoryItem(
       name: 'Predators',
       icon: Icons.pets,
-      imagePath: 'assets/images/animals/coyote.png',
+      imagePath: 'assets/images/animals/coyote.webp',
       gradientColors: [Color(0xFF2C3E50), Color(0xFF34495E)],
     ),
     _CategoryItem(

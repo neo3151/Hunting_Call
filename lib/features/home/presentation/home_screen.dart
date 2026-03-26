@@ -184,7 +184,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             label: const Text('Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: isDark ? const Color(0xFF121212) : Colors.white,
+              foregroundColor: isDark ? AppColors.background : Colors.white,
             ),
           ),
           const SizedBox(height: 12),
@@ -281,7 +281,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Expanded(
                 child: _buildQuickActionCard(
                   icon: Icons.public,
-                  iconColor: const Color(0xFF3A86FF),
+                  iconColor: AppColors.accentBlue,
                   title: 'Global\nRankings',
                   subtitle: 'See top hunters',
                   onTap: () => Navigator.of(context).push(
@@ -310,7 +310,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: _buildQuickActionCard(
                 icon: Icons.bar_chart_rounded,
-                iconColor: const Color(0xFF5FF7B6),
+                iconColor: AppColors.success,
                 title: S.of(context).practiceHistory,
                 subtitle: S.of(context).practiceHistorySubtitle,
                 onTap: () => Navigator.of(context).push(

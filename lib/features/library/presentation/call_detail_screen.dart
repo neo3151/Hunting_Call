@@ -93,6 +93,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
               child: ListView(
+                addAutomaticKeepAlives: false,
                 padding: EdgeInsets.zero,
                 physics: const BouncingScrollPhysics(),
                 children: [

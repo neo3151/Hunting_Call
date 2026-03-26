@@ -12,6 +12,7 @@ import 'package:outcall/core/widgets/upgrade_prompter.dart';
 import 'package:outcall/features/leaderboard/presentation/leaderboard_screen.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/core/widgets/score_share_card.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Action buttons at the bottom of the rating screen:
 /// Try Again, Save/Share, Leaderboard, Done.
@@ -51,7 +52,7 @@ class RatingActionButtons extends ConsumerWidget {
                 icon: const Icon(Icons.refresh_rounded),
                 label: Text(S.of(context).tryAgain, style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5FF7B6),
+                  backgroundColor: AppColors.success,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -184,7 +185,7 @@ class RatingActionButtons extends ConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Saved to Downloads: $audioFileName'),
-                backgroundColor: const Color(0xFF5FF7B6),
+                backgroundColor: AppColors.success,
                 behavior: SnackBarBehavior.floating,
               ),
             );

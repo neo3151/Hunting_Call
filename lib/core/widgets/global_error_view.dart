@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class GlobalErrorView extends StatelessWidget {
   final FlutterErrorDetails details;
@@ -9,7 +10,7 @@ class GlobalErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFF121212),
+      color: AppColors.background,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -58,7 +59,7 @@ class GlobalErrorView extends StatelessWidget {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orangeAccent,
-                    foregroundColor: const Color(0xFF121212),
+                    foregroundColor: AppColors.background,
                   ),
                   onPressed: () {
                     // This pops the current "broken" route if possible,

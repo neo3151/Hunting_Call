@@ -435,7 +435,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
           ),
           borderRadius: BorderRadius.circular(6),
           border:
-              Border.all(color: const Color(0xFFFF5252), width: 1.5),
+              Border.all(color: AppColors.error, width: 1.5),
           boxShadow: [
             BoxShadow(
                 color: Colors.red.withValues(alpha: 0.4), blurRadius: 8),

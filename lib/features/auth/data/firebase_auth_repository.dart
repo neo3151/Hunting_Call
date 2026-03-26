@@ -69,7 +69,9 @@ class FirebaseAuthRepository implements AuthRepository {
         final GoogleSignIn googleSignIn = GoogleSignIn.instance;
         try {
           await googleSignIn.initialize();
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.d('GoogleSignIn.initialize() failed (non-critical): $e');
+        }
         
         final GoogleSignInAccount googleUser = await googleSignIn.authenticate(scopeHint: ['email', 'profile']);
         

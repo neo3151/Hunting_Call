@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Extracted from rating_screen.dart — the comprehensive analytics section
 /// including volume, tone, timbre and rhythm analysis cards.
@@ -11,7 +12,7 @@ class ComprehensiveAnalyticsSection extends StatelessWidget {
 
   Color _getColor(num? v) {
     if (v == null) return Colors.white24;
-    if (v >= 80) return const Color(0xFF5FF7B6);
+    if (v >= 80) return AppColors.success;
     if (v >= 60) return const Color(0xFFB8E986);
     return const Color(0xFFFFB74D);
   }
@@ -52,7 +53,7 @@ class ComprehensiveAnalyticsSection extends StatelessWidget {
   Widget _buildSectionHeader(String title) {
     return Row(
       children: [
-        Container(width: 3, height: 14, decoration: const BoxDecoration(color: Color(0xFF5FF7B6), borderRadius: BorderRadius.all(Radius.circular(2)))),
+        Container(width: 3, height: 14, decoration: const BoxDecoration(color: AppColors.success, borderRadius: BorderRadius.all(Radius.circular(2)))),
         const SizedBox(width: 8),
         Flexible(
           child: Text(title, style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold),
@@ -75,7 +76,7 @@ class ComprehensiveAnalyticsSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF5FF7B6), size: 14),
+              Icon(icon, color: AppColors.success, size: 14),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(title, style: GoogleFonts.oswald(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 1),
@@ -149,14 +150,14 @@ class RatingTipSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF5FF7B6).withValues(alpha: 0.1),
+        color: AppColors.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF5FF7B6).withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.lightbulb_outline, color: Color(0xFF5FF7B6), size: 18),
+          const Icon(Icons.lightbulb_outline, color: AppColors.success, size: 18),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -189,7 +190,7 @@ class GuidanceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF5FF7B6), size: 24),
+          Icon(icon, color: AppColors.success, size: 24),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

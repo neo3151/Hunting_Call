@@ -89,7 +89,7 @@ class LeaderboardPreview extends ConsumerWidget {
           Text(
             score,
             style: GoogleFonts.oswald(
-              color: const Color(0xFF5FF7B6),
+              color: AppColors.success,
               fontWeight: FontWeight.bold,
             ),
           ),

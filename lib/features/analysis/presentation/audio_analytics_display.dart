@@ -5,6 +5,7 @@ import 'package:outcall/features/analysis/presentation/widgets/analytics_metric_
 import 'package:outcall/features/analysis/presentation/widgets/harmonics_display.dart';
 import 'package:outcall/features/analysis/presentation/widgets/pitch_track_graph.dart';
 import 'package:outcall/features/analysis/presentation/widgets/spectral_centroid_graph.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Widget to display comprehensive audio analytics.
 ///
@@ -28,7 +29,7 @@ class AudioAnalyticsDisplay extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFF1C1E23),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE8922D).withValues(alpha: 0.3)),
+              border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +39,7 @@ class AudioAnalyticsDisplay extends StatelessWidget {
                   style: GoogleFonts.oswald(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFFE8922D),
+                    color: AppColors.accentGold,
                     letterSpacing: 1.0,
                   ),
                 ),

@@ -60,20 +60,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ─── Temporary: Allow profile listing & email queries ───────────
+    // ─── Profile listing removed (was a security vulnerability) ────────
     // 
-    // WARNING: getAllProfiles() and getProfilesByEmail() require
-    // collection-level list access. This is acceptable during beta
-    // but should be migrated to a Cloud Function before public launch.
-    //
-    // To remove this rule later:
-    //   1. Create a Cloud Function for profile listing/search
-    //   2. Delete this match block
-    //   3. The per-document rules above will still protect individual reads
-
-    match /profiles/{userId} {
-      allow list: if isAuthenticated();
-    }
+    // The previous `allow list: if isAuthenticated()` rule allowed any
+    // authenticated user to dump all profiles. It has been removed.
+    // If profile listing/search is needed, use a Cloud Function with
+    // the Admin SDK instead.
 
     // ─── /leaderboards/{animalId} ───────────────────────────────────
     //

@@ -85,7 +85,7 @@ class _MainShellState extends ConsumerState<MainShell> {
           final shouldExit = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+              backgroundColor: isDark ? AppColors.surface : Colors.white,
               title: Text('Exit App?', style: GoogleFonts.oswald(color: colors.textPrimary)),
               content: Text('Are you sure you want to leave the Hunt?',
                   style: GoogleFonts.lato(color: colors.textSecondary)),
@@ -145,7 +145,7 @@ class _MainShellState extends ConsumerState<MainShell> {
         ),
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF121212) : Colors.white,
+            color: isDark ? AppColors.background : Colors.white,
             border: Border(
               top: BorderSide(
                 color: colors.border,

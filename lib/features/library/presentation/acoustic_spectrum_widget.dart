@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class AcousticSpectrumWidget extends StatelessWidget {
   final double pitchHz;
@@ -67,7 +68,7 @@ class AcousticSpectrumWidget extends StatelessWidget {
             label: 'HARMONIC PURITY',
             value: '${((harmonicPurity ?? 0.85) * 100).toInt()}%',
             percentage: (harmonicPurity ?? 0.85).clamp(0.0, 1.0),
-            color: const Color(0xFF5FF7B6),
+            color: AppColors.success,
             minLabel: 'Noisy',
             maxLabel: 'Pure',
             icon: Icons.waves,

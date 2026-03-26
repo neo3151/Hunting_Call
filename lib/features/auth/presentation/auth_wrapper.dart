@@ -10,6 +10,7 @@ import 'package:outcall/features/auth/presentation/login_screen.dart';
 import 'package:outcall/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:outcall/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Watches auth state and shows LoginScreen, OnboardingScreen, or HomeScreen.
 /// Profile creation is handled by LoginScreen - this only loads existing profiles.
@@ -242,7 +243,7 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: const Color(0xFF121212),
+                      foregroundColor: AppColors.background,
                     ),
                     onPressed: () => ref.invalidate(authControllerProvider),
                     child: Text('TRY AGAIN',

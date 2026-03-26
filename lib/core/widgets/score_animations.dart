@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Animated score reveal widget that counts up from 0 to the final score
 /// with a scaling entrance animation.
@@ -83,10 +84,10 @@ class _AnimatedScoreRevealState extends State<AnimatedScoreReveal>
   }
 
   Color _scoreColor(double score) {
-    if (score >= 85) return const Color(0xFF5FF7B6);
+    if (score >= 85) return AppColors.success;
     if (score >= 70) return const Color(0xFF4FC3F7);
-    if (score >= 50) return const Color(0xFFFFD54F);
-    return const Color(0xFFFF5252);
+    if (score >= 50) return AppColors.warning;
+    return AppColors.error;
   }
 }
 

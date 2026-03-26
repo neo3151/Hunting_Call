@@ -78,7 +78,7 @@ class ScoreShareCard extends StatelessWidget {
 
   Color get _tierColor {
     if (score >= 90) return AppColors.accentGold;
-    if (score >= 75) return const Color(0xFF5FF7B6);
+    if (score >= 75) return AppColors.success;
     if (score >= 50) return Colors.orangeAccent;
     return Colors.redAccent;
   }
@@ -101,7 +101,7 @@ class ScoreShareCard extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D)],
+            colors: [AppColors.surface, Color(0xFF0D0D0D)],
           ),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
@@ -314,7 +314,7 @@ class ScoreShareCard extends StatelessWidget {
   Widget _buildMetricColumn(String label, double value) {
     final Color color;
     if (value >= 80) {
-      color = const Color(0xFF5FF7B6);
+      color = AppColors.success;
     } else if (value >= 50) {
       color = Colors.orangeAccent;
     } else {

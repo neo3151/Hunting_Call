@@ -85,7 +85,7 @@ class GetDailyChallengeUseCase {
   ReferenceCall _fixImageAsset(ReferenceCall call) {
     if (call.imageUrl.contains('predator_hero') || 
         call.imageUrl.contains('big_game_hero')) {
-      return call.copyWith(imageUrl: 'assets/images/forest_background.png');
+      return call.copyWith(imageUrl: 'assets/images/forest_background.webp');
     }
     return call;
   }
@@ -103,7 +103,7 @@ class GetDailyChallengeUseCase {
       idealPitchHz: 400,
       idealDurationSec: 1.0,
       audioAssetPath: 'assets/audio/duck_mallard_greeting.mp3',
-      imageUrl: 'assets/images/waterfowl_hero.png',
+      imageUrl: 'assets/images/waterfowl_hero.webp',
       tolerancePitch: 50,
       toleranceDuration: 0.2,
       proTips: 'Keep it simple. The basic quack is the most versatile call.',

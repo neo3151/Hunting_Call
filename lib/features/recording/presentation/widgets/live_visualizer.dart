@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:outcall/features/recording/domain/visualization_settings.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class LiveVisualizer extends StatelessWidget {
   final List<double> amplitudes;
@@ -58,9 +59,9 @@ class _CoachingWaveformPainter extends CustomPainter {
   static const double _noiseFloor = 0.05;               // Very low threshold for rendering
 
   // Coaching colors
-  static const Color _goodColor = Color(0xFF5FF7B6);    // Bright teal-green — in zone
-  static const Color _warmColor = Color(0xFFFFD54F);    // Amber — close to zone
-  static const Color _hotColor  = Color(0xFFFF5252);    // Red — way off
+  static const Color _goodColor = AppColors.success;    // Bright teal-green — in zone
+  static const Color _warmColor = AppColors.warning;    // Amber — close to zone
+  static const Color _hotColor  = AppColors.error;    // Red — way off
 
   _CoachingWaveformPainter({
     required this.amplitudes,

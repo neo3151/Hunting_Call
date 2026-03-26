@@ -46,14 +46,14 @@ class ChallengeCard extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5FF7B6).withValues(alpha: 0.2),
+                  color: AppColors.success.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: const Color(0xFF5FF7B6).withValues(alpha: 0.4)),
+                      color: AppColors.success.withValues(alpha: 0.4)),
                 ),
                 child: Icon(
                     isComplete ? Icons.check_rounded : Icons.record_voice_over,
-                    color: const Color(0xFF5FF7B6),
+                    color: AppColors.success,
                     size: 40),
               ),
               const SizedBox(height: 24),
@@ -90,7 +90,7 @@ class ChallengeCard extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isComplete
                         ? AppColors.of(context).surfaceLight
-                        : const Color(0xFF5FF7B6),
+                        : AppColors.success,
                     foregroundColor: Colors.black87,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
@@ -114,7 +114,7 @@ class ChallengeCard extends StatelessWidget {
 
   Widget _buildMetricStats(BuildContext context) {
     final repsColor = todayReps >= 3
-        ? const Color(0xFF5FF7B6)
+        ? AppColors.success
         : AppColors.of(context).textSecondary;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -122,7 +122,7 @@ class ChallengeCard extends StatelessWidget {
         _buildStatItem(context,
             'DIFFICULTY', challengeCall.difficulty.toUpperCase(), Colors.orangeAccent),
         _buildStatItem(context, 'REPS', '$todayReps/3', repsColor),
-        _buildStatItem(context, 'REWARD', '+500 XP', const Color(0xFF5FF7B6)),
+        _buildStatItem(context, 'REWARD', '+500 XP', AppColors.success),
       ],
     );
   }

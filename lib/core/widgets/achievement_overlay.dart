@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/l10n/app_localizations.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Full-screen achievement celebration overlay with confetti and animations.
 ///
@@ -93,7 +94,7 @@ class _AchievementDialogState extends State<_AchievementDialog>
     for (int i = 0; i < 40; i++) {
       _particles.add(_ConfettiParticle(
         color: [
-          const Color(0xFF5FF7B6),
+          AppColors.success,
           Colors.orangeAccent,
           Colors.amber,
           const Color(0xFF64B5F6),
@@ -164,12 +165,12 @@ class _AchievementDialogState extends State<_AchievementDialog>
                     color: const Color(0xFF1A1A2E),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: const Color(0xFF5FF7B6).withValues(alpha: 0.4),
+                      color: AppColors.success.withValues(alpha: 0.4),
                       width: 2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF5FF7B6).withValues(alpha: 0.2),
+                        color: AppColors.success.withValues(alpha: 0.2),
                         blurRadius: 30,
                         spreadRadius: 5,
                       ),
@@ -181,7 +182,7 @@ class _AchievementDialogState extends State<_AchievementDialog>
                       Text(
                         '🏆 ${S.of(context).achievementUnlocked.toUpperCase()}',
                         style: GoogleFonts.oswald(
-                          color: const Color(0xFF5FF7B6),
+                          color: AppColors.success,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 2,

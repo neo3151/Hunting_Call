@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/features/rating/domain/personality_feedback_service.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 /// Overall proficiency ring widget with animated count-up.
 class OverallProficiency extends StatelessWidget {
@@ -25,7 +26,7 @@ class OverallProficiency extends StatelessWidget {
     if (s >= 90) {
       tierColor = const Color(0xFFFFD700); // Gold
     } else if (s >= 75) {
-      tierColor = const Color(0xFF5FF7B6); // Green
+      tierColor = AppColors.success; // Green
     } else if (s >= 50) {
       tierColor = Colors.orangeAccent;
     } else {
@@ -119,7 +120,7 @@ class AIFeedbackCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.auto_awesome, color: Color(0xFF5FF7B6), size: 14),
+              const Icon(Icons.auto_awesome, color: AppColors.success, size: 14),
               const SizedBox(width: 8),
               Text(S.of(context).aiFeedback, style: GoogleFonts.oswald(fontSize: 11, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
             ],
@@ -154,7 +155,7 @@ class PersonalityFeedbackCard extends StatelessWidget {
     if (s >= 85) {
       borderColor = const Color(0xFFFFD700);
     } else if (s >= 65) {
-      borderColor = const Color(0xFF5FF7B6);
+      borderColor = AppColors.success;
     } else if (s >= 50) {
       borderColor = Colors.orangeAccent;
     } else {
@@ -219,7 +220,7 @@ class ProBreakdown extends StatelessWidget {
       children: [
         Row(
           children: [
-            Container(width: 3, height: 14, decoration: const BoxDecoration(color: Color(0xFF5FF7B6), borderRadius: BorderRadius.all(Radius.circular(2)))),
+            Container(width: 3, height: 14, decoration: const BoxDecoration(color: AppColors.success, borderRadius: BorderRadius.all(Radius.circular(2)))),
             const SizedBox(width: 8),
             Text(S.of(context).proBreakdown, style: GoogleFonts.oswald(fontSize: 12, letterSpacing: 1.5, color: Colors.white, fontWeight: FontWeight.bold)),
           ],
@@ -240,7 +241,7 @@ class ProBreakdown extends StatelessWidget {
 
   Widget _buildProMetricCard(BuildContext context, String label, dynamic score, IconData icon) {
     final double s = _toSafe(score).clamp(0, 100);
-    final Color color = s >= 80 ? const Color(0xFF5FF7B6) : (s >= 50 ? Colors.orangeAccent : Colors.redAccent);
+    final Color color = s >= 80 ? AppColors.success : (s >= 50 ? Colors.orangeAccent : Colors.redAccent);
 
     return Semantics(
       label: S.of(context).metricLabel(label, s.toInt()),

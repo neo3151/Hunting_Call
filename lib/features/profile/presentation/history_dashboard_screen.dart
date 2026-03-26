@@ -75,6 +75,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: ListView(
+            addAutomaticKeepAlives: false,
             padding: const EdgeInsets.all(24),
             children: [
               // Summary cards
@@ -168,7 +169,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
       children: [
         Expanded(
             child: _buildStatCard(palette, S.of(context).totalSessions, '$total', Icons.mic,
-                const Color(0xFF5FF7B6))),
+                AppColors.success)),
         const SizedBox(width: 12),
         Expanded(
             child: _buildStatCard(palette, S.of(context).averageScore, '${avg.toInt()}%',
@@ -237,7 +238,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
               size: const Size(double.infinity, 100),
               painter: _ScoreTrendPainter(
                 scores: recent.map((h) => h.result.score).toList(),
-                lineColor: const Color(0xFF5FF7B6),
+                lineColor: AppColors.success,
                 dotColor: palette.textPrimary,
               ),
             ),
@@ -300,7 +301,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
           width: 3,
           height: 14,
           decoration: const BoxDecoration(
-            color: Color(0xFF5FF7B6),
+            color: AppColors.success,
             borderRadius: BorderRadius.all(Radius.circular(2)),
           ),
         ),
@@ -333,7 +334,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
     final scoreColor = h.result.score >= 90
         ? const Color(0xFFFFD700)
         : h.result.score >= 75
-            ? const Color(0xFF5FF7B6)
+            ? AppColors.success
             : h.result.score >= 50
                 ? Colors.orangeAccent
                 : Colors.redAccent;
@@ -389,7 +390,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
                 // Mini metric dots
                 ...h.result.metrics.entries.take(4).map((m) {
                   final mColor = m.value >= 80
-                      ? const Color(0xFF5FF7B6)
+                      ? AppColors.success
                       : m.value >= 50
                           ? Colors.orangeAccent
                           : Colors.redAccent;
@@ -427,7 +428,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
     if (best >= 90) {
       tierColor = const Color(0xFFFFD700);
     } else if (best >= 75) {
-      tierColor = const Color(0xFF5FF7B6);
+      tierColor = AppColors.success;
     } else if (best >= 50) {
       tierColor = Colors.orangeAccent;
     } else {

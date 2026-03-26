@@ -493,7 +493,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     decoration: BoxDecoration(
                                       color: currentMode == RecordingMode.quickMatch
-                                          ? const Color(0xFF5FF7B6).withValues(alpha: 0.2)
+                                          ? AppColors.success.withValues(alpha: 0.2)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -504,7 +504,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
                                           Icons.bolt_rounded,
                                           size: 16,
                                           color: currentMode == RecordingMode.quickMatch
-                                              ? const Color(0xFF5FF7B6)
+                                              ? AppColors.success
                                               : AppColors.of(context).textSubtle,
                                         ),
                                         const SizedBox(width: 6),
@@ -515,7 +515,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
                                             fontWeight: FontWeight.bold,
                                             letterSpacing: 1,
                                             color: currentMode == RecordingMode.quickMatch
-                                                ? const Color(0xFF5FF7B6)
+                                                ? AppColors.success
                                                 : AppColors.of(context).textSubtle,
                                           ),
                                         ),
@@ -534,7 +534,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     decoration: BoxDecoration(
                                       color: currentMode == RecordingMode.expert
-                                          ? const Color(0xFFE8922D).withValues(alpha: 0.2)
+                                          ? AppColors.accentGold.withValues(alpha: 0.2)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -545,7 +545,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
                                           Icons.analytics_rounded,
                                           size: 16,
                                           color: currentMode == RecordingMode.expert
-                                              ? const Color(0xFFE8922D)
+                                              ? AppColors.accentGold
                                               : AppColors.of(context).textSubtle,
                                         ),
                                         const SizedBox(width: 6),
@@ -556,7 +556,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
                                             fontWeight: FontWeight.bold,
                                             letterSpacing: 1,
                                             color: currentMode == RecordingMode.expert
-                                                ? const Color(0xFFE8922D)
+                                                ? AppColors.accentGold
                                                 : AppColors.of(context).textSubtle,
                                           ),
                                         ),

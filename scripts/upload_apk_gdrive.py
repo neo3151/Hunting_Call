@@ -1,5 +1,6 @@
 """Upload APK to Google Drive (Benchmark Apps folder)."""
 import os
+import sys
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -52,7 +53,13 @@ def main():
         print(f"Found 'Benchmark Apps' folder: {folder_id}")
 
     # Upload APK
-    apk_path = os.path.join(script_dir, "..", "build", "app", "outputs", "flutter-apk", "app-release.apk")
+    if len(sys.argv) > 1:
+        apk_path = sys.argv[1]
+        upload_name = os.path.basename(apk_path)
+    else:
+        apk_path = os.path.join(script_dir, "..", "build", "app", "outputs", "flutter-apk", "app-release.apk")
+        upload_name = "app-release.apk"
+        
     apk_path = os.path.abspath(apk_path)
 
     if not os.path.exists(apk_path):
@@ -64,7 +71,7 @@ def main():
 
     # Check if file already exists in folder, update if so
     existing = service.files().list(
-        q=f"name='app-release.apk' and '{folder_id}' in parents and trashed=false",
+        q=f"name='{upload_name}' and '{folder_id}' in parents and trashed=false",
         fields="files(id, name)"
     ).execute().get("files", [])
 
@@ -82,7 +89,7 @@ def main():
     else:
         # Create new file
         file_meta = {
-            "name": "app-release.apk",
+            "name": upload_name,
             "parents": [folder_id]
         }
         file = service.files().create(

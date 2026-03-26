@@ -83,7 +83,9 @@ class MicCalibrationServiceImpl implements MicCalibrationService {
       try {
         final tempFile = File(tempPath);
         if (await tempFile.exists()) await tempFile.delete();
-      } catch (_) {}
+      } catch (e) {
+        _logger.log('Temp calibration file cleanup failed: $e');
+      }
 
       // Calculate calibration metrics
       if (amplitudes.isEmpty) {

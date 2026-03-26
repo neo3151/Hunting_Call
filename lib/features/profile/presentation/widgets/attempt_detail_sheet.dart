@@ -77,6 +77,7 @@ class AttemptDetailSheet extends ConsumerWidget {
         ),
         child: ListView(
           controller: scrollController,
+          addAutomaticKeepAlives: false,
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 40),
           children: [
             // Drag handle
@@ -237,7 +238,7 @@ class AttemptDetailSheet extends ConsumerWidget {
         label: 'Pitch',
         value: metrics['score_pitch'] ?? metrics['pitch'] ?? 0,
         icon: Icons.music_note,
-        color: const Color(0xFF5FF7B6),
+        color: AppColors.success,
       ),
       _CoreMetric(
         label: 'Tone Quality',
@@ -340,7 +341,7 @@ class AttemptDetailSheet extends ConsumerWidget {
     final diff = (userPitch - idealPitch).abs();
     final direction = userPitch > idealPitch ? 'high' : 'low';
     final isOnTarget = diff < 15;
-    final pitchColor = isOnTarget ? const Color(0xFF5FF7B6) : Colors.orangeAccent;
+    final pitchColor = isOnTarget ? AppColors.success : Colors.orangeAccent;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -420,7 +421,7 @@ class AttemptDetailSheet extends ConsumerWidget {
     IconData trendIcon;
     if (delta > 3) {
       trendText = '+${delta.toInt()}% from previous best';
-      trendColor = const Color(0xFF5FF7B6);
+      trendColor = AppColors.success;
       trendIcon = Icons.trending_up;
     } else if (delta < -3) {
       trendText = '${delta.toInt()}% from previous best';
@@ -522,7 +523,7 @@ class AttemptDetailSheet extends ConsumerWidget {
           width: 3,
           height: 12,
           decoration: BoxDecoration(
-            color: const Color(0xFF5FF7B6),
+            color: AppColors.success,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -539,7 +540,7 @@ class AttemptDetailSheet extends ConsumerWidget {
 
   Color _scoreColor(double score) {
     if (score >= 90) return const Color(0xFFFFD700);
-    if (score >= 75) return const Color(0xFF5FF7B6);
+    if (score >= 75) return AppColors.success;
     if (score >= 50) return Colors.orangeAccent;
     return Colors.redAccent;
   }

@@ -10,6 +10,7 @@ import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/auth/presentation/auth_wrapper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -87,7 +88,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
     // 3. Precache heavy images to prevent jumping when navigating
     if (mounted) {
       precacheImage(const AssetImage('assets/images/forest_pattern.png'), context);
-      precacheImage(const AssetImage('assets/images/app_icon.png'), context);
+      precacheImage(const AssetImage('assets/images/app_icon.webp'), context);
     }
 
     // 4. Initialize services deferred from main.dart
@@ -132,9 +133,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
             center: Alignment(0, -0.3),
             radius: 1.2,
             colors: [
-              Color(0xFF2A2D33), // Dark charcoal center
+              AppColors.surfaceLight, // Dark charcoal center
               Color(0xFF1C1E23), // Darker
-              Color(0xFF15181D), // Near-black edges
+              AppColors.surfaceDark, // Near-black edges
             ],
             stops: [0.0, 0.5, 1.0],
           ),
@@ -173,7 +174,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                       decoration: BoxDecoration(
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFE8922D).withValues(alpha: 0.15),
+                            color: AppColors.accentGold.withValues(alpha: 0.15),
                             blurRadius: 60,
                             spreadRadius: 10,
                           ),
@@ -196,11 +197,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                           shaderCallback: (bounds) {
                             return LinearGradient(
                               colors: const [
-                                Color(0xFF8B5A1B),
-                                Color(0xFFE8922D),
-                                Color(0xFFF0B860),
-                                Color(0xFFE8922D),
-                                Color(0xFF8B5A1B),
+                                AppColors.accentGoldDark,
+                                AppColors.accentGold,
+                                AppColors.accentGoldLight,
+                                AppColors.accentGold,
+                                AppColors.accentGoldDark,
                               ],
                               stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
                               transform: _SlidingGradientTransform(
@@ -223,7 +224,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                     Text(
                       'Master Your Craft',
                       style: TextStyle(
-                        color: const Color(0xFFE8922D).withValues(alpha: 0.7),
+                        color: AppColors.accentGold.withValues(alpha: 0.7),
                         fontSize: 14,
                         fontWeight: FontWeight.w300,
                         letterSpacing: 3.0,
@@ -247,8 +248,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                     child: child,
                   );
                 },
-                child: const Text(
-                  'v2.1.0',
+                child: Text(
+                  _appVersion.isNotEmpty ? _appVersion : 'v2.1.0',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Color(0xFF3A3D44),
@@ -285,7 +286,7 @@ class _ForestParticlePainter extends CustomPainter {
       final y = size.height * (1.0 - progress);
       final opacity = math.sin(progress * math.pi) * particle.maxOpacity;
 
-      paint.color = const Color(0xFFE8922D).withValues(alpha: opacity.clamp(0.0, 1.0));
+      paint.color = AppColors.accentGold.withValues(alpha: opacity.clamp(0.0, 1.0));
       canvas.drawCircle(Offset(x, y), particle.radius, paint);
     }
   }

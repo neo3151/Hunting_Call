@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/l10n/app_localizations.dart';
+import 'package:outcall/core/theme/app_colors.dart';
 
 class WaveformOverlay extends StatelessWidget {
   final List<double> userWaveform;
@@ -34,7 +35,7 @@ class WaveformOverlay extends StatelessWidget {
         border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5FF7B6).withValues(alpha: 0.05),
+            color: AppColors.success.withValues(alpha: 0.05),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -53,7 +54,7 @@ class WaveformOverlay extends StatelessWidget {
                     style: GoogleFonts.oswald(
                       fontSize: 14, 
                       letterSpacing: 1.5, 
-                      color: const Color(0xFF5FF7B6), 
+                      color: AppColors.success, 
                       fontWeight: FontWeight.bold
                     )
                   ),
@@ -76,7 +77,7 @@ class WaveformOverlay extends StatelessWidget {
                   children: [
                     _buildLegendItem('REF', const Color(0xFFFF6D00)),
                     const SizedBox(width: 8),
-                    _buildLegendItem('YOU', const Color(0xFF5FF7B6)),
+                    _buildLegendItem('YOU', AppColors.success),
                   ],
                 ),
               ),
@@ -94,7 +95,7 @@ class WaveformOverlay extends StatelessWidget {
                 child: _buildPlaybackButton(
                   label: 'PLAY YOURS',
                   icon: isUserPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                  color: const Color(0xFF5FF7B6),
+                  color: AppColors.success,
                   onPressed: onPlayUser,
                   isSelected: isUserPlaying,
                 ),
