@@ -71,18 +71,15 @@ class AnimalGridScreen extends ConsumerWidget {
     'Trumpeter Swan': 'assets/images/animals/trumpeter_swan.webp',
     'Tundra Swan': 'assets/images/animals/tundra_swan.webp',
     'Moose': 'assets/images/animals/moose.webp',
-    'Awebo': 'assets/images/animals/awebo.png',
+    'Awebo': 'assets/images/animals/willow_ptarmigan.webp',
   };
 
   /// Gradient color pairs per category for visual consistency.
   static const Map<String, List<Color>> _categoryGradients = {
-    'Ducks': [Color(0xFF0D4F4F), Color(0xFF1A6B5A)],
-    'Geese': [Color(0xFF0A3D4F), Color(0xFF126B6B)],
-    'Diving': [Color(0xFF0A2A4F), Color(0xFF1A4B7A)],
+    'Waterfowl': [Color(0xFF0D4F4F), Color(0xFF1A6B5A)],
     'Big Game': [Color(0xFF4A2C17), Color(0xFF6B3E1F)],
     'Predators': [Color(0xFF2C3E50), Color(0xFF34495E)],
-    'Big Cats': [Color(0xFF5D3A1A), Color(0xFF8B5E3C)],
-    'Land Birds': [Color(0xFF2E4A1E), Color(0xFF4A6B2E)],
+    'Birds': [Color(0xFF2E4A1E), Color(0xFF4A6B2E)],
   };
 
   @override

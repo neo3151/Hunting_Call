@@ -21,22 +21,10 @@ class CategoryGridScreen extends ConsumerWidget {
   /// Map of category names to representative animal images and gradient colors.
   static const List<_CategoryItem> _categories = [
     _CategoryItem(
-      name: 'Ducks',
+      name: 'Waterfowl',
       icon: Icons.water,
       imagePath: 'assets/images/animals/mallard.webp',
       gradientColors: [Color(0xFF0D4F4F), Color(0xFF1A6B5A)],
-    ),
-    _CategoryItem(
-      name: 'Geese',
-      icon: Icons.water,
-      imagePath: 'assets/images/animals/canada_goose.webp',
-      gradientColors: [Color(0xFF0A3D4F), Color(0xFF126B6B)],
-    ),
-    _CategoryItem(
-      name: 'Diving',
-      icon: Icons.waves,
-      imagePath: 'assets/images/animals/bufflehead.png',
-      gradientColors: [Color(0xFF0A2A4F), Color(0xFF1A4B7A)],
     ),
     _CategoryItem(
       name: 'Big Game',
@@ -51,13 +39,7 @@ class CategoryGridScreen extends ConsumerWidget {
       gradientColors: [Color(0xFF2C3E50), Color(0xFF34495E)],
     ),
     _CategoryItem(
-      name: 'Big Cats',
-      icon: Icons.pets_rounded,
-      imagePath: 'assets/images/animals/bobcat.jpg',
-      gradientColors: [Color(0xFF5D3A1A), Color(0xFF8B5E3C)],
-    ),
-    _CategoryItem(
-      name: 'Land Birds',
+      name: 'Birds',
       icon: Icons.forest_rounded,
       imagePath: 'assets/images/animals/turkey.jpg',
       gradientColors: [Color(0xFF2E4A1E), Color(0xFF4A6B2E)],

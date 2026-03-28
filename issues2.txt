@@ -1,0 +1,8 @@
+Cougar: 'Call' -> assets/audio/cougar.mp3
+Cougar: 'Mountain Scream' -> assets/audio/cougar_scream.mp3
+Egyptian: 'egyptian_goose'
+Fulvous: 'Clear Whistle' -> assets/audio/duck_fulvous_whistle.mp3
+Awebo: image -> assets/images/animals/willow_ptarmigan.webp
+Badger: 'badger_growl' -> Aggressive Growl
+Cougar: 'Yelp' -> assets/audio/puma_yelp.mp3
+Fulvous: 'Whistle' -> assets/audio/fulvous_whistling_duck.mp3

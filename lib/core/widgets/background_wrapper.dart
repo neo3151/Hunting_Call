@@ -22,39 +22,21 @@ class BackgroundWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // The background color from the theme
+        // Background matching the trees background from rating screen
         Positioned.fill(
-          child: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
+          child: Image.asset(
+            'assets/images/forest_background.webp',
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
           ),
         ),
         
-        // Tiled blurred background
+        // Theme-aware overlay mask that restores the App Theme picker functionality
         Positioned.fill(
-          child: Opacity(
-            opacity: tilingOpacity,
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-              child: Container(
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/forest_pattern.png'),
-                    repeat: ImageRepeat.repeat,
-                    alignment: Alignment.topLeft,
-                    scale: 2.0, // Increased scale for a larger, more subtle pattern
-                  ),
-                ),
-              ),
+          child: Container(
+            color: Theme.of(context).scaffoldBackgroundColor.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark ? 0.65 : 0.88,
             ),
-          ),
-        ),
-        
-        // Overlay for readability
-        Positioned.fill(
-          child: Container(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.black.withValues(alpha: overlayOpacity)
-                : Colors.white.withValues(alpha: overlayOpacity),
           ),
         ),
         

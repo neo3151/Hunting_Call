@@ -53,7 +53,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _audioService = ref.read(audioServiceProvider);
+    _audioService = ref.read(audioServiceProvider.notifier);
     routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
@@ -91,7 +91,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
       return;
     }
 
-    final audioService = ref.read(audioServiceProvider);
+    final audioService = ref.read(audioServiceProvider.notifier);
 
     try {
       await audioService.play(call.id, call.audioAssetPath);
@@ -188,8 +188,8 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
 
   @override
   Widget build(BuildContext context) {
-    final audioService = ref.watch(audioServiceProvider);
-    final currentlyPlayingId = audioService.currentlyPlayingId;
+    final audioService = ref.watch(audioServiceProvider.notifier);
+    final currentlyPlayingId = ref.watch(audioServiceProvider);
     final profileState = ref.watch(profileNotifierProvider);
     final isPremium = profileState.profile?.isPremium ?? false;
     final palette = AppColors.of(context);

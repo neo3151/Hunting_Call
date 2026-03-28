@@ -142,3 +142,5 @@ SHA1_FINGERPRINT.txt
 
 auth_export.json
 NUL
+
+*.apk

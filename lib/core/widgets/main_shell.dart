@@ -51,7 +51,7 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   void _onPageChanged(int index) {
     // Stop any playing audio when switching tabs
-    ref.read(audioServiceProvider).stop();
+    ref.read(audioServiceProvider.notifier).stop();
     // Kill any active recording session
     final recState = ref.read(recordingNotifierProvider);
     if (recState.isRecording || recState.isCountingDown) {

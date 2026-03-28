@@ -85,6 +85,7 @@ class SettingsScreen extends ConsumerWidget {
                                 ButtonSegment(value: ThemeMode.dark, label: Text(S.of(context).themeDark, style: const TextStyle(fontSize: 10))),
                               ],
                               selected: {settings.themeMode},
+                              showSelectedIcon: false,
                               onSelectionChanged: (v) => notifier.setThemeMode(v.first),
                               style: ButtonStyle(
                                 backgroundColor: WidgetStateProperty.resolveWith((states) {

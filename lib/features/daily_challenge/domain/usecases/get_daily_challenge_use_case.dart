@@ -96,7 +96,7 @@ class GetDailyChallengeUseCase {
       id: 'duck_mallard',
       animalName: 'Mallard Duck',
       callType: 'Basic Quack',
-      category: 'Ducks',
+      category: 'Waterfowl',
       scientificName: 'Anas platyrhynchos',
       description: 'The mallard is a dabbling duck that breeds throughout the temperate and subtropical Americas, Eurasia, and North Africa.',
       difficulty: 'Easy',

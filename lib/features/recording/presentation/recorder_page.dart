@@ -20,7 +20,6 @@ import 'package:outcall/features/rating/presentation/quick_match_screen.dart';
 import 'package:outcall/features/recording/domain/recording_mode.dart';
 import 'package:outcall/features/recording/presentation/controllers/recording_controller.dart';
 import 'package:outcall/features/recording/presentation/widgets/playback_review_dialog.dart';
-import 'package:outcall/features/recording/presentation/widgets/preflight_check_modal.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_coaching.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_dialogs.dart';
 import 'package:outcall/features/recording/presentation/widgets/recorder_widgets.dart';
@@ -266,14 +265,8 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
         await HapticFeedback.heavyImpact();
 
         // 0. Pre-Flight Calibration Check
-        // Enforce professional hardware baseline before allowing training
-        if (mounted) {
-          final passedCalibration = await showPreFlightCheck(context);
-          if (!passedCalibration) {
-            setState(() => isProcessing = false);
-            return; // Abort recording if room is too loud or mic fails
-          }
-        }
+        // REMOVED per user request. Practice starts instantly.
+        // Calibration remains available manually in Settings.
 
         // Clear buffer and timer on start
         setState(() {

@@ -26,19 +26,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
   final List<String> _categories = [
     'All',
     'Favorites',
-    'Ducks',
-    'Geese',
-    'Diving',
+    'Waterfowl',
     'Big Game',
     'Predators',
-    'Land Birds',
+    'Birds',
   ];
   AudioService? _audioService;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _audioService = ref.read(audioServiceProvider);
+    _audioService = ref.read(audioServiceProvider.notifier);
     routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
@@ -76,7 +74,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
       return;
     }
 
-    final audioService = ref.read(audioServiceProvider);
+    final audioService = ref.read(audioServiceProvider.notifier);
 
     try {
       await audioService.play(call.id, call.audioAssetPath);
@@ -148,8 +146,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    final audioService = ref.watch(audioServiceProvider);
-    final currentlyPlayingId = audioService.currentlyPlayingId;
+    final audioService = ref.watch(audioServiceProvider.notifier);
+    final currentlyPlayingId = ref.watch(audioServiceProvider);
     final profileState = ref.watch(profileNotifierProvider);
     final isPremium = profileState.profile?.isPremium ?? false;
 

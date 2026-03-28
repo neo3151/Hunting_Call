@@ -36,7 +36,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _audioService = ref.read(audioServiceProvider);
+    _audioService = ref.read(audioServiceProvider.notifier);
   }
 
   @override
@@ -45,20 +45,17 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     super.dispose();
   }
 
-  Future<void> _togglePlayback({bool isDiagnostic = false}) async {
-    final audioService = ref.read(audioServiceProvider);
+  Future<void> _togglePlayback() async {
+    final audioService = ref.read(audioServiceProvider.notifier);
 
     try {
       setState(() => _isDownloading = true);
 
-      final assetPath = isDiagnostic && widget.call.diagnosticAudioAssetPath != null
-          ? widget.call.diagnosticAudioAssetPath!
-          : widget.call.audioAssetPath;
+      final assetPath = widget.call.audioAssetPath;
 
       await audioService.play(
         widget.call.id,
         assetPath,
-        isDiagnostic: isDiagnostic,
       );
       if (mounted) setState(() => _isDownloading = false);
     } catch (e) {
@@ -73,8 +70,9 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final audioService = ref.watch(audioServiceProvider);
-    final isPlaying = audioService.currentlyPlayingId == widget.call.id;
+    final audioService = ref.watch(audioServiceProvider.notifier);
+    final currentlyPlayingId = ref.watch(audioServiceProvider);
+    final isPlaying = currentlyPlayingId == widget.call.id;
     final profile = ref.watch(profileNotifierProvider).profile;
     final isPremium = profile?.isPremium ?? false;
 
@@ -197,7 +195,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () => _togglePlayback(isDiagnostic: false),
+                                onPressed: () => _togglePlayback(),
                                 icon:
                                     Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
                                 label: Text(
@@ -240,33 +238,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                           ],
                         ),
 
-                        if (widget.call.diagnosticAudioAssetPath != null &&
-                            widget.call.diagnosticAudioAssetPath!.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () => _togglePlayback(isDiagnostic: true),
-                              icon: const Icon(Icons.tune_rounded, size: 20),
-                              label: Text(
-                                isPlaying ? 'STOP DIAGNOSTIC' : 'PLAY DIAGNOSTIC TONE',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: palette.textSecondary,
-                                side: BorderSide(color: palette.border),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape:
-                                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            ),
-                          ),
-                        ],
 
-                        const SizedBox(height: 12),
 
                         // Leaderboard Action
                         // Check premium status (need to get it first)

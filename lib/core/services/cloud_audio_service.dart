@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,13 +33,27 @@ class CloudAudioService {
     return FreemiumConfig.freeCallIds.contains(callId);
   }
 
+  /// Check if an asset exists in the bundle (useful for debug overrides)
+  Future<bool> _isAssetAvailable(String assetPath) async {
+    try {
+      await rootBundle.load(assetPath);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Bump this version to force all client devices to bypass their local cache
+  /// and re-download fresh audio assets from Firebase Storage.
+  static const int _audioCacheVersion = 2;
+
   /// Get the local cache path for a call's audio file
   Future<String> _getCachePath(String callId, String assetPath) async {
     if (_cacheDirectory == null) {
       await init();
     }
     final fileName = assetPath.split('/').last;
-    return '${_cacheDirectory!.path}/$fileName';
+    return '${_cacheDirectory!.path}/v${_audioCacheVersion}_$fileName';
   }
 
   /// Check if audio is already cached locally
@@ -55,6 +70,13 @@ class CloudAudioService {
     // Free calls: serve from bundled assets
     if (isBundled(callId)) {
       final strippedPath = assetPath.replaceFirst('assets/', '');
+      return AudioSource.asset(strippedPath);
+    }
+
+    // DEBUG OVERRIDE: Prioritize local assets over cached/cloud versions during development
+    if (kDebugMode && await _isAssetAvailable(assetPath)) {
+      final strippedPath = assetPath.replaceFirst('assets/', '');
+      AppLogger.d('CloudAudioService: DEBUG OVERRIDE - Serving $callId from local assets');
       return AudioSource.asset(strippedPath);
     }
 
@@ -119,8 +141,11 @@ class CloudAudioService {
   ///
   /// For bundled assets, extracts to temp. For cloud assets, downloads to cache.
   Future<String> resolveFilePath(String callId, String assetPath) async {
-    if (isBundled(callId)) {
+    if (isBundled(callId) || (kDebugMode && await _isAssetAvailable(assetPath))) {
       // Extract bundled asset to a temp file for file-based access
+      if (kDebugMode && !isBundled(callId)) {
+        AppLogger.d('CloudAudioService: DEBUG OVERRIDE - Extracting $callId from local assets');
+      }
       final ByteData data = await rootBundle.load(assetPath);
       final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       final tempDir = Directory.systemTemp;
@@ -161,6 +186,10 @@ class CloudAudioService {
   /// Prefetch audio for a specific call (e.g., daily challenge)
   Future<void> prefetchAudio(String callId, String assetPath) async {
     if (isBundled(callId)) return; // Already bundled
+
+    // DEBUG OVERRIDE: If the asset is locally available, skip prefetch
+    if (kDebugMode && await _isAssetAvailable(assetPath)) return;
+
     if (await isAudioCached(callId, assetPath)) return; // Already cached
 
     try {
