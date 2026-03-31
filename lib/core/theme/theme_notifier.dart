@@ -168,6 +168,10 @@ final themeNotifierProvider = NotifierProvider<ThemeNotifier, AppTheme>(() {
 });
 
 final themeModeProvider = Provider<ThemeMode>((ref) {
+  const forceDarkMode = bool.fromEnvironment('FORCE_DARK_MODE', defaultValue: false);
+  if (forceDarkMode) {
+    return ThemeMode.dark;
+  }
   final settingsAsync = ref.watch(settingsNotifierProvider);
   return settingsAsync.maybeWhen(
     data: (settings) => settings.themeMode,

@@ -77,6 +77,8 @@ dev_dependencies:
   json_serializable: ^6.7.1
   mocktail: ^1.0.4
   flutter_launcher_icons: ^0.14.4
+  integration_test:
+    sdk: flutter
 
 flutter:
   generate: true
