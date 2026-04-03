@@ -1,5 +1,0 @@
-﻿ M pubspec.yaml
-?? git_branches.txt
-?? git_log_recent.txt
-?? git_stash.txt
-?? git_status.txt

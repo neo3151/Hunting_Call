@@ -33,9 +33,11 @@ foreach ($repo in $repos) {
     Set-Location $repo
     git add -A 2>$null
     
-    $diff = git diff --cached --name-only
+    $diff = git diff --cached --name-status
     if ($diff) {
-        git commit -m "chore: auto-sync $timestamp" | Out-Null
+        $filesChanged = $diff | Out-String
+        $fullMsg = "chore: auto-sync $timestamp`n`nChanged Files:`n$filesChanged"
+        git commit -m $fullMsg | Out-Null
         git push | Out-Null
         Write-Host "  -> Pushed new changes"
     } else {

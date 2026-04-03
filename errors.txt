@@ -1,8 +1,0 @@
-warning - This method overrides a method annotated as '@mustCallSuper' in 'ChangeNotifier', but doesn't invoke the overridden method - lib\core\services\audio_service.dart:85:8 - must_call_super
-  error - The function 'ChangeNotifierProvider' isn't defined - lib\core\services\audio_service.dart:95:30 - undefined_function
-warning - The class 'Query' shouldn't be extended, mixed in, or implemented because it's sealed - test\stress\api_gateway_stress_test.dart:14:1 - subtype_of_sealed_class
-warning - The class 'DocumentReference' shouldn't be extended, mixed in, or implemented because it's sealed - test\stress\api_gateway_stress_test.dart:15:1 - subtype_of_sealed_class
-warning - The class 'DocumentSnapshot' shouldn't be extended, mixed in, or implemented because it's sealed - test\stress\api_gateway_stress_test.dart:16:1 - subtype_of_sealed_class
-warning - The class 'DocumentSnapshot' shouldn't be extended, mixed in, or implemented because it's sealed - test\stress\api_gateway_stress_test.dart:18:1 - subtype_of_sealed_class
-warning - The class 'QueryDocumentSnapshot' shouldn't be extended, mixed in, or implemented because it's sealed - test\stress\api_gateway_stress_test.dart:18:1 - subtype_of_sealed_class
-warning - The class 'Query' shouldn't be extended, mixed in, or implemented because it's sealed - test\stress\api_gateway_stress_test.dart:19:1 - subtype_of_sealed_class

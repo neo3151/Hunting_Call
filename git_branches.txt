@@ -1,5 +1,0 @@
-﻿  claude/add-claude-documentation-A4ZBu
-* main
-  remotes/origin/HEAD -> origin/main
-  remotes/origin/claude/add-claude-documentation-A4ZBu
-  remotes/origin/main

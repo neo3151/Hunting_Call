@@ -1,7 +1,0 @@
-Version 1.5.3 Update: Stability & Precision
-• Re-calibrated scoring engine for fairer, accurate grading
-• Polished Home Screen UI & fixed Spectrogram clipping
-• Added "Offline Mode" to Leaderboards & Profile
-• Implemented a custom, graceful Error Screen
-• Added Remote Kill-Switch, App Check security, & Bug Breadcrumbs for ultimate stability
-Happy hunting!

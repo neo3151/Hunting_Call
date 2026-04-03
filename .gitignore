@@ -144,3 +144,10 @@ auth_export.json
 NUL
 
 *.apk
+
+# Post-Cleanup Additions
+*.pdf
+node_modules/
+OUTCALL_*_Report.*
+audit_*
+stress_test_*
