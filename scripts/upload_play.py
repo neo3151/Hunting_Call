@@ -16,8 +16,8 @@ import sys
 import io
 
 # Fix Windows console encoding for emoji/unicode
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+# sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+# sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -106,18 +106,18 @@ def upload_aab(track: str, aab_path: str, release_name: str, notes: str):
 
     # 3. Assign to track with release notes
     print(f"🚀 Assigning to {track} track...")
+    release_dict = {
+        "name": release_name,
+        "versionCodes": [str(version_code)],
+        "status": "draft",
+        "releaseNotes": [
+            {"language": "en-US", "text": notes}
+        ],
+    }
+
     release_body = {
         "track": track,
-        "releases": [
-            {
-                "name": release_name,
-                "versionCodes": [str(version_code)],
-                "status": "completed",
-                "releaseNotes": [
-                    {"language": "en-US", "text": notes}
-                ],
-            }
-        ],
+        "releases": [release_dict],
     }
     service.edits().tracks().update(
         packageName=PACKAGE_NAME,

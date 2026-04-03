@@ -2,28 +2,25 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:outcall/features/recording/domain/visualization_settings.dart';
 import 'package:outcall/core/theme/app_colors.dart';
-import 'package:outcall/features/recording/domain/audio_sample.dart';
 
 class LiveVisualizer extends StatelessWidget {
-  final List<AudioSample>? activeSamples;
+  final List<double> amplitudes;
   final List<double>? referencePattern;
   final List<List<double>>? referenceSpectrogram;
   final VisualizationMode mode;
   final Color color;
   final bool isRecording;
   final double? referenceAvgAmplitude; // Average amplitude of reference call
-  final double referenceDurationSec;
 
   const LiveVisualizer({
     super.key,
-    this.activeSamples,
+    required this.amplitudes,
     this.referencePattern,
     this.referenceSpectrogram,
     this.mode = VisualizationMode.waveform,
     this.color = Colors.green,
     this.isRecording = false,
     this.referenceAvgAmplitude,
-    this.referenceDurationSec = 1.0,
   });
 
   @override
@@ -34,14 +31,13 @@ class LiveVisualizer extends StatelessWidget {
         width: double.infinity,
         child: CustomPaint(
           painter: _CoachingWaveformPainter(
-            activeSamples: activeSamples,
+            amplitudes: amplitudes,
             referencePattern: referencePattern,
             referenceSpectrogram: referenceSpectrogram,
             mode: mode,
             color: color,
             isRecording: isRecording,
             referenceAvgAmplitude: referenceAvgAmplitude,
-            referenceDurationSec: referenceDurationSec > 0 ? referenceDurationSec : 1.0,
           ),
         ),
       ),
@@ -50,16 +46,14 @@ class LiveVisualizer extends StatelessWidget {
 }
 
 class _CoachingWaveformPainter extends CustomPainter {
-  final List<AudioSample>? activeSamples;
+  final List<double> amplitudes;
   final List<double>? referencePattern;
   final List<List<double>>? referenceSpectrogram;
   final VisualizationMode mode;
   final Color color;
   final bool isRecording;
   final double? referenceAvgAmplitude;
-  final double referenceDurationSec;
 
-  static const double _viewWindowSec = 5.0; // Show 5 seconds of audio horizontally
   static const int _dataPoints = 60;
   static const Color _refColor = Color(0xFFFF6D00);     // Safety orange for reference
   static const double _noiseFloor = 0.05;               // Very low threshold for rendering
@@ -70,14 +64,13 @@ class _CoachingWaveformPainter extends CustomPainter {
   static const Color _hotColor  = AppColors.error;    // Red — way off
 
   _CoachingWaveformPainter({
-    this.activeSamples,
+    required this.amplitudes,
     this.referencePattern,
     this.referenceSpectrogram,
     required this.mode,
     required this.color,
     required this.isRecording,
     this.referenceAvgAmplitude,
-    required this.referenceDurationSec,
   });
 
   @override
@@ -87,27 +80,9 @@ class _CoachingWaveformPainter extends CustomPainter {
     final double centerY = size.height / 2;
     final double maxBarHeight = size.height * 0.85;
 
-    // Determine visual time window
-    double viewWindowStart = 0.0;
-    
-    if (activeSamples != null && activeSamples!.isNotEmpty) {
-      final double firstTime = activeSamples!.first.timeSec;
-      final double latestTime = activeSamples!.last.timeSec;
-      
-      if (firstTime < 0) {
-        viewWindowStart = firstTime;
-      }
-      
-      if (latestTime - viewWindowStart > _viewWindowSec) {
-        viewWindowStart = latestTime - _viewWindowSec;
-      }
-    }
-    
-    final double viewWindowEnd = viewWindowStart + _viewWindowSec;
-
-    // Sample data into _dataPoints bars mapped by time!
-    final refSamples = _sampleReferencePattern(viewWindowStart, viewWindowEnd);
-    final activeAmplitudes = _sampleActiveAmplitudes(viewWindowStart, viewWindowEnd);
+    // Sample data into _dataPoints bars
+    final refSamples = _sampleData(referencePattern, _dataPoints);
+    final activeSamples = _sampleData(amplitudes, _dataPoints);
 
     // Compute reference target zone (average ± tolerance)
     final double refAvg = referenceAvgAmplitude ?? _computeAverage(refSamples);
@@ -172,7 +147,7 @@ class _CoachingWaveformPainter extends CustomPainter {
       final double barCenterX = x + barWidth / 2;
 
       // 1. Draw Reference bar (wider, behind)
-      if (i < refSamples.length) {
+      if (refSamples != null && i < refSamples.length) {
         final double refVal = refSamples[i];
         if (refVal > _noiseFloor) {
           final double refH = refVal * maxBarHeight;
@@ -191,8 +166,8 @@ class _CoachingWaveformPainter extends CustomPainter {
       }
 
       // 2. Draw Active bar (narrower, on top) with coaching colors
-      if (i < activeAmplitudes.length) {
-        final double activeVal = activeAmplitudes[i];
+      if (activeSamples != null && i < activeSamples.length) {
+        final double activeVal = activeSamples[i];
         if (activeVal > _noiseFloor) {
           final double activeH = activeVal * maxBarHeight;
 
@@ -281,47 +256,24 @@ class _CoachingWaveformPainter extends CustomPainter {
     return count > 0 ? sum / count : 0.0;
   }
 
-  List<double> _sampleReferencePattern(double startSec, double endSec) {
-    if (referencePattern == null || referencePattern!.isEmpty || referenceDurationSec <= 0) {
-      return List.filled(_dataPoints, 0.0);
+  List<double>? _sampleData(List<double>? data, int count) {
+    if (data == null || data.isEmpty) return null;
+    if (data.length <= count) {
+      return [...data, ...List.filled(count - data.length, 0.0)];
     }
-    return List.generate(_dataPoints, (i) {
-      final double time = startSec + (endSec - startSec) * (i / (_dataPoints - 1));
-      if (time < 0 || time > referenceDurationSec) return 0.0;
-      
-      final double rawIdx = (time / referenceDurationSec) * (referencePattern!.length - 1);
-      final int idx = rawIdx.floor().clamp(0, referencePattern!.length - 1);
-      return referencePattern![idx].clamp(0.0, 1.0);
-    });
-  }
-
-  List<double> _sampleActiveAmplitudes(double startSec, double endSec) {
-    if (activeSamples == null || activeSamples!.isEmpty) {
-      return List.filled(_dataPoints, 0.0);
-    }
-    return List.generate(_dataPoints, (i) {
-      final double time = startSec + (endSec - startSec) * (i / (_dataPoints - 1));
-      
-      AudioSample? closest;
-      double minDiff = double.infinity;
-      for (final s in activeSamples!) {
-        final diff = (s.timeSec - time).abs();
-        if (diff < minDiff) {
-          minDiff = diff;
-          closest = s;
-        }
-      }
-      
-      // A width of 5 secs / 60 points = 83ms per point.
-      // Samples are ~50ms apart. 150ms diff tolerance is safe.
-      if (closest == null || minDiff > 0.15) return 0.0;
-      
-      return closest.amplitude.clamp(0.0, 1.0);
+    final step = data.length / count;
+    return List.generate(count, (i) {
+      final idx = (i * step).floor().clamp(0, data.length - 1);
+      return data[idx].clamp(0.0, 1.0);
     });
   }
 
   @override
   bool shouldRepaint(covariant _CoachingWaveformPainter oldDelegate) {
-    return true; // We always rebuild and repaint when amplitudes update
+    return oldDelegate.amplitudes != amplitudes ||
+        oldDelegate.referencePattern != referencePattern ||
+        oldDelegate.mode != mode ||
+        oldDelegate.isRecording != isRecording ||
+        oldDelegate.referenceAvgAmplitude != referenceAvgAmplitude;
   }
 }

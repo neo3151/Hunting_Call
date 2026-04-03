@@ -1,7 +1,7 @@
 name: outcall
 description: OUTCALL — the ultimate hunting call training app.
 publish_to: 'none'
-version: 2.1.0+41
+version: 2.1.0+102
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -45,7 +45,6 @@ dependencies:
   sqflite: ^2.3.0
   package_info_plus: ^9.0.0
   path: ^1.9.0
-  firedart: ^0.9.8
   in_app_purchase: ^3.1.13
 
   sqflite_common_ffi: any

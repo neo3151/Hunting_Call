@@ -1,5 +1,10 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:outcall/firebase_options.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firedart/firedart.dart' as fd;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/services/api_gateway.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
@@ -38,11 +43,49 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // â”€â”€â”€ Platform Environment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-/// Must be overridden with a [PlatformEnvironment] at app startup.
-final platformEnvironmentProvider = Provider<PlatformEnvironment>((ref) {
-  throw UnimplementedError(
-    'platformEnvironmentProvider must be overridden in ProviderScope',
+/// Asynchronously initializes Platform info, Firebase, and SharedPreferences.
+/// Other entry points or isolates can simply `await ref.read(asyncPlatformEnvironmentProvider.future)`
+final asyncPlatformEnvironmentProvider = FutureProvider<PlatformEnvironment>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  final isDesktop = Platform.isLinux || Platform.isWindows || Platform.isMacOS;
+  
+  bool firebaseReady = false;
+  try {
+    if (Platform.isAndroid) {
+      await Firebase.initializeApp();
+    } else {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+    // Skip App Check in debug mode or on desktop
+    if (!kDebugMode && !Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) {
+      await FirebaseAppCheck.instance.activate(
+        providerAndroid: const AndroidPlayIntegrityProvider(),
+      );
+    }
+    firebaseReady = true;
+  } catch (e, st) {
+    _logWarning(e, st);
+  }
+
+  return PlatformEnvironment(
+    isFirebaseEnabled: firebaseReady,
+    isDesktop: isDesktop,
+    useMocks: false,
+    sharedPreferences: prefs,
   );
+});
+
+void _logWarning(dynamic e, StackTrace st) {
+    try { AppLogger.e('Firebase init failed', e, st); } catch (_) {}
+}
+
+/// Provides the synchronous [PlatformEnvironment].
+/// Safely unpacks the async provider. An entrypoint running without
+/// `overrideWithValue` MUST await `asyncPlatformEnvironmentProvider.future` first.
+final platformEnvironmentProvider = Provider<PlatformEnvironment>((ref) {
+  return ref.watch(asyncPlatformEnvironmentProvider).requireValue;
 });
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -82,7 +125,7 @@ class PlatformEnvironment {
 final apiGatewayProvider = Provider<ApiGateway?>((ref) {
   final env = ref.watch(platformEnvironmentProvider);
   if (!env.isFirebaseEnabled) return null;
-  if (env.isDesktop) return FiredartApiGateway(fd.Firestore.instance);
+  if (env.isDesktop) return RestFirestoreApiGateway(FirebaseFirestore.instance); // Note: we'll implement this to use official auth to connect to REST
   return FirebaseApiGateway(FirebaseFirestore.instance);
 });
 

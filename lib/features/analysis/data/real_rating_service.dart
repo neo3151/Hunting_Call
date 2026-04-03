@@ -343,8 +343,12 @@ class RealRatingService implements RatingService {
       );
       AppLogger.d('RealRatingService: Pro-Grade Analysis complete. Score: ${result.score}');
 
-      // Save to history
-      await profileRepository.saveResultForUser(userId, result, animalType);
+      // Save to history (wrapped in try-catch so network failures don't drop the analysis result)
+      try {
+        await profileRepository.saveResultForUser(userId, result, animalType);
+      } catch (e) {
+        AppLogger.d('RealRatingService: Failed to sync result to profile: $e');
+      }
 
       // Submit to Leaderboard if score is decent
       if (analysisResult.overallScore >= 60 && userId != 'guest' && leaderboardService != null) {

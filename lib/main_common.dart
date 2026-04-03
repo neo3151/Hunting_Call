@@ -3,19 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:outcall/firebase_options.dart';
 import 'dart:io';
-import 'package:outcall/injection_container.dart' as di;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:outcall/features/hunting_log/data/local_hunting_log_repository.dart';
 import 'package:outcall/di_providers.dart';
 import 'package:outcall/core/theme/theme_notifier.dart';
 import 'package:outcall/features/splash/presentation/splash_screen.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
-import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
-import 'package:outcall/features/auth/data/firedart_auth_repository.dart';
 import 'package:outcall/config/app_config.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/widgets/global_error_view.dart';
@@ -27,6 +22,7 @@ import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/features/settings/presentation/controllers/settings_controller.dart';
 
 import 'package:outcall/core/services/simple_storage.dart';
+import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 // removed revenuecat
 
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
@@ -38,33 +34,50 @@ Future<void> mainCommon() async {
   await _configurePlatform();
   await ReferenceDatabase.init();
 
-  final firebaseReady = await _initFirebase();
-  _setupErrorHandling(firebaseReady);
+  final container = ProviderContainer(
+    overrides: [
+      AppConfig.provider.overrideWithValue(AppConfig.instance),
+    ],
+  );
+
+  // Spin up and dynamically cache the platform environment dependencies (Firebase, etc.)
+  final env = await container.read(asyncPlatformEnvironmentProvider.future);
+
+  _setupErrorHandling(env.isFirebaseEnabled);
+
+  // Initialize Remote Config for AI Coach and feature flags
+  if (env.isFirebaseEnabled) {
+    await container.read(remoteConfigServiceProvider).initialize();
+  }
 
   // Initialize analytics
-  if (firebaseReady) AnalyticsService.initialize();
+  if (env.isFirebaseEnabled) AnalyticsService.initialize();
 
   // Initialize push notifications
-  if (firebaseReady) {
+  if (env.isFirebaseEnabled) {
     final notifService = NotificationService(
-      SharedPrefsStorage(await SharedPreferences.getInstance()),
+      SharedPrefsStorage(env.sharedPreferences),
     );
     await notifService.initialize();
   }
 
-  // removed revenuecat
+  // Initialize Desktop sqlite
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
-  // Initialize Firedart (desktop) + HuntingLog DB via injection_container
-  await di.init();
-
-  final env = await _createPlatformEnvironment(firebaseReady);
+  // Initialize HuntingLog database tables eagerly
+  try {
+    final huntingLogRepo = LocalHuntingLogRepository();
+    await huntingLogRepo.initialize();
+  } catch (e) {
+    AppLogger.d('HuntingLog DB init failed: $e');
+  }
 
   runApp(
-    ProviderScope(
-      overrides: [
-        platformEnvironmentProvider.overrideWithValue(env),
-        AppConfig.provider.overrideWithValue(AppConfig.instance),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const HuntingCallsApp(),
     ),
   );
@@ -83,36 +96,6 @@ Future<void> _configurePlatform() async {
     DeviceOrientation.landscapeRight,
   ]);
   // NOTE: sqfliteFfiInit() is handled inside di.init() — no duplicate call here.
-}
-
-/// Initialize Firebase + App Check on mobile. Returns false on desktop or failure.
-Future<bool> _initFirebase() async {
-  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) return false;
-
-  try {
-    // On Android, let google-services.json auto-configure Firebase
-    // so the correct appId is used for both .dev and production packages.
-    // Other platforms need explicit options.
-    if (Platform.isAndroid) {
-      await Firebase.initializeApp();
-    } else {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-    }
-    // Skip App Check in debug mode — Play Integrity only works on
-    // release builds, and the debug provider requires manual token
-    // registration in Firebase Console.
-    if (!kDebugMode) {
-      await FirebaseAppCheck.instance.activate(
-        providerAndroid: const AndroidPlayIntegrityProvider(),
-      );
-    }
-    return true;
-  } catch (e, st) {
-    AppLogger.e('Firebase init failed', e, st);
-    return false;
-  }
 }
 
 /// Wire up global error handlers, routing to Crashlytics when available.
@@ -138,27 +121,6 @@ void _setupErrorHandling(bool firebaseReady) {
     }
     return true;
   };
-}
-
-/// Build the [PlatformEnvironment], optionally initializing Firedart auth.
-Future<PlatformEnvironment> _createPlatformEnvironment(bool firebaseReady) async {
-  final prefs = await SharedPreferences.getInstance();
-  final isDesktop = Platform.isLinux || Platform.isWindows || Platform.isMacOS;
-  AuthRepository? preInitAuthRepo;
-
-  if (isDesktop && di.isFirebaseEnabled) {
-    final firedartAuth = FiredartAuthRepository();
-    await firedartAuth.initialize();
-    preInitAuthRepo = firedartAuth;
-  }
-
-  return PlatformEnvironment(
-    isFirebaseEnabled: di.isFirebaseEnabled,
-    isDesktop: isDesktop,
-    useMocks: false,
-    sharedPreferences: prefs,
-    preInitializedAuthRepo: preInitAuthRepo,
-  );
 }
 
 // ---------------------------------------------------------------------------

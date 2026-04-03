@@ -55,13 +55,14 @@ class RecorderVisualizerSection extends ConsumerWidget {
                     ref.watch(amplitudeStreamProvider); // Trigger rebuild on amplitude change
                     return ExcludeSemantics(
                       child: LiveVisualizer(
-                      amplitudes: amplitudeBuffer.map((s) => s.amplitude).toList(),
+                      activeSamples: amplitudeBuffer,
                       referencePattern: vizSettings.showReferenceOverlay ? selectedCall.waveform : null,
                       referenceSpectrogram: vizSettings.showReferenceOverlay ? selectedCall.spectrogram : null,
                       mode: vizSettings.mode,
                       color: (isRecording || isCountingDown) ? Colors.tealAccent : Colors.teal.withValues(alpha: 0.5),
                       isRecording: isRecording || isCountingDown,
                       referenceAvgAmplitude: computeRefAvg(selectedCall.waveform),
+                      referenceDurationSec: selectedCall.idealDurationSec,
                     ),
                     );
                   },

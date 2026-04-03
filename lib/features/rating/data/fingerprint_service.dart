@@ -123,42 +123,42 @@ class FingerprintService {
         );
       }
 
-      // Top species from BirdNET
-      final topSpecies = speciesMatches.entries.first;
-      final birdnetConfidence = topSpecies.value; // 0-100%
-      final speciesName = topSpecies.key;
-
-      // Find the closest matching reference call in our database
+      // Find the closest matching reference call in our database.
+      // We iterate through ALL species BirdNET predicted, in order of highest confidence first.
+      // This prevents accuracy drops if BirdNET's #1 guess is a random unsupported bird, 
+      // but its #2 or #3 guess is the turkey we actually support.
       final allCalls = ReferenceDatabase.calls;
-      String matchedAnimal = speciesName;
+      String matchedAnimal = speciesMatches.entries.first.key;
       String matchedCallType = 'call';
       String? matchedClipId;
       double pitchScore = 25.0;
+      double finalBirdnetConfidence = speciesMatches.entries.first.value;
 
-      // Try to match BirdNET species name to our reference database
-      for (final ref in allCalls) {
-        final refName = ref.animalName.toLowerCase();
-        final birdName = speciesName.toLowerCase();
+      bool foundMatch = false;
+      for (final species in speciesMatches.entries) {
+        if (foundMatch) break;
+        final birdName = species.key.toLowerCase();
+        
+        for (final ref in allCalls) {
+          final refName = ref.animalName.toLowerCase();
 
-        // Fuzzy match: BirdNET label might be "Wild Turkey" while ref is "Wild Turkey"
-        // or "Mallard" while ref is "Mallard Duck"
-        if (refName.contains(birdName) ||
-            birdName.contains(refName) ||
-            _fuzzyMatch(refName, birdName)) {
-          matchedAnimal = ref.animalName;
-          matchedCallType = ref.callType;
-          matchedClipId = ref.id;
+          // Fuzzy match: BirdNET label might be "Wild Turkey" while ref is "Wild Turkey"
+          if (refName.contains(birdName) || birdName.contains(refName) || _fuzzyMatch(refName, birdName)) {
+            matchedAnimal = ref.animalName;
+            matchedCallType = ref.callType;
+            matchedClipId = ref.id;
+            finalBirdnetConfidence = species.value;
 
-          // Calculate pitch similarity to this reference
-          final idealPitch = ref.idealPitchHz;
-          if (idealPitch > 0 && analysis.dominantFrequencyHz > 0) {
-            final pitchDiff =
-                (analysis.dominantFrequencyHz - idealPitch).abs();
-            final maxDiff = idealPitch * 0.5; // 50% tolerance
-            pitchScore =
-                ((1.0 - (pitchDiff / maxDiff).clamp(0.0, 1.0)) * 100);
+            // Calculate pitch similarity to this reference (now 75% tolerance instead of 50% for more forgiving gradings)
+            final idealPitch = ref.idealPitchHz;
+            if (idealPitch > 0 && analysis.dominantFrequencyHz > 0) {
+              final pitchDiff = (analysis.dominantFrequencyHz - idealPitch).abs();
+              final maxDiff = idealPitch * 0.75; // More forgiving tolerance
+              pitchScore = ((1.0 - (pitchDiff / maxDiff).clamp(0.0, 1.0)) * 100);
+            }
+            foundMatch = true;
+            break;
           }
-          break;
         }
       }
 
@@ -184,14 +184,14 @@ class FingerprintService {
       }
 
       final compositeScore = computeScore(
-        birdnetConfidence: birdnetConfidence,
+        birdnetConfidence: finalBirdnetConfidence,
         pitchScore: pitchScore,
         callQuality: analysis.callQualityScore,
         toneClarity: analysis.toneClarity,
       );
 
       AppLogger.d(
-          'QuickMatch: $matchedAnimal ($matchedCallType) — BirdNET=${birdnetConfidence.toStringAsFixed(0)}%, '
+          'QuickMatch: $matchedAnimal ($matchedCallType) — BirdNET=${finalBirdnetConfidence.toStringAsFixed(0)}%, '
           'pitch=${pitchScore.toStringAsFixed(0)}%, quality=${analysis.callQualityScore.toStringAsFixed(0)}%, '
           'score=${compositeScore.toStringAsFixed(0)}% in ${elapsed.toStringAsFixed(0)}ms');
 
@@ -226,16 +226,17 @@ class FingerprintService {
     required double callQuality,
     required double toneClarity,
   }) {
-    // Weighted average: BirdNET 35% + pitch 35% + quality 15% + clarity 15%
-    final rawScore = (birdnetConfidence.clamp(0, 100) * 0.35 +
-            pitchScore.clamp(0, 100) * 0.35 +
+    // Weighted average: ML confidence 40%, pitch 30%, quality 15%, clarity 15%
+    final rawScore = (birdnetConfidence.clamp(0, 100) * 0.40 +
+            pitchScore.clamp(0, 100) * 0.30 +
             callQuality.clamp(0, 100) * 0.15 +
             toneClarity.clamp(0, 100) * 0.15)
         .clamp(0.0, 100.0);
 
-    // Sigmoid contrast: pushes scores away from 50%
-    //   20 raw → ~8, 30 → ~17, 50 → 50, 70 → ~83, 85 → ~94
-    return (100.0 / (1.0 + exp(-0.08 * (rawScore - 50.0)))).clamp(0.0, 100.0);
+    // Sigmoid contrast: tuned to be much more forgiving for beginners.
+    // By shifting the midpoint to 40, a raw score of 50 jumps up to ~65% 
+    // instead of staying at a failing 50%.
+    return (100.0 / (1.0 + exp(-0.06 * (rawScore - 40.0)))).clamp(0.0, 100.0);
   }
 
   /// Simple fuzzy matching for BirdNET labels vs reference names.

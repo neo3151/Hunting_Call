@@ -6,13 +6,16 @@ import 'package:outcall/di_providers.dart';
 
 final leaderboardScoresProvider = StreamProvider.family<List<LeaderboardEntry>, String>((ref, animalId) {
   final service = ref.watch(leaderboardServiceProvider);
-  if (service == null) return const Stream.empty();
+  if (service == null) return Stream.value([]);
   return service.getTopScores(animalId);
 });
 
 final globalLeaderboardProvider = FutureProvider.autoDispose<List<UserProfile>>((ref) async {
   final repo = ref.watch(profileRepositoryProvider);
-  return repo.getTopGlobalUsers();
+  return repo.getTopGlobalUsers().timeout(
+    const Duration(seconds: 15), 
+    onTimeout: () => [],
+  );
 });
 
 class LeaderboardNotifier extends Notifier<AsyncValue<void>> {

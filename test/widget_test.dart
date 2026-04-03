@@ -3,15 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:outcall/di_providers.dart';
 import 'package:outcall/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:outcall/injection_container.dart' as di;
-
 void main() {
   group('Platform Bootstrap', () {
-    test('injection_container.init runs in mock mode without crashing', () async {
-      SharedPreferences.setMockInitialValues({});
-      await di.init(useMocks: true);
-      expect(di.isFirebaseEnabled, isFalse);
-    });
 
     test('Riverpod providers initialize in mock environment', () async {
       SharedPreferences.setMockInitialValues({});

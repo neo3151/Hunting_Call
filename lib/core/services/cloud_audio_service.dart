@@ -102,7 +102,7 @@ class CloudAudioService {
           final path = Uri.encodeComponent('$_storagePath/$fileName');
           final url = 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$path?alt=media';
           
-          final response = await http.get(Uri.parse(url));
+          final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
           if (response.statusCode == 200) {
             await file.writeAsBytes(response.bodyBytes);
           } else {
@@ -169,7 +169,7 @@ class CloudAudioService {
       final path = Uri.encodeComponent('$_storagePath/$fileName');
       final url = 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$path?alt=media';
       
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         await file.writeAsBytes(response.bodyBytes);
       } else {
