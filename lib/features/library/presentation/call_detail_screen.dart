@@ -312,7 +312,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                             _metricCard('DOMINANT PITCH', '${widget.call.idealPitchHz.toInt()} Hz',
                                 Icons.graphic_eq),
                             const SizedBox(width: 12),
-                            _metricCard('DURATION', '${widget.call.idealDurationSec} Sec',
+                            _metricCard('DURATION', '${widget.call.idealDurationSec.round()} Sec',
                                 Icons.timer_outlined),
                           ],
                         ),

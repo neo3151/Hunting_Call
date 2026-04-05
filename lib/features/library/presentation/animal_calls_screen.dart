@@ -369,7 +369,7 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
                       children: [
                         _buildMetricChip(Icons.music_note, '${call.idealPitchHz.toInt()} Hz'),
                         const SizedBox(width: 8),
-                        _buildMetricChip(Icons.timer_outlined, '${call.idealDurationSec}s'),
+                        _buildMetricChip(Icons.timer_outlined, '${call.idealDurationSec.round()}s'),
                         const SizedBox(width: 8),
                         const Spacer(),
                         if (call.proTips.isNotEmpty)

@@ -373,7 +373,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
                               Icons.music_note, '${call.idealPitchHz.toInt()} Hz'),
                           const SizedBox(width: 8),
                           _buildMetricChip(
-                              Icons.timer_outlined, '${call.idealDurationSec}s'),
+                              Icons.timer_outlined, '${call.idealDurationSec.round()}s'),
                           const SizedBox(width: 8),
                           const Spacer(),
                           // Learn More Indicator

@@ -71,11 +71,16 @@ class ProgressMapNotifier extends Notifier<ProgressMapState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      // Restore saved world selection
+      // Restore saved world selection, guarding against cached indices exceeding the new world count
       final repo = ref.read(progressMapRepositoryProvider);
       final savedWorld = await repo.getCurrentWorldIndex();
-      if (savedWorld != state.selectedWorld) {
-        state = state.copyWith(selectedWorld: savedWorld);
+      
+      final validWorldIndex = (savedWorld >= 0 && savedWorld < worlds.length) 
+          ? savedWorld 
+          : (worlds.length > 0 ? worlds.length - 1 : 0);
+
+      if (validWorldIndex != state.selectedWorld) {
+        state = state.copyWith(selectedWorld: validWorldIndex);
       }
 
       final getAllCallsUseCase = ref.read(getAllCallsUseCaseProvider);
