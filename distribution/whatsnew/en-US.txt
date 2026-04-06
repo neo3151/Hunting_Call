@@ -1,1 +1,9 @@
-Improved hunting call training with a real-time recording visualizer and enhanced background service synchronization for better stability.
+v2.2.2 — Stability & Polish
+
+• Fixed linting warnings across library and widget components
+• Added sync status bar for real-time background service visibility
+• Improved API gateway error handling and resilience
+• Enhanced audio service reliability
+• Refined home screen layout and library navigation
+• Updated analysis options for stricter code quality
+• General performance improvements and bug fixes
