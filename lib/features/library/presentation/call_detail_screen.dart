@@ -70,7 +70,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final audioService = ref.watch(audioServiceProvider.notifier);
+    // Removed unused audioService to satisfy linting
     final currentlyPlayingId = ref.watch(audioServiceProvider);
     final isPlaying = currentlyPlayingId == widget.call.id;
     final profile = ref.watch(profileNotifierProvider).profile;

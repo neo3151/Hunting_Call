@@ -77,7 +77,7 @@ class ProgressMapNotifier extends Notifier<ProgressMapState> {
       
       final validWorldIndex = (savedWorld >= 0 && savedWorld < worlds.length) 
           ? savedWorld 
-          : (worlds.length > 0 ? worlds.length - 1 : 0);
+          : (worlds.isNotEmpty ? worlds.length - 1 : 0);
 
       if (validWorldIndex != state.selectedWorld) {
         state = state.copyWith(selectedWorld: validWorldIndex);

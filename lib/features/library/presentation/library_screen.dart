@@ -146,7 +146,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    final audioService = ref.watch(audioServiceProvider.notifier);
+    // Removed unused audioService to satisfy linting
     final currentlyPlayingId = ref.watch(audioServiceProvider);
     final profileState = ref.watch(profileNotifierProvider);
     final isPremium = profileState.profile?.isPremium ?? false;
