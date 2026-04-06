@@ -79,6 +79,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             MaterialPageRoute(builder: (_) => const SettingsScreen()),
                           ),
                         ),
+                        if (homeState.isLoading)
+                          const LinearProgressIndicator(
+                            backgroundColor: Colors.transparent,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.greenAccent),
+                            minHeight: 2,
+                          ),
                         const OfflineBanner(),
                         Expanded(
                           child: Center(

@@ -175,6 +175,6 @@ final themeModeProvider = Provider<ThemeMode>((ref) {
   final settingsAsync = ref.watch(settingsNotifierProvider);
   return settingsAsync.maybeWhen(
     data: (settings) => settings.themeMode,
-    orElse: () => ThemeMode.system,
+    orElse: () => ThemeMode.dark,
   );
 });

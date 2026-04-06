@@ -1,7 +1,6 @@
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 
 /// Global audio service for playing reference call audio across the app.

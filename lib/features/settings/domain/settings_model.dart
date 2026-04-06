@@ -17,7 +17,7 @@ class AppSettings {
 
   const AppSettings({
     this.theme = AppTheme.classic,
-    this.themeMode = ThemeMode.system,
+    this.themeMode = ThemeMode.dark,
     this.distanceUnit = 'imperial',
     this.notificationsEnabled = true,
     this.soundEffects = true,
@@ -75,7 +75,7 @@ class AppSettings {
       ),
       themeMode: ThemeMode.values.firstWhere(
         (e) => e.name == map['themeMode'],
-        orElse: () => ThemeMode.system,
+        orElse: () => ThemeMode.dark,
       ),
       distanceUnit: map['distanceUnit'] as String? ?? 'imperial',
       notificationsEnabled: map['notificationsEnabled'] as bool? ?? true,

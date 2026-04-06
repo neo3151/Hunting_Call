@@ -13,6 +13,9 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - scripts/**
+    - test/stress/**
+    - integration_test/**
+    - tmp_rest_test.dart
 
 linter:
   # The lint rules applied to this project can be customized in the

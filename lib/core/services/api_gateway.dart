@@ -166,12 +166,12 @@ class FirebaseApiGateway implements ApiGateway {
 
 class RestFirestoreApiGateway implements ApiGateway {
   // Ignored on desktop, but satisfies constructor signature if sharing
-  final FirebaseFirestore? _db;
+  // final FirebaseFirestore? _db;
   // Hardcoded for this project based on firebase_options.dart
   static const String _projectId = 'hunting-call-perfection';
   static const String _baseUrl = 'https://firestore.googleapis.com/v1/projects/$_projectId/databases/(default)/documents';
 
-  RestFirestoreApiGateway(this._db);
+  RestFirestoreApiGateway(FirebaseFirestore? db);
 
   Future<Map<String, String>> _headers() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -220,11 +220,15 @@ class RestFirestoreApiGateway implements ApiGateway {
     final result = <String, dynamic>{};
     fields.forEach((k, v) {
       final valMap = v as Map<String, dynamic>;
-      if (valMap.containsKey('stringValue')) result[k] = valMap['stringValue'];
-      else if (valMap.containsKey('integerValue')) result[k] = int.tryParse(valMap['integerValue'].toString()) ?? 0;
-      else if (valMap.containsKey('booleanValue')) result[k] = valMap['booleanValue'] == true;
-      else if (valMap.containsKey('doubleValue')) result[k] = (valMap['doubleValue'] as num).toDouble();
-      else if (valMap.containsKey('arrayValue')) {
+      if (valMap.containsKey('stringValue')) {
+        result[k] = valMap['stringValue'];
+      } else if (valMap.containsKey('integerValue')) {
+        result[k] = int.tryParse(valMap['integerValue'].toString()) ?? 0;
+      } else if (valMap.containsKey('booleanValue')) {
+        result[k] = valMap['booleanValue'] == true;
+      } else if (valMap.containsKey('doubleValue')) {
+        result[k] = (valMap['doubleValue'] as num).toDouble();
+      } else if (valMap.containsKey('arrayValue')) {
         final arr = valMap['arrayValue']['values'] as List<dynamic>? ?? [];
         result[k] = arr.map((e) {
           final eMap = e as Map<String, dynamic>;
@@ -243,11 +247,15 @@ class RestFirestoreApiGateway implements ApiGateway {
   Map<String, dynamic> _wrapFields(Map<String, dynamic> data) {
     final fields = <String, dynamic>{};
     data.forEach((k, v) {
-      if (v is String) fields[k] = {'stringValue': v};
-      else if (v is int) fields[k] = {'integerValue': v.toString()};
-      else if (v is double) fields[k] = {'doubleValue': v};
-      else if (v is bool) fields[k] = {'booleanValue': v};
-      else if (v is List) {
+      if (v is String) {
+        fields[k] = {'stringValue': v};
+      } else if (v is int) {
+        fields[k] = {'integerValue': v.toString()};
+      } else if (v is double) {
+        fields[k] = {'doubleValue': v};
+      } else if (v is bool) {
+        fields[k] = {'booleanValue': v};
+      } else if (v is List) {
         fields[k] = {
           'arrayValue': {
             'values': v.map((e) {
@@ -334,7 +342,7 @@ class RestFirestoreApiGateway implements ApiGateway {
     final uri = await _buildUri(':runQuery');
     
     // Quick and dirty payload for basic queries
-    final operator = 'EQUAL';
+    const operator = 'EQUAL';
     final queryPayload = {
       'structuredQuery': {
         'from': [{'collectionId': collection}],
