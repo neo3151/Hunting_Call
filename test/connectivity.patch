@@ -1,0 +1,89 @@
+--- test/core/services/connectivity_provider_test.dart
++++ test/core/services/connectivity_provider_test.dart
+@@ -6,7 +6,7 @@
+ void main() {
+   group('isOfflineProvider', () {
+-    test('reports offline when connectivity results are empty', () {
++    test('reports offline when connectivity results are empty', () async {
+       final container = ProviderContainer(overrides: [
+         connectivityStreamProvider.overrideWith(
+           (ref) => Stream.value(<ConnectivityResult>[]),
+@@ -15,11 +15,12 @@
+       addTearDown(container.dispose);
+ 
+       // Give the stream time to emit
++      await Future.delayed(Duration.zero);
+       expect(container.read(isOfflineProvider), true);
+     });
+ 
+-    test('reports offline when only ConnectivityResult.none', () {
++    test('reports offline when only ConnectivityResult.none', () async {
+       final container = ProviderContainer(overrides: [
+         connectivityStreamProvider.overrideWith(
+           (ref) => Stream.value([ConnectivityResult.none]),
+@@ -27,11 +28,12 @@
+       addTearDown(container.dispose);
+ 
++      await Future.delayed(Duration.zero);
+       expect(container.read(isOfflineProvider), true);
+     });
+ 
+-    test('reports online when wifi is available', () {
++    test('reports online when wifi is available', () async {
+       final container = ProviderContainer(overrides: [
+         connectivityStreamProvider.overrideWith(
+           (ref) => Stream.value([ConnectivityResult.wifi]),
+@@ -38,11 +40,12 @@
+       addTearDown(container.dispose);
+ 
++      await Future.delayed(Duration.zero);
+       expect(container.read(isOfflineProvider), false);
+     });
+ 
+-    test('reports online when mobile is available', () {
++    test('reports online when mobile is available', () async {
+       final container = ProviderContainer(overrides: [
+         connectivityStreamProvider.overrideWith(
+           (ref) => Stream.value([ConnectivityResult.mobile]),
+@@ -49,11 +52,12 @@
+       addTearDown(container.dispose);
+ 
++      await Future.delayed(Duration.zero);
+       expect(container.read(isOfflineProvider), false);
+     });
+ 
+-    test('reports online when mixed results include a real connection', () {
++    test('reports online when mixed results include a real connection', () async {
+       final container = ProviderContainer(overrides: [
+         connectivityStreamProvider.overrideWith(
+           (ref) => Stream.value([ConnectivityResult.none, ConnectivityResult.wifi]),
+@@ -60,11 +64,12 @@
+       addTearDown(container.dispose);
+ 
++      await Future.delayed(Duration.zero);
+       expect(container.read(isOfflineProvider), false);
+     });
+ 
+-    test('reports offline on stream error (safe default)', () {
++    test('reports offline on stream error (safe default)', () async {
+       final container = ProviderContainer(overrides: [
+         connectivityStreamProvider.overrideWith(
+           (ref) => Stream.error(Exception('Network check failed')),
+@@ -71,11 +76,12 @@
+       addTearDown(container.dispose);
+ 
++      await Future.delayed(Duration.zero);
+       expect(container.read(isOfflineProvider), true);
+     });
+ 
+-    test('reports online while loading (avoids flashing offline)', () {
++    test('reports online while loading (avoids flashing offline)', () async {
+       final container = ProviderContainer(overrides: [
+         connectivityStreamProvider.overrideWith(
+           // Stream that never emits — stays in loading state
+@@ -83,5 +89,5 @@
+       addTearDown(container.dispose);
+ 
+       expect(container.read(isOfflineProvider), false); // Loading states don't need await
+     });
+   });

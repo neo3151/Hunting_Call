@@ -216,7 +216,7 @@ void main() {
       result.fold(
         (failure) => fail('Should not fail'),
         (challenge) {
-          expect(challenge.imageUrl, 'assets/images/forest_background.png');
+          expect(challenge.imageUrl, 'assets/images/forest_background.webp');
         },
       );
     });
