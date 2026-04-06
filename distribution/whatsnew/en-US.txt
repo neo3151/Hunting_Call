@@ -1,7 +1,1 @@
-🧠 v1.9.0 — AI Coach & Server Maintenance
-
-• AI Coach: Pro users get personalized coaching tips powered by Gemma 3 AI after every call rating
-• Global Rankings: Fixed scores showing as 0% for all users
-• Profile Cleanup: Automatic removal of inactive accounts (90+ days), premium members excluded
-• Last Active tracking for more accurate user activity data
-• Performance and stability improvements
+Improved hunting call training with a real-time recording visualizer and enhanced background service synchronization for better stability.
