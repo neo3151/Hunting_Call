@@ -81,7 +81,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.neo3151.huntingcalls
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: alpha
+          track: beta
           status: completed
           releaseName: ${{ github.ref_name }}
           whatsNewDirectory: distribution/whatsnew
