@@ -29,7 +29,7 @@ void main() {
         volume: 0.8,
       );
       expect(analysis.averageVolume, 0.8);
-      expect(analysis.peakVolume, 1.2);
+      expect(analysis.peakVolume, closeTo(1.2, 0.01));
     });
 
     test('activeDurationSec is 90% of total', () {

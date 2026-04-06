@@ -15,7 +15,7 @@ void main() {
         toneClarity: clarity,
       );
 
-  group('Quick Match Scoring — Sigmoid Contrast Curve', skip: 'Refactored', () {
+  group('Quick Match Scoring — Sigmoid Contrast Curve', () {
     test('all-50 inputs → exactly 50%', () {
       final s = score();
       expect(s, closeTo(50.0, 0.1));
@@ -72,7 +72,7 @@ void main() {
     });
   });
 
-  group('Quick Match Scoring — Realistic Scenarios', skip: 'Refactored', () {
+  group('Quick Match Scoring — Realistic Scenarios', () {
     test('terrible call: noise only, no species match', () {
       // BirdNET 0%, pitchScore defaults to 25 (no match), low quality, low clarity
       final s = score(birdnet: 0, pitch: 25, quality: 15, clarity: 5);
@@ -116,7 +116,7 @@ void main() {
     });
   });
 
-  group('Quick Match Scoring — Weight Sensitivity', skip: 'Refactored', () {
+  group('Quick Match Scoring — Weight Sensitivity', () {
     test('BirdNET heavily influences score (35% weight)', () {
       final low = score(birdnet: 20, pitch: 50, quality: 50, clarity: 50);
       final high = score(birdnet: 80, pitch: 50, quality: 50, clarity: 50);
@@ -150,7 +150,7 @@ void main() {
     });
   });
 
-  group('Quick Match Scoring — Edge Cases', skip: 'Refactored', () {
+  group('Quick Match Scoring — Edge Cases', () {
     test('negative inputs are clamped to 0', () {
       final s = score(birdnet: -50, pitch: -100, quality: -20, clarity: -30);
       expect(s, greaterThanOrEqualTo(0));
@@ -175,7 +175,7 @@ void main() {
     });
   });
 
-  group('Quick Match Scoring — Discrimination', skip: 'Refactored', () {
+  group('Quick Match Scoring — Discrimination', () {
     test('poor vs good calls have at least 30pt gap', () {
       final poor = score(birdnet: 15, pitch: 25, quality: 20, clarity: 10);
       final good = score(birdnet: 70, pitch: 75, quality: 65, clarity: 70);

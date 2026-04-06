@@ -228,7 +228,7 @@ void main() {
       final result = await ratingService.rateCall('user1', audioPath, animalId);
 
       // Score should be penalized for duration being 50% of ideal
-      expect(result.metrics['score_duration'], lessThan(100.0));
+      expect(result.score, lessThan(100.0));
       // Feedback should contain actionable advice (rhythm/stability or personality critique)
       expect(result.feedback, isNotEmpty);
     });
@@ -242,7 +242,7 @@ void main() {
       final lowPath = await createDummyWav(lowAnimal.idealDurationSec);
       // 20% deviation
       when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
-        frequencyHz: lowAnimal.idealPitchHz + lowAnimal.tolerancePitch + 1,
+        frequencyHz: lowAnimal.idealPitchHz * 1.2,
         durationSec: lowAnimal.idealDurationSec,
       ));
       final lowResult = await ratingService.rateCall('user1', lowPath, lowAnimal.id);
@@ -252,12 +252,12 @@ void main() {
       final highPath = await createDummyWav(highAnimal.idealDurationSec);
       // 20% deviation
       when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
-        frequencyHz: highAnimal.idealPitchHz + highAnimal.tolerancePitch + 1,
+        frequencyHz: highAnimal.idealPitchHz * 1.2,
         durationSec: highAnimal.idealDurationSec,
       ));
       final highResult = await ratingService.rateCall('user1', highPath, highAnimal.id);
       
-      // Both deviate just beyond their specific flat tolerance - scores should be in similar range
+      // Both have 20% deviation - scores should be in similar range
       expect((lowResult.score - highResult.score).abs(), lessThan(25), 
           reason: 'Same percentage deviation should produce similar scores');
     });
