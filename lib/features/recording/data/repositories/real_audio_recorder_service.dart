@@ -183,7 +183,7 @@ class RealAudioRecorderService implements AudioRecorderService {
 
   @override
   void dispose() {
-    _cleanup();
+    _cleanup().whenComplete(() {});
     _amplitudeController.close();
   }
 

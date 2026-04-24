@@ -82,23 +82,7 @@ class RatingNotifier extends Notifier<RatingState> {
     state = const RatingState();
   }
 
-  /// Force a success state for debugging
-  void forceSuccess() {
-    AppLogger.d('RatingNotifier: Forcing success state');
-    state = RatingState(
-      isAnalyzing: false,
-      result: RatingResult(
-        score: 95.0,
-        feedback: 'Debug: This is a forced success result.',
-        pitchHz: 440.0,
-        metrics: {
-          'Pitch (Hz)': 440.0,
-          'Target Pitch': 440.0,
-          'Duration (s)': 1.5,
-        },
-      ),
-    );
-  }
+
 }
 
 final ratingNotifierProvider = NotifierProvider<RatingNotifier, RatingState>(() {

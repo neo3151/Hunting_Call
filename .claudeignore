@@ -1,0 +1,48 @@
+# ==== Claude Ignore List ====
+# Prevents Claude Code from reading massive directories
+# and wasting context window tokens/quota.
+
+# Flutter/Dart Builds
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Platform Build Dirs
+android/
+ios/
+linux/
+windows/
+macos/
+
+# Large Binaries and Asset Libraries
+assets/images/
+assets/video/
+assets/audio/
+video_assets/
+*.mp4
+*.mp3
+*.wav
+*.webp
+*.png
+*.jpg
+*.jpeg
+
+# Firebase / JS
+.firebase/
+functions/node_modules/
+package-lock.json
+
+# IDE / Tooling
+.vscode/
+.idea/
+*.iml
+.agent/
+
+# Massive Text/Log Files
+*.log
+ci_log*.txt
+analyze_output*.txt

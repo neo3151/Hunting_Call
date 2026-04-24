@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 /// A unified API Gateway that abstracts the differences between
 /// FirebaseFirestore (Mobile/Web) and Firedart (Linux/Desktop).
@@ -52,8 +53,8 @@ class FirebaseApiGateway implements ApiGateway {
         return doc.data();
       }
     } catch (e) {
-      // Cache miss or empty — fall through to server
-      // Intentional: cache misses are expected on first load
+      AppLogger.d('Firestore getDocument cache miss for $collection/$documentId: $e');
+      // Intentional: cache misses are expected on first load, fall through to server.
     }
     // No cache hit — fetch from server (first-ever load or cleared cache)
     final doc = await _firestore
@@ -100,13 +101,15 @@ class FirebaseApiGateway implements ApiGateway {
           await _firestore.collection(collection).get(const GetOptions(source: Source.server))
               .timeout(const Duration(seconds: 4));
       return query.docs.map((d) => d.data()).toList();
-    } catch (_) {
+    } catch (e) {
+      AppLogger.d('Firestore getCollection server fetch failed for $collection: $e. Falling back to cache.');
       // Offline fallback — return whatever is cached
       try {
         final query =
             await _firestore.collection(collection).get(const GetOptions(source: Source.cache));
         return query.docs.map((d) => d.data()).toList();
-      } catch (_) {
+      } catch (e) {
+        AppLogger.e('Firestore getCollection offline fallback failed for $collection: $e');
         return [];
       }
     }
@@ -124,6 +127,7 @@ class FirebaseApiGateway implements ApiGateway {
         return query.docs.map((d) => d.data()).toList();
       }
     } catch (e) {
+      AppLogger.d('Firestore queryCollection cache miss: $e');
       // Cache miss — fall through to server
     }
     final query = await _firestore
@@ -147,7 +151,8 @@ class FirebaseApiGateway implements ApiGateway {
           .get(const GetOptions(source: Source.server))
           .timeout(const Duration(seconds: 4));
       return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
-    } catch (_) {
+    } catch (e) {
+      AppLogger.d('Firestore getTopDocuments server fetch failed for $collection: $e. Falling back to cache.');
       // Offline fallback — return whatever is cached (partial data is
       // better than nothing when there's no network).
       try {
@@ -157,7 +162,8 @@ class FirebaseApiGateway implements ApiGateway {
             .limit(limit)
             .get(const GetOptions(source: Source.cache));
         return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
-      } catch (_) {
+      } catch (e) {
+        AppLogger.e('Firestore getTopDocuments offline fallback failed for $collection: $e');
         return [];
       }
     }
@@ -204,8 +210,8 @@ class RestFirestoreApiGateway implements ApiGateway {
             urlString += '?key=$apiKey';
           }
         }
-      } catch (_) {
-        // App not fully initialized
+      } catch (e) {
+        AppLogger.d('RestFirestoreApiGateway _buildUri failed to get options: $e. App not fully initialized.');
       }
     }
     return Uri.parse(urlString);

@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:outcall/config/app_config.dart';
 import 'package:outcall/config/freemium_config.dart';
+import 'package:outcall/features/library/data/reference_database.dart';
 
 void main() {
   group('FreemiumConfig', () {
@@ -22,7 +24,7 @@ void main() {
     test('contains essential waterfowl calls', () {
       expect(FreemiumConfig.freeCallIds, contains('duck_mallard_greeting'));
       expect(FreemiumConfig.freeCallIds, contains('goose_canadian_honk'));
-      expect(FreemiumConfig.freeCallIds, contains('duck_wood_duck_whistle'));
+      expect(FreemiumConfig.freeCallIds, contains('wood_duck'));
     });
 
     test('contains essential big game calls', () {
@@ -38,8 +40,8 @@ void main() {
 
     test('contains essential land bird calls', () {
       expect(FreemiumConfig.freeCallIds, contains('turkey_gobble'));
-      expect(FreemiumConfig.freeCallIds, contains('crow_caw'));
-      expect(FreemiumConfig.freeCallIds, contains('dove_coo'));
+      expect(FreemiumConfig.freeCallIds, contains('crow'));
+      expect(FreemiumConfig.freeCallIds, contains('dove'));
       expect(FreemiumConfig.freeCallIds, contains('owl_barred_hoot'));
     });
 
@@ -56,6 +58,38 @@ void main() {
       expect(FreemiumConfig.freeCallIds.contains('elk_bugle'), false);
       expect(FreemiumConfig.freeCallIds.contains('wolf_howl'), false);
       expect(FreemiumConfig.freeCallIds.contains('bobcat_growl'), false);
+    });
+  });
+
+  group('ReferenceDatabase.isLocked tests', () {
+    test('Premium user has everything unlocked, even in Free app flavor', () {
+      AppConfig.create(flavor: AppFlavor.free, appName: 'Test Free');
+      
+      expect(ReferenceDatabase.isLocked('premium_call_dummy', true), false);
+      expect(ReferenceDatabase.isLocked('duck_mallard_greeting', true), false);
+    });
+
+    test('Paid App Flavor (Full) has everything unlocked for non-premium user', () {
+      AppConfig.create(flavor: AppFlavor.full, appName: 'Test Full');
+      
+      expect(ReferenceDatabase.isLocked('premium_call_dummy', false), false);
+      expect(ReferenceDatabase.isLocked('duck_mallard_greeting', false), false);
+    });
+
+    test('Free App Flavor locks premium calls for non-premium users', () {
+      AppConfig.create(flavor: AppFlavor.free, appName: 'Test Free');
+      
+      const premiumCallId = 'premium_call_dummy';
+      expect(FreemiumConfig.freeCallIds.contains(premiumCallId), false);
+      expect(ReferenceDatabase.isLocked(premiumCallId, false), true);
+    });
+
+    test('Free App Flavor unlocks free calls for non-premium users', () {
+      AppConfig.create(flavor: AppFlavor.free, appName: 'Test Free');
+      
+      const freeCallId = 'duck_mallard_greeting';
+      expect(FreemiumConfig.freeCallIds.contains(freeCallId), true);
+      expect(ReferenceDatabase.isLocked(freeCallId, false), false);
     });
   });
 }

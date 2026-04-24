@@ -75,6 +75,13 @@ Future<void> mainCommon() async {
     AppLogger.d('HuntingLog DB init failed: $e');
   }
 
+  // Phase 2: Eagerly start the offline outbox sync listener
+  try {
+    container.read(offlineSyncServiceProvider);
+  } catch (e) {
+    AppLogger.d('OfflineSyncService init failed: $e');
+  }
+
   runApp(
     UncontrolledProviderScope(
       container: container,

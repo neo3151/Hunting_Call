@@ -7,12 +7,14 @@ void main() {
     double pitch = 50,
     double quality = 50,
     double clarity = 50,
+    bool isBird = true,
   }) =>
       FingerprintService.computeScore(
         birdnetConfidence: birdnet,
         pitchScore: pitch,
         callQuality: quality,
         toneClarity: clarity,
+        isBird: isBird,
       );
 
   group('Quick Match Scoring — Sigmoid Contrast Curve', skip: 'Refactored', () {
@@ -201,6 +203,52 @@ void main() {
       expect(poor, lessThan(avg));
       expect(avg, lessThan(good));
       expect(good, lessThan(great));
+    });
+  });
+
+  group('Mammal scoring (isBird: false) — BirdNET weight removed', () {
+    test('perfect mammal call scores above 90%', () {
+      // Pitch dead-on, great quality — should score like an expert bird call
+      final s = score(birdnet: 0, pitch: 95, quality: 85, clarity: 90, isBird: false);
+      expect(s, greaterThan(90),
+          reason: 'Perfect mammal call should score above 90%');
+    });
+
+    test('good mammal call scores 70-90%', () {
+      // Pitch close, decent recording — solid attempt
+      final s = score(birdnet: 0, pitch: 70, quality: 65, clarity: 65, isBird: false);
+      expect(s, inInclusiveRange(70, 90),
+          reason: 'Good mammal call should be in 70-90% range');
+    });
+
+    test('poor mammal call (bad pitch) scores below 50%', () {
+      final s = score(birdnet: 0, pitch: 20, quality: 30, clarity: 20, isBird: false);
+      expect(s, lessThan(50),
+          reason: 'Bad pitch mammal call should score below 50%');
+    });
+
+    test('mammal vs bird at same pitch — comparable scores', () {
+      // Same pitch/quality/clarity: mammal score should be within 15pts of bird score
+      final mammal = score(birdnet: 0, pitch: 75, quality: 70, clarity: 70, isBird: false);
+      final bird = score(birdnet: 75, pitch: 75, quality: 70, clarity: 70, isBird: true);
+      expect((mammal - bird).abs(), lessThan(15),
+          reason: 'Mammal and bird calls of equal quality should score similarly');
+    });
+
+    test('mammal: BirdNET value is ignored regardless of input', () {
+      // Even if BirdNET somehow fires on a mammal, it must be ignored
+      final withBirdnet = score(birdnet: 90, pitch: 60, quality: 60, clarity: 60, isBird: false);
+      final withoutBirdnet = score(birdnet: 0, pitch: 60, quality: 60, clarity: 60, isBird: false);
+      expect(withBirdnet, closeTo(withoutBirdnet, 0.01),
+          reason: 'BirdNET confidence should not affect mammal scoring');
+    });
+
+    test('the old mammal bug: 0 birdnet + great pitch no longer tanks score', () {
+      // Before fix: BirdNET=0 at 40% weight → rawScore capped ~36 → sigmoid ~41%
+      // After fix: pitch=90 at 60% weight → rawScore ~83 → sigmoid ~92%
+      final s = score(birdnet: 0, pitch: 90, quality: 80, clarity: 80, isBird: false);
+      expect(s, greaterThan(85),
+          reason: 'Great pitch should not be punished by missing BirdNET signal');
     });
   });
 

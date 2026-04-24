@@ -5,5 +5,6 @@ abstract class RatingService {
     double scoreOffset = 0.0,
     double micSensitivity = 1.0,
     bool skipFingerprint = false,
+    bool isBackgroundSync = false,
   });
 }

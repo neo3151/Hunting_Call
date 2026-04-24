@@ -105,13 +105,28 @@ class FingerprintService {
       final speciesMatches = analysis.topSpeciesMatches;
       if (speciesMatches.isEmpty) {
         AppLogger.d('QuickMatch: BirdNET returned no species matches');
-        // No species identified — BirdNET=0, pitch=0, only quality/clarity
-        // contribute. The sigmoid curve will push this low (~5-15%).
+        // Resolve category from the animalId hint if available — mammals are
+        // expected to get no BirdNET matches, so use pitch-dominant scoring.
+        String noMatchCategory = 'Waterfowl';
+        double noMatchPitch = 0.0;
+        if (animalId != null) {
+          try {
+            final ref = ReferenceDatabase.getById(animalId);
+            noMatchCategory = ref.category;
+            final idealPitch = ref.idealPitchHz;
+            if (idealPitch > 0 && analysis.dominantFrequencyHz > 0) {
+              final pitchDiff = (analysis.dominantFrequencyHz - idealPitch).abs();
+              final maxDiff = idealPitch * 0.75;
+              noMatchPitch = (1.0 - (pitchDiff / maxDiff).clamp(0.0, 1.0)) * 100;
+            }
+          } catch (_) {}
+        }
         final noMatchScore = computeScore(
           birdnetConfidence: 0,
-          pitchScore: 0,
+          pitchScore: noMatchPitch,
           callQuality: analysis.callQualityScore.clamp(0, 100),
           toneClarity: analysis.toneClarity.clamp(0, 100),
+          isBird: _isBirdCategory(noMatchCategory),
         );
         return FingerprintResult(
           score: noMatchScore,
@@ -131,6 +146,7 @@ class FingerprintService {
       String matchedAnimal = speciesMatches.entries.first.key;
       String matchedCallType = 'call';
       String? matchedClipId;
+      String matchedCategory = 'Waterfowl';
       double pitchScore = 25.0;
       double finalBirdnetConfidence = speciesMatches.entries.first.value;
 
@@ -138,7 +154,7 @@ class FingerprintService {
       for (final species in speciesMatches.entries) {
         if (foundMatch) break;
         final birdName = species.key.toLowerCase();
-        
+
         for (final ref in allCalls) {
           final refName = ref.animalName.toLowerCase();
 
@@ -147,6 +163,7 @@ class FingerprintService {
             matchedAnimal = ref.animalName;
             matchedCallType = ref.callType;
             matchedClipId = ref.id;
+            matchedCategory = ref.category;
             finalBirdnetConfidence = species.value;
 
             // Calculate pitch similarity to this reference (now 75% tolerance instead of 50% for more forgiving gradings)
@@ -169,12 +186,13 @@ class FingerprintService {
           matchedAnimal = ref.animalName;
           matchedCallType = ref.callType;
           matchedClipId = ref.id;
+          matchedCategory = ref.category;
 
           final idealPitch = ref.idealPitchHz;
           if (idealPitch > 0 && analysis.dominantFrequencyHz > 0) {
             final pitchDiff =
                 (analysis.dominantFrequencyHz - idealPitch).abs();
-            final maxDiff = idealPitch * 0.5;
+            final maxDiff = idealPitch * 0.75;
             pitchScore =
                 ((1.0 - (pitchDiff / maxDiff).clamp(0.0, 1.0)) * 100);
           }
@@ -183,15 +201,18 @@ class FingerprintService {
         }
       }
 
+      final isBird = _isBirdCategory(matchedCategory);
       final compositeScore = computeScore(
         birdnetConfidence: finalBirdnetConfidence,
         pitchScore: pitchScore,
         callQuality: analysis.callQualityScore,
         toneClarity: analysis.toneClarity,
+        isBird: isBird,
       );
 
       AppLogger.d(
-          'QuickMatch: $matchedAnimal ($matchedCallType) — BirdNET=${finalBirdnetConfidence.toStringAsFixed(0)}%, '
+          'QuickMatch: $matchedAnimal ($matchedCallType) [${isBird ? "bird" : "mammal"}] — '
+          'BirdNET=${isBird ? finalBirdnetConfidence.toStringAsFixed(0) : "skipped"}%, '
           'pitch=${pitchScore.toStringAsFixed(0)}%, quality=${analysis.callQualityScore.toStringAsFixed(0)}%, '
           'score=${compositeScore.toStringAsFixed(0)}% in ${elapsed.toStringAsFixed(0)}ms');
 
@@ -213,28 +234,43 @@ class FingerprintService {
     }
   }
 
+  /// Returns true for categories where BirdNET species ID is meaningful.
+  static bool _isBirdCategory(String category) {
+    final c = category.toLowerCase();
+    return c == 'waterfowl' || c == 'land birds' || c == 'birds';
+  }
+
   /// Compute the Quick Match composite score.
   ///
-  /// Combines four sub-scores with weighted averages, then applies a
-  /// sigmoid contrast curve to spread results away from 50%.
-  /// All inputs should be 0-100.
+  /// For bird categories (Waterfowl, Birds): BirdNET 40%, pitch 30%, quality 15%, clarity 15%.
+  /// For mammal categories (Big Game, Predators, Big Cats): BirdNET is meaningless,
+  /// so its 40% weight is redistributed to pitch: pitch 60%, quality 20%, clarity 20%.
   ///
-  /// Returns the final curved score (0-100).
+  /// All inputs should be 0-100. Returns the final sigmoid-curved score (0-100).
   static double computeScore({
     required double birdnetConfidence,
     required double pitchScore,
     required double callQuality,
     required double toneClarity,
+    bool isBird = true,
   }) {
-    // Weighted average: ML confidence 40%, pitch 30%, quality 15%, clarity 15%
-    final rawScore = (birdnetConfidence.clamp(0, 100) * 0.40 +
-            pitchScore.clamp(0, 100) * 0.30 +
-            callQuality.clamp(0, 100) * 0.15 +
-            toneClarity.clamp(0, 100) * 0.15)
-        .clamp(0.0, 100.0);
+    final double rawScore;
+    if (isBird) {
+      rawScore = (birdnetConfidence.clamp(0, 100) * 0.40 +
+              pitchScore.clamp(0, 100) * 0.30 +
+              callQuality.clamp(0, 100) * 0.15 +
+              toneClarity.clamp(0, 100) * 0.15)
+          .clamp(0.0, 100.0);
+    } else {
+      // BirdNET skipped — pitch carries the species signal for mammals
+      rawScore = (pitchScore.clamp(0, 100) * 0.60 +
+              callQuality.clamp(0, 100) * 0.20 +
+              toneClarity.clamp(0, 100) * 0.20)
+          .clamp(0.0, 100.0);
+    }
 
     // Sigmoid contrast: tuned to be much more forgiving for beginners.
-    // By shifting the midpoint to 40, a raw score of 50 jumps up to ~65% 
+    // By shifting the midpoint to 40, a raw score of 50 jumps up to ~65%
     // instead of staying at a failing 50%.
     return (100.0 / (1.0 + exp(-0.06 * (rawScore - 40.0)))).clamp(0.0, 100.0);
   }

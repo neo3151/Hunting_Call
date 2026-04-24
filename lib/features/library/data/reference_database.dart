@@ -120,6 +120,7 @@ class ReferenceDatabase {
       }
       return true; // Equal versions
     } catch (_) {
+      AppLogger.d('ReferenceDatabase: Failed to parse releaseVersion "$requiredVersion" — showing call by default');
       return true; // If parsing fails, show the call
     }
   }

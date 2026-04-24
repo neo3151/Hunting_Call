@@ -1,4 +1,4 @@
-﻿# Miscellaneous
+# Miscellaneous
 *.class
 *.log
 *.pyc
@@ -151,3 +151,11 @@ node_modules/
 OUTCALL_*_Report.*
 audit_*
 stress_test_*
+
+# The Great Purge (Phase 3)
+*.pkl
+*.mp3
+!test_*.wav
+temp_*
+untracked_assets/
+archive/

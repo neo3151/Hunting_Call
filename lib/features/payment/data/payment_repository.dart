@@ -102,6 +102,11 @@ class NativePaymentRepository implements PaymentRepository {
     }
 
     final product = response.productDetails.first;
+    if (_purchaseCompleter != null && !_purchaseCompleter!.isCompleted) {
+      AppLogger.d('⚠️ IAP: Purchase already in progress — ignoring duplicate tap');
+      return _purchaseCompleter!.future;
+    }
+
     _pendingUserId = userId;
     _purchaseCompleter = Completer<bool>();
 
@@ -110,7 +115,14 @@ class NativePaymentRepository implements PaymentRepository {
     await _iap.buyNonConsumable(purchaseParam: purchaseParam);
 
     // Wait for the purchase stream to resolve
-    return _purchaseCompleter!.future;
+    return _purchaseCompleter!.future.timeout(
+      const Duration(seconds: 30),
+      onTimeout: () {
+        AppLogger.d('⚠️ IAP: Purchase timed out after 30s');
+        _completePurchase(false);
+        return false;
+      },
+    );
   }
 
   @override
@@ -134,9 +146,12 @@ class NativePaymentRepository implements PaymentRepository {
 
   @override
   Future<bool> hasProEntitlement(String userId) async {
-    // For native IAP, we rely on the local profile flag.
-    // A "restore purchases" flow re-syncs from the store.
-    return false;
+    try {
+      final profile = await _profileRepo.getProfile(userId);
+      return profile.isPremium;
+    } catch (_) {
+      return false;
+    }
   }
 
   // ─── Private Helpers ────────────────────────────────────────────────────
@@ -224,6 +239,11 @@ class MockPaymentRepository implements PaymentRepository {
 
   @override
   Future<bool> hasProEntitlement(String userId) async {
-    return true;
+    try {
+      final profile = await _profileRepo.getProfile(userId);
+      return profile.isPremium;
+    } catch (_) {
+      return false;
+    }
   }
 }

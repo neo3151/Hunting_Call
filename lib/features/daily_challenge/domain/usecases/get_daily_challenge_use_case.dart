@@ -24,14 +24,17 @@ class GetDailyChallengeUseCase {
   /// Execute the use case asynchronously
   /// 
   /// Returns today's challenge call or a failure if none available
-  Future<Either<DailyChallengeFailure, ReferenceCall>> execute({DateTime? now}) async {
+  Future<Either<DailyChallengeFailure, ReferenceCall>> execute({
+    DateTime? now,
+    bool isUserPremium = false,
+  }) async {
     try {
       // 1. Check if Cloud/Cache has a specific daily challenge for us
       final cloudChallengeId = await _repository.getDailyChallengeId();
-      
+
       // Get all available calls
       final allCallsResult = _getAllCallsUseCase.execute();
-      
+
       return allCallsResult.fold(
         (failure) => right(_getDefaultChallenge()),
         (allCalls) {
@@ -45,17 +48,17 @@ class GetDailyChallengeUseCase {
             }
           }
 
-          // Fallback Strategy: Filter to free calls based on Day of Year
-          final freeCalls = allCalls.where((call) {
+          // Fallback Strategy: Filter to unlocked calls for this user
+          final eligibleCalls = allCalls.where((call) {
             final lockResult = _checkLockStatusUseCase.execute(
               callId: call.id,
-              isUserPremium: false, // Force check against free tier
+              isUserPremium: isUserPremium,
             );
-            return lockResult.getOrElse((l) => false) == false; // Not locked = free
+            return lockResult.getOrElse((l) => false) == false; // Not locked
           }).toList();
 
-          if (freeCalls.isEmpty) {
-            // Fallback: if no free calls, use first call from all calls
+          if (eligibleCalls.isEmpty) {
+            // Fallback: if somehow no calls available, use first from all
             if (allCalls.isNotEmpty) {
               return right(_fixImageAsset(allCalls.first));
             }
@@ -67,8 +70,8 @@ class GetDailyChallengeUseCase {
           try {
             final currentDate = now ?? DateTime.now();
             final dayOfYear = int.parse(DateFormat('D').format(currentDate));
-            final index = dayOfYear % freeCalls.length;
-            final selectedCall = freeCalls[index];
+            final index = dayOfYear % eligibleCalls.length;
+            final selectedCall = eligibleCalls[index];
             
             return right(_fixImageAsset(selectedCall));
           } catch (e) {

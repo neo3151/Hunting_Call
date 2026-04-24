@@ -1,3 +1,4 @@
+import 'package:outcall/features/library/data/reference_database.dart';
 import 'package:outcall/features/profile/domain/entities/user_profile.dart';
 
 class Achievement {
@@ -141,7 +142,7 @@ class AchievementService {
       description: 'Practice 3 different species.',
       icon: '🧭',
       isEarned: (p) {
-        final species = p.history.map((h) => h.animalId.split('_')[0]).toSet();
+        final species = p.history.map((h) => _speciesKey(h.animalId)).toSet();
         return species.length >= 3;
       },
     ),
@@ -151,7 +152,7 @@ class AchievementService {
       description: 'Practice 5 different species.',
       icon: '🦓',
       isEarned: (p) {
-        final species = p.history.map((h) => h.animalId.split('_')[0]).toSet();
+        final species = p.history.map((h) => _speciesKey(h.animalId)).toSet();
         return species.length >= 5;
       },
     ),
@@ -161,7 +162,7 @@ class AchievementService {
       description: 'Practice 10 different species.',
       icon: '🌍',
       isEarned: (p) {
-        final species = p.history.map((h) => h.animalId.split('_')[0]).toSet();
+        final species = p.history.map((h) => _speciesKey(h.animalId)).toSet();
         return species.length >= 10;
       },
     ),
@@ -322,6 +323,21 @@ class AchievementService {
       },
     ),
   ];
+
+  /// Resolves the biological species name for a call ID.
+  ///
+  /// Uses [ReferenceDatabase] to map e.g. "duck_mallard_greeting" → "mallard duck"
+  /// and "duck_wood_duck_whistle" → "wood duck", so diversity achievements count
+  /// distinct biological species rather than collapsing all ducks into one bucket.
+  /// Falls back to the raw animalId if the call isn't in the database.
+  static String _speciesKey(String animalId) {
+    try {
+      final call = ReferenceDatabase.calls.firstWhere((c) => c.id == animalId);
+      return call.animalName.toLowerCase();
+    } catch (_) {
+      return animalId;
+    }
+  }
 
   static List<Achievement> getEarnedAchievements(UserProfile profile) {
     return achievements.where((a) => a.isEarned(profile)).toList();

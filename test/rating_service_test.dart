@@ -37,7 +37,7 @@ void main() {
     mockGetDailyChallengeUseCase = MockGetDailyChallengeUseCase();
     
     // Default challenge mock
-    when(() => mockGetDailyChallengeUseCase.execute(now: any(named: 'now'))).thenAnswer(
+    when(() => mockGetDailyChallengeUseCase.execute(now: any(named: 'now'), isUserPremium: any(named: 'isUserPremium'))).thenAnswer(
       (_) async => right<DailyChallengeFailure, ReferenceCall>(const ReferenceCall(
         id: 'duck_mallard_greeting',
         animalName: 'Mallard Duck',
@@ -187,6 +187,7 @@ void main() {
         noiseLevel: 0.0,
         mfccCoefficients: const [],
         waveform: List.filled(100, 0.5),
+        topSpeciesMatches: {reference.scientificName ?? 'Anas platyrhynchos': 1.0},
       ));
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
@@ -207,7 +208,7 @@ void main() {
       when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
         frequencyHz: detectedPitch,
         durationSec: reference.idealDurationSec,
-      ));
+      ).copyWith(topSpeciesMatches: {reference.scientificName ?? 'Anas platyrhynchos': 1.0}));
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
 
@@ -223,7 +224,7 @@ void main() {
       when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
         frequencyHz: reference.idealPitchHz,
         durationSec: reference.idealDurationSec * 0.5,
-      ));
+      ).copyWith(topSpeciesMatches: {reference.scientificName ?? 'Anas platyrhynchos': 1.0}));
 
       final result = await ratingService.rateCall('user1', audioPath, animalId);
 
@@ -244,7 +245,7 @@ void main() {
       when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
         frequencyHz: lowAnimal.idealPitchHz + lowAnimal.tolerancePitch + 1,
         durationSec: lowAnimal.idealDurationSec,
-      ));
+      ).copyWith(topSpeciesMatches: {lowAnimal.scientificName ?? '': 1.0}));
       final lowResult = await ratingService.rateCall('user1', lowPath, lowAnimal.id);
       
       // High frequency: elk_bull_bugle (now 1156Hz) 
@@ -254,7 +255,7 @@ void main() {
       when(() => mockAnalyzer.analyzeAudio(any())).thenAnswer((_) async => AudioAnalysis.simple(
         frequencyHz: highAnimal.idealPitchHz + highAnimal.tolerancePitch + 1,
         durationSec: highAnimal.idealDurationSec,
-      ));
+      ).copyWith(topSpeciesMatches: {highAnimal.scientificName ?? '': 1.0}));
       final highResult = await ratingService.rateCall('user1', highPath, highAnimal.id);
       
       // Both deviate just beyond their specific flat tolerance - scores should be in similar range

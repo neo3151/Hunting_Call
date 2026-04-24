@@ -176,12 +176,12 @@ const worlds = [
     animalNames: ['Bobcat', 'Puma', 'Lion', 'Raccoon', 'American Badger'],
   ),
 
-  // ─── W8: TIMBER HOLLOW — Land Birds (15 calls) ────────
+  // ─── W8: TIMBER HOLLOW — Birds (15 calls) ────────
   // Turkey(5) + Crow(3) + Barred Owl(1) + Great Horned Owl(1) +
   // Quail(1) + Pheasant(1) + Woodcock(1) + Dove(1) + Awebo(1) = 15
   WorldInfo(
     name: 'TIMBER HOLLOW',
-    subtitle: 'Land Birds',
+    subtitle: 'Birds',
     emoji: '🐦',
     primaryColor: Color(0xFF2E7D32),
     accentColor: Color(0xFFFF8C00),

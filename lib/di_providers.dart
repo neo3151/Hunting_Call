@@ -32,6 +32,9 @@ import 'package:outcall/features/profile/data/repositories/local_profile_reposit
 import 'package:outcall/features/profile/data/repositories/unified_profile_repository.dart';
 import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
 import 'package:outcall/features/rating/domain/rating_service.dart';
+import 'package:outcall/features/rating/data/backend_rating_service.dart';
+import 'package:outcall/features/rating/data/sqlite_outbox_repository.dart';
+import 'package:outcall/features/rating/data/offline_sync_service.dart';
 import 'package:outcall/features/recording/data/repositories/mock_audio_recorder_service.dart';
 import 'package:outcall/features/recording/data/repositories/real_audio_recorder_service.dart';
 import 'package:outcall/features/recording/domain/audio_recorder_service.dart';
@@ -62,6 +65,7 @@ final asyncPlatformEnvironmentProvider = FutureProvider<PlatformEnvironment>((re
     if (!kDebugMode && !Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) {
       await FirebaseAppCheck.instance.activate(
         providerAndroid: const AndroidPlayIntegrityProvider(),
+        appleProvider: AppleProvider.deviceCheck,
       );
     }
     firebaseReady = true;
@@ -222,15 +226,9 @@ final frequencyAnalyzerProvider = Provider<FrequencyAnalyzer>((ref) {
 
 /// Provides [RatingService] with all dependencies injected.
 final ratingServiceProvider = Provider<RatingService>((ref) {
-  return RealRatingService(
-    analyzeUseCase: ref.watch(analyzeAudioUseCaseProvider),
-    calculateUseCase: ref.watch(calculateScoreUseCaseProvider),
-    getDailyChallengeUseCase: ref.watch(getDailyChallengeUseCaseProvider),
-    analyzer: ref.watch(frequencyAnalyzerProvider),
-    profileRepository: ref.watch(profileRepositoryProvider),
-    leaderboardService: ref.watch(leaderboardServiceProvider),
-    cloudAudioService: ref.watch(cloudAudioServiceProvider),
-    backendBaseUrl: ref.watch(remoteConfigServiceProvider).aiCoachUrl,
+  // PHASE 1: Using the new server-side scoring REST API
+  return BackendRatingService(
+    baseUrl: ref.watch(remoteConfigServiceProvider).aiCoachUrl ?? 'http://10.0.2.2:8000',
   );
 });
 
@@ -258,4 +256,19 @@ final appRatingServiceProvider = Provider<AppRatingService>((ref) {
 /// Provides [ProgressMapRepository].
 final progressMapRepositoryProvider = Provider<ProgressMapRepository>((ref) {
   return ProgressMapRepository(ref.watch(simpleStorageProvider));
+});
+
+// ─── Phase 2: Offline Outbox ────────────────────────────────────────────────
+
+/// Provides [SqliteOutboxRepository].
+final sqliteOutboxRepositoryProvider = Provider<SqliteOutboxRepository>((ref) {
+  return SqliteOutboxRepository();
+});
+
+/// Provides [OfflineSyncService] which immediately begins listening to connectivity.
+final offlineSyncServiceProvider = Provider<OfflineSyncService>((ref) {
+  return OfflineSyncService(
+    outboxRepo: ref.watch(sqliteOutboxRepositoryProvider),
+    ratingService: ref.watch(ratingServiceProvider),
+  );
 });

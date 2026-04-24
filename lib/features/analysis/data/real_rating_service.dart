@@ -55,13 +55,14 @@ class RealRatingService implements RatingService {
     double scoreOffset = 0.0,
     double micSensitivity = 1.0,
     bool skipFingerprint = false,
+    bool isBackgroundSync = false,
   }) async {
     AppLogger.d('RealRatingService: rateCall started for $animalType at $audioPath');
 
     // Global timeout to prevent infinite spinner
     return await _rateCallInternal(userId, audioPath, animalType,
         scoreOffset: scoreOffset, micSensitivity: micSensitivity,
-        skipFingerprint: skipFingerprint)
+        skipFingerprint: skipFingerprint, isBackgroundSync: isBackgroundSync)
       .timeout(
         const Duration(seconds: 45),
         onTimeout: () {
@@ -78,6 +79,7 @@ class RealRatingService implements RatingService {
     double scoreOffset = 0.0,
     double micSensitivity = 1.0,
     bool skipFingerprint = false,
+    bool isBackgroundSync = false,
   }) async {
     final stopwatch = Stopwatch()..start();
     AppLogger.d('RealRatingService: _rateCallInternal started');
