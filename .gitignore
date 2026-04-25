@@ -159,3 +159,5 @@ stress_test_*
 temp_*
 untracked_assets/
 archive/
+assets/audio/
+assets/models/

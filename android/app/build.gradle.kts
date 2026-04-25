@@ -53,7 +53,6 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix = ".dev"
             resValue("string", "app_name", "OUTCALL DEV")
         }
         release {

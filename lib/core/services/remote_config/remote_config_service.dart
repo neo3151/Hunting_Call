@@ -28,13 +28,13 @@ class RemoteConfigService {
       await _remoteConfig!.setDefaults(const {
         'is_leaderboard_enabled': true,
         'profanity_blocklist': '', // Comma-separated extra blocked terms
-                        'ai_coach_url': 'https://ruttish-incontrollably-christina.ngrok-free.dev',
+        'ai_coach_url': '',
       });
 
       // Configure fetch interval (e.g., fetch every 1 hour, or 0 during dev)
       await _remoteConfig!.setConfigSettings(RemoteConfigSettings(
         fetchTimeout: const Duration(minutes: 1),
-        minimumFetchInterval: const Duration(hours: 1),
+        minimumFetchInterval: const Duration(seconds: 0),
       ));
 
       // Fetch and activate the latest values from Firebase
@@ -57,7 +57,7 @@ class RemoteConfigService {
   /// Dynamic AI Coach URL — update in Firebase Console when tunnel changes
   String get aiCoachUrl => _remoteConfig?.getString('ai_coach_url').isNotEmpty == true
       ? _remoteConfig!.getString('ai_coach_url')
-                  : 'https://ruttish-incontrollably-christina.ngrok-free.dev';
+      : 'http://10.0.2.2:8000';
 
   /// Parses the remote profanity blocklist and loads it into ProfanityFilter.
   void _loadProfanityTerms() {
