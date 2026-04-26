@@ -88,7 +88,7 @@ class RecordingNotifier extends Notifier<RecordingState> {
     ref.read(loggerServiceProvider).log('Start recording pressed (countdown initiated)');
     state = state.copyWith(status: RecordingStatus.countdown, clearFailure: true);
 
-    final fileName = 'hunting_call_${DateTime.now().millisecondsSinceEpoch}.wav';
+    final fileName = 'hunting_call_${DateTime.now().millisecondsSinceEpoch}.m4a';
     final outputPath = await ref.read(fileServiceProvider).getTemporaryPath(fileName);
 
     final result = await _startUseCase.execute(

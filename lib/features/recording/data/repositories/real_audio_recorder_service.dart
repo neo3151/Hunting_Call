@@ -28,8 +28,8 @@ class RealAudioRecorderService implements AudioRecorderService {
   /// Interval for amplitude sampling during recording.
   static const Duration _amplitudeSampleInterval = Duration(milliseconds: 50);
   
-  /// Standard sample rate for audio recording (CD quality).
-  static const int _sampleRate = 44100;
+  /// Standard sample rate optimized for ML processing (cuts upload size and resampling time in half).
+  static const int _sampleRate = 22050;
   
   /// Bit rate for audio encoding.
   static const int _bitRate = 128000;
@@ -108,7 +108,7 @@ class RealAudioRecorderService implements AudioRecorderService {
       AppLogger.d('RealAudioRecorder: Recording to: $path');
 
       const config = RecordConfig(
-        encoder: AudioEncoder.wav,
+        encoder: AudioEncoder.aacLc,
         sampleRate: _sampleRate,
         bitRate: _bitRate,
         numChannels: 1,
@@ -208,7 +208,7 @@ class RealAudioRecorderService implements AudioRecorderService {
         }
 
         for (final file in files) {
-          if (file is File && p.extension(file.path) == '.wav' && p.basename(file.path).startsWith('hunting_call_')) {
+          if (file is File && p.extension(file.path) == '.m4a' && p.basename(file.path).startsWith('hunting_call_')) {
             final stat = await file.stat();
             // Delete files older than the specified hours
             if (now.difference(stat.modified).inHours >= cleanupHours) {
