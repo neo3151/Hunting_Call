@@ -27,6 +27,7 @@ class BackendRatingService implements RatingService {
       // Attach audio file
       request.files.add(await http.MultipartFile.fromPath('audio', audioPath));
       request.fields['animal_id'] = animalType;
+      request.fields['mode'] = skipFingerprint ? 'quick' : 'expert';
       
       // Get Firebase Auth token
       final user = FirebaseAuth.instance.currentUser;
