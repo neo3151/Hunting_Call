@@ -34,10 +34,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Load profile on init
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(profileNotifierProvider.notifier).loadProfile(widget.userId);
-    });
+    // Profile is managed by AuthWrapper. No need to force reload here.
   }
 
   @override

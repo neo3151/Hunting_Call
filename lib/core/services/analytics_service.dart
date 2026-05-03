@@ -35,6 +35,16 @@ class AnalyticsService {
     _log('recording_completed', {'animal_id': animalId, 'score': score});
   }
 
+  /// Track when the noise gate or backend rejects a call attempt.
+  static void logRecordingRejected(String animalId, String reason) {
+    _log('recording_rejected', {'animal_id': animalId, 'reason': reason});
+  }
+
+  /// Track how long the full scoring pipeline took from the user's perspective.
+  static void logScoringLatency(String animalId, int durationMs) {
+    _log('scoring_latency', {'animal_id': animalId, 'duration_ms': durationMs});
+  }
+
   static void logDailyChallengeStarted(String animalId) {
     _log('daily_challenge_started', {'animal_id': animalId});
   }
@@ -72,6 +82,11 @@ class AnalyticsService {
     _log('paywall_viewed', {});
   }
 
+  /// Track if they closed the paywall without buying (and where they were).
+  static void logPaywallAbandoned(String lastVisibleSection) {
+    _log('paywall_abandoned', {'last_section': lastVisibleSection});
+  }
+
   static void logPurchaseStarted(String productId) {
     _log('purchase_started', {'product_id': productId});
   }
@@ -87,6 +102,23 @@ class AnalyticsService {
       'score_offset': scoreOffset,
       'mic_sensitivity': micSensitivity,
     });
+  }
+
+  // ─── User Properties ──────────────────────────────────────────────────
+
+  /// Set persistent traits to filter your entire dashboard by.
+  static void setUserProperties({
+    required bool isPremium,
+    required String appVersion,
+    String? lastAnimalUsed,
+  }) {
+    if (!_enabled) return;
+    _instance?.setUserProperty(name: 'user_status', value: isPremium ? 'premium' : 'free');
+    _instance?.setUserProperty(name: 'app_version', value: appVersion);
+    if (lastAnimalUsed != null) {
+      _instance?.setUserProperty(name: 'last_animal', value: lastAnimalUsed);
+    }
+    AppLogger.d('📊 Analytics: setUserProperties {premium: $isPremium, version: $appVersion}');
   }
 
   // ─── Internal ─────────────────────────────────────────────────────────

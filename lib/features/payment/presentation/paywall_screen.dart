@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart' hide PurchaseStatus;
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/features/payment/data/payment_repository.dart';
 import 'package:outcall/features/payment/presentation/controllers/payment_controller.dart';
@@ -145,56 +146,63 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
       }
     });
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
-      ),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border.all(color: colors.border),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.textSubtle,
-                borderRadius: BorderRadius.circular(2),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop && result != true) {
+          AnalyticsService.logPaywallAbandoned('manual_dismiss');
+        }
+      },
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border.all(color: colors.border),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.textSubtle,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-              child: Column(
-                children: [
-                  _buildHeader(colors),
-                  const SizedBox(height: 24),
-                  _buildComparisonMatrix(colors),
-                  const SizedBox(height: 28),
-                  if (_isLoadingProducts)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: CircularProgressIndicator(),
-                    )
-                  else
-                    _buildPricingToggle(colors),
-                  const SizedBox(height: 20),
-                  if (!_isLoadingProducts) _buildPurchaseButton(paymentState, colors),
-                  const SizedBox(height: 12),
-                  _buildRestoreButton(paymentState, colors),
-                  const SizedBox(height: 16),
-                  _buildLegal(colors),
-                ],
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                child: Column(
+                  children: [
+                    _buildHeader(colors),
+                    const SizedBox(height: 24),
+                    _buildComparisonMatrix(colors),
+                    const SizedBox(height: 28),
+                    if (_isLoadingProducts)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: CircularProgressIndicator(),
+                      )
+                    else
+                      _buildPricingToggle(colors),
+                    const SizedBox(height: 20),
+                    if (!_isLoadingProducts) _buildPurchaseButton(paymentState, colors),
+                    const SizedBox(height: 12),
+                    _buildRestoreButton(paymentState, colors),
+                    const SizedBox(height: 16),
+                    _buildLegal(colors),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/rating/domain/rating_service.dart';
 import 'package:outcall/features/rating/data/sqlite_outbox_repository.dart';
@@ -20,6 +21,7 @@ class BackendRatingService implements RatingService {
     bool skipFingerprint = false,
     bool isBackgroundSync = false,
   }) async {
+    final startTime = DateTime.now();
     try {
       final uri = Uri.parse('$baseUrl/v1/score_audio');
       var request = http.MultipartRequest('POST', uri);
@@ -41,16 +43,27 @@ class BackendRatingService implements RatingService {
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
 
+      final latency = DateTime.now().difference(startTime).inMilliseconds;
+      AnalyticsService.logScoringLatency(animalType, latency);
+
       if (response.statusCode == 200) {
         final jsonMap = jsonDecode(responseBody);
-        return RatingResult.fromJson(jsonMap);
+        final result = RatingResult.fromJson(jsonMap);
+
+        // Track if this was a noise gate rejection
+        if (result.metrics['noise_rejected'] == 1.0) {
+          AnalyticsService.logRecordingRejected(animalType, 'noise_gate');
+        } else {
+          AnalyticsService.logRecordingCompleted(animalType, result.score);
+        }
+
+        return result;
       } else {
+        AnalyticsService.logRecordingRejected(animalType, 'server_error_${response.statusCode}');
         throw Exception('Backend returned status ${response.statusCode}: $responseBody');
       }
     } on SocketException catch (_) {
       // 🌲 HUNTER OFFLINE FALLBACK 🌲
-      // Deep in the woods with no cell service? We catch the SocketException,
-      // store the call in the local Outbox, and calmly return a pending status.
       if (!isBackgroundSync) {
         await _outboxRepo.queueCall(userId, audioPath, animalType);
       }
@@ -63,6 +76,7 @@ class BackendRatingService implements RatingService {
         archetypeLabel: "Offline Pending"
       );
     } catch (e, stackTrace) {
+      AnalyticsService.logRecordingRejected(animalType, 'exception');
       // Sentry capture specifically for scoring errors
       await Sentry.captureException(
         e,

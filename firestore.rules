@@ -15,103 +15,57 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Returns true if the incoming data has only the allowed fields
-    function hasOnlyAllowedFields(allowed) {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowed);
-    }
-
-    // ─── Input Validation Helpers ───────────────────────────────────
-
-    // Validates profile data constraints
-    function isValidProfileData() {
-      let data = request.resource.data;
-      return data.name is string
-          && data.name.size() >= 1
-          && data.name.size() <= 50
-          && (data.get('totalCalls', 0) is int || data.get('totalCalls', 0) is float)
-          && data.get('totalCalls', 0) >= 0
-          && data.get('totalCalls', 0) <= 100000
-          && (data.get('averageScore', 0) is int || data.get('averageScore', 0) is float)
-          && data.get('averageScore', 0) >= 0
-          && data.get('averageScore', 0) <= 100
-          && (!data.keys().hasAny(['history']) || data.history.size() <= 500)
-          && (!data.keys().hasAny(['achievements']) || data.achievements.size() <= 100);
-    }
-
     // ─── /profiles/{userId} ─────────────────────────────────────────
-    //
-    // Data: name, email, joinedDate, birthday, totalCalls, averageScore,
-    //       currentStreak, longestStreak, dailyChallengesCompleted,
-    //       lastDailyChallengeDate, achievements, history, isPremium, id
-    //
-    // Operations:
-    //   - CREATE: User creates their own profile on first sign-in
-    //   - READ  : User reads their own profile
-    //   - UPDATE: User updates their own stats, achievements, premium status
-    //   - DELETE: Not allowed from client (admin-only)
-    //   - LIST  : Restricted — getAllProfiles() should be moved to
-    //             a Cloud Function for admin use. Currently allowed
-    //             for authenticated users as a temporary measure.
     match /profiles/{userId} {
-      // Production-grade rule: Only allow a user to read/create/update their OWN document.
-      allow read, create, update: if isOwner(userId);
+      // READ/CREATE: Standard owner access
+      allow read, create: if isOwner(userId);
 
-      // Never allow client-side deletes
-      allow delete: if false;
+      // UPDATE: Allow updating stats, but LOCK the isPremium field.
+      // This prevents users from "hacking" themselves into a Pro subscription.
+      allow update: if isOwner(userId) 
+                    && (
+                      // Only allow the update if isPremium isn't being changed by the client.
+                      // Premium status should be handled via a secure Admin SDK or Cloud Function.
+                      request.resource.data.isPremium == resource.data.isPremium
+                    );
+
+      // DELETE: Required for Google Play / App Store compliance.
+      // Users MUST be able to delete their own data.
+      allow delete: if isOwner(userId);
     }
-
-    // ─── Profile listing removed (was a security vulnerability) ────────
-    // 
-    // The previous `allow list: if isAuthenticated()` rule allowed any
-    // authenticated user to dump all profiles. It has been removed.
-    // If profile listing/search is needed, use a Cloud Function with
-    // the Admin SDK instead.
 
     // ─── /leaderboards/{animalId} ───────────────────────────────────
-    //
-    // Data: scores (array of {userId, userName, score, date}), lastUpdated
-    //
-    // Operations:
-    //   - READ  : Any authenticated user can view leaderboards
-    //   - WRITE : Any authenticated user can submit scores
-    //             (validated via Firestore transaction in app code)
-    //   - DELETE: Not allowed from client
-
     match /leaderboards/{animalId} {
+      // Publicly readable for all hunters
       allow read: if isAuthenticated();
 
-      // Allow writes but validate structure and size
-      allow write: if isAuthenticated()
+      // PROTECT the Leaderboard from being wiped.
+      // We only allow an update if the new list is at least as long as the old one
+      // (preventing the "Empty List" wipe hack) and stays within the top 20 limit.
+      allow update: if isAuthenticated()
                    && request.resource.data.keys().hasOnly(['scores', 'lastUpdated'])
                    && request.resource.data.scores is list
+                   && request.resource.data.scores.size() >= resource.data.scores.size()
                    && request.resource.data.scores.size() <= 20;
+
+      // First-time creation (if a species doesn't have a leaderboard yet)
+      allow create: if isAuthenticated() 
+                    && request.resource.data.scores.size() <= 20;
 
       allow delete: if false;
     }
 
     // ─── /config/{document=**} ─────────────────────────────────────
-    //
-    // Data: app_v1 (document) -> min_version (string)
-    //
-    // Operations:
-    //   - READ  : Everyone can read the minimum required version
-    //   - WRITE : Admin-only (client write disabled)
-
     match /config/{document=**} {
       allow read: if true;
-      allow write: if false; // Only via console/admin
+      allow write: if false; // Admin-only (Version enforcement, etc.)
     }
 
     // ─── /waitlist/{document} ─────────────────────────────────────
-    //
-    // Landing page email capture — write-only for anonymous visitors.
-    // No read/list access from client to prevent email harvesting.
-
     match /waitlist/{document} {
       allow create: if request.resource.data.keys().hasOnly(['email', 'source', 'timestamp', 'userAgent'])
                     && request.resource.data.email is string
-                    && request.resource.data.email.size() > 0
-                    && request.resource.data.email.size() <= 254;
+                    && request.resource.data.email.size() > 0;
       allow read, update, delete: if false;
     }
 

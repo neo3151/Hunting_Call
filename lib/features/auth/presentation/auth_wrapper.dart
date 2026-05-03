@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,9 +25,9 @@ class AuthWrapper extends ConsumerStatefulWidget {
 enum VersionCheckStatus { pending, ok, required }
 
 class _AuthWrapperState extends ConsumerState<AuthWrapper> {
-  bool _isLoadingProfile = false;
-  String? _lastHandledUserId;
   VersionCheckStatus _versionStatus = VersionCheckStatus.pending;
+  bool _showLoadingUI = false;
+  Timer? _loadingTimer;
 
   @override
   void initState() {
@@ -34,137 +35,75 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     _performVersionCheck();
   }
 
+  @override
+  void dispose() {
+    _loadingTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _performVersionCheck() async {
     try {
       final service = ref.read(versionCheckServiceProvider);
       final isRequired = await service.isUpdateRequired();
       if (mounted) {
-        setState(() {
-          _versionStatus = isRequired ? VersionCheckStatus.required : VersionCheckStatus.ok;
-        });
+        setState(() => _versionStatus = isRequired ? VersionCheckStatus.required : VersionCheckStatus.ok);
       }
     } catch (e) {
-      AppLogger.d('AuthWrapper: Version check failed: $e');
-      if (mounted) {
-        setState(() => _versionStatus = VersionCheckStatus.ok); // Proceed anyway on error
-      }
-    }
-  }
-
-  Future<void> _loadProfile(String userId) async {
-    if (_lastHandledUserId == userId || userId == 'guest') return;
-
-    // Avoid double loading if already loading
-    if (_isLoadingProfile) return;
-
-    // Set immediately to prevent concurrent calls from rebuilds during awaits
-    _lastHandledUserId = userId;
-
-    if (mounted) setState(() => _isLoadingProfile = true);
-
-    try {
-      AppLogger.d('AuthWrapper: Loading profile for $userId');
-
-      // Check 1: Profile notifier might already have a profile loaded
-      final currentProfile = ref.read(profileNotifierProvider).profile;
-      if (currentProfile != null && currentProfile.id != 'guest') {
-        AppLogger.d(
-            'AuthWrapper: ✅ Profile already loaded: ${currentProfile.name} (${currentProfile.id})');
-        return;
-      }
-
-      // Check 2: Try to find profile by Firebase UID.
-      // The profile may not exist yet because LoginScreen._createNewProfile
-      // creates the auth account first (which triggers this rebuild) and
-      // THEN writes the profile. Retry a few times to give it a chance.
-      final profileRepo = ref.read(profileRepositoryProvider);
-      const maxRetries = 5;
-      for (int attempt = 1; attempt <= maxRetries; attempt++) {
-        AppLogger.d('AuthWrapper: getProfile attempt $attempt/$maxRetries for $userId');
-        try {
-          final profile = await profileRepo.getProfile(userId);
-          if (profile.id != 'guest') {
-            AppLogger.d('AuthWrapper: ✅ Profile found by UID: ${profile.name}');
-            await ref.read(profileNotifierProvider.notifier).loadProfile(userId);
-            return;
-          }
-        } catch (e) {
-          AppLogger.d('AuthWrapper: getProfile attempt $attempt failed: $e');
-        }
-        if (attempt < maxRetries) {
-          AppLogger.d('AuthWrapper: Profile not found yet, waiting 1s before retry...');
-          await Future.delayed(const Duration(seconds: 1));
-          if (!mounted) return;
-        }
-      }
-
-      AppLogger.d(
-          'AuthWrapper: ⚠️ No profile found for $userId after $maxRetries attempts — showing guest fallback.');
-    } catch (e, stack) {
-      AppLogger.d('AuthWrapper: Error loading profile: $e');
-      AppLogger.d('Stack: $stack');
-      // Don't reset _lastHandledUserId — that causes infinite retry loops
-    } finally {
-      if (mounted) {
-        setState(() => _isLoadingProfile = false);
-      }
+      if (mounted) setState(() => _versionStatus = VersionCheckStatus.ok);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_versionStatus == VersionCheckStatus.required) {
-      return const UpdateRequiredScreen();
-    }
-
-    if (_versionStatus == VersionCheckStatus.pending) {
-      return Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
-        ),
-      );
-    }
+    if (_versionStatus == VersionCheckStatus.required) return const UpdateRequiredScreen();
+    if (_versionStatus == VersionCheckStatus.pending) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     final authState = ref.watch(authControllerProvider);
-    final _ = ref.read(onboardingProvider); // Use read or watch? Watch is better for changes.
-    // onboardingProvider seems to be a StateProvider or similar.
+    final onboardingAsync = ref.watch(onboardingProvider);
+    final profileState = ref.watch(profileNotifierProvider);
+
+    // REACTIVE TRIGGER: Kick off profile loading and manage the "Grace Period" timer
+    ref.listen(authControllerProvider, (previous, next) {
+      next.whenData((user) {
+        if (user != null) {
+          // Read the *current* state, not the state from the build method closure
+          final currentProfileState = ref.read(profileNotifierProvider);
+          
+          // 1. Kick off the load only if we don't have THIS user's profile and aren't already loading
+          if (currentProfileState.profile?.id != user.id && !currentProfileState.isProfileLoading) {
+            ref.read(profileNotifierProvider.notifier).loadProfile(user.id);
+            
+            // 2. Start a "Grace Period" timer. We only show the Loading UI if 
+            // it takes LONGER than 500ms to load the profile.
+            _loadingTimer?.cancel();
+            setState(() => _showLoadingUI = false);
+            _loadingTimer = Timer(const Duration(milliseconds: 500), () {
+              if (mounted) setState(() => _showLoadingUI = true);
+            });
+          }
+        } else {
+          // Clean up on sign out
+          final currentProfileState = ref.read(profileNotifierProvider);
+          if (currentProfileState.profile != null || currentProfileState.isProfileLoading) {
+             _loadingTimer?.cancel();
+             setState(() => _showLoadingUI = false);
+             ref.read(profileNotifierProvider.notifier).reset();
+          }
+        }
+      });
+    });
 
     return authState.when(
       data: (user) {
-        AppLogger.d('AuthWrapper: data received. user: ${user?.id}');
-
-        // 1. Check Onboarding First
-        final onboardingState = ref.watch(onboardingProvider);
-
-        return onboardingState.when(
+        return onboardingAsync.when(
           data: (hasSeenOnboarding) {
-            if (!hasSeenOnboarding) {
-              AppLogger.d('AuthWrapper: Onboarding not seen. Returning OnboardingScreen.');
-              return const OnboardingScreen();
-            }
+            if (!hasSeenOnboarding) return const OnboardingScreen();
+            if (user == null) return const LoginScreen();
 
-            // 2. Handle Authentication
-            if (user == null) {
-              _lastHandledUserId = null;
-              // Clean up profile notifier
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  ref.read(profileNotifierProvider.notifier).reset();
-                }
-              });
-              return const LoginScreen();
-            }
-
-            final userId = user.id;
-
-            // Load profile before showing home screen
-            if (_lastHandledUserId != userId) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadProfile(userId);
-              });
-            }
-
-            if (_isLoadingProfile) {
+            // IF PROFILE NOT READY: Decide between Login Screen (Grace Period) or Loading Screen
+            if (profileState.profile == null || profileState.isProfileLoading) {
+              if (!_showLoadingUI) return const LoginScreen();
+              
               return const Scaffold(
                 body: Center(
                   child: Column(
@@ -179,82 +118,33 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
               );
             }
 
-            AppLogger.d(
-                'AuthWrapper: User authenticated and onboarding seen. Returning HomeScreen($userId).');
-            return MainShell(userId: userId);
+            return MainShell(userId: user.id);
           },
-          loading: () => const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          ),
-          error: (error, stack) => Scaffold(
-            body: Center(child: Text('Error loading app state: $error')),
-          ),
+          loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+          error: (e, _) => _buildErrorScreen(e.toString()),
         );
       },
-      loading: () => const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, st) => _buildErrorScreen(e.toString()),
+    );
+  }
+
+  Widget _buildErrorScreen(String error) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 16),
+            Text('Auth Error: $error'),
+            TextButton(
+              onPressed: () => ref.invalidate(authControllerProvider),
+              child: const Text('RETRY'),
+            ),
+          ],
         ),
       ),
-      error: (error, stack) {
-        final errorStr = error.toString();
-        AppLogger.d('AuthWrapper: Auth stream error: $errorStr');
-        if (errorStr.contains('User signed out') || errorStr.contains('SignedOutException')) {
-          AppLogger.d(
-              'AuthWrapper: Detected signed out error ($errorStr). Invalidating provider to force retry.');
-          // This might cause infinite loop with AsyncNotifier if not careful,
-          // but mapped stream should handle nulls as data(null).
-          // Error usually means stream error.
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ref.invalidate(authControllerProvider);
-          });
-        }
-
-        return Scaffold(
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.cloud_off_rounded, color: Colors.orangeAccent, size: 64),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Network's drunk—try again?",
-                    style: GoogleFonts.oswald(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error: $errorStr',
-                    style: GoogleFonts.lato(
-                      fontSize: 12,
-                      color: Colors.white38,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 5,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: AppColors.background,
-                    ),
-                    onPressed: () => ref.invalidate(authControllerProvider),
-                    child: Text('TRY AGAIN',
-                        style: GoogleFonts.oswald(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

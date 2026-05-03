@@ -77,6 +77,14 @@ class AuthController extends StreamNotifier<AuthUser?> {
       ref.read(loggerServiceProvider).log('Attempting sign in anonymously');
       final useCase = ref.read(signInAnonymouslyUseCaseProvider);
       await useCase();
+      
+      // EAGER LOAD: Reach out and grab the profile immediately after auth success.
+      final currentUser = await ref.read(authRepositoryProvider).currentUser;
+      if (currentUser != null) {
+        AppLogger.d('AuthController: Eagerly loading profile for Anonymous user ${currentUser.id}');
+        await ref.read(profileNotifierProvider.notifier).loadProfile(currentUser.id);
+      }
+
       ref.read(loggerServiceProvider).log('Signed in anonymously successfully');
       // State updates automatically via stream
     } catch (e, st) {
@@ -91,6 +99,15 @@ class AuthController extends StreamNotifier<AuthUser?> {
       ref.read(loggerServiceProvider).log('Attempting sign in with Google');
       final useCase = ref.read(signInWithGoogleUseCaseProvider);
       await useCase();
+      
+      // EAGER LOAD: Reach out and grab the profile immediately after auth success.
+      // This "pre-warms" the ProfileNotifier so AuthWrapper finds it instantly.
+      final currentUser = await ref.read(authRepositoryProvider).currentUser;
+      if (currentUser != null) {
+        AppLogger.d('AuthController: Eagerly loading profile for Google user ${currentUser.id}');
+        await ref.read(profileNotifierProvider.notifier).loadProfile(currentUser.id);
+      }
+      
       ref.read(loggerServiceProvider).log('Signed in with Google successfully');
       // State updates automatically via stream
     } catch (e, st) {
@@ -105,6 +122,14 @@ class AuthController extends StreamNotifier<AuthUser?> {
       ref.read(loggerServiceProvider).log('Attempting sign in with Email ($email)');
       final useCase = ref.read(signInWithEmailUseCaseProvider);
       await useCase(email, password);
+      
+      // EAGER LOAD: Reach out and grab the profile immediately after auth success.
+      final currentUser = await ref.read(authRepositoryProvider).currentUser;
+      if (currentUser != null) {
+        AppLogger.d('AuthController: Eagerly loading profile for Email user ${currentUser.id}');
+        await ref.read(profileNotifierProvider.notifier).loadProfile(currentUser.id);
+      }
+
       ref.read(loggerServiceProvider).log('Signed in with Email successfully');
     } catch (e, st) {
       final error = _normalizeAuthError(e);

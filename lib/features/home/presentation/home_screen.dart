@@ -37,9 +37,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(homeNotifierProvider.notifier).loadProfile(widget.userId);
-    });
+    // Profile is now pre-loaded by AuthWrapper. We don't need to force a reload here
+    // unless the safety net in build() catches a null profile.
   }
 
   @override

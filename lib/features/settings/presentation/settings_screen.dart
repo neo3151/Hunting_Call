@@ -526,7 +526,7 @@ User ID: $userId
 
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'support@huntingcalls.app',
+      path: 'BenchmarkAppsLLC@gmail.com',
       queryParameters: {
         'subject': 'Outcall Alpha Feedback - $appVersion',
         'body': body,

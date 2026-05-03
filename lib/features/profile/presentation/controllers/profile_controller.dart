@@ -9,6 +9,8 @@ import 'package:outcall/features/profile/domain/entities/user_profile.dart';
 import 'package:outcall/features/profile/domain/providers.dart';
 import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 
 /// State for user profile operations
 class ProfileState {
@@ -76,8 +78,12 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   /// Load a specific user's profile
   Future<void> loadProfile(String userId) async {
-    // AppLogger.d("ProfileNotifier: loadProfile called for $userId");
-    state = state.copyWith(isProfileLoading: true, error: null);
+    // Only show the full-screen loading spinner if we don't already have the profile
+    final isInitialLoad = state.profile == null || state.profile!.id != userId;
+    if (isInitialLoad) {
+      state = state.copyWith(isProfileLoading: true, error: null);
+    }
+    
     try {
       final profile = await _repo.getProfile(userId).timeout(
             const Duration(seconds: 10),
@@ -85,6 +91,13 @@ class ProfileNotifier extends Notifier<ProfileState> {
           );
       // AppLogger.d("ProfileNotifier: loadProfile success for $userId");
       state = state.copyWith(profile: profile, isProfileLoading: false);
+
+      // Sync with Analytics
+      final packageInfo = await PackageInfo.fromPlatform();
+      AnalyticsService.setUserProperties(
+        isPremium: profile.isPremium,
+        appVersion: '${packageInfo.version}+${packageInfo.buildNumber}',
+      );
 
       // Stamp lastActiveAt for scrubber inactivity tracking
       try {
@@ -112,6 +125,14 @@ class ProfileNotifier extends Notifier<ProfileState> {
         allProfiles: updatedProfiles,
         isProfileLoading: false,
       );
+
+      // Sync with Analytics
+      final packageInfo = await PackageInfo.fromPlatform();
+      AnalyticsService.setUserProperties(
+        isPremium: profile.isPremium,
+        appVersion: '${packageInfo.version}+${packageInfo.buildNumber}',
+      );
+
       return profile;
     } catch (e) {
       state = state.copyWith(error: e.toString(), isProfileLoading: false);

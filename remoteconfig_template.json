@@ -2,7 +2,7 @@
   "parameters": {
     "ai_coach_url": {
       "defaultValue": {
-        "value": "https://ruttish-incontrollably-christina.ngrok-free.dev"
+        "value": "https://outcallbackend.xyz"
       },
       "description": "Base URL for the AI backend (fingerprint, coach, chat). Update here when the server moves."
     },
