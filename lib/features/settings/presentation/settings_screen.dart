@@ -316,6 +316,41 @@ class SettingsScreen extends ConsumerWidget {
                           _sectionTitle(context, S.of(context).aboutSection),
                           _settingsTile(
                             context: context,
+                            icon: Icons.eco_outlined,
+                            title: 'Ethics & Safety',
+                            subtitle: 'Our commitment to the wild',
+                            trailing: Icon(Icons.chevron_right, color: colors.iconSubtle),
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  backgroundColor: colors.surface,
+                                  title: Row(
+                                    children: [
+                                      Icon(Icons.park, color: Theme.of(context).primaryColor),
+                                      const SizedBox(width: 12),
+                                      Text('Ethics & Safety',
+                                          style: GoogleFonts.oswald(color: colors.textPrimary)),
+                                    ],
+                                  ),
+                                  content: Text(
+                                    "Nature's Playlist: We've packed OUTCALL with everything from Mallards to Moose. Just remember—some of these calls are for bringing home dinner, while others are just for wildlife photography or showing off your skills around the campfire.\n\nKeep it ethical, respect the wild, and always verify your local hunting regs.",
+                                    style: GoogleFonts.lato(color: colors.textSecondary, height: 1.5),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx),
+                                      child: Text('UNDERSTOOD',
+                                          style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                          Divider(color: colors.divider),
+                          _settingsTile(
+                            context: context,
                             icon: Icons.shield_outlined,
                             title: S.of(context).privacyPolicy,
                             subtitle: S.of(context).privacyPolicySubtitle,

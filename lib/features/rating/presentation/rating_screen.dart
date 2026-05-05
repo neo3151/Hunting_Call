@@ -1,3 +1,4 @@
+import 'dart:math' show max;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -563,6 +564,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         final userPitch = _toSafe(result.pitchHz);
         final diff = userPitch - targetPitch;
         final isTooHigh = diff > 0;
+        final isWithinTolerance = diff.abs() <= reference.tolerancePitch;
 
         return Container(
           padding: const EdgeInsets.all(20),
@@ -597,7 +599,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   Column(
                     children: [
                       Icon(isTooHigh ? Icons.arrow_upward : Icons.arrow_downward,
-                          color: AppColors.success, size: 20),
+                          color: isWithinTolerance ? AppColors.success : Colors.redAccent, size: 20),
                       const SizedBox(height: 2),
                       Text(isTooHigh ? 'TOO HIGH' : 'TOO LOW',
                           style: GoogleFonts.oswald(
@@ -623,7 +625,6 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
               _buildPitchSlider(userPitch, targetPitch, reference.tolerancePitch),
               const SizedBox(height: 12),
               Builder(builder: (_) {
-                final isWithinTolerance = (userPitch - targetPitch).abs() <= reference.tolerancePitch;
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
@@ -654,8 +655,8 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       height: 30,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          const minFreq = 100.0;
-          const maxFreq = 1000.0;
+          const minFreq = 50.0;
+          final maxFreq = max(1000.0, max(user, target) * 1.3);
 
           double normalize(double val) => ((val - minFreq) / (maxFreq - minFreq)).clamp(0, 1);
 

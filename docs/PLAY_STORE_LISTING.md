@@ -63,6 +63,8 @@ Whitetail Deer • Mule Deer • Elk • Moose • Turkey • Mallard Duck • G
 
 Whether you're a seasoned caller or picking up your first reed, OUTCALL gives you the tools to practice anywhere, anytime. Perfect your technique at home so when that bull elk steps into range, your call is flawless.
 
+*Built for the hunt, designed for the wild. Please note that while many calls in our library are for active game hunting, others are provided purely for wildlife observation and entertainment. OUTCALL supports ethical outdoorsmanship—always check your local wildlife regulations before taking the field.*
+
 Download now. Master your craft. 🎯
 
 📱 **Privacy**: We respect your data. See our full policy at hunting-call-perfection.web.app/privacy-policy.html

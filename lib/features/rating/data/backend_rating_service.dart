@@ -6,7 +6,7 @@ import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/rating/domain/rating_service.dart';
 import 'package:outcall/features/rating/data/sqlite_outbox_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:outcall/core/utils/app_logger.dart';
 
 class BackendRatingService implements RatingService {
   final String baseUrl;
@@ -77,15 +77,7 @@ class BackendRatingService implements RatingService {
       );
     } catch (e, stackTrace) {
       AnalyticsService.logRecordingRejected(animalType, 'exception');
-      // Sentry capture specifically for scoring errors
-      await Sentry.captureException(
-        e,
-        stackTrace: stackTrace,
-        withScope: (scope) {
-          scope.setTag('feature', 'audio_scoring');
-          scope.setContexts('animal', {'animalId': animalType});
-        },
-      );
+      AppLogger.e('BackendRatingService: scoring failed for $animalType', error: e, stackTrace: stackTrace);
       throw Exception('Failed to score audio via backend: $e');
     }
   }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/library/domain/providers.dart';
@@ -96,7 +97,36 @@ class RatingActionButtons extends ConsumerWidget {
                 child: Text(S.of(context).doneReturnToCamp, style: GoogleFonts.oswald(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1.5)),
               ),
             ),
+            
+            // Report a Problem
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () => _showReportModal(context, animalName, ref),
+                icon: const Icon(Icons.flag_outlined, size: 14, color: Colors.white38),
+                label: Text('REPORT SCORING ISSUE', style: GoogleFonts.oswald(fontSize: 11, color: Colors.white38, letterSpacing: 1.0)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+              ),
+            ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showReportModal(BuildContext context, String animalName, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext modalContext) {
+        return _ReportIssueBottomSheet(
+          animalId: animalId,
+          animalName: animalName,
+          result: result,
+          userId: ref.read(profileNotifierProvider).profile?.id ?? 'guest',
         );
       },
     );
@@ -269,3 +299,222 @@ class RatingActionButtons extends ConsumerWidget {
     return 'ROOKIE';
   }
 }
+
+class _ReportIssueBottomSheet extends StatefulWidget {
+  final String animalId;
+  final String animalName;
+  final RatingResult? result;
+  final String userId;
+
+  const _ReportIssueBottomSheet({
+    required this.animalId,
+    required this.animalName,
+    required this.result,
+    required this.userId,
+  });
+
+  @override
+  State<_ReportIssueBottomSheet> createState() => _ReportIssueBottomSheetState();
+}
+
+class _ReportIssueBottomSheetState extends State<_ReportIssueBottomSheet> {
+  String? _selectedReason;
+  bool _isSubmitting = false;
+  final TextEditingController _detailsController = TextEditingController();
+
+  final List<String> _reasons = [
+    'Scored my voice, not my call',
+    'Score seems way too low',
+    'Score seems way too high',
+    'Scored background noise',
+    'App crashed or froze',
+    'Other'
+  ];
+
+  @override
+  void dispose() {
+    _detailsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitReport() async {
+    if (_selectedReason == null) return;
+    
+    setState(() => _isSubmitting = true);
+    
+    try {
+      await FirebaseFirestore.instance.collection('bug_reports').add({
+        'timestamp': FieldValue.serverTimestamp(),
+        'userId': widget.userId,
+        'animalId': widget.animalId,
+        'animalName': widget.animalName,
+        'reason': _selectedReason,
+        'additionalDetails': _detailsController.text.trim(),
+        'score': widget.result?.score,
+        'pitchHz': widget.result?.pitchHz,
+        'status': 'open',
+      });
+      
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Report submitted. Thank you!', style: GoogleFonts.lato()),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error submitting report. Try again.', style: GoogleFonts.lato()),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+      ),
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).padding.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.flag_outlined, color: Colors.orangeAccent),
+              const SizedBox(width: 12),
+              Text(
+                'REPORT AN ISSUE',
+                style: GoogleFonts.oswald(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'What went wrong with the scoring for this ${widget.animalName} call?',
+            style: GoogleFonts.lato(color: Colors.white70, fontSize: 14),
+          ),
+          const SizedBox(height: 24),
+          ..._reasons.map((reason) {
+            final isSelected = _selectedReason == reason;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: InkWell(
+                onTap: () => setState(() => _selectedReason = reason),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.orangeAccent.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? Colors.orangeAccent : Colors.transparent,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                        color: isSelected ? Colors.orangeAccent : Colors.white38,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          reason,
+                          style: GoogleFonts.lato(
+                            color: isSelected ? Colors.white : Colors.white70,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          
+          // Optional Details Text Field
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: _selectedReason != null ? null : 0,
+            margin: EdgeInsets.only(top: _selectedReason != null ? 8.0 : 0),
+            child: _selectedReason != null
+                ? TextField(
+                    controller: _detailsController,
+                    style: GoogleFonts.lato(color: Colors.white, fontSize: 14),
+                    maxLines: 3,
+                    minLines: 1,
+                    textInputAction: TextInputAction.done,
+                    decoration: InputDecoration(
+                      hintText: _selectedReason == 'Other' 
+                          ? 'Please describe the issue...' 
+                          : 'Additional details (optional)',
+                      hintStyle: GoogleFonts.lato(color: Colors.white38),
+                      filled: true,
+                      fillColor: Colors.black.withValues(alpha: 0.3),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.5)),
+                      ),
+                      contentPadding: const EdgeInsets.all(16),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _selectedReason == null || _isSubmitting ? null : _submitReport,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orangeAccent,
+                foregroundColor: Colors.black,
+                disabledBackgroundColor: Colors.white12,
+                disabledForegroundColor: Colors.white38,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                  : Text(
+                      'SUBMIT REPORT',
+                      style: GoogleFonts.oswald(fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

@@ -24,28 +24,22 @@ class ComprehensiveAnalyticsSection extends StatelessWidget {
       children: [
         _buildSectionHeader('COMPREHENSIVE ANALYTICS'),
         const SizedBox(height: 20),
-        _buildAnalyticsSection('VOLUME ANALYSIS', Icons.volume_up, [
-          _buildAnalyticsCard('Average Volume', result.metrics['avg_volume'] ?? 65.0),
-          _buildAnalyticsCard('Peak Volume', result.metrics['peak_volume'] ?? 82.0),
-          _buildAnalyticsCard('Consistency', result.metrics['consistency'] ?? 78.0),
+        _buildAnalyticsSection('SCORE BREAKDOWN', Icons.bar_chart, [
+          _buildAnalyticsCard('Fingerprint', result.metrics['score_fingerprint']),
+          _buildAnalyticsCard('Pitch', result.metrics['score_pitch']),
+          _buildAnalyticsCard('Timbre', result.metrics['score_timbre']),
         ]),
         const SizedBox(height: 12),
-        _buildAnalyticsSection('TONE ANALYSIS', Icons.tune, [
-          _buildAnalyticsCard('Tone Clarity', result.metrics['tone_clarity'] ?? 85.0),
-          _buildAnalyticsCard('Harmonic Richness', result.metrics['harmonic_richness'] ?? 72.0),
-          _buildAnalyticsCard('Call Quality', result.metrics['call_quality'] ?? 88.0),
+        _buildAnalyticsSection('TONE & TIMBRE', Icons.tune, [
+          _buildAnalyticsCard('Pitch Accuracy', result.metrics['score_pitch']),
+          _buildAnalyticsCard('Tonal Quality', result.metrics['score_timbre']),
+          _buildAnalyticsCard('Call Duration', result.metrics['score_duration']),
         ]),
         const SizedBox(height: 12),
-        _buildAnalyticsSection('TIMBRE ANALYSIS', Icons.waves, [
-          _buildAnalyticsCard('Brightness', result.metrics['brightness'] ?? 55.0),
-          _buildAnalyticsCard('Warmth', result.metrics['warmth'] ?? 68.0),
-          _buildAnalyticsCard('Nasality', result.metrics['nasality'] ?? 42.0),
+        _buildAnalyticsSection('RHYTHM & CADENCE', Icons.timeline, [
+          _buildAnalyticsCard('Rhythmic Score', result.metrics['score_rhythm']),
+          _buildAnalyticsCard('Duration (s)', result.metrics['Duration (s)']),
         ]),
-        const SizedBox(height: 12),
-        _buildAnalyticsSection('RHYTHM ANALYSIS', Icons.timeline, [
-          _buildAnalyticsCard('Tempo', null),
-          _buildAnalyticsCard('Regularity', null),
-        ], isNotPulsed: true),
       ],
     );
   }
