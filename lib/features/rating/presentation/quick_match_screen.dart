@@ -94,13 +94,16 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
     }
   }
 
-  String _getQuickTip(double score) {
+  String _getQuickTip(RatingResult result) {
+    if (result.score == 0 && result.feedback.isNotEmpty) return result.feedback;
+    
+    final score = result.score;
     if (score >= 90) return 'Nearly perfect! Competition-ready technique.';
     if (score >= 80) return 'Great match — try opening your throat slightly for richer tone.';
     if (score >= 70) return 'Solid call! Slow your cadence slightly on the second note.';
     if (score >= 55) return 'Good start — focus on matching the pitch rise and rhythm pattern.';
     if (score >= 35) return 'Listen to the reference closely, then match the timing and volume.';
-    return 'Try again in a quieter spot — relax your air pressure and let the call flow.';
+    return 'Keep practicing — relax your air pressure and let the call flow.';
   }
 
   /// Encouraging headline shown above the animal name.
@@ -417,14 +420,14 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getQuickTip(score),
+                        _getQuickTip(result),
                         style: GoogleFonts.lato(
                           fontSize: 15,
                           color: Colors.white70,
                           height: 1.4,
                         ),
                       ),
-                      if (result.feedback.isNotEmpty) ...[
+                      if (result.score > 0 && result.feedback.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
                           result.feedback,

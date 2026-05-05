@@ -77,7 +77,7 @@ class BackendRatingService implements RatingService {
       );
     } catch (e, stackTrace) {
       AnalyticsService.logRecordingRejected(animalType, 'exception');
-      AppLogger.e('BackendRatingService: scoring failed for $animalType', error: e, stackTrace: stackTrace);
+      AppLogger.e('BackendRatingService: scoring failed for $animalType', e, stackTrace);
       throw Exception('Failed to score audio via backend: $e');
     }
   }

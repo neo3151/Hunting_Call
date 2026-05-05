@@ -13,6 +13,8 @@ import 'package:outcall/features/settings/presentation/calibration_screen.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 import 'package:outcall/core/theme/app_theme.dart';
 import 'package:outcall/core/theme/app_colors.dart';
+import 'package:outcall/features/profile/presentation/admin_dashboard_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -72,6 +74,21 @@ class SettingsScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (const ['benchmarkappsllc@gmail.com', 'pongownsyou@gmail.com'].contains(FirebaseAuth.instance.currentUser?.email?.toLowerCase())) ...[
+                            _sectionTitle(context, 'DEVELOPER TOOLS'),
+                            _settingsTile(
+                              context: context,
+                              icon: Icons.admin_panel_settings,
+                              title: 'Admin Portal',
+                              subtitle: 'Manage user feedback and bugs',
+                              trailing: const Icon(Icons.chevron_right, color: Colors.redAccent),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+                              ),
+                            ),
+                            Divider(color: colors.divider),
+                          ],
                           _sectionTitle(context, S.of(context).appearance),
                           _settingsTile(
                             context: context,

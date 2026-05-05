@@ -102,7 +102,7 @@ class RatingActionButtons extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: TextButton.icon(
-                onPressed: () => _showReportModal(context, animalName, ref),
+                onPressed: () => _showReportModal(context, animal.animalName, ref),
                 icon: const Icon(Icons.flag_outlined, size: 14, color: Colors.white38),
                 label: Text('REPORT SCORING ISSUE', style: GoogleFonts.oswald(fontSize: 11, color: Colors.white38, letterSpacing: 1.0)),
                 style: TextButton.styleFrom(

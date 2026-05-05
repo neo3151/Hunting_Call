@@ -10,6 +10,7 @@ class HomeHeader extends StatelessWidget {
   final bool isCloudMode;
   final VoidCallback onSignOut;
   final VoidCallback? onSettings;
+  final bool hasUnreadFeedback;
 
   const HomeHeader({
     super.key,
@@ -17,6 +18,7 @@ class HomeHeader extends StatelessWidget {
     required this.isCloudMode,
     required this.onSignOut,
     this.onSettings,
+    this.hasUnreadFeedback = false,
   });
 
   @override
@@ -122,16 +124,34 @@ class HomeHeader extends StatelessWidget {
   }
 
   Widget _buildSettingsButton(AppColorPalette palette) {
-    return Container(
-      decoration: BoxDecoration(
-        color: palette.cardOverlay,
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        onPressed: onSettings,
-        icon: Icon(Icons.settings_outlined, color: palette.icon, size: 22),
-        tooltip: 'Settings',
-      ),
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: palette.cardOverlay,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            onPressed: onSettings,
+            icon: Icon(Icons.settings_outlined, color: palette.icon, size: 22),
+            tooltip: 'Settings',
+          ),
+        ),
+        if (hasUnreadFeedback)
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                shape: BoxShape.circle,
+                border: Border.all(color: palette.surface, width: 2),
+              ),
+            ),
+          ),
+      ],
     );
   }
 

@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/utils/friendly_errors.dart';
@@ -15,6 +17,7 @@ import 'package:outcall/features/daily_challenge/presentation/controllers/daily_
 import 'package:outcall/features/daily_challenge/presentation/daily_challenge_screen.dart';
 import 'package:outcall/features/home/presentation/controllers/home_controller.dart';
 import 'package:outcall/features/home/presentation/widgets/daily_challenge_card.dart';
+import 'package:outcall/features/home/presentation/widgets/general_feedback_modal.dart';
 import 'package:outcall/features/home/presentation/widgets/home_header.dart';
 import 'package:outcall/features/home/presentation/widgets/recent_activity_card.dart';
 import 'package:outcall/features/leaderboard/presentation/global_leaderboard_screen.dart';
@@ -70,13 +73,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ? _buildErrorState(homeState.error!)
                   : Column(
                       children: [
-                        HomeHeader(
-                          userName: homeState.userName,
-                          isCloudMode: homeState.isCloudMode,
-                          onSignOut: () => ref.read(homeNotifierProvider.notifier).signOut(),
-                          onSettings: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                          ),
+                        StreamBuilder<int>(
+                          stream: _getUnreadFeedbackStream(),
+                          builder: (context, snapshot) {
+                            final unreadCount = snapshot.data ?? 0;
+                            return HomeHeader(
+                              userName: homeState.userName,
+                              isCloudMode: homeState.isCloudMode,
+                              hasUnreadFeedback: unreadCount > 0,
+                              onSignOut: () => ref.read(homeNotifierProvider.notifier).signOut(),
+                              onSettings: () => Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                              ),
+                            );
+                          },
                         ),
                         if (homeState.isLoading)
                           const LinearProgressIndicator(
@@ -138,6 +148,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── Private Helpers ────────────────────────────────────────────────────
+
+  Stream<int> _getUnreadFeedbackStream() {
+    final email = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
+    final admins = ['benchmarkappsllc@gmail.com', 'pongownsyou@gmail.com'];
+    if (email == null || !admins.contains(email)) return Stream.value(0);
+    
+    // Combine both streams manually or just query one. We'll query bug_reports for simplicity,
+    // or both using RxDart, but a simple way in standard Flutter is to yield* or just do one.
+    // For simplicity without external packages, we'll just check bug_reports.
+    return FirebaseFirestore.instance
+        .collection('bug_reports')
+        .where('status', isEqualTo: 'open')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
 
   Widget _buildErrorState(String errorMessage) {
     final friendlyMessage = FriendlyErrorFormatter.format(errorMessage);
@@ -337,6 +362,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onTap: () => Navigator.of(context).push(
                   SlideRoute(page: const AchievementsScreen()),
                 ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildQuickActionCard(
+                icon: Icons.feedback_outlined,
+                iconColor: Colors.deepOrangeAccent,
+                title: 'Feedback',
+                subtitle: 'Report bugs or ideas',
+                onTap: () {
+                  GeneralFeedbackBottomSheet.show(context, activeUserId);
+                },
               ),
             ),
           ],

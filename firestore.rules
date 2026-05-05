@@ -69,6 +69,23 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
+    // ─── Admin Check Helper ─────────────────────────────────────────
+    function isAdmin() {
+      return isAuthenticated() && (request.auth.token.email == 'benchmarkappsllc@gmail.com' || request.auth.token.email == 'pongownsyou@gmail.com');
+    }
+
+    // ─── /bug_reports/{document} ────────────────────────────────────
+    match /bug_reports/{document} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ─── /general_feedback/{document} ───────────────────────────────
+    match /general_feedback/{document} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin();
+    }
+
     // ─── Deny everything else ───────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
