@@ -198,6 +198,7 @@ class SettingsScreen extends ConsumerWidget {
                                         style: const TextStyle(fontSize: 11))),
                               ],
                               selected: {settings.distanceUnit},
+                              showSelectedIcon: false,
                               onSelectionChanged: (v) =>
                                   notifier.setDistanceUnit(v.first),
                               style: ButtonStyle(
@@ -284,6 +285,7 @@ class SettingsScreen extends ConsumerWidget {
                                 ButtonSegment(value: 'high', label: Text(S.of(context).qualityHigh, style: const TextStyle(fontSize: 10))),
                               ],
                               selected: {settings.imageQuality},
+                              showSelectedIcon: false,
                               onSelectionChanged: (v) => notifier.setImageQuality(v.first),
                               style: ButtonStyle(
                                 backgroundColor: WidgetStateProperty.resolveWith((states) {
