@@ -155,9 +155,9 @@ stress_test_*
 # The Great Purge (Phase 3)
 *.pkl
 *.mp3
+!assets/audio/*.mp3
 !test_*.wav
 temp_*
 untracked_assets/
 archive/
-assets/audio/
-assets/models/
+assets/models/*.tflite

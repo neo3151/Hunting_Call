@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 import 'package:outcall/core/utils/app_logger.dart';
 import 'dart:math' as math;
 
@@ -11,10 +14,45 @@ class BioacousticScorer {
   static const int durationSec = 3;
   static const int inputSize = sampleRate * durationSec; // 144,000 PCM floats
 
+  static const String _modelFileName = 'birdnet_lite.tflite';
+  static const String _modelStorageUrl =
+      'https://firebasestorage.googleapis.com/v0/b/hunting-call-perfection.firebasestorage.app/o/ai-models%2Fbirdnet_lite.tflite?alt=media';
+
+  static Future<String> _getLocalModelPath() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return '${dir.path}/$_modelFileName';
+  }
+
+  static Future<void> _downloadModelIfNeeded() async {
+    final localPath = await _getLocalModelPath();
+    final file = File(localPath);
+    if (await file.exists() && await file.length() > 1000000) return;
+
+    AppLogger.d('BioacousticScorer: Downloading model from Firebase Storage...');
+    try {
+      final response = await http.get(Uri.parse(_modelStorageUrl))
+          .timeout(const Duration(minutes: 3));
+      if (response.statusCode == 200) {
+        await file.writeAsBytes(response.bodyBytes);
+        AppLogger.d('BioacousticScorer: Model downloaded (${(response.bodyBytes.length / 1024 / 1024).toStringAsFixed(1)} MB)');
+      } else {
+        throw Exception('HTTP ${response.statusCode}');
+      }
+    } catch (e) {
+      AppLogger.e('BioacousticScorer: Model download failed', e);
+      rethrow;
+    }
+  }
+
   static Future<void> loadModel() async {
     try {
       if (_interpreter != null) return;
-      _interpreter = await Interpreter.fromAsset('assets/models/birdnet_lite.tflite');
+
+      await _downloadModelIfNeeded();
+
+      final localPath = await _getLocalModelPath();
+      _interpreter = Interpreter.fromFile(File(localPath));
+
       final labelsData = await rootBundle.loadString('assets/models/labels.txt');
       _labels = labelsData.split('\n').where((s) => s.isNotEmpty).toList();
       AppLogger.d('BioacousticScorer: Loaded model and ${_labels!.length} classes.');
@@ -28,45 +66,38 @@ class BioacousticScorer {
     required List<double> audioBuffer,
   }) async {
     if (_interpreter == null || _labels == null) await loadModel();
-    if (_interpreter == null || _labels == null) return []; // Fallback if load fails
+    if (_interpreter == null || _labels == null) return [];
 
     try {
       // 1. Prepare raw audio input [1, 144000]
-      // BirdNET handles the mel-spectrogram conversion internally via the TFLite graph.
-      // We just need to zero-pad or truncate to exactly 3 seconds at 48kHz.
       final chunk = List.filled(inputSize, 0.0);
       final int len = math.min(audioBuffer.length, inputSize);
       for (int i = 0; i < len; i++) {
         chunk[i] = audioBuffer[i];
       }
-      final input0 = [chunk]; // Shape: [1, 144000]
+      final input0 = [chunk];
 
-      // 2. Prepare metadata input [1, 6] (lat, lon, week, mask_lat, mask_lon, mask_week)
-      // We pass the default (-1) to run a global classification unconditionally.
+      // 2. Metadata input [1, 6] — pass -1 for global (location-agnostic) classification
       final input1 = [
         [-1.0, -1.0, -1.0, 0.0, 0.0, 0.0]
       ];
 
-      // 3. Prepare output tensor [1, numClasses]
+      // 3. Output tensor [1, numClasses]
       final output = List.filled(1, List.filled(_labels!.length, 0.0));
 
-      // Run inference bridging both inputs
       _interpreter!.runForMultipleInputs([input0, input1], {0: output});
 
       final probs = output[0];
       final results = <MapEntry<String, double>>[];
 
-      // Map indices back to labels
       for (int i = 0; i < probs.length; i++) {
-        final sigProb = _customSigmoid(probs[i]); // BirdNET requires a custom sigmoid scaler
+        final sigProb = _customSigmoid(probs[i]);
         if (sigProb > 0.05) {
-          // Confidence threshold filter
           results.add(MapEntry(
-              _labels![i].split('_').last, sigProb * 100)); // Remove scientific prefix if present
+              _labels![i].split('_').last, sigProb * 100));
         }
       }
 
-      // Sort by highest confidence
       results.sort((a, b) => b.value.compareTo(a.value));
       return results.take(3).toList();
     } catch (e, stack) {
@@ -75,7 +106,7 @@ class BioacousticScorer {
     }
   }
 
-  /// Softmax/Sigmoid custom conversion to align with BirdNET's expected probability scoring
+  /// Custom sigmoid to align with BirdNET's expected probability scoring
   static double _customSigmoid(double x, {double sensitivity = 1.0}) {
     return 1 / (1.0 + math.exp(-sensitivity * x));
   }
