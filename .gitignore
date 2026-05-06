@@ -161,3 +161,4 @@ temp_*
 untracked_assets/
 archive/
 assets/models/*.tflite
+android/.kotlin/
