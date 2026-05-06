@@ -53,17 +53,6 @@ jobs:
             exit 1
           fi
 
-      # Build Android App Bundle
-      - name: Build AAB
-        run: flutter build appbundle --release --obfuscate --split-debug-info=build/app/outputs/symbols
-
-      # Upload AAB as build artifact
-      - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: outcall-release-aab
-          path: build/app/outputs/bundle/release/app-release.aab
-          retention-days: 14
 
   build-windows:
     runs-on: windows-latest
