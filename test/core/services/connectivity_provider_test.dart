@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:outcall/core/services/connectivity/connectivity_provider.dart';
 
 void main() {
-  group('isOfflineProvider', skip: 'Flaky stream timing, awaiting resolution', () {
+  group('isOfflineProvider', () {
     test('reports offline when connectivity results are empty', () async {
       final container = ProviderContainer(overrides: [
         connectivityStreamProvider.overrideWith(
@@ -13,7 +15,8 @@ void main() {
       ]);
       addTearDown(container.dispose);
 
-      // Give the stream time to emit
+      // listen() keeps the reactive chain alive so Riverpod propagates stream events
+      container.listen(isOfflineProvider, (_, __) {});
       await Future.delayed(Duration.zero);
       expect(container.read(isOfflineProvider), true);
     });
@@ -26,6 +29,7 @@ void main() {
       ]);
       addTearDown(container.dispose);
 
+      container.listen(isOfflineProvider, (_, __) {});
       await Future.delayed(Duration.zero);
       expect(container.read(isOfflineProvider), true);
     });
@@ -38,6 +42,7 @@ void main() {
       ]);
       addTearDown(container.dispose);
 
+      container.listen(isOfflineProvider, (_, __) {});
       await Future.delayed(Duration.zero);
       expect(container.read(isOfflineProvider), false);
     });
@@ -50,6 +55,7 @@ void main() {
       ]);
       addTearDown(container.dispose);
 
+      container.listen(isOfflineProvider, (_, __) {});
       await Future.delayed(Duration.zero);
       expect(container.read(isOfflineProvider), false);
     });
@@ -62,19 +68,21 @@ void main() {
       ]);
       addTearDown(container.dispose);
 
+      container.listen(isOfflineProvider, (_, __) {});
       await Future.delayed(Duration.zero);
       expect(container.read(isOfflineProvider), false);
     });
 
-    test('reports offline on stream error (safe default)', () async {
+    test('reports offline on stream error (safe default)', () {
+      // Override the stream provider directly with an error AsyncValue to bypass
+      // stream delivery timing — we're testing the mapping logic, not stream mechanics.
       final container = ProviderContainer(overrides: [
-        connectivityStreamProvider.overrideWith(
-          (ref) => Stream.error(Exception('Network check failed')),
+        connectivityStreamProvider.overrideWithValue(
+          AsyncValue.error(Exception('Network check failed'), StackTrace.empty),
         ),
       ]);
       addTearDown(container.dispose);
 
-      await Future.delayed(Duration.zero);
       expect(container.read(isOfflineProvider), true);
     });
 

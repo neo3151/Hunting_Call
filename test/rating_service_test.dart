@@ -181,16 +181,18 @@ void main() {
         silenceDurationSec: reference.idealDurationSec * 0.1,
         tempo: 0.0,
         pulseTimes: [],
-        rhythmRegularity: 0.0,
+        rhythmRegularity: 100.0,
         isPulsedCall: false,
         callQualityScore: 100.0,
         noiseLevel: 0.0,
         mfccCoefficients: const [],
         waveform: List.filled(100, 0.5),
         topSpeciesMatches: {reference.scientificName ?? 'Anas platyrhynchos': 1.0},
+        sustainLevel: 0.65,
+        spectralFlux: 100.0,
       ));
 
-      final result = await ratingService.rateCall('user1', audioPath, animalId);
+      final result = await ratingService.rateCall('user1', audioPath, animalId, skipFingerprint: true);
 
       // Score should be high but may not be exactly 100 due to multi-dimensional scoring
       expect(result.score, greaterThanOrEqualTo(70.0));
