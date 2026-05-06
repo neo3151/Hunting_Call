@@ -34,7 +34,7 @@ class RemoteConfigService {
       // Configure fetch interval (e.g., fetch every 1 hour, or 0 during dev)
       await _remoteConfig!.setConfigSettings(RemoteConfigSettings(
         fetchTimeout: const Duration(minutes: 1),
-        minimumFetchInterval: const Duration(seconds: 0),
+        minimumFetchInterval: const Duration(hours: 1),
       ));
 
       // Fetch and activate the latest values from Firebase
@@ -54,10 +54,8 @@ class RemoteConfigService {
   /// The Kill Switch: checks if the leaderboard feature is currently enabled
   bool get isLeaderboardEnabled => _remoteConfig?.getBool('is_leaderboard_enabled') ?? true;
 
-  /// Dynamic AI Coach URL — update in Firebase Console when tunnel changes
-  String get aiCoachUrl => _remoteConfig?.getString('ai_coach_url').isNotEmpty == true
-      ? _remoteConfig!.getString('ai_coach_url')
-      : 'http://10.0.2.2:8000';
+  /// Dynamic AI Coach URL — set via Firebase Console (Remote Config key: ai_coach_url)
+  String get aiCoachUrl => _remoteConfig?.getString('ai_coach_url') ?? '';
 
   /// Parses the remote profanity blocklist and loads it into ProfanityFilter.
   void _loadProfanityTerms() {

@@ -228,7 +228,7 @@ final frequencyAnalyzerProvider = Provider<FrequencyAnalyzer>((ref) {
 final ratingServiceProvider = Provider<RatingService>((ref) {
   // PHASE 1: Using the new server-side scoring REST API
   return BackendRatingService(
-    baseUrl: ref.watch(remoteConfigServiceProvider).aiCoachUrl ?? 'http://10.0.2.2:8000',
+    baseUrl: ref.watch(remoteConfigServiceProvider).aiCoachUrl,
   );
 });
 
