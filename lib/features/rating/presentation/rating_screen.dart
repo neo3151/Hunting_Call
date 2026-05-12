@@ -399,10 +399,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                                   children: [
                                     _tryRender(() => OverallProficiency(score: result.score),
                                         'Proficiency'),
-                                    const SizedBox(height: 40),
-                                    _tryRender(() => AIFeedbackCard(feedback: result.feedback),
-                                        'Feedback'),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 24),
                                     _tryRender(() => PersonalityFeedbackCard(score: result.score),
                                         'Personality'),
                                     const SizedBox(height: 24),

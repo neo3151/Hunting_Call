@@ -152,7 +152,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
                     const Icon(Icons.psychology, color: Colors.black87, size: 14),
                     const SizedBox(width: 4),
                     Text(
-                      'AI COACH',
+                      'COACH BUCK',
                       style: GoogleFonts.oswald(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
