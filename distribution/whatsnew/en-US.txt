@@ -1,1 +1,1 @@
-OUTCALL v3.0.7: Production launch. Stability improvements and performance tuning.
+OUTCALL v3.0.8: Production launch. Stability improvements and performance tuning.
