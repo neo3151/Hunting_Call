@@ -1,1 +1,1 @@
-OUTCALL v3.0.9: Production launch. Stability improvements and performance tuning.
+OUTCALL v3.1.0: Full production launch on Google Play Store.
