@@ -1,1 +1,1 @@
-OUTCALL v3.0.4: Production Launch. Final stabilization of CI pipeline and API compatibility.
+OUTCALL v3.0.5: Production launch. Hardened CI pipeline, stabilized billing UI, and API compatibility across all Flutter versions.
