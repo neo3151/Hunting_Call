@@ -319,7 +319,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                               Container(
                                 padding: const EdgeInsets.all(24),
                                 decoration: BoxDecoration(
-                                  color: Colors.redAccent.withValues(alpha: 0.1),
+                                  color: Colors.redAccent.withOpacity(0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.mic_off_rounded,
@@ -459,7 +459,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.1),
+                color: AppColors.success.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.headphones_rounded, color: AppColors.success, size: 64),
@@ -539,7 +539,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       AppLogger.d('RENDER ERROR in $sectionName: $e\n$stack');
       return Container(
         padding: const EdgeInsets.all(8),
-        color: Colors.red.withValues(alpha: 0.2),
+        color: Colors.red.withOpacity(0.2),
         child: Text('Error in $sectionName: $e',
             style: const TextStyle(color: Colors.red, fontSize: 10)),
       );
@@ -566,9 +566,9 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: Colors.black.withOpacity(0.4),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+            border: Border.all(color: Colors.white.withOpacity(0.15)),
           ),
           child: Column(
             children: [
@@ -626,8 +626,8 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: isWithinTolerance
-                        ? AppColors.success.withValues(alpha: 0.15)
-                        : Colors.redAccent.withValues(alpha: 0.15),
+                        ? AppColors.success.withOpacity(0.15)
+                        : Colors.redAccent.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -674,7 +674,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 height: 6,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -687,10 +687,10 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 height: 6,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.2),
+                    color: AppColors.success.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(3),
                     border: Border.all(
-                        color: AppColors.success.withValues(alpha: 0.1), width: 0.5),
+                        color: AppColors.success.withOpacity(0.1), width: 0.5),
                   ),
                 ),
               ),
@@ -701,7 +701,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 width: 2,
                 height: 12,
                 child: Container(
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: Colors.white.withOpacity(0.4),
                 ),
               ),
 
@@ -722,7 +722,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                              color: AppColors.success.withValues(alpha: 0.5),
+                              color: AppColors.success.withOpacity(0.5),
                               blurRadius: 8,
                               spreadRadius: 2)
                         ],
@@ -766,9 +766,9 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.4),
+        color: Colors.black.withOpacity(0.4),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
       ),
       child: ExcludeSemantics(
         child: Row(
@@ -795,7 +795,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(value,

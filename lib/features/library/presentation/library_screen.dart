@@ -279,8 +279,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                       colors: [
-                        Colors.black.withValues(alpha: isLocked ? 0.85 : 0.75),
-                        Colors.black.withValues(alpha: isLocked ? 0.7 : 0.45),
+                        Colors.black.withOpacity(isLocked ? 0.85 : 0.75),
+                        Colors.black.withOpacity(isLocked ? 0.7 : 0.45),
                       ],
                     ),
                   ),
@@ -288,7 +288,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
                 // Playing/selected highlight overlay
                 if (isPlaying)
                   Container(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
+                    color: Theme.of(context).primaryColor.withOpacity(0.15),
                   ),
                 // Border overlay
                 Container(
@@ -300,8 +300,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
                           : isPlaying
                               ? Theme.of(context)
                                   .primaryColor
-                                  .withValues(alpha: 0.5)
-                              : Colors.white.withValues(alpha: 0.1),
+                                  .withOpacity(0.5)
+                              : Colors.white.withOpacity(0.1),
                     ),
                   ),
                 ),
@@ -414,9 +414,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with RouteAware {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: Border.all(color: color.withOpacity(0.4)),
       ),
       child: Text(
         difficulty.toUpperCase(),

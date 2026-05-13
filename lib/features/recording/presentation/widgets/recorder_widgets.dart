@@ -59,7 +59,7 @@ class RecorderVisualizerSection extends ConsumerWidget {
                       referencePattern: vizSettings.showReferenceOverlay ? selectedCall.waveform : null,
                       referenceSpectrogram: vizSettings.showReferenceOverlay ? selectedCall.spectrogram : null,
                       mode: vizSettings.mode,
-                      color: (isRecording || isCountingDown) ? Colors.tealAccent : Colors.teal.withValues(alpha: 0.5),
+                      color: (isRecording || isCountingDown) ? Colors.tealAccent : Colors.teal.withOpacity(0.5),
                       isRecording: isRecording || isCountingDown,
                       referenceAvgAmplitude: computeRefAvg(selectedCall.waveform),
                       referenceDurationSec: selectedCall.idealDurationSec,
@@ -177,7 +177,7 @@ class RecorderMicButton extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
+                  color: Theme.of(context).primaryColor.withOpacity(0.15),
                   width: 2,
                 ),
               ),
@@ -192,7 +192,7 @@ class RecorderMicButton extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Theme.of(context).primaryColor.withValues(alpha: 0.25),
+                  color: Theme.of(context).primaryColor.withOpacity(0.25),
                   width: 2,
                 ),
               ),
@@ -206,7 +206,7 @@ class RecorderMicButton extends StatelessWidget {
                 height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.red.withValues(alpha: 0.3), width: 4),
+                  border: Border.all(color: Colors.red.withOpacity(0.3), width: 4),
                 ),
               ),
             ),
@@ -216,7 +216,7 @@ class RecorderMicButton extends StatelessWidget {
               height: 150,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 3),
+                border: Border.all(color: Colors.orange.withOpacity(0.5), width: 3),
               ),
             ),
           // The actual button
@@ -238,15 +238,15 @@ class RecorderMicButton extends StatelessWidget {
                 shape: const CircleBorder(),
                 padding: EdgeInsets.zero,
                 backgroundColor: isProcessing
-                    ? Colors.grey.withValues(alpha: 0.8)
+                    ? Colors.grey.withOpacity(0.8)
                     : isRecording
-                        ? Colors.red.withValues(alpha: 0.8)
+                        ? Colors.red.withOpacity(0.8)
                         : isCountingDown
-                            ? Colors.orange.withValues(alpha: 0.8)
+                            ? Colors.orange.withOpacity(0.8)
                             : Theme.of(context).primaryColor,
                 elevation: 8,
-                shadowColor: (isProcessing ? Colors.grey : isRecording ? Colors.red : Theme.of(context).primaryColor).withValues(alpha: 0.4),
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                shadowColor: (isProcessing ? Colors.grey : isRecording ? Colors.red : Theme.of(context).primaryColor).withOpacity(0.4),
+                side: BorderSide(color: Colors.white.withOpacity(0.2), width: 2),
               ),
               child: isProcessing
                   ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
@@ -279,9 +279,9 @@ class RecordingTimerBadge extends StatelessWidget {
       child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.2),
+        color: Colors.red.withOpacity(0.2),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.red.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

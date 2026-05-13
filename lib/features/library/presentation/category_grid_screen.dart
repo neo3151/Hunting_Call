@@ -175,8 +175,8 @@ class CategoryGridScreen extends ConsumerWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      item.gradientColors[0].withValues(alpha: 0.85),
-                      item.gradientColors[1].withValues(alpha: 0.7),
+                      item.gradientColors[0].withOpacity(0.85),
+                      item.gradientColors[1].withOpacity(0.7),
                     ],
                   ),
                 ),
@@ -195,7 +195,7 @@ class CategoryGridScreen extends ConsumerWidget {
                   children: [
                     Icon(
                       item.icon,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white.withOpacity(0.7),
                       size: 28,
                     ),
                     const Spacer(),
@@ -230,7 +230,7 @@ class CategoryGridScreen extends ConsumerWidget {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        Colors.white.withValues(alpha: 0.08),
+                        Colors.white.withOpacity(0.08),
                         Colors.transparent,
                       ],
                     ),
@@ -270,8 +270,8 @@ class CategoryGridScreen extends ConsumerWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      gradientColors[0].withValues(alpha: 0.9),
-                      gradientColors[1].withValues(alpha: 0.8),
+                      gradientColors[0].withOpacity(0.9),
+                      gradientColors[1].withOpacity(0.8),
                     ],
                   ),
                 ),
@@ -283,7 +283,7 @@ class CategoryGridScreen extends ConsumerWidget {
                 child: Icon(
                   icon,
                   size: 80,
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: Colors.white.withOpacity(0.08),
                 ),
               ),
               // ─── Content ──────────────────────────
@@ -293,7 +293,7 @@ class CategoryGridScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 28),
+                    Icon(icon, color: Colors.white.withOpacity(0.8), size: 28),
                     const Spacer(),
                     Text(
                       label.toUpperCase(),

@@ -296,7 +296,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                                    side: BorderSide(color: Colors.white.withOpacity(0.3)),
                                     padding: const EdgeInsets.symmetric(vertical: 18),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
@@ -318,7 +318,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                                    side: BorderSide(color: Colors.white.withOpacity(0.3)),
                                     padding: const EdgeInsets.symmetric(vertical: 18),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
@@ -328,12 +328,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               const SizedBox(height: 16),
                                 Row(
                                   children: [
-                                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.2))),
+                                    Expanded(child: Divider(color: Colors.white.withOpacity(0.2))),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 16),
                                       child: Text('OR', style: GoogleFonts.lato(color: Colors.white38, fontSize: 12)),
                                     ),
-                                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.2))),
+                                    Expanded(child: Divider(color: Colors.white.withOpacity(0.2))),
                                   ],
                                 ),
                               
@@ -489,7 +489,7 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
               helperText: 'At least $_minNameLength characters',
               helperStyle: const TextStyle(color: Colors.white54),
               counterStyle: const TextStyle(color: Colors.white54),
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))),
               focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
               errorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
               focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
@@ -506,7 +506,7 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
               decoration: InputDecoration(
                 labelText: 'Birthday',
                 labelStyle: const TextStyle(color: Colors.white70),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))),
                 errorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
                 border: const OutlineInputBorder(),
                 suffixIcon: const Icon(Icons.calendar_today, color: Colors.greenAccent),
@@ -642,7 +642,7 @@ class _LoginSheetState extends State<_LoginSheet> {
             decoration: InputDecoration(
               labelText: 'Email Address',
               labelStyle: const TextStyle(color: Colors.white54),
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))),
               focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
             ),
           ),
@@ -655,7 +655,7 @@ class _LoginSheetState extends State<_LoginSheet> {
             decoration: InputDecoration(
               labelText: 'Password',
               labelStyle: const TextStyle(color: Colors.white54),
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))),
               focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
             ),
           ),
@@ -780,14 +780,14 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
               labelStyle: GoogleFonts.lato(color: Colors.white54, fontSize: 14),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15))
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.15))
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2)
               ),
               filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.05),
+              fillColor: Colors.white.withOpacity(0.05),
               prefixIcon: const Icon(Icons.email_outlined, color: Colors.white54),
             ),
           ),

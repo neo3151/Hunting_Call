@@ -279,16 +279,16 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: isLocked
-                      ? Colors.black.withValues(alpha: 0.2)
+                      ? Colors.black.withOpacity(0.2)
                       : isPlaying
-                          ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
+                          ? Theme.of(context).primaryColor.withOpacity(0.2)
                           : palette.cardOverlay,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isLocked
                         ? palette.cardOverlay
                         : isPlaying
-                            ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
+                            ? Theme.of(context).primaryColor.withOpacity(0.5)
                             : palette.border,
                   ),
                 ),
@@ -405,9 +405,9 @@ class _AnimalCallsScreenState extends ConsumerState<AnimalCallsScreen> with Rout
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: Border.all(color: color.withOpacity(0.4)),
       ),
       child: Text(
         difficulty.toUpperCase(),

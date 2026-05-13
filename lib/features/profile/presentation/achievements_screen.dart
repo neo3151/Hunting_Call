@@ -146,7 +146,7 @@ class AchievementsScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: palette.surfaceLight,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.success.withOpacity(0.2)),
       ),
       child: Row(
         children: [
@@ -284,12 +284,12 @@ class AchievementsScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: isEarned
-                ? categoryColor.withValues(alpha: 0.08)
+                ? categoryColor.withOpacity(0.08)
                 : palette.surfaceLight,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isEarned
-                  ? categoryColor.withValues(alpha: 0.3)
+                  ? categoryColor.withOpacity(0.3)
                   : palette.border,
             ),
           ),
@@ -301,8 +301,8 @@ class AchievementsScreen extends ConsumerWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   color: isEarned
-                      ? categoryColor.withValues(alpha: 0.15)
-                      : palette.border.withValues(alpha: 0.5),
+                      ? categoryColor.withOpacity(0.15)
+                      : palette.border.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -339,7 +339,7 @@ class AchievementsScreen extends ConsumerWidget {
                         fontSize: 11,
                         color: isEarned
                             ? palette.textSecondary
-                            : palette.textSubtle.withValues(alpha: 0.6),
+                            : palette.textSubtle.withOpacity(0.6),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -351,7 +351,7 @@ class AchievementsScreen extends ConsumerWidget {
               if (isEarned)
                 Icon(Icons.check_circle, color: categoryColor, size: 22)
               else
-                Icon(Icons.lock_outline, color: palette.textSubtle.withValues(alpha: 0.4), size: 20),
+                Icon(Icons.lock_outline, color: palette.textSubtle.withOpacity(0.4), size: 20),
             ],
           ),
         ),

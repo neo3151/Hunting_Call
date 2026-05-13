@@ -31,7 +31,7 @@ class WorldMapPainter extends CustomPainter {
   void _drawBackground(Canvas canvas, Size size) {
     final bgPaint = Paint()
       ..shader = LinearGradient(
-        colors: [world.bgColorTop, world.bgColorBot, world.bgColorTop.withValues(alpha: 0.8)],
+        colors: [world.bgColorTop, world.bgColorBot, world.bgColorTop.withOpacity(0.8)],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         stops: const [0.0, 0.6, 1.0],
@@ -39,7 +39,7 @@ class WorldMapPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
     final gridPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.015)
+      ..color = Colors.white.withOpacity(0.015)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.5;
 
@@ -54,7 +54,7 @@ class WorldMapPainter extends CustomPainter {
       ..shader = RadialGradient(
         colors: [
           Colors.transparent,
-          Colors.black.withValues(alpha: 0.4),
+          Colors.black.withOpacity(0.4),
         ],
         stops: const [0.5, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -96,7 +96,7 @@ class WorldMapPainter extends CustomPainter {
       if (tooClose) continue;
 
       paint.color = world.groundColors[rng.nextInt(world.groundColors.length)]
-          .withValues(alpha: 0.08 + rng.nextDouble() * 0.12);
+          .withOpacity(0.08 + rng.nextDouble() * 0.12);
 
       final w = 30.0 + rng.nextDouble() * 60;
       final h = 20.0 + rng.nextDouble() * 40;
@@ -145,12 +145,12 @@ class WorldMapPainter extends CustomPainter {
           width: treeHeight * 0.8,
           height: treeHeight * 0.2,
         ),
-        Paint()..color = Colors.black.withValues(alpha: 0.15),
+        Paint()..color = Colors.black.withOpacity(0.15),
       );
 
       // Trunk
       final trunkPaint = Paint()
-        ..color = const Color(0xFF4E342E).withValues(alpha: alpha + 0.1);
+        ..color = const Color(0xFF4E342E).withOpacity(alpha + 0.1);
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromCenter(
@@ -168,7 +168,7 @@ class WorldMapPainter extends CustomPainter {
         final layerOffset = layer * treeHeight * 0.22;
         final layerWidth = treeHeight * (0.7 - layer * 0.08);
         final treePaint = Paint()
-          ..color = treeColor.withValues(alpha: alpha - layer * 0.05);
+          ..color = treeColor.withOpacity(alpha - layer * 0.05);
 
         final path = Path()
           ..moveTo(tx, ty - treeHeight * 0.6 + layerOffset)
@@ -188,7 +188,7 @@ class WorldMapPainter extends CustomPainter {
 
       final bushSize = 6.0 + rng.nextDouble() * 10;
       final bushColor = world.treeColors[rng.nextInt(world.treeColors.length)];
-      final paint = Paint()..color = bushColor.withValues(alpha: 0.2 + rng.nextDouble() * 0.2);
+      final paint = Paint()..color = bushColor.withOpacity(0.2 + rng.nextDouble() * 0.2);
 
       canvas.drawCircle(Offset(bx - bushSize * 0.3, by), bushSize * 0.5, paint);
       canvas.drawCircle(Offset(bx + bushSize * 0.3, by), bushSize * 0.5, paint);
@@ -206,17 +206,17 @@ class WorldMapPainter extends CustomPainter {
 
       canvas.drawOval(
         Rect.fromCenter(center: Offset(rx + 1, ry + 2), width: rockSize * 1.6, height: rockSize * 0.7),
-        Paint()..color = Colors.black.withValues(alpha: 0.1),
+        Paint()..color = Colors.black.withOpacity(0.1),
       );
 
       canvas.drawOval(
         Rect.fromCenter(center: Offset(rx, ry), width: rockSize * 1.4, height: rockSize * 0.9),
-        Paint()..color = Colors.grey.shade800.withValues(alpha: 0.25),
+        Paint()..color = Colors.grey.shade800.withOpacity(0.25),
       );
 
       canvas.drawOval(
         Rect.fromCenter(center: Offset(rx - 1, ry - 1), width: rockSize * 0.8, height: rockSize * 0.5),
-        Paint()..color = Colors.grey.shade600.withValues(alpha: 0.12),
+        Paint()..color = Colors.grey.shade600.withOpacity(0.12),
       );
     }
   }
@@ -265,7 +265,7 @@ class WorldMapPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = Colors.black.withValues(alpha: 0.3)
+        ..color = Colors.black.withOpacity(0.3)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 22
         ..strokeCap = StrokeCap.round
@@ -288,7 +288,7 @@ class WorldMapPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = world.pathColor.withValues(alpha: 0.85)
+        ..color = world.pathColor.withOpacity(0.85)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 14
         ..strokeCap = StrokeCap.round
@@ -299,7 +299,7 @@ class WorldMapPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = world.pathColor.withValues(alpha: 0.4)
+        ..color = world.pathColor.withOpacity(0.4)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 6
         ..strokeCap = StrokeCap.round
@@ -309,7 +309,7 @@ class WorldMapPainter extends CustomPainter {
 
   void _drawPathDots(Canvas canvas, Path path) {
     final dotPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.12)
+      ..color = Colors.white.withOpacity(0.12)
       ..style = PaintingStyle.fill;
 
     final pathMetrics = path.computeMetrics();
@@ -338,7 +338,7 @@ class WorldMapPainter extends CustomPainter {
         canvas.drawPath(
           segPath,
           Paint()
-            ..color = const Color(0xFF4CAF50).withValues(alpha: 0.3)
+            ..color = const Color(0xFF4CAF50).withOpacity(0.3)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 14
             ..strokeCap = StrokeCap.round
@@ -365,7 +365,7 @@ class WorldMapPainter extends CustomPainter {
       final alpha = sin(t * pi) * 0.4;
       if (alpha <= 0) continue;
 
-      paint.color = world.accentColor.withValues(alpha: alpha.clamp(0.0, 0.35));
+      paint.color = world.accentColor.withOpacity(alpha.clamp(0.0, 0.35));
       canvas.drawCircle(
         Offset(baseX + driftX, (baseY + driftY) % size.height),
         1 + sin(t * pi) * 1.5,

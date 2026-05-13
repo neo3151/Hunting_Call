@@ -81,7 +81,7 @@ class ThemeNotifier extends Notifier<AppTheme> {
           return const Color(0xFFBBBBBB);
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) return seedColor.withValues(alpha: 0.3);
+          if (states.contains(WidgetState.selected)) return seedColor.withOpacity(0.3);
           return const Color(0xFFE0E0E0);
         }),
       ),
@@ -147,7 +147,7 @@ class ThemeNotifier extends Notifier<AppTheme> {
           return Colors.white54;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) return seedColor.withValues(alpha: 0.3);
+          if (states.contains(WidgetState.selected)) return seedColor.withOpacity(0.3);
           return Colors.white12;
         }),
       ),

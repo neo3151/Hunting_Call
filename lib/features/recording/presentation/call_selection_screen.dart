@@ -90,7 +90,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.of(context).border,
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                      border: Border.all(color: Colors.white.withOpacity(0.15)),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Column(
@@ -100,7 +100,7 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                            color: Theme.of(context).primaryColor.withOpacity(0.2),
                           ),
                           child: Icon(
                             _getCategoryIcon(category), 
@@ -233,9 +233,9 @@ class _CallSelectionScreenState extends ConsumerState<CallSelectionScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Text(
         difficulty.toUpperCase(),

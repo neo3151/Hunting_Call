@@ -35,7 +35,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 onSelectionChanged: (set) => setState(() => _currentIndex = set.first),
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.selected)) return AppColors.success.withValues(alpha: 0.3);
+                    if (states.contains(WidgetState.selected)) return AppColors.success.withOpacity(0.3);
                     return Colors.black54;
                   }),
                   foregroundColor: WidgetStateProperty.all(Colors.white),
@@ -112,7 +112,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: isClosed ? Colors.white12 : AppColors.success.withValues(alpha: 0.5)),
+        side: BorderSide(color: isClosed ? Colors.white12 : AppColors.success.withOpacity(0.5)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -131,7 +131,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isClosed ? Colors.grey.withValues(alpha: 0.2) : AppColors.success.withValues(alpha: 0.2),
+                    color: isClosed ? Colors.grey.withOpacity(0.2) : AppColors.success.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(

@@ -105,12 +105,12 @@ class ScoreShareCard extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: _tierColor.withValues(alpha: 0.4),
+            color: _tierColor.withOpacity(0.4),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: _tierColor.withValues(alpha: 0.15),
+              color: _tierColor.withOpacity(0.15),
               blurRadius: 30,
               spreadRadius: 2,
             ),
@@ -135,9 +135,9 @@ class ScoreShareCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _tierColor.withValues(alpha: 0.15),
+                    color: _tierColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(50),
-                    border: Border.all(color: _tierColor.withValues(alpha: 0.4)),
+                    border: Border.all(color: _tierColor.withOpacity(0.4)),
                   ),
                   child: Text(
                     _tierLabel,
@@ -158,7 +158,7 @@ class ScoreShareCard extends StatelessWidget {
               shaderCallback: (bounds) => LinearGradient(
                 colors: [
                   _tierColor,
-                  _tierColor.withValues(alpha: 0.7),
+                  _tierColor.withOpacity(0.7),
                   _tierColor,
                 ],
                 begin: Alignment.topLeft,
@@ -192,7 +192,7 @@ class ScoreShareCard extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     Colors.transparent,
-                    _tierColor.withValues(alpha: 0.4),
+                    _tierColor.withOpacity(0.4),
                     Colors.transparent,
                   ],
                 ),
@@ -240,7 +240,7 @@ class ScoreShareCard extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      Colors.white.withValues(alpha: 0.1),
+                      Colors.white.withOpacity(0.1),
                       Colors.transparent,
                     ],
                   ),
@@ -267,7 +267,7 @@ class ScoreShareCard extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      Colors.white.withValues(alpha: 0.1),
+                      Colors.white.withOpacity(0.1),
                       Colors.transparent,
                     ],
                   ),
@@ -293,7 +293,7 @@ class ScoreShareCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.graphic_eq, size: 14, color: AppColors.accentGold.withValues(alpha: 0.5)),
+                Icon(Icons.graphic_eq, size: 14, color: AppColors.accentGold.withOpacity(0.5)),
                 const SizedBox(width: 6),
                 Text(
                   'hunting-call-perfection.web.app',
@@ -350,7 +350,7 @@ class ScoreShareCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(2),
             child: LinearProgressIndicator(
               value: value / 100,
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              backgroundColor: Colors.white.withOpacity(0.1),
               color: color,
               minHeight: 3,
             ),

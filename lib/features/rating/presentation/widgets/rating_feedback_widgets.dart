@@ -53,7 +53,7 @@ class OverallProficiency extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: tierColor.withValues(alpha: 0.15 * (animatedScore / 100)),
+                          color: tierColor.withOpacity(0.15 * (animatedScore / 100)),
                           blurRadius: 30,
                           spreadRadius: 5,
                         ),
@@ -67,7 +67,7 @@ class OverallProficiency extends StatelessWidget {
                       value: animatedScore / 100,
                       strokeWidth: 10,
                       color: tierColor,
-                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                      backgroundColor: Colors.white.withOpacity(0.1),
                     ),
                   ),
                   Text(
@@ -111,9 +111,9 @@ class AIFeedbackCard extends StatelessWidget {
       child: Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.4),
+        color: Colors.black.withOpacity(0.4),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
       ),
       child: Column(
         children: [
@@ -126,7 +126,7 @@ class AIFeedbackCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text(feedback, textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 14, color: Colors.white.withValues(alpha: 0.9), height: 1.5)),
+          Text(feedback, textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 14, color: Colors.white.withOpacity(0.9), height: 1.5)),
         ],
       ),
       ),
@@ -174,10 +174,10 @@ class PersonalityFeedbackCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
+                color: Colors.black.withOpacity(0.6),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: borderColor.withValues(alpha: 0.5), width: 2),
-                boxShadow: [BoxShadow(color: borderColor.withValues(alpha: 0.2 * scale), blurRadius: 15, spreadRadius: 2)],
+                border: Border.all(color: borderColor.withOpacity(0.5), width: 2),
+                boxShadow: [BoxShadow(color: borderColor.withOpacity(0.2 * scale), blurRadius: 15, spreadRadius: 2)],
               ),
               child: Column(
                 children: [
@@ -190,7 +190,7 @@ class PersonalityFeedbackCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(personalityMessage, textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 14, color: Colors.white.withValues(alpha: 0.95), height: 1.5, fontWeight: FontWeight.w500)),
+                  Text(personalityMessage, textAlign: TextAlign.center, style: GoogleFonts.lato(fontSize: 14, color: Colors.white.withOpacity(0.95), height: 1.5, fontWeight: FontWeight.w500)),
                 ],
               ),
             ),
@@ -249,9 +249,9 @@ class ProBreakdown extends StatelessWidget {
       width: (MediaQuery.of(context).size.width - 60) / 4,
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Column(
         children: [
@@ -316,9 +316,9 @@ class PrimaryFlawCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.redAccent.withValues(alpha: 0.1),
+        color: Colors.redAccent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
       ),
       child: Row(
         children: [

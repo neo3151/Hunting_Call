@@ -71,7 +71,7 @@ class RatingActionButtons extends ConsumerWidget {
                 label: Text(S.of(context).saveShareRecording, style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                  side: BorderSide(color: Colors.white.withOpacity(0.3)),
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -146,7 +146,7 @@ class RatingActionButtons extends ConsumerWidget {
           label: Text(S.of(context).viewGlobalRankings, style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.white,
-            side: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
+            side: BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.5)),
             padding: const EdgeInsets.symmetric(vertical: 20),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -162,7 +162,7 @@ class RatingActionButtons extends ConsumerWidget {
         label: Text(S.of(context).globalRankingsLocked, style: GoogleFonts.oswald(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.white38,
-          side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          side: BorderSide(color: Colors.white.withOpacity(0.1)),
           padding: const EdgeInsets.symmetric(vertical: 20),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -385,7 +385,7 @@ class _ReportIssueBottomSheetState extends State<_ReportIssueBottomSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
       ),
       padding: EdgeInsets.only(
         left: 24,
@@ -428,7 +428,7 @@ class _ReportIssueBottomSheetState extends State<_ReportIssueBottomSheet> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.orangeAccent.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
+                    color: isSelected ? Colors.orangeAccent.withOpacity(0.1) : Colors.white.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected ? Colors.orangeAccent : Colors.transparent,
@@ -476,14 +476,14 @@ class _ReportIssueBottomSheetState extends State<_ReportIssueBottomSheet> {
                           : 'Additional details (optional)',
                       hintStyle: GoogleFonts.lato(color: Colors.white38),
                       filled: true,
-                      fillColor: Colors.black.withValues(alpha: 0.3),
+                      fillColor: Colors.black.withOpacity(0.3),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.5)),
+                        borderSide: BorderSide(color: Colors.orangeAccent.withOpacity(0.5)),
                       ),
                       contentPadding: const EdgeInsets.all(16),
                     ),

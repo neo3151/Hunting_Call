@@ -87,13 +87,13 @@ class GlobalLeaderboardScreen extends ConsumerWidget {
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
                             color: isTop3
-                                ? _podiumColor(rank).withValues(alpha: 0.1)
+                                ? _podiumColor(rank).withOpacity(0.1)
                                 : colors.cardOverlay,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: isTop3
-                                  ? _podiumColor(rank).withValues(alpha: 0.3)
-                                  : colors.border.withValues(alpha: 0.2),
+                                  ? _podiumColor(rank).withOpacity(0.3)
+                                  : colors.border.withOpacity(0.2),
                             ),
                           ),
                           child: ListTile(

@@ -218,8 +218,8 @@ class AnimalGridScreen extends ConsumerWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      gradientColors[0].withValues(alpha: 0.5),
-                      gradientColors[1].withValues(alpha: 0.9),
+                      gradientColors[0].withOpacity(0.5),
+                      gradientColors[1].withOpacity(0.9),
                     ],
                   ),
                 ),
@@ -266,7 +266,7 @@ class AnimalGridScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
+                        color: Colors.white.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -292,7 +292,7 @@ class AnimalGridScreen extends ConsumerWidget {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        Colors.white.withValues(alpha: 0.1),
+                        Colors.white.withOpacity(0.1),
                         Colors.transparent,
                       ],
                     ),

@@ -91,7 +91,7 @@ class _PlaybackReviewSheetState extends State<_PlaybackReviewSheet> {
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: primary.withValues(alpha: 0.3), width: 2)),
+        border: Border(top: BorderSide(color: primary.withOpacity(0.3), width: 2)),
       ),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: SafeArea(
@@ -143,7 +143,7 @@ class _PlaybackReviewSheetState extends State<_PlaybackReviewSheet> {
                       color: primary,
                       shape: BoxShape.circle,
                       boxShadow: [
-                        BoxShadow(color: primary.withValues(alpha: 0.3), blurRadius: 12, spreadRadius: 2),
+                        BoxShadow(color: primary.withOpacity(0.3), blurRadius: 12, spreadRadius: 2),
                       ],
                     ),
                     child: Icon(

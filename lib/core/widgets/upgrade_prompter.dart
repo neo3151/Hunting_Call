@@ -18,7 +18,7 @@ class UpgradePrompter {
               border: Border.all(color: const Color(0xFFFFD700), width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                  color: const Color(0xFFFFD700).withOpacity(0.2),
                   blurRadius: 20,
                   spreadRadius: 5,
                 )

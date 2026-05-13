@@ -486,7 +486,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     decoration: BoxDecoration(
                                       color: currentMode == RecordingMode.quickMatch
-                                          ? AppColors.success.withValues(alpha: 0.2)
+                                          ? AppColors.success.withOpacity(0.2)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -527,7 +527,7 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     decoration: BoxDecoration(
                                       color: currentMode == RecordingMode.expert
-                                          ? AppColors.accentGold.withValues(alpha: 0.2)
+                                          ? AppColors.accentGold.withOpacity(0.2)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(10),
                                     ),

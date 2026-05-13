@@ -84,8 +84,8 @@ class _WindPainter extends CustomPainter {
     final conePaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          Colors.orange.withValues(alpha: 0.4),
-          Colors.orange.withValues(alpha: 0.0),
+          Colors.orange.withOpacity(0.4),
+          Colors.orange.withOpacity(0.0),
         ],
       ).createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.fill;

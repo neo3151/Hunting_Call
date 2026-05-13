@@ -121,12 +121,12 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
+          color: const Color(0xFFD4AF37).withOpacity(0.4),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFD4AF37).withValues(alpha: 0.08),
+            color: const Color(0xFFD4AF37).withOpacity(0.08),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -168,7 +168,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
                 'GEMINI',
                 style: GoogleFonts.lato(
                   fontSize: 9,
-                  color: const Color(0xFFD4AF37).withValues(alpha: 0.5),
+                  color: const Color(0xFFD4AF37).withOpacity(0.5),
                   letterSpacing: 1,
                 ),
               ),
@@ -207,7 +207,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
                 _coaching ?? '',
                 style: GoogleFonts.lato(
                   fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.85),
+                  color: Colors.white.withOpacity(0.85),
                   height: 1.6,
                 ),
               ),
@@ -228,7 +228,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
               height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: const Color(0xFFD4AF37).withValues(alpha: 0.6),
+                color: const Color(0xFFD4AF37).withOpacity(0.6),
               ),
             ),
             const SizedBox(width: 10),
@@ -251,7 +251,7 @@ class _AiCoachCardState extends ConsumerState<AiCoachCard> with SingleTickerProv
                   child: Container(
                     height: 12,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),

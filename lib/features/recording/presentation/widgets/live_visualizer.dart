@@ -124,17 +124,17 @@ class _CoachingWaveformPainter extends CustomPainter {
       // Top half zone
       canvas.drawRect(
         Rect.fromLTRB(0, zoneHighY, size.width, zoneLowY),
-        Paint()..color = _goodColor.withValues(alpha: 0.06),
+        Paint()..color = _goodColor.withOpacity(0.06),
       );
       // Bottom half zone
       canvas.drawRect(
         Rect.fromLTRB(0, zoneLowYBottom, size.width, zoneHighYBottom),
-        Paint()..color = _goodColor.withValues(alpha: 0.06),
+        Paint()..color = _goodColor.withOpacity(0.06),
       );
 
       // Zone boundary lines (subtle dashed)
       final zonePaint = Paint()
-        ..color = _goodColor.withValues(alpha: 0.15)
+        ..color = _goodColor.withOpacity(0.15)
         ..strokeWidth = 0.5;
       
       canvas.drawLine(Offset(0, zoneHighY), Offset(size.width, zoneHighY), zonePaint);
@@ -147,12 +147,12 @@ class _CoachingWaveformPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [_refColor, _refColor.withValues(alpha: 0.7)],
+        colors: [_refColor, _refColor.withOpacity(0.7)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     // Center line (dashed effect)
     final centerPaint = Paint()
-      ..color = _goodColor.withValues(alpha: isRecording ? 0.3 : 0.1)
+      ..color = _goodColor.withOpacity(isRecording ? 0.3 : 0.1)
       ..strokeWidth = 1.0;
     
     const double dashWidth = 4.0;
@@ -217,7 +217,7 @@ class _CoachingWaveformPainter extends CustomPainter {
               ),
               Paint()
                 ..style = PaintingStyle.fill
-                ..color = barColor.withValues(alpha: 0.12)
+                ..color = barColor.withOpacity(0.12)
                 ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0),
             );
           }
@@ -228,7 +228,7 @@ class _CoachingWaveformPainter extends CustomPainter {
             ..shader = LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [barColor, barColor.withValues(alpha: isRecording ? 0.5 : 0.15)],
+              colors: [barColor, barColor.withOpacity(isRecording ? 0.5 : 0.15)],
             ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
           canvas.drawRRect(
@@ -242,7 +242,7 @@ class _CoachingWaveformPainter extends CustomPainter {
             ),
             isRecording ? activePaint : (Paint()
               ..style = PaintingStyle.fill
-              ..color = Colors.white.withValues(alpha: 0.15)),
+              ..color = Colors.white.withOpacity(0.15)),
           );
         }
       }

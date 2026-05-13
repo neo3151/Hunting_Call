@@ -23,7 +23,7 @@ class SpectralCentroidGraph extends StatelessWidget {
       height: height,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.1),
+        color: Colors.black.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white10),
       ),
@@ -52,7 +52,7 @@ class _CentroidPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final glowPaint = Paint()
-      ..color = color.withValues(alpha: 0.3)
+      ..color = color.withOpacity(0.3)
       ..strokeWidth = 4.0
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
@@ -86,7 +86,7 @@ class _CentroidPainter extends CustomPainter {
     final gradient = ui.Gradient.linear(
       const Offset(0, 0),
       Offset(0, size.height),
-      [color.withValues(alpha: 0.4), color.withValues(alpha: 0.0)],
+      [color.withOpacity(0.4), color.withOpacity(0.0)],
     );
 
     canvas.drawPath(fillPath, Paint()..shader = gradient);

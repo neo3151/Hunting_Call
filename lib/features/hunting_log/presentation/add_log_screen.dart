@@ -153,7 +153,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                           decoration: BoxDecoration(
                             color: colors.cardOverlay,
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: colors.border.withValues(alpha: 0.3)),
+                            border: Border.all(color: colors.border.withOpacity(0.3)),
                           ),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(14),
@@ -166,7 +166,7 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
                                     width: 40,
                                     height: 40,
                                     decoration: BoxDecoration(
-                                      color: (_latitude != null ? Colors.green : primary).withValues(alpha: 0.15),
+                                      color: (_latitude != null ? Colors.green : primary).withOpacity(0.15),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: _isLoading
@@ -263,11 +263,11 @@ class _AddLogScreenState extends ConsumerState<AddLogScreen> {
         fillColor: colors.cardOverlay,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colors.border.withValues(alpha: 0.3)),
+          borderSide: BorderSide(color: colors.border.withOpacity(0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colors.border.withValues(alpha: 0.3)),
+          borderSide: BorderSide(color: colors.border.withOpacity(0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

@@ -43,7 +43,7 @@ class ActionCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 CircleAvatar(
-                  backgroundColor: color.withValues(alpha: 0.2),
+                  backgroundColor: color.withOpacity(0.2),
                   foregroundColor: Colors.white,
                   child: Icon(icon),
                 ),

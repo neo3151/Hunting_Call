@@ -29,7 +29,7 @@ class AudioAnalyticsDisplay extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFF1C1E23),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.3)),
+              border: Border.all(color: AppColors.accentGold.withOpacity(0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

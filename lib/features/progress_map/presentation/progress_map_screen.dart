@@ -122,8 +122,8 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            world.primaryColor.withValues(alpha: 0.95),
-            world.primaryColor.withValues(alpha: 0.6),
+            world.primaryColor.withOpacity(0.95),
+            world.primaryColor.withOpacity(0.6),
             world.bgColorTop,
           ],
           begin: Alignment.topCenter,
@@ -132,7 +132,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: world.primaryColor.withValues(alpha: 0.3),
+            color: world.primaryColor.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -200,7 +200,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                           const Shadow(color: Colors.black87, blurRadius: 6),
                           Shadow(
                               color: world.primaryColor
-                                  .withValues(alpha: 0.5),
+                                  .withOpacity(0.5),
                               blurRadius: 12),
                         ],
                       ),
@@ -215,7 +215,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                   color: Colors.black26,
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: world.accentColor.withValues(alpha: 0.4),
+                      color: world.accentColor.withOpacity(0.4),
                       width: 2),
                 ),
                 alignment: Alignment.center,
@@ -253,7 +253,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                         boxShadow: [
                           BoxShadow(
                               color: Colors.amberAccent
-                                  .withValues(alpha: 0.4),
+                                  .withOpacity(0.4),
                               blurRadius: 6),
                         ],
                       ),
@@ -285,7 +285,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
         color: Colors.black38,
         border: Border(
             bottom: BorderSide(
-                color: Colors.white.withValues(alpha: 0.06))),
+                color: Colors.white.withOpacity(0.06))),
       ),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -315,8 +315,8 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
               decoration: BoxDecoration(
                 gradient: selected
                     ? LinearGradient(colors: [
-                        w.primaryColor.withValues(alpha: 0.9),
-                        w.primaryColor.withValues(alpha: 0.6),
+                        w.primaryColor.withOpacity(0.9),
+                        w.primaryColor.withOpacity(0.6),
                       ])
                     : null,
                 color: selected
@@ -325,7 +325,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: selected
-                      ? w.accentColor.withValues(alpha: 0.6)
+                      ? w.accentColor.withOpacity(0.6)
                       : AppColors.of(context).border,
                   width: selected ? 1.5 : 1,
                 ),
@@ -333,7 +333,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                     ? [
                         BoxShadow(
                             color:
-                                w.primaryColor.withValues(alpha: 0.3),
+                                w.primaryColor.withOpacity(0.3),
                             blurRadius: 8)
                       ]
                     : null,
@@ -438,7 +438,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
               Border.all(color: AppColors.error, width: 1.5),
           boxShadow: [
             BoxShadow(
-                color: Colors.red.withValues(alpha: 0.4), blurRadius: 8),
+                color: Colors.red.withOpacity(0.4), blurRadius: 8),
             const BoxShadow(
                 color: Colors.black45,
                 blurRadius: 4,
@@ -485,7 +485,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
       borderColor = world.accentColor;
       borderWidth = 3;
     } else if (isLocked) {
-      bgColor = const Color(0xFF37474F).withValues(alpha: 0.6);
+      bgColor = const Color(0xFF37474F).withOpacity(0.6);
       borderColor = Colors.grey.shade700;
       borderWidth = 2;
     } else {
@@ -519,9 +519,9 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  bgColor.withValues(alpha: 0.9),
+                  bgColor.withOpacity(0.9),
                   bgColor,
-                  bgColor.withValues(alpha: 0.85),
+                  bgColor.withOpacity(0.85),
                 ],
                 stops: const [0.0, 0.6, 1.0],
               ),
@@ -545,7 +545,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                 if (isSelected)
                   BoxShadow(
                     color:
-                        Colors.amberAccent.withValues(alpha: 0.4),
+                        Colors.amberAccent.withOpacity(0.4),
                     blurRadius: 16,
                     spreadRadius: 2,
                   ),
@@ -570,7 +570,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                               : isLocked
                                   ? Colors.grey.shade700
                                   : Colors.white)
-                          .withValues(alpha: 0.15),
+                          .withOpacity(0.15),
                       width: 1,
                     ),
                   ),
@@ -585,7 +585,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                         '${node.index}',
                         style: GoogleFonts.pressStart2p(
                             color: Colors.white
-                                .withValues(alpha: 0.2),
+                                .withOpacity(0.2),
                             fontSize: 6),
                       ),
                     ],
@@ -659,10 +659,10 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: world.primaryColor.withValues(alpha: 0.5), width: 2),
+            color: world.primaryColor.withOpacity(0.5), width: 2),
         boxShadow: [
           BoxShadow(
-              color: world.primaryColor.withValues(alpha: 0.2),
+              color: world.primaryColor.withOpacity(0.2),
               blurRadius: 12),
           const BoxShadow(
               color: Colors.black54,
@@ -679,12 +679,12 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  world.primaryColor.withValues(alpha: 0.3),
-                  world.primaryColor.withValues(alpha: 0.1),
+                  world.primaryColor.withOpacity(0.3),
+                  world.primaryColor.withOpacity(0.1),
                 ],
               ),
               border: Border.all(
-                  color: world.primaryColor.withValues(alpha: 0.5),
+                  color: world.primaryColor.withOpacity(0.5),
                   width: 2),
             ),
             alignment: Alignment.center,
@@ -719,7 +719,7 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color:
-                            world.primaryColor.withValues(alpha: 0.3),
+                            world.primaryColor.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -790,18 +790,18 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
                 gradient: LinearGradient(
                   colors: [
                     world.primaryColor,
-                    world.primaryColor.withValues(alpha: 0.7)
+                    world.primaryColor.withOpacity(0.7)
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 border: Border.all(
-                    color: world.accentColor.withValues(alpha: 0.5),
+                    color: world.accentColor.withOpacity(0.5),
                     width: 2),
                 boxShadow: [
                   BoxShadow(
                       color: world.primaryColor
-                          .withValues(alpha: 0.4),
+                          .withOpacity(0.4),
                       blurRadius: 10),
                   const BoxShadow(
                       color: Colors.black38,
@@ -837,9 +837,9 @@ class _ProgressMapScreenState extends ConsumerState<ProgressMapScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: Border.all(color: color.withOpacity(0.4)),
       ),
       child: Text(
         difficulty.toUpperCase(),

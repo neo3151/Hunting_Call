@@ -154,7 +154,7 @@ class _MainShellState extends ConsumerState<MainShell> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
+                color: Colors.black.withOpacity(isDark ? 0.4 : 0.1),
                 blurRadius: 12,
                 offset: const Offset(0, -4),
               ),

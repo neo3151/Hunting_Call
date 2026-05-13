@@ -174,7 +174,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                       decoration: BoxDecoration(
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.accentGold.withValues(alpha: 0.15),
+                            color: AppColors.accentGold.withOpacity(0.15),
                             blurRadius: 60,
                             spreadRadius: 10,
                           ),
@@ -224,7 +224,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                     Text(
                       'Master Your Craft',
                       style: TextStyle(
-                        color: AppColors.accentGold.withValues(alpha: 0.7),
+                        color: AppColors.accentGold.withOpacity(0.7),
                         fontSize: 14,
                         fontWeight: FontWeight.w300,
                         letterSpacing: 3.0,
@@ -286,7 +286,7 @@ class _ForestParticlePainter extends CustomPainter {
       final y = size.height * (1.0 - progress);
       final opacity = math.sin(progress * math.pi) * particle.maxOpacity;
 
-      paint.color = AppColors.accentGold.withValues(alpha: opacity.clamp(0.0, 1.0));
+      paint.color = AppColors.accentGold.withOpacity(opacity.clamp(0.0, 1.0));
       canvas.drawCircle(Offset(x, y), particle.radius, paint);
     }
   }

@@ -239,7 +239,7 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
+                color: AppColors.warning.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.error_outline_rounded,
@@ -330,10 +330,10 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: color.withValues(alpha: 0.6), width: 4),
+                border: Border.all(color: color.withOpacity(0.6), width: 4),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withValues(alpha: 0.3),
+                    color: color.withOpacity(0.3),
                     blurRadius: 40,
                     spreadRadius: 10,
                   ),
@@ -405,9 +405,9 @@ class _QuickMatchScreenState extends ConsumerState<QuickMatchScreen>
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.4),
+              color: Colors.black.withOpacity(0.4),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,

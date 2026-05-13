@@ -27,9 +27,9 @@ class AnalyticsMetricCard extends StatelessWidget {
           width: 160,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +75,7 @@ class AnalyticsMetricCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: _normalizeForProgress(value, unit),
                   minHeight: 4,
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  backgroundColor: Colors.white.withOpacity(0.1),
                   color: color,
                 ),
               ),

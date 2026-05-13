@@ -150,18 +150,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ─── Private Helpers ────────────────────────────────────────────────────
 
   Stream<int> _getUnreadFeedbackStream() {
-    final email = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
-    final admins = ['benchmarkappsllc@gmail.com', 'pongownsyou@gmail.com'];
-    if (email == null || !admins.contains(email)) return Stream.value(0);
-    
-    // Combine both streams manually or just query one. We'll query bug_reports for simplicity,
-    // or both using RxDart, but a simple way in standard Flutter is to yield* or just do one.
-    // For simplicity without external packages, we'll just check bug_reports.
-    return FirebaseFirestore.instance
-        .collection('bug_reports')
-        .where('status', isEqualTo: 'open')
-        .snapshots()
-        .map((snapshot) => snapshot.docs.length);
+    // Safety check for tests or uninitialized Firebase
+    try {
+      final email = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
+      final admins = ['benchmarkappsllc@gmail.com', 'pongownsyou@gmail.com'];
+      if (email == null || !admins.contains(email)) return Stream.value(0);
+      
+      return FirebaseFirestore.instance
+          .collection('bug_reports')
+          .where('status', isEqualTo: 'open')
+          .snapshots()
+          .map((snapshot) => snapshot.docs.length);
+    } catch (_) {
+      return Stream.value(0);
+    }
   }
 
   Widget _buildErrorState(String errorMessage) {
@@ -401,7 +403,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.of(context).surface.withValues(alpha: 0.6),
+                color: AppColors.of(context).surface.withOpacity(0.6),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.of(context).border),
               ),
@@ -412,10 +414,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: iconColor.withValues(alpha: 0.15),
+                      color: iconColor.withOpacity(0.15),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: iconColor.withValues(alpha: 0.3),
+                        color: iconColor.withOpacity(0.3),
                         width: 1.5,
                       ),
                     ),

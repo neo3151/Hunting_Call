@@ -32,7 +32,7 @@ class HomeHeader extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
           decoration: BoxDecoration(
-            color: isDark ? palette.surface.withValues(alpha: 0.4) : palette.surface.withValues(alpha: 0.6),
+            color: isDark ? palette.surface.withOpacity(0.4) : palette.surface.withOpacity(0.6),
             borderRadius:
                 const BorderRadius.vertical(bottom: Radius.circular(32)),
             border: Border.all(color: palette.border),
@@ -84,9 +84,9 @@ class HomeHeader extends StatelessWidget {
     final badgeColor =
         isCloudMode ? Colors.greenAccent : Colors.amberAccent;
     final bgColor = isCloudMode
-        ? Colors.green.withValues(alpha: 0.2)
-        : Colors.amber.withValues(alpha: 0.2);
-    final borderColor = badgeColor.withValues(alpha: 0.5);
+        ? Colors.green.withOpacity(0.2)
+        : Colors.amber.withOpacity(0.2);
+    final borderColor = badgeColor.withOpacity(0.5);
     final label = isCloudMode ? 'CLOUD' : 'OFF-GRID';
     final icon = isCloudMode ? Icons.cloud_done : Icons.wifi_off;
 

@@ -45,7 +45,7 @@ class HuntingLogScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: primary.withValues(alpha: 0.2),
+                        color: primary.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: logsAsync.when(
@@ -105,7 +105,7 @@ class HuntingLogScreen extends ConsumerWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: primary.withValues(alpha: 0.15),
+              color: primary.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.history_edu, color: primary, size: 40),
@@ -142,7 +142,7 @@ class HuntingLogScreen extends ConsumerWidget {
         padding: const EdgeInsets.only(right: 24),
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.redAccent.withValues(alpha: 0.2),
+          color: Colors.redAccent.withOpacity(0.2),
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 28),
@@ -152,7 +152,7 @@ class HuntingLogScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           color: colors.cardOverlay,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: colors.border.withValues(alpha: 0.3)),
+          border: Border.all(color: colors.border.withOpacity(0.3)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -163,7 +163,7 @@ class HuntingLogScreen extends ConsumerWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: primary.withValues(alpha: 0.15),
+                  color: primary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(Icons.history_edu, color: primary, size: 22),
@@ -201,7 +201,7 @@ class HuntingLogScreen extends ConsumerWidget {
               ),
               // Location indicator
               if (log.latitude != null)
-                Icon(Icons.location_on, color: primary.withValues(alpha: 0.6), size: 18),
+                Icon(Icons.location_on, color: primary.withOpacity(0.6), size: 18),
             ],
           ),
         ),

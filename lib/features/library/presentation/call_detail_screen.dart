@@ -127,7 +127,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.transparent,
-                                palette.background.withValues(alpha: 0.8)
+                                palette.background.withOpacity(0.8)
                               ],
                             ),
                           ),
@@ -273,7 +273,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: palette.textSecondary,
                                   side:
-                                      BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.3)),
+                                      BorderSide(color: Colors.orangeAccent.withOpacity(0.3)),
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12)),
@@ -391,9 +391,9 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+        color: Theme.of(context).primaryColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
+        border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -437,9 +437,9 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: Border.all(color: color.withOpacity(0.4)),
       ),
       child: Text(
         difficulty.toUpperCase(),

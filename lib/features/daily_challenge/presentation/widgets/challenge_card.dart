@@ -35,8 +35,8 @@ class ChallengeCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withValues(alpha: 0.08),
-                Colors.white.withValues(alpha: 0.03),
+                Colors.white.withOpacity(0.08),
+                Colors.white.withOpacity(0.03),
               ],
             ),
           ),
@@ -46,10 +46,10 @@ class ChallengeCard extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.2),
+                  color: AppColors.success.withOpacity(0.2),
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: AppColors.success.withValues(alpha: 0.4)),
+                      color: AppColors.success.withOpacity(0.4)),
                 ),
                 child: Icon(
                     isComplete ? Icons.check_rounded : Icons.record_voice_over,

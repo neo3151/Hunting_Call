@@ -165,12 +165,12 @@ class _AchievementDialogState extends State<_AchievementDialog>
                     color: const Color(0xFF1A1A2E),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: AppColors.success.withValues(alpha: 0.4),
+                      color: AppColors.success.withOpacity(0.4),
                       width: 2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.success.withValues(alpha: 0.2),
+                        color: AppColors.success.withOpacity(0.2),
                         blurRadius: 30,
                         spreadRadius: 5,
                       ),
@@ -266,7 +266,7 @@ class _ConfettiPainter extends CustomPainter {
       final opacity = (1.0 - progress).clamp(0.0, 1.0);
 
       final paint = Paint()
-        ..color = p.color.withValues(alpha: opacity)
+        ..color = p.color.withOpacity(opacity)
         ..style = PaintingStyle.fill;
 
       canvas.save();

@@ -22,7 +22,7 @@ class PitchTrackGraph extends StatelessWidget {
       height: height,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.1),
+        color: Colors.black.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white10),
       ),

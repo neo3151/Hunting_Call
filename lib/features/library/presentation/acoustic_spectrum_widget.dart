@@ -19,9 +19,9 @@ class AcousticSpectrumWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,7 +120,7 @@ class AcousticSpectrumWidget extends StatelessWidget {
                     height: 12,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -130,11 +130,11 @@ class AcousticSpectrumWidget extends StatelessWidget {
                     child: Container(
                       height: 12,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [color.withValues(alpha: 0.3), color]),
+                        gradient: LinearGradient(colors: [color.withOpacity(0.3), color]),
                         borderRadius: BorderRadius.circular(6),
                         boxShadow: [
                             BoxShadow(
-                                color: color.withValues(alpha: 0.2),
+                                color: color.withOpacity(0.2),
                                 blurRadius: 8,
                                 spreadRadius: 1,
                             )

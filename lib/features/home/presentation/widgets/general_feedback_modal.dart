@@ -94,7 +94,7 @@ class _GeneralFeedbackBottomSheetState extends State<GeneralFeedbackBottomSheet>
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
       ),
       padding: EdgeInsets.only(
         left: 24,
@@ -138,9 +138,9 @@ class _GeneralFeedbackBottomSheetState extends State<GeneralFeedbackBottomSheet>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.3),
+              color: Colors.black.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -177,18 +177,18 @@ class _GeneralFeedbackBottomSheetState extends State<GeneralFeedbackBottomSheet>
               hintText: 'Please describe the issue or your idea...',
               hintStyle: GoogleFonts.lato(color: Colors.white38),
               filled: true,
-              fillColor: Colors.black.withValues(alpha: 0.3),
+              fillColor: Colors.black.withOpacity(0.3),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.success.withValues(alpha: 0.5)),
+                borderSide: BorderSide(color: AppColors.success.withOpacity(0.5)),
               ),
             ),
           ),

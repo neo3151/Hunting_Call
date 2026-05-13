@@ -231,7 +231,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                  color: AppColors.accentGold.withValues(alpha: 0.3),
+                  color: AppColors.accentGold.withOpacity(0.3),
                   blurRadius: 20,
                   spreadRadius: 2),
             ],
@@ -363,9 +363,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
             color: selected ? colors.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border:
-                selected ? Border.all(color: AppColors.accentGold.withValues(alpha: 0.5)) : null,
+                selected ? Border.all(color: AppColors.accentGold.withOpacity(0.5)) : null,
             boxShadow: selected
-                ? [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8)]
+                ? [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 8)]
                 : null,
           ),
           child: Stack(
@@ -416,7 +416,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
-                            color: AppColors.accentGold.withValues(alpha: 0.3),
+                            color: AppColors.accentGold.withOpacity(0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 2))
                       ],
@@ -468,7 +468,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                    color: AppColors.accentGold.withValues(alpha: 0.35),
+                    color: AppColors.accentGold.withOpacity(0.35),
                     blurRadius: 16,
                     offset: const Offset(0, 4))
               ],

@@ -73,7 +73,7 @@ class AttemptDetailSheet extends ConsumerWidget {
         decoration: BoxDecoration(
           color: palette.background,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: scoreColor.withValues(alpha: 0.3), width: 2)),
+          border: Border(top: BorderSide(color: scoreColor.withOpacity(0.3), width: 2)),
         ),
         child: ListView(
           controller: scrollController,
@@ -87,7 +87,7 @@ class AttemptDetailSheet extends ConsumerWidget {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: palette.textSubtle.withValues(alpha: 0.3),
+                  color: palette.textSubtle.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -145,7 +145,7 @@ class AttemptDetailSheet extends ConsumerWidget {
                 child: CircularProgressIndicator(
                   value: score / 100,
                   strokeWidth: 5,
-                  backgroundColor: scoreColor.withValues(alpha: 0.15),
+                  backgroundColor: scoreColor.withOpacity(0.15),
                   color: scoreColor,
                 ),
               ),
@@ -189,7 +189,7 @@ class AttemptDetailSheet extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: scoreColor.withValues(alpha: 0.1),
+                  color: scoreColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -301,7 +301,7 @@ class AttemptDetailSheet extends ConsumerWidget {
       decoration: BoxDecoration(
         color: palette.surfaceLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Column(
         children: [
@@ -348,7 +348,7 @@ class AttemptDetailSheet extends ConsumerWidget {
       decoration: BoxDecoration(
         color: palette.surfaceLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: pitchColor.withValues(alpha: 0.2)),
+        border: Border.all(color: pitchColor.withOpacity(0.2)),
       ),
       child: Row(
         children: [
@@ -438,7 +438,7 @@ class AttemptDetailSheet extends ConsumerWidget {
       decoration: BoxDecoration(
         color: palette.surfaceLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: trendColor.withValues(alpha: 0.2)),
+        border: Border.all(color: trendColor.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,7 +469,7 @@ class AttemptDetailSheet extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: scores.asMap().entries.map((entry) {
                 final isLast = entry.key == scores.length - 1;
-                final barColor = isLast ? trendColor : palette.textSubtle.withValues(alpha: 0.3);
+                final barColor = isLast ? trendColor : palette.textSubtle.withOpacity(0.3);
                 final height = (entry.value / 100) * 52;
 
                 return Expanded(

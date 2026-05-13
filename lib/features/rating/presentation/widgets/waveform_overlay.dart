@@ -30,12 +30,12 @@ class WaveformOverlay extends StatelessWidget {
       height: height + 160,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
+        color: Colors.black.withOpacity(0.6),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.success.withValues(alpha: 0.05),
+            color: AppColors.success.withOpacity(0.05),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -70,7 +70,7 @@ class WaveformOverlay extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -105,7 +105,7 @@ class WaveformOverlay extends StatelessWidget {
                 child: _buildPlaybackButton(
                   label: 'PLAY REF',
                   icon: isReferencePlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: Colors.white.withOpacity(0.8),
                   onPressed: onPlayReference,
                   isSelected: isReferencePlaying,
                 ),
@@ -132,10 +132,10 @@ class WaveformOverlay extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? color.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
+            color: isSelected ? color.withOpacity(0.2) : Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? color.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
+              color: isSelected ? color.withOpacity(0.5) : Colors.white.withOpacity(0.1),
               width: 1,
             ),
           ),
@@ -237,14 +237,14 @@ class _WaveformPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [refColor, refColor.withValues(alpha: 0.7)],
+        colors: [refColor, refColor.withOpacity(0.7)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     final userPaint = Paint()
       ..style = PaintingStyle.fill
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [userColor, userColor.withValues(alpha: 0.5)],
+        colors: [userColor, userColor.withOpacity(0.5)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     for (int i = 0; i < dataPoints; i++) {

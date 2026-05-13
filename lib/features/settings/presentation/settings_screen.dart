@@ -107,7 +107,7 @@ class SettingsScreen extends ConsumerWidget {
                               style: ButtonStyle(
                                 backgroundColor: WidgetStateProperty.resolveWith((states) {
                                   if (states.contains(WidgetState.selected)) {
-                                    return Theme.of(context).primaryColor.withValues(alpha: 0.3);
+                                    return Theme.of(context).primaryColor.withOpacity(0.3);
                                   }
                                   return colors.cardOverlay;
                                 }),
@@ -151,7 +151,7 @@ class SettingsScreen extends ConsumerWidget {
                                   if (states
                                       .contains(WidgetState.selected)) {
                                     return Theme.of(context).primaryColor
-                                        .withValues(alpha: 0.3);
+                                        .withOpacity(0.3);
                                   }
                                   return colors.cardOverlay;
                                 }),
@@ -207,7 +207,7 @@ class SettingsScreen extends ConsumerWidget {
                                   if (states
                                       .contains(WidgetState.selected)) {
                                     return Theme.of(context).primaryColor
-                                        .withValues(alpha: 0.3);
+                                        .withOpacity(0.3);
                                   }
                                   return colors.cardOverlay;
                                 }),
@@ -290,7 +290,7 @@ class SettingsScreen extends ConsumerWidget {
                               style: ButtonStyle(
                                 backgroundColor: WidgetStateProperty.resolveWith((states) {
                                   if (states.contains(WidgetState.selected)) {
-                                    return Theme.of(context).primaryColor.withValues(alpha: 0.3);
+                                    return Theme.of(context).primaryColor.withOpacity(0.3);
                                   }
                                   return colors.cardOverlay;
                                 }),

@@ -41,7 +41,7 @@ class DailyChallengeCard extends StatelessWidget {
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                   colors: [
-                    Colors.black.withValues(alpha: 0.8),
+                    Colors.black.withOpacity(0.8),
                     Colors.transparent,
                   ],
                 ),
@@ -106,7 +106,7 @@ class DailyChallengeCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withOpacity(0.2),
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white30),
                       ),

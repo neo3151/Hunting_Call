@@ -191,7 +191,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           color: palette.surfaceLight,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
+          border: Border.all(color: color.withOpacity(0.2)),
         ),
         child: Column(
           children: [
@@ -263,7 +263,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: palette.surfaceLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.orangeAccent.withOpacity(0.2)),
       ),
       child: Row(
         children: [
@@ -359,7 +359,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: scoreColor.withValues(alpha: 0.15),
+                    color: scoreColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -455,7 +455,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: tierColor.withValues(alpha: 0.15),
+                    color: tierColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
@@ -538,7 +538,7 @@ class HistoryDashboardScreen extends ConsumerWidget {
                         height: 4,
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                            color: palette.textSubtle.withValues(alpha: 0.3),
+                            color: palette.textSubtle.withOpacity(0.3),
                             borderRadius: BorderRadius.circular(2)),
                       ),
                     ),
@@ -599,7 +599,7 @@ class _ScoreTrendPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [lineColor.withValues(alpha: 0.3), lineColor.withValues(alpha: 0.0)],
+        colors: [lineColor.withOpacity(0.3), lineColor.withOpacity(0.0)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     final minScore = scores.reduce((a, b) => a < b ? a : b) - 5;
