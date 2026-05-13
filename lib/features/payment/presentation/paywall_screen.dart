@@ -37,7 +37,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
   bool _isLoadingProducts = true;
 
   static const _staticPlans = [
-    _PlanOption(id: 'outcall_premium_yearly', title: 'Yearly', price: '\$25.00', period: '/yr'),
+    _PlanOption(id: 'outcall_premium_monthly', title: 'Monthly', price: '\$4.99', period: '/mo'),
+    _PlanOption(id: 'outcall_premium_yearly', title: 'Yearly', price: '\$29.99', period: '/yr'),
   ];
 
   String _selectedProductId = 'outcall_premium_yearly';
@@ -89,16 +90,22 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
 
   List<_PlanOption> get _plans {
     if (_storeProducts.isNotEmpty) {
-      // Only show yearly plan
-      final yearlyProducts = _storeProducts.where((p) => p.id.contains('yearly')).toList();
-      final products = yearlyProducts.isNotEmpty ? yearlyProducts : _storeProducts;
-      return products.map((p) {
+      // Sort products to ensure Monthly then Yearly order
+      final sortedProducts = List<ProductDetails>.from(_storeProducts);
+      sortedProducts.sort((a, b) {
+        if (a.id.contains('monthly') && b.id.contains('yearly')) return -1;
+        if (a.id.contains('yearly') && b.id.contains('monthly')) return 1;
+        return 0;
+      });
+
+      return sortedProducts.map((p) {
         final cleanPrice = _stripBillingPeriod(p.price);
+        final isMonthly = p.id.contains('monthly');
         return _PlanOption(
           id: p.id,
-          title: 'Yearly',
+          title: isMonthly ? 'Monthly' : 'Yearly',
           price: cleanPrice,
-          period: '/yr',
+          period: isMonthly ? '/mo' : '/yr',
         );
       }).toList();
     }
@@ -109,12 +116,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
   /// e.g., "$24.99/30 min" → "$24.99", "$14.99 / year" → "$14.99",
   /// "US$149.99 / 5 minutes" → "US$149.99"
   String _stripBillingPeriod(String price) {
-    // Strip anything after "/" or " per " that comes after a price amount
-    final slashMatch = RegExp(r'^(.*?\d[\d.,]*)\s*/.*$').firstMatch(price);
+    // Strip common sandbox and store-injected billing period suffixes.
+    // e.g., "$24.99/30 min" -> "$24.99"
+    // e.g., "$4.99 (30 minutes)" -> "$4.99"
+    // e.g., "$14.99 per year" -> "$14.99"
+    
+    // 1. Strip anything after a slash or " per "
+    final slashMatch = RegExp(r'^(.*?\d[\d.,]*)\s*(/| per | - |\(|\[).*$').firstMatch(price);
     if (slashMatch != null) return slashMatch.group(1)!.trim();
-
-    final perMatch = RegExp(r'^(.*?\d[\d.,]*)\s+per\s+.*$', caseSensitive: false).firstMatch(price);
-    if (perMatch != null) return perMatch.group(1)!.trim();
 
     return price;
   }
@@ -319,21 +328,31 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
   }
 
   Widget _buildPricingToggle(AppColorPalette colors) {
-    final plan = _plans.first;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration:
           BoxDecoration(color: colors.surfaceLight, borderRadius: BorderRadius.circular(16)),
       child: Row(
-        children: [
-          _pricingOption(plan.title, plan.price, true, colors, () {}),
-        ],
+        children: _plans.map((plan) {
+          final isSelected = _selectedProductId == plan.id;
+          final isYearly = plan.id.contains('yearly');
+          return _pricingOption(
+            plan.title,
+            plan.price,
+            plan.period,
+            isSelected,
+            colors,
+            () => setState(() => _selectedProductId = plan.id),
+            showBadge: isYearly,
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _pricingOption(
-      String title, String price, bool selected, AppColorPalette colors, VoidCallback onTap) {
+  Widget _pricingOption(String title, String price, String period, bool selected,
+      AppColorPalette colors, VoidCallback onTap,
+      {bool showBadge = false}) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -349,19 +368,72 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                 ? [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8)]
                 : null,
           ),
-          child: Column(children: [
-            Text(title,
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: selected ? colors.textPrimary : colors.textTertiary)),
-            const SizedBox(height: 2),
-            Text(price,
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: selected ? AppColors.accentGold : colors.textSubtle)),
-          ]),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Column(children: [
+                Center(
+                  child: Text(title,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: selected ? colors.textPrimary : colors.textTertiary)),
+                ),
+                const SizedBox(height: 2),
+                Center(
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: price,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: selected ? AppColors.accentGold : colors.textSubtle,
+                          ),
+                        ),
+                        TextSpan(
+                          text: period,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: colors.textTertiary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ]),
+              if (showBadge)
+                Positioned(
+                  top: -24,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentGold,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                            color: AppColors.accentGold.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2))
+                      ],
+                    ),
+                    child: const Text(
+                      'SAVE 50%',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -408,15 +480,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                     ? null
                     : () async {
                         final userId = profile?.id ?? '';
-                        if (userId.isEmpty) return;
-                        final success = await ref
-                            .read(paymentNotifierProvider.notifier)
-                            .purchasePremium(userId, packageId: _selectedProductId);
-                        if (context.mounted) {
-                          if (success) {
-                            Navigator.of(context).pop(true);
+                        if (userId.isNotEmpty) {
+                          final success = await ref
+                              .read(paymentNotifierProvider.notifier)
+                              .purchasePremium(userId, packageId: _selectedProductId);
+                          if (context.mounted) {
+                            if (success) {
+                              Navigator.of(context).pop(true);
+                            }
+                            // Error feedback is handled by the ref.listen above
                           }
-                          // Error feedback is handled by the ref.listen above
                         }
                       },
                 borderRadius: BorderRadius.circular(16),
@@ -448,10 +521,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
           ? null
           : () async {
               final userId = profile?.id ?? '';
-              if (userId.isEmpty) return;
-              final success =
-                  await ref.read(paymentNotifierProvider.notifier).restorePurchases(userId);
-              if (success && mounted) Navigator.of(context).pop(true);
+              if (userId.isNotEmpty) {
+                final success =
+                    await ref.read(paymentNotifierProvider.notifier).restorePurchases(userId);
+                if (success && mounted) Navigator.of(context).pop(true);
+              }
             },
       child: Text('Restore Purchases',
           style: TextStyle(

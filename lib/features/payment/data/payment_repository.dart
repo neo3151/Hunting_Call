@@ -12,6 +12,7 @@ import 'package:outcall/features/profile/domain/repositories/profile_repository.
 /// ─── Constants ─────────────────────────────────────────────────────────────
 const kProductIds = <String>{
   'outcall_premium_yearly',
+  'outcall_premium_monthly',
 };
 
 /// ─── Provider ──────────────────────────────────────────────────────────────

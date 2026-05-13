@@ -74,14 +74,14 @@ jobs:
       - name: Build Release AAB
         run: flutter build appbundle --release --obfuscate --split-debug-info=build/app/outputs/symbols
 
-      # Upload to Play Store alpha track
-      - name: Upload to Play Store (Alpha)
+      # Upload to Play Store production track
+      - name: Upload to Play Store (Production)
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.neo3151.huntingcalls
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: beta
+          track: production
           status: completed
           releaseName: ${{ github.ref_name }}
           whatsNewDirectory: distribution/whatsnew
