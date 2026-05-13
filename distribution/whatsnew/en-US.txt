@@ -1,1 +1,1 @@
-OUTCALL v3.0.6: Production launch. Increased build memory allocation to resolve JVM OutOfMemoryErrors during production obfuscation.
+OUTCALL v3.0.7: Production launch. Stability improvements and performance tuning.
