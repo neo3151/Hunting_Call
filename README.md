@@ -22,6 +22,23 @@
 - 👤 **Hunter Profiles**: Track your progress over time with detailed call history and statistics.
 - 🌓 **Dynamic Themes**: Seamless switching between light and dark modes for any environment.
 
+## 🏗️ Architecture Flow
+
+```mermaid
+graph TD
+    A[Mobile App - Flutter] -->|Records Audio WAV| B(Backend API)
+    B -->|Dispatches| C{Agent Swarm}
+    C -->|Pitch/Timbre| D[DSP Agent]
+    C -->|Environment| E[Wind/Impulse Agents]
+    C -->|Species Match| F[Fingerprint Agent]
+    D --> G[Math Agent Score]
+    E --> G
+    F --> G
+    G -->|Result + ML Metrics| H[Coach Buck - Gemini AI]
+    H -->|Review| I[QA Guardian Agent]
+    I -->|Approved Feedback| J[Mobile UI]
+```
+
 ## 🛠️ Built With
 
 - **Flutter & Dart**: Cross-platform magic.
