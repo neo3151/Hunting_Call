@@ -21,7 +21,14 @@
             "*.md",
             "*.txt",
             "*.png"
-        ]
+        ],
+        "rewrites": [
+            {
+                "source": "/",
+                "destination": "/company.html"
+            }
+        ],
+        "cleanUrls": true
     },
     "firestore": {
         "rules": "firestore.rules"
