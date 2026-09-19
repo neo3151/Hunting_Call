@@ -245,23 +245,52 @@ class ProBreakdown extends StatelessWidget {
 
     return Semantics(
       label: S.of(context).metricLabel(label, s.toInt()),
-      child: Container(
-      width: (MediaQuery.of(context).size.width - 60) / 4,
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(height: 8),
-          Text(label, style: GoogleFonts.oswald(fontSize: 9, color: Colors.white60, letterSpacing: 1)),
-          const SizedBox(height: 4),
-          Text('${s.toInt()}%', style: GoogleFonts.oswald(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
-        ],
-      ),
+      child: TweenAnimationBuilder<double>(
+        duration: const Duration(milliseconds: 1000),
+        curve: Curves.easeOutCubic,
+        tween: Tween(begin: 0.0, end: s),
+        builder: (context, animVal, child) {
+          return Container(
+            width: (MediaQuery.of(context).size.width - 60) / 4,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: color.withOpacity(0.25)),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.08),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 36,
+                      height: 36,
+                      child: CircularProgressIndicator(
+                        value: animVal / 100,
+                        strokeWidth: 3.5,
+                        color: color,
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                      ),
+                    ),
+                    Icon(icon, color: color, size: 16),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(label, style: GoogleFonts.oswald(fontSize: 9, color: Colors.white60, letterSpacing: 1)),
+                const SizedBox(height: 4),
+                Text('${animVal.toInt()}%', style: GoogleFonts.oswald(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

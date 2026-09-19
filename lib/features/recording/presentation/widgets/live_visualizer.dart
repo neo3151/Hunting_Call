@@ -204,21 +204,37 @@ class _CoachingWaveformPainter extends CustomPainter {
             barColor = _getCoachingColor(activeVal, zoneLow, zoneHigh);
           }
 
-          // Glow effect when recording
+          // Multi-layer dynamic glow effect when recording
           if (isRecording && activeH > 4) {
+            // Ambient outer glow halo
             canvas.drawRRect(
               RRect.fromRectAndRadius(
                 Rect.fromCenter(
                   center: Offset(barCenterX, centerY),
-                  width: barWidth * 0.8,
-                  height: activeH + 2,
+                  width: barWidth * 1.5,
+                  height: activeH + 8,
                 ),
-                Radius.circular(barWidth / 3),
+                Radius.circular(barWidth),
               ),
               Paint()
                 ..style = PaintingStyle.fill
-                ..color = barColor.withOpacity(0.12)
-                ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0),
+                ..color = barColor.withOpacity(0.20)
+                ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6.0),
+            );
+            // Core intense glow
+            canvas.drawRRect(
+              RRect.fromRectAndRadius(
+                Rect.fromCenter(
+                  center: Offset(barCenterX, centerY),
+                  width: barWidth * 0.9,
+                  height: activeH + 2,
+                ),
+                Radius.circular(barWidth / 2),
+              ),
+              Paint()
+                ..style = PaintingStyle.fill
+                ..color = barColor.withOpacity(0.35)
+                ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0),
             );
           }
 
@@ -228,21 +244,26 @@ class _CoachingWaveformPainter extends CustomPainter {
             ..shader = LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [barColor, barColor.withOpacity(isRecording ? 0.5 : 0.15)],
+              colors: [
+                barColor, 
+                barColor.withOpacity(isRecording ? 0.7 : 0.2),
+                barColor
+              ],
+              stops: const [0.0, 0.5, 1.0],
             ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
           canvas.drawRRect(
             RRect.fromRectAndRadius(
               Rect.fromCenter(
                 center: Offset(barCenterX, centerY),
-                width: barWidth * 0.65,
+                width: barWidth * 0.70,
                 height: activeH.clamp(2.0, size.height),
               ),
               Radius.circular(barWidth / 3),
             ),
             isRecording ? activePaint : (Paint()
               ..style = PaintingStyle.fill
-              ..color = Colors.white.withOpacity(0.15)),
+              ..color = Colors.white.withOpacity(0.18)),
           );
         }
       }

@@ -200,6 +200,16 @@ class CloudAudioService {
     }
   }
 
+  /// Prefetch audio for a list of reference calls concurrently (for offline field use)
+  Future<void> prefetchAllCalls(List<({String id, String assetPath})> calls) async {
+    AppLogger.d('CloudAudioService: Starting batch prefetch for ${calls.length} calls...');
+    await Future.wait(
+      calls.map((c) => prefetchAudio(c.id, c.assetPath)),
+      eagerError: false,
+    );
+    AppLogger.d('CloudAudioService: Batch prefetch finished.');
+  }
+
   /// Get total cache size in bytes
   Future<int> getCacheSize() async {
     if (_cacheDirectory == null || !await _cacheDirectory!.exists()) return 0;
