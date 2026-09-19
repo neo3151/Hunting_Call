@@ -28,6 +28,8 @@ void main() {
     when(() => mockAuthRepository.currentUser).thenAnswer((_) async => null);
     when(() => mockAuthRepository.isMock).thenReturn(true);
 
+    when(() => mockProfileRepository.watchProfile(any())).thenAnswer((_) => const Stream.empty());
+
     // Stub updateProfileDetails so the lastActiveAt stamp in loadProfile doesn't throw
     when(() => mockProfileRepository.updateProfileDetails(
           any(),

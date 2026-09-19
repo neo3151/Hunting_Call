@@ -22,12 +22,14 @@ class UserProfile {
   final int longestStreak;
   final DateTime? birthday;
   final bool isPremium; // Entitlement: Has user purchased the full app?
+  final DateTime? premiumExpiresAt;
   final bool isAlphaTester;
   final bool nameRestricted; // Locked after repeated profanity violations
   final String? referralCode; // User's unique referral code (OUTCALL-XXXX)
   final String? referredBy; // Code of the user who referred them
   final int referralCount; // How many people used their code
-  final DateTime? lastActiveAt; // Stamped each session for scrubber inactivity tracking
+  final DateTime?
+      lastActiveAt; // Stamped each session for scrubber inactivity tracking
 
   /// Personal calibration baselines per animal — stores last 5 scores.
   /// After 3+ scores, scoring uses relative improvement vs personal best.
@@ -51,6 +53,7 @@ class UserProfile {
     this.longestStreak = 0,
     this.birthday,
     this.isPremium = false,
+    this.premiumExpiresAt,
     this.isAlphaTester = false,
     this.nameRestricted = false,
     this.referralCode,
@@ -89,6 +92,7 @@ class UserProfile {
     int? longestStreak,
     DateTime? birthday,
     bool? isPremium,
+    DateTime? premiumExpiresAt,
     bool? isAlphaTester,
     bool? nameRestricted,
     String? referralCode,
@@ -109,12 +113,15 @@ class UserProfile {
       history: history ?? this.history,
       achievements: achievements ?? this.achievements,
       favoriteCallIds: favoriteCallIds ?? this.favoriteCallIds,
-      dailyChallengesCompleted: dailyChallengesCompleted ?? this.dailyChallengesCompleted,
-      lastDailyChallengeDate: lastDailyChallengeDate ?? this.lastDailyChallengeDate,
+      dailyChallengesCompleted:
+          dailyChallengesCompleted ?? this.dailyChallengesCompleted,
+      lastDailyChallengeDate:
+          lastDailyChallengeDate ?? this.lastDailyChallengeDate,
       currentStreak: currentStreak ?? this.currentStreak,
       longestStreak: longestStreak ?? this.longestStreak,
       birthday: birthday ?? this.birthday,
       isPremium: isPremium ?? this.isPremium,
+      premiumExpiresAt: premiumExpiresAt ?? this.premiumExpiresAt,
       isAlphaTester: isAlphaTester ?? this.isAlphaTester,
       nameRestricted: nameRestricted ?? this.nameRestricted,
       referralCode: referralCode ?? this.referralCode,
@@ -125,7 +132,8 @@ class UserProfile {
     );
   }
 
-  factory UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
+  factory UserProfile.fromJson(Map<String, dynamic> json) =>
+      _$UserProfileFromJson(json);
   Map<String, dynamic> toJson() => _$UserProfileToJson(this);
 }
 
@@ -141,6 +149,7 @@ class HistoryItem {
     required this.animalId,
   });
 
-  factory HistoryItem.fromJson(Map<String, dynamic> json) => _$HistoryItemFromJson(json);
+  factory HistoryItem.fromJson(Map<String, dynamic> json) =>
+      _$HistoryItemFromJson(json);
   Map<String, dynamic> toJson() => _$HistoryItemToJson(this);
 }

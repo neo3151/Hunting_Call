@@ -1,0 +1,1 @@
+Deep Brand Integration Fix: We've added explicit support for round and adaptive icons to ensure the new mountain logo displays correctly across all Android devices and launcher versions. This update also clears persistent system caches that were showing the old logo in some settings menus.

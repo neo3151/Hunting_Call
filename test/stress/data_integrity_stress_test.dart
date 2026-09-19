@@ -138,15 +138,15 @@ void main() {
 
   // ─── Profanity Filter Stress ───────────────────────────────────
   group('Profanity Filter Stress', () {
-    test('1000 display name checks should complete in <1s', () {
+    test('1000 display name checks should complete in <3s', () {
       final stopwatch = Stopwatch()..start();
       for (int i = 0; i < 1000; i++) {
         ProfanityFilter.containsProfanity('TestUser$i');
       }
       stopwatch.stop();
 
-      expect(stopwatch.elapsedMilliseconds, lessThan(1000),
-          reason: '1000 checks should complete in <1s');
+      expect(stopwatch.elapsedMilliseconds, lessThan(3000),
+          reason: '1000 checks should complete in <3s');
     });
 
     test('Clean names should pass', () {

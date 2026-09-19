@@ -9,19 +9,23 @@ import 'package:outcall/core/utils/app_logger.dart';
 /// FirebaseFirestore (Mobile/Web) and Firedart (Linux/Desktop).
 abstract class ApiGateway {
   /// Fetches a document from a specific collection and document ID.
-  Future<Map<String, dynamic>?> getDocument(String collection, String documentId);
+  Future<Map<String, dynamic>?> getDocument(
+      String collection, String documentId);
 
   /// Sets or overwrites a document.
-  Future<void> setDocument(String collection, String documentId, Map<String, dynamic> data);
+  Future<void> setDocument(
+      String collection, String documentId, Map<String, dynamic> data);
 
   /// Updates specific fields in a document.
-  Future<void> updateDocument(String collection, String documentId, Map<String, dynamic> data);
+  Future<void> updateDocument(
+      String collection, String documentId, Map<String, dynamic> data);
 
   /// Adds a new document to a collection (auto-generates the ID) and returns the ID.
   Future<String> addDocument(String collection, Map<String, dynamic> data);
 
   /// Streams a document for real-time updates.
-  Stream<Map<String, dynamic>?> streamDocument(String collection, String documentId);
+  Stream<Map<String, dynamic>?> streamDocument(
+      String collection, String documentId);
 
   /// Gets all documents in a collection.
   Future<List<Map<String, dynamic>>> getCollection(String collection);
@@ -31,7 +35,8 @@ abstract class ApiGateway {
       String collection, String field, dynamic value);
 
   /// Queries a collection and orders by a field.
-  Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField,
+  Future<List<Map<String, dynamic>>> getTopDocuments(
+      String collection, String orderByField,
       {int limit = 50});
 }
 
@@ -41,10 +46,28 @@ class FirebaseApiGateway implements ApiGateway {
   FirebaseApiGateway(this._firestore);
 
   @override
-  Future<Map<String, dynamic>?> getDocument(String collection, String documentId) async {
+  Future<Map<String, dynamic>?> getDocument(
+      String collection, String documentId) async {
+    Object? serverError;
     try {
-      // Cache-first for instant loading; server data syncs automatically
-      // via Firestore's offline persistence.
+      // Server-first to ensure fresh data (e.g. entitlements, name changes);
+      // falls back to local cache if offline.
+      final doc = await _firestore
+          .collection(collection)
+          .doc(documentId)
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 4));
+      if (doc.exists && doc.data() != null) {
+        return doc.data();
+      }
+    } catch (e) {
+      serverError = e;
+      AppLogger.d(
+          'Firestore getDocument server fetch failed for $collection/$documentId: $e. Falling back to cache.');
+    }
+
+    // Offline fallback — return whatever is cached on device
+    try {
       final doc = await _firestore
           .collection(collection)
           .doc(documentId)
@@ -53,20 +76,19 @@ class FirebaseApiGateway implements ApiGateway {
         return doc.data();
       }
     } catch (e) {
-      AppLogger.d('Firestore getDocument cache miss for $collection/$documentId: $e');
-      // Intentional: cache misses are expected on first load, fall through to server.
+      AppLogger.d(
+          'Firestore getDocument cache fallback failed for $collection/$documentId: $e');
     }
-    // No cache hit — fetch from server (first-ever load or cleared cache)
-    final doc = await _firestore
-        .collection(collection)
-        .doc(documentId)
-        .get(const GetOptions(source: Source.server))
-        .timeout(const Duration(seconds: 4));
-    return doc.data();
+    if (serverError != null) {
+      throw StateError(
+          'Firestore document unavailable: $collection/$documentId');
+    }
+    return null;
   }
 
   @override
-  Future<void> setDocument(String collection, String documentId, Map<String, dynamic> data) async {
+  Future<void> setDocument(
+      String collection, String documentId, Map<String, dynamic> data) async {
     await _firestore.collection(collection).doc(documentId).set(data);
   }
 
@@ -77,14 +99,20 @@ class FirebaseApiGateway implements ApiGateway {
   }
 
   @override
-  Future<String> addDocument(String collection, Map<String, dynamic> data) async {
+  Future<String> addDocument(
+      String collection, Map<String, dynamic> data) async {
     final docRef = await _firestore.collection(collection).add(data);
     return docRef.id;
   }
 
   @override
-  Stream<Map<String, dynamic>?> streamDocument(String collection, String documentId) {
-    return _firestore.collection(collection).doc(documentId).snapshots().map((snapshot) {
+  Stream<Map<String, dynamic>?> streamDocument(
+      String collection, String documentId) {
+    return _firestore
+        .collection(collection)
+        .doc(documentId)
+        .snapshots()
+        .map((snapshot) {
       if (!snapshot.exists || snapshot.data() == null) {
         return null;
       }
@@ -97,19 +125,23 @@ class FirebaseApiGateway implements ApiGateway {
     // Server-first for collection queries: the cache may only contain a
     // subset of documents (those previously fetched on this device).
     try {
-      final query =
-          await _firestore.collection(collection).get(const GetOptions(source: Source.server))
-              .timeout(const Duration(seconds: 4));
+      final query = await _firestore
+          .collection(collection)
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 4));
       return query.docs.map((d) => d.data()).toList();
     } catch (e) {
-      AppLogger.d('Firestore getCollection server fetch failed for $collection: $e. Falling back to cache.');
+      AppLogger.d(
+          'Firestore getCollection server fetch failed for $collection: $e. Falling back to cache.');
       // Offline fallback — return whatever is cached
       try {
-        final query =
-            await _firestore.collection(collection).get(const GetOptions(source: Source.cache));
+        final query = await _firestore
+            .collection(collection)
+            .get(const GetOptions(source: Source.cache));
         return query.docs.map((d) => d.data()).toList();
       } catch (e) {
-        AppLogger.e('Firestore getCollection offline fallback failed for $collection: $e');
+        AppLogger.e(
+            'Firestore getCollection offline fallback failed for $collection: $e');
         return [];
       }
     }
@@ -139,7 +171,8 @@ class FirebaseApiGateway implements ApiGateway {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField,
+  Future<List<Map<String, dynamic>>> getTopDocuments(
+      String collection, String orderByField,
       {int limit = 50}) async {
     // Server-first for ranking queries: the cache typically only contains
     // the current user's profile, making it useless for global rankings.
@@ -152,7 +185,8 @@ class FirebaseApiGateway implements ApiGateway {
           .timeout(const Duration(seconds: 4));
       return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
     } catch (e) {
-      AppLogger.d('Firestore getTopDocuments server fetch failed for $collection: $e. Falling back to cache.');
+      AppLogger.d(
+          'Firestore getTopDocuments server fetch failed for $collection: $e. Falling back to cache.');
       // Offline fallback — return whatever is cached (partial data is
       // better than nothing when there's no network).
       try {
@@ -163,7 +197,8 @@ class FirebaseApiGateway implements ApiGateway {
             .get(const GetOptions(source: Source.cache));
         return query.docs.map((d) => {...d.data(), 'id': d.id}).toList();
       } catch (e) {
-        AppLogger.e('Firestore getTopDocuments offline fallback failed for $collection: $e');
+        AppLogger.e(
+            'Firestore getTopDocuments offline fallback failed for $collection: $e');
         return [];
       }
     }
@@ -175,7 +210,8 @@ class RestFirestoreApiGateway implements ApiGateway {
   // final FirebaseFirestore? _db;
   // Hardcoded for this project based on firebase_options.dart
   static const String _projectId = 'hunting-call-perfection';
-  static const String _baseUrl = 'https://firestore.googleapis.com/v1/projects/$_projectId/databases/(default)/documents';
+  static const String _baseUrl =
+      'https://firestore.googleapis.com/v1/projects/$_projectId/databases/(default)/documents';
 
   RestFirestoreApiGateway(FirebaseFirestore? db);
 
@@ -198,7 +234,7 @@ class RestFirestoreApiGateway implements ApiGateway {
     if (queryParams != null && queryParams.isNotEmpty) {
       urlString += '?$queryParams';
     }
-    
+
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       try {
@@ -211,7 +247,8 @@ class RestFirestoreApiGateway implements ApiGateway {
           }
         }
       } catch (e) {
-        AppLogger.d('RestFirestoreApiGateway _buildUri failed to get options: $e. App not fully initialized.');
+        AppLogger.d(
+            'RestFirestoreApiGateway _buildUri failed to get options: $e. App not fully initialized.');
       }
     }
     return Uri.parse(urlString);
@@ -238,11 +275,14 @@ class RestFirestoreApiGateway implements ApiGateway {
         final arr = valMap['arrayValue']['values'] as List<dynamic>? ?? [];
         result[k] = arr.map((e) {
           final eMap = e as Map<String, dynamic>;
-          return eMap['stringValue'] ?? eMap['integerValue'] ?? eMap['booleanValue'] ?? eMap['doubleValue'] ?? '';
+          return eMap['stringValue'] ??
+              eMap['integerValue'] ??
+              eMap['booleanValue'] ??
+              eMap['doubleValue'] ??
+              '';
         }).toList();
-      }
-      else if (valMap.containsKey('mapValue')) {
-         result[k] = _unwrapDocument(valMap['mapValue']);
+      } else if (valMap.containsKey('mapValue')) {
+        result[k] = _unwrapDocument(valMap['mapValue']);
       }
       // Add more type unwrappings as needed
     });
@@ -275,9 +315,7 @@ class RestFirestoreApiGateway implements ApiGateway {
         };
       } else if (v is Map<String, dynamic>) {
         fields[k] = {
-           'mapValue': {
-               'fields': _wrapFields(v)
-           }
+          'mapValue': {'fields': _wrapFields(v)}
         };
       }
     });
@@ -285,9 +323,12 @@ class RestFirestoreApiGateway implements ApiGateway {
   }
 
   @override
-  Future<Map<String, dynamic>?> getDocument(String collection, String documentId) async {
+  Future<Map<String, dynamic>?> getDocument(
+      String collection, String documentId) async {
     final uri = await _buildUri('$collection/$documentId');
-    final res = await http.get(uri, headers: await _headers()).timeout(const Duration(seconds: 10));
+    final res = await http
+        .get(uri, headers: await _headers())
+        .timeout(const Duration(seconds: 10));
     if (res.statusCode == 200) {
       return _unwrapDocument(jsonDecode(res.body));
     }
@@ -295,28 +336,39 @@ class RestFirestoreApiGateway implements ApiGateway {
   }
 
   @override
-  Future<void> setDocument(String collection, String documentId, Map<String, dynamic> data) async {
+  Future<void> setDocument(
+      String collection, String documentId, Map<String, dynamic> data) async {
     // A patching approach using document ID ensures creation if lacking or overwriting.
     // In Firestore REST, we use patch for updates. To set/overwrite we can just use patch as well.
     final uri = await _buildUri('$collection/$documentId');
     final body = jsonEncode(_wrapFields(data));
-    await http.patch(uri, headers: await _headers(), body: body).timeout(const Duration(seconds: 10));
+    await http
+        .patch(uri, headers: await _headers(), body: body)
+        .timeout(const Duration(seconds: 10));
   }
 
   @override
-  Future<void> updateDocument(String collection, String documentId, Map<String, dynamic> data) async {
+  Future<void> updateDocument(
+      String collection, String documentId, Map<String, dynamic> data) async {
     // Requires appending updateMask for specific fields to simulate update rather than strict overwrite.
-    final maskParams = data.keys.map((k) => 'updateMask.fieldPaths=$k').join('&');
-    final uri = await _buildUri('$collection/$documentId', queryParams: maskParams);
+    final maskParams =
+        data.keys.map((k) => 'updateMask.fieldPaths=$k').join('&');
+    final uri =
+        await _buildUri('$collection/$documentId', queryParams: maskParams);
     final body = jsonEncode(_wrapFields(data));
-    await http.patch(uri, headers: await _headers(), body: body).timeout(const Duration(seconds: 10));
+    await http
+        .patch(uri, headers: await _headers(), body: body)
+        .timeout(const Duration(seconds: 10));
   }
 
   @override
-  Future<String> addDocument(String collection, Map<String, dynamic> data) async {
+  Future<String> addDocument(
+      String collection, Map<String, dynamic> data) async {
     final uri = await _buildUri(collection);
     final body = jsonEncode(_wrapFields(data));
-    final res = await http.post(uri, headers: await _headers(), body: body).timeout(const Duration(seconds: 10));
+    final res = await http
+        .post(uri, headers: await _headers(), body: body)
+        .timeout(const Duration(seconds: 10));
     if (res.statusCode == 200) {
       final docName = jsonDecode(res.body)['name'] as String;
       return docName.split('/').last; // The generated document ID
@@ -325,8 +377,9 @@ class RestFirestoreApiGateway implements ApiGateway {
   }
 
   @override
-  Stream<Map<String, dynamic>?> streamDocument(String collection, String documentId) async* {
-    // Realtime Streams are not fully supported natively on simple REST. 
+  Stream<Map<String, dynamic>?> streamDocument(
+      String collection, String documentId) async* {
+    // Realtime Streams are not fully supported natively on simple REST.
     // Fallback to retrieving once, as desktop is usually fully offline or polling.
     yield await getDocument(collection, documentId);
   }
@@ -334,7 +387,9 @@ class RestFirestoreApiGateway implements ApiGateway {
   @override
   Future<List<Map<String, dynamic>>> getCollection(String collection) async {
     final uri = await _buildUri(collection);
-    final res = await http.get(uri, headers: await _headers()).timeout(const Duration(seconds: 10));
+    final res = await http
+        .get(uri, headers: await _headers())
+        .timeout(const Duration(seconds: 10));
     if (res.statusCode == 200) {
       final docs = jsonDecode(res.body)['documents'] as List<dynamic>? ?? [];
       return docs.map((d) => _unwrapDocument(d)).toList();
@@ -343,15 +398,18 @@ class RestFirestoreApiGateway implements ApiGateway {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> queryCollection(String collection, String field, dynamic value) async {
+  Future<List<Map<String, dynamic>>> queryCollection(
+      String collection, String field, dynamic value) async {
     // For specific queries we have to use the runQuery endpoint.
     final uri = await _buildUri(':runQuery');
-    
+
     // Quick and dirty payload for basic queries
     const operator = 'EQUAL';
     final queryPayload = {
       'structuredQuery': {
-        'from': [{'collectionId': collection}],
+        'from': [
+          {'collectionId': collection}
+        ],
         'where': {
           'fieldFilter': {
             'field': {'fieldPath': field},
@@ -362,7 +420,9 @@ class RestFirestoreApiGateway implements ApiGateway {
       }
     };
 
-    final res = await http.post(uri, headers: await _headers(), body: jsonEncode(queryPayload)).timeout(const Duration(seconds: 10));
+    final res = await http
+        .post(uri, headers: await _headers(), body: jsonEncode(queryPayload))
+        .timeout(const Duration(seconds: 10));
     if (res.statusCode == 200) {
       final docs = jsonDecode(res.body) as List<dynamic>;
       return docs
@@ -374,12 +434,16 @@ class RestFirestoreApiGateway implements ApiGateway {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getTopDocuments(String collection, String orderByField, {int limit = 50}) async {
+  Future<List<Map<String, dynamic>>> getTopDocuments(
+      String collection, String orderByField,
+      {int limit = 50}) async {
     final uri = await _buildUri(':runQuery');
 
     final queryPayload = {
       'structuredQuery': {
-        'from': [{'collectionId': collection}],
+        'from': [
+          {'collectionId': collection}
+        ],
         'orderBy': [
           {
             'field': {'fieldPath': orderByField},
@@ -390,17 +454,16 @@ class RestFirestoreApiGateway implements ApiGateway {
       }
     };
 
-    final res = await http.post(uri, headers: await _headers(), body: jsonEncode(queryPayload)).timeout(const Duration(seconds: 10));
+    final res = await http
+        .post(uri, headers: await _headers(), body: jsonEncode(queryPayload))
+        .timeout(const Duration(seconds: 10));
     if (res.statusCode == 200) {
       final docs = jsonDecode(res.body) as List<dynamic>;
-      return docs
-          .where((d) => d['document'] != null)
-          .map((d) {
-            final doc = d['document'];
-            final id = (doc['name'] as String).split('/').last;
-            return {..._unwrapDocument(doc), 'id': id};
-          })
-          .toList();
+      return docs.where((d) => d['document'] != null).map((d) {
+        final doc = d['document'];
+        final id = (doc['name'] as String).split('/').last;
+        return {..._unwrapDocument(doc), 'id': id};
+      }).toList();
     }
     return [];
   }

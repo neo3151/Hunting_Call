@@ -128,6 +128,7 @@ assets/audio/replacements/
 *.wav
 
 # OAuth tokens and credentials (secrets — never commit)
+android/fastlane/play-store-key.json
 scripts/*.json
 !scripts/video_info*.json
 !scripts/requirements*.txt

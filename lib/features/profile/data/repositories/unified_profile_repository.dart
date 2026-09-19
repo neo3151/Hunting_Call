@@ -13,7 +13,8 @@ class UnifiedProfileRepository implements ProfileRepository {
 
   final String _collectionPath = 'profiles';
 
-  UnifiedProfileRepository(this._apiGateway, {ProfileDataSource? localDataSource})
+  UnifiedProfileRepository(this._apiGateway,
+      {ProfileDataSource? localDataSource})
       : _localDataSource = localDataSource;
 
   @override
@@ -59,11 +60,17 @@ class UnifiedProfileRepository implements ProfileRepository {
           // Local data source returns a default 'New Hunter' if no cache exists.
           // Only use it if it looks like a real cached profile.
           if (localProfile.id == userId) {
-            AppLogger.d('UnifiedProfileRepository: ✅ Loaded profile from local fallback');
-            return localProfile;
+            AppLogger.d(
+                'UnifiedProfileRepository: ✅ Loaded profile from local fallback');
+            final expiry = localProfile.premiumExpiresAt;
+            final hasCurrentOfflineEntitlement = localProfile.isPremium &&
+                (expiry == null || expiry.isAfter(DateTime.now()));
+            return localProfile.copyWith(
+                isPremium: hasCurrentOfflineEntitlement);
           }
         } catch (localErr) {
-          AppLogger.d('UnifiedProfileRepository: local fallback also failed: $localErr');
+          AppLogger.d(
+              'UnifiedProfileRepository: local fallback also failed: $localErr');
         }
       }
 
@@ -99,7 +106,8 @@ class UnifiedProfileRepository implements ProfileRepository {
   @override
   Future<List<UserProfile>> getProfilesByEmail(String email) async {
     try {
-      final docs = await _apiGateway.queryCollection(_collectionPath, 'email', email);
+      final docs =
+          await _apiGateway.queryCollection(_collectionPath, 'email', email);
       if (docs.isEmpty) return [];
 
       return docs.map((data) {
@@ -131,7 +139,8 @@ class UnifiedProfileRepository implements ProfileRepository {
       } catch (_) {
         // Firedart uses DateTime directly
         if (data['joinedDate'] is DateTime) {
-          data['joinedDate'] = (data['joinedDate'] as DateTime).toIso8601String();
+          data['joinedDate'] =
+              (data['joinedDate'] as DateTime).toIso8601String();
         }
       }
     } else if (data['joinedDate'] == null) {
@@ -142,7 +151,8 @@ class UnifiedProfileRepository implements ProfileRepository {
         data['lastDailyChallengeDate'] is! String &&
         data['lastDailyChallengeDate'] is! int) {
       try {
-        data['lastDailyChallengeDate'] = data['lastDailyChallengeDate'].toDate().toIso8601String();
+        data['lastDailyChallengeDate'] =
+            data['lastDailyChallengeDate'].toDate().toIso8601String();
       } catch (_) {
         if (data['lastDailyChallengeDate'] is DateTime) {
           data['lastDailyChallengeDate'] =
@@ -158,7 +168,8 @@ class UnifiedProfileRepository implements ProfileRepository {
         data['lastActiveAt'] = data['lastActiveAt'].toDate().toIso8601String();
       } catch (_) {
         if (data['lastActiveAt'] is DateTime) {
-          data['lastActiveAt'] = (data['lastActiveAt'] as DateTime).toIso8601String();
+          data['lastActiveAt'] =
+              (data['lastActiveAt'] as DateTime).toIso8601String();
         }
       }
     }
@@ -166,12 +177,15 @@ class UnifiedProfileRepository implements ProfileRepository {
     if (data['history'] != null && data['history'] is List) {
       final historyList = data['history'] as List;
       for (var item in historyList) {
-        if (item is Map && item['timestamp'] != null && item['timestamp'] is! String) {
+        if (item is Map &&
+            item['timestamp'] != null &&
+            item['timestamp'] is! String) {
           try {
             item['timestamp'] = item['timestamp'].toDate().toIso8601String();
           } catch (_) {
             if (item['timestamp'] is DateTime) {
-              item['timestamp'] = (item['timestamp'] as DateTime).toIso8601String();
+              item['timestamp'] =
+                  (item['timestamp'] as DateTime).toIso8601String();
             }
           }
         }
@@ -223,7 +237,8 @@ class UnifiedProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> saveResultForUser(String userId, RatingResult result, String animalId) async {
+  Future<void> saveResultForUser(
+      String userId, RatingResult result, String animalId) async {
     if (userId == 'guest') return;
 
     try {
@@ -254,7 +269,8 @@ class UnifiedProfileRepository implements ProfileRepository {
         existingData = doc;
       }
 
-      final history = List<dynamic>.from(existingData['history'] ?? <dynamic>[]);
+      final history =
+          List<dynamic>.from(existingData['history'] ?? <dynamic>[]);
       history.insert(0, data);
 
       final totalCalls = (existingData['totalCalls'] as int? ?? 0) + 1;
@@ -278,7 +294,8 @@ class UnifiedProfileRepository implements ProfileRepository {
         'totalCalls': totalCalls,
         'averageScore': averageScore,
         'id': userId, // Ensure core fields are there
-        'joinedDate': existingData['joinedDate'] ?? DateTime.now().toIso8601String(),
+        'joinedDate':
+            existingData['joinedDate'] ?? DateTime.now().toIso8601String(),
         'isAlphaTester': true,
       });
     } catch (e) {
@@ -288,7 +305,8 @@ class UnifiedProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> saveAchievements(String userId, List<String> achievementIds) async {
+  Future<void> saveAchievements(
+      String userId, List<String> achievementIds) async {
     if (userId == 'guest' || achievementIds.isEmpty) return;
 
     final doc = await _apiGateway.getDocument(_collectionPath, userId);
@@ -360,7 +378,8 @@ class UnifiedProfileRepository implements ProfileRepository {
 
       bool isConsecutive = false;
       if (lastDate != null) {
-        final lastDateDay = DateTime(lastDate.year, lastDate.month, lastDate.day);
+        final lastDateDay =
+            DateTime(lastDate.year, lastDate.month, lastDate.day);
         final diff = today.difference(lastDateDay).inDays;
         if (diff == 1) isConsecutive = true;
       } else {
@@ -368,8 +387,10 @@ class UnifiedProfileRepository implements ProfileRepository {
       }
 
       final int newStreak = isConsecutive ? currentStreak + 1 : 1;
-      final int newLongest = newStreak > longestStreak ? newStreak : longestStreak;
-      final int totalCompleted = (data['dailyChallengesCompleted'] as int? ?? 0) + 1;
+      final int newLongest =
+          newStreak > longestStreak ? newStreak : longestStreak;
+      final int totalCompleted =
+          (data['dailyChallengesCompleted'] as int? ?? 0) + 1;
 
       await _apiGateway.updateDocument(_collectionPath, userId, {
         'dailyChallengesCompleted': totalCompleted,
@@ -381,41 +402,9 @@ class UnifiedProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> setPremiumStatus(String userId, bool isPremium) async {
-    // 1. Always attempt local save (Hybrid Persistence)
-    if (_localDataSource != null) {
-      try {
-        final localProfile = await _localDataSource!.getProfile(userId);
-        final updated = localProfile.copyWith(isPremium: isPremium);
-        await _localDataSource!.saveProfile(updated);
-      } catch (e) {
-        AppLogger.d('⚠️ Failed to save local backup of premium status: $e');
-      }
-    }
-
-    if (userId == 'guest') {
-      return;
-    }
-
-    // 2. Attempt Cloud Save
-    try {
-      final doc = await _apiGateway.getDocument(_collectionPath, userId);
-      if (doc == null) {
-        await _apiGateway.setDocument(_collectionPath, userId, {
-          'id': userId,
-          'name': 'Hunter',
-          'joinedDate': DateTime.now().toIso8601String(),
-          'isPremium': isPremium,
-        });
-      } else {
-        await _apiGateway.updateDocument(_collectionPath, userId, {
-          'isPremium': isPremium,
-        });
-      }
-    } catch (e) {
-      AppLogger.d('❌ ApiGateway: Error setting premium status: $e');
-      if (_localDataSource == null) rethrow; // If no local, throw
-    }
+  Future<void> setPremiumStatus(String userId, bool isPremium) {
+    throw UnsupportedError(
+        'Premium status must be changed by verified server entitlement');
   }
 
   @override
@@ -425,7 +414,8 @@ class UnifiedProfileRepository implements ProfileRepository {
           .getTopDocuments(_collectionPath, 'averageScore', limit: limit)
           .timeout(const Duration(seconds: 8));
 
-      AppLogger.d('📊 getTopGlobalUsers: orderBy query returned ${query.length} docs');
+      AppLogger.d(
+          '📊 getTopGlobalUsers: orderBy query returned ${query.length} docs');
 
       List<UserProfile> profiles = query
           .map((data) {
@@ -440,7 +430,8 @@ class UnifiedProfileRepository implements ProfileRepository {
                     .map((h) => h.result.score)
                     .toList();
                 if (scores.isNotEmpty) {
-                  final computed = scores.reduce((a, b) => a + b) / scores.length;
+                  final computed =
+                      scores.reduce((a, b) => a + b) / scores.length;
                   profile = profile.copyWith(averageScore: computed);
                 }
               }
@@ -460,11 +451,10 @@ class UnifiedProfileRepository implements ProfileRepository {
       // Fallback: if orderBy query returned nothing (profiles may lack the
       // 'averageScore' field), fetch all profiles and sort client-side.
       if (profiles.isEmpty) {
-        AppLogger.d('📊 getTopGlobalUsers: orderBy empty, falling back to getAllProfiles');
+        AppLogger.d(
+            '📊 getTopGlobalUsers: orderBy empty, falling back to getAllProfiles');
         final allProfiles = await getAllProfiles();
-        profiles = allProfiles
-            .where((p) => p.totalCalls > 0)
-            .toList()
+        profiles = allProfiles.where((p) => p.totalCalls > 0).toList()
           ..sort((a, b) => b.averageScore.compareTo(a.averageScore));
         if (profiles.length > limit) {
           profiles = profiles.sublist(0, limit);
@@ -486,7 +476,9 @@ class UnifiedProfileRepository implements ProfileRepository {
       try {
         final localProfile = await _localDataSource!.getProfile(userId);
         final updated = localProfile.copyWith(
-            nickname: nickname, avatarUrl: avatarUrl, lastActiveAt: lastActiveAt);
+            nickname: nickname,
+            avatarUrl: avatarUrl,
+            lastActiveAt: lastActiveAt);
         await _localDataSource!.saveProfile(updated);
       } catch (e) {
         AppLogger.d('⚠️ Failed to save local backup of profile details: $e');
@@ -503,7 +495,9 @@ class UnifiedProfileRepository implements ProfileRepository {
         updates['nickname'] = ProfanityFilter.cleanName(nickname);
       }
       if (avatarUrl != null) updates['avatarUrl'] = avatarUrl;
-      if (lastActiveAt != null) updates['lastActiveAt'] = lastActiveAt.toIso8601String();
+      if (lastActiveAt != null) {
+        updates['lastActiveAt'] = lastActiveAt.toIso8601String();
+      }
 
       if (updates.isNotEmpty) {
         final doc = await _apiGateway.getDocument(_collectionPath, userId);
@@ -525,12 +519,14 @@ class UnifiedProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> toggleFavoriteCall(String userId, String callId, bool isFavorite) async {
+  Future<void> toggleFavoriteCall(
+      String userId, String callId, bool isFavorite) async {
     // 1. Local backup if available
     if (_localDataSource != null) {
       try {
         final localProfile = await _localDataSource!.getProfile(userId);
-        final currentFavorites = List<String>.from(localProfile.favoriteCallIds);
+        final currentFavorites =
+            List<String>.from(localProfile.favoriteCallIds);
 
         if (isFavorite && !currentFavorites.contains(callId)) {
           currentFavorites.add(callId);
@@ -538,7 +534,8 @@ class UnifiedProfileRepository implements ProfileRepository {
           currentFavorites.remove(callId);
         }
 
-        final updated = localProfile.copyWith(favoriteCallIds: currentFavorites);
+        final updated =
+            localProfile.copyWith(favoriteCallIds: currentFavorites);
         await _localDataSource!.saveProfile(updated);
       } catch (e) {
         AppLogger.d('⚠️ Failed to save local backup of favorites: $e');
@@ -601,7 +598,8 @@ class UnifiedProfileRepository implements ProfileRepository {
   @override
   Future<int> getViolationCount(String userId) async {
     try {
-      final docs = await _apiGateway.queryCollection('profanity_violations', 'userId', userId);
+      final docs = await _apiGateway.queryCollection(
+          'profanity_violations', 'userId', userId);
       return docs.length;
     } catch (e) {
       AppLogger.d('⚠️ Failed to get violation count: $e');
@@ -619,5 +617,28 @@ class UnifiedProfileRepository implements ProfileRepository {
     } catch (e) {
       AppLogger.d('⚠️ Failed to restrict user name: $e');
     }
+  }
+
+  @override
+  Stream<UserProfile?> watchProfile(String userId) {
+    if (userId == 'guest') {
+      return Stream.value(UserProfile.guest());
+    }
+
+    return _apiGateway.streamDocument(_collectionPath, userId).map((data) {
+      if (data == null) return null;
+      _sanitizeProfileData(data, userId);
+      try {
+        final profile = UserProfile.fromJson(data);
+        if (_localDataSource != null) {
+          _localDataSource!.saveProfile(profile).catchError((_) {});
+        }
+        return profile;
+      } catch (e) {
+        AppLogger.d(
+            '⚠️ UnifiedProfileRepository: Error parsing streamed profile: $e');
+        return null;
+      }
+    });
   }
 }

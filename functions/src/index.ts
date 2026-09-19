@@ -1,5 +1,7 @@
+import { createHash } from "crypto";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
+import { GoogleAuth } from "google-auth-library";
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -464,3 +466,370 @@ function getFallbackCoaching(score: number): string {
         return "Every expert started right where you are. The most important thing is repetition with intention. Listen carefully to the reference call, then try to mimic just the opening note. Once that sounds right, add the next part. Build the call piece by piece.";
     }
 }
+
+const ANDROID_PACKAGE_NAME = "com.neo3151.huntingcalls";
+const PREMIUM_PRODUCT_IDS = new Set([
+    "outcall_premium_monthly",
+    "outcall_premium_yearly",
+]);
+const androidPublisherAuth = new GoogleAuth({
+    scopes: ["https://www.googleapis.com/auth/androidpublisher"],
+});
+
+type AndroidSubscriptionLineItem = {
+    productId?: string | null;
+    expiryTime?: string | null;
+    latestSuccessfulOrderId?: string | null;
+};
+
+type AndroidSubscription = {
+    subscriptionState?: string | null;
+    lineItems?: AndroidSubscriptionLineItem[] | null;
+};
+
+type AndroidEntitlement = {
+    entitled: boolean;
+    status: string;
+    productId: string;
+    expiresAt: string | null;
+    subscriptionState: string;
+    latestOrderId: string | null;
+};
+
+export function entitlementFromSubscription(
+    subscription: AndroidSubscription,
+    expectedProductId: string
+): AndroidEntitlement {
+    const matchingItems = (subscription.lineItems || []).filter(
+        (item) => item.productId === expectedProductId
+    );
+    if (matchingItems.length === 0) {
+        throw new functions.https.HttpsError(
+            "failed-precondition",
+            "The purchase does not match the selected OUTCALL product."
+        );
+    }
+
+    const expiresAt = matchingItems
+        .map((item) => item.expiryTime)
+        .filter((value): value is string => Boolean(value))
+        .sort()
+        .pop() || null;
+    const unexpired = expiresAt !== null && Date.parse(expiresAt) > Date.now();
+    const subscriptionState = subscription.subscriptionState || "SUBSCRIPTION_STATE_UNSPECIFIED";
+    const latestOrderId = matchingItems
+        .map((item) => item.latestSuccessfulOrderId)
+        .find((value): value is string => Boolean(value)) || null;
+
+    switch (subscriptionState) {
+        case "SUBSCRIPTION_STATE_ACTIVE":
+            return {
+                entitled: unexpired,
+                status: unexpired ? "active" : "expired",
+                productId: expectedProductId,
+                expiresAt,
+                subscriptionState,
+                latestOrderId: latestOrderId,
+            };
+        case "SUBSCRIPTION_STATE_IN_GRACE_PERIOD":
+            return {
+                entitled: unexpired,
+                status: unexpired ? "grace" : "expired",
+                productId: expectedProductId,
+                expiresAt,
+                subscriptionState,
+                latestOrderId: latestOrderId,
+            };
+        case "SUBSCRIPTION_STATE_CANCELED":
+            return {
+                entitled: unexpired,
+                status: unexpired ? "canceled_pending" : "expired",
+                productId: expectedProductId,
+                expiresAt,
+                subscriptionState,
+                latestOrderId: latestOrderId,
+            };
+        case "SUBSCRIPTION_STATE_ON_HOLD":
+            return {
+                entitled: false,
+                status: "on_hold",
+                productId: expectedProductId,
+                expiresAt,
+                subscriptionState,
+                latestOrderId: latestOrderId,
+            };
+        case "SUBSCRIPTION_STATE_PAUSED":
+            return {
+                entitled: false,
+                status: "paused",
+                productId: expectedProductId,
+                expiresAt,
+                subscriptionState,
+                latestOrderId: latestOrderId,
+            };
+        case "SUBSCRIPTION_STATE_PENDING":
+            return {
+                entitled: false,
+                status: "pending",
+                productId: expectedProductId,
+                expiresAt,
+                subscriptionState,
+                latestOrderId: latestOrderId,
+            };
+        default:
+            return {
+                entitled: false,
+                status: "expired",
+                productId: expectedProductId,
+                expiresAt,
+                subscriptionState,
+                latestOrderId: latestOrderId,
+            };
+    }
+}
+
+async function verifyAndroidPurchase(
+    purchaseToken: string,
+    expectedProductId: string
+): Promise<AndroidEntitlement> {
+    const packageName = encodeURIComponent(ANDROID_PACKAGE_NAME);
+    const token = encodeURIComponent(purchaseToken);
+    const response = await androidPublisherAuth.request<AndroidSubscription>({
+        method: "GET",
+        url: `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptionsv2/tokens/${token}`,
+    });
+    return entitlementFromSubscription(response.data, expectedProductId);
+}
+
+function defaultProfile(uid: string, email: string | null, name: string | null): Record<string, unknown> {
+    return {
+        id: uid,
+        name: name || email?.split("@")[0] || "Hunter",
+        email,
+        joinedDate: new Date().toISOString(),
+        totalCalls: 0,
+        averageScore: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        dailyChallengesCompleted: 0,
+        achievements: [],
+        history: [],
+        isPremium: false,
+    };
+}
+
+export const ensureUserProfile = functions.https.onCall(async (_data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "Must be logged in.");
+    }
+
+    const uid = context.auth.uid;
+    const email = typeof context.auth.token.email === "string" ? context.auth.token.email : null;
+    const emailVerified = context.auth.token.email_verified === true;
+    const name = typeof context.auth.token.name === "string" ? context.auth.token.name : null;
+    const targetRef = db.collection("profiles").doc(uid);
+    const targetSnapshot = await targetRef.get();
+
+    let legacySnapshot: admin.firestore.QueryDocumentSnapshot | null = null;
+    if (email && emailVerified) {
+        const matches = await db.collection("profiles").where("email", "==", email).limit(5).get();
+        legacySnapshot = matches.docs.find((doc) => doc.id !== uid) || null;
+    }
+
+    if (!targetSnapshot.exists && legacySnapshot) {
+        const legacyData = { ...legacySnapshot.data() };
+        delete legacyData.isPremium;
+        delete legacyData.premiumExpiresAt;
+        await targetRef.set({
+            ...legacyData,
+            id: uid,
+            email,
+            isPremium: false,
+            migratedFromProfileId: legacySnapshot.id,
+            migratedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { profileId: uid, migratedFrom: legacySnapshot.id };
+    }
+
+    if (!targetSnapshot.exists) {
+        await targetRef.set(defaultProfile(uid, email, name));
+        return { profileId: uid, migratedFrom: null };
+    }
+
+    if (legacySnapshot) {
+        const targetData = targetSnapshot.data() || {};
+        const legacyData = legacySnapshot.data();
+        const updates: Record<string, unknown> = {
+            id: uid,
+            email,
+            migratedFromProfileId: legacySnapshot.id,
+            migratedAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+        for (const [key, value] of Object.entries(legacyData)) {
+            if (["id", "email", "isPremium", "premiumExpiresAt"].includes(key)) continue;
+            const currentValue = targetData[key];
+            const isEmptyArray = Array.isArray(currentValue) && currentValue.length === 0;
+            const isDefaultNumber = typeof currentValue === "number" && currentValue === 0;
+            const isDefaultName = key === "name" && ["Hunter", "New Hunter"].includes(currentValue);
+            if (currentValue == null || isEmptyArray || isDefaultNumber || isDefaultName) {
+                updates[key] = value;
+            }
+        }
+        await targetRef.set(updates, { merge: true });
+        return { profileId: uid, migratedFrom: legacySnapshot.id };
+    }
+
+    await targetRef.set({ id: uid, email }, { merge: true });
+    return { profileId: uid, migratedFrom: null };
+});
+
+async function persistAndroidEntitlement(
+    uid: string,
+    purchaseToken: string,
+    entitlement: AndroidEntitlement,
+    email: string | null = null,
+    name: string | null = null
+): Promise<void> {
+    const tokenHash = createHash("sha256").update(purchaseToken).digest("hex");
+    const entitlementRef = db.collection("androidEntitlements").doc(tokenHash);
+    const profileRef = db.collection("profiles").doc(uid);
+    const activeQuery = db.collection("androidEntitlements")
+        .where("uid", "==", uid);
+
+    await db.runTransaction(async (transaction) => {
+        const existing = await transaction.get(entitlementRef);
+        const activeEntitlements = await transaction.get(activeQuery);
+        const profile = await transaction.get(profileRef);
+        const boundUid = existing.data()?.uid;
+        if (existing.exists && boundUid !== uid) {
+            throw new functions.https.HttpsError(
+                "permission-denied",
+                "This Google Play purchase is linked to another account."
+            );
+        }
+
+        if (entitlement.entitled || existing.exists) {
+            transaction.set(entitlementRef, {
+                uid,
+                platform: "android",
+                packageName: ANDROID_PACKAGE_NAME,
+                purchaseToken,
+                tokenHash,
+                createdAt: existing.data()?.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+                ...entitlement,
+                lastVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+            }, { merge: true });
+        }
+
+        const otherActive = activeEntitlements.docs.filter((doc) => {
+            if (doc.id === tokenHash || doc.data().entitled !== true) return false;
+            const expiresAt = doc.data().expiresAt;
+            return typeof expiresAt === "string" && Date.parse(expiresAt) > Date.now();
+        });
+        const premiumExpiresAt = [
+            ...(entitlement.entitled && entitlement.expiresAt ? [entitlement.expiresAt] : []),
+            ...otherActive
+                .map((doc) => doc.data().expiresAt)
+                .filter((value): value is string => typeof value === "string"),
+        ].sort().pop() || null;
+        const isPremium = entitlement.entitled || otherActive.length > 0;
+        const premiumFields = {
+            id: uid,
+            isPremium,
+            premiumExpiresAt: premiumExpiresAt || admin.firestore.FieldValue.delete(),
+        };
+        transaction.set(profileRef, profile.exists
+            ? premiumFields
+            : { ...defaultProfile(uid, email, name), ...premiumFields }, { merge: true });
+    });
+}
+
+export const verifyAndroidEntitlement = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "Must be logged in.");
+    }
+
+    const purchaseToken = typeof data?.purchaseToken === "string" ? data.purchaseToken.trim() : "";
+    const productId = typeof data?.productId === "string" ? data.productId.trim() : "";
+    if (purchaseToken.length < 16 || !PREMIUM_PRODUCT_IDS.has(productId)) {
+        throw new functions.https.HttpsError("invalid-argument", "Invalid purchase verification data.");
+    }
+
+    let entitlement: AndroidEntitlement;
+    try {
+        entitlement = await verifyAndroidPurchase(purchaseToken, productId);
+    } catch (error) {
+        if (error instanceof functions.https.HttpsError) throw error;
+        functions.logger.error("Google Play verification failed", { uid: context.auth.uid, error });
+        throw new functions.https.HttpsError("unavailable", "Google Play verification failed.");
+    }
+
+    const uid = context.auth.uid;
+    const email = typeof context.auth.token.email === "string" ? context.auth.token.email : null;
+    const name = typeof context.auth.token.name === "string" ? context.auth.token.name : null;
+    await persistAndroidEntitlement(uid, purchaseToken, entitlement, email, name);
+
+    return {
+        entitled: entitlement.entitled,
+        status: entitlement.status,
+        productId: entitlement.productId,
+        expiresAt: entitlement.expiresAt,
+    };
+});
+
+export const reconcileAndroidEntitlements = functions.pubsub
+    .schedule("every 24 hours")
+    .timeZone("UTC")
+    .onRun(async () => {
+        const snapshots = await db.collection("androidEntitlements").get();
+        let verified = 0;
+        let failed = 0;
+
+        for (const snapshot of snapshots.docs) {
+            const data = snapshot.data();
+            const purchaseToken = typeof data.purchaseToken === "string" ? data.purchaseToken : "";
+            const productId = typeof data.productId === "string" ? data.productId : "";
+            if (!purchaseToken || !PREMIUM_PRODUCT_IDS.has(productId)) {
+                failed++;
+                continue;
+            }
+
+            const uid = typeof data.uid === "string" ? data.uid : "";
+            if (!uid) {
+                failed++;
+                continue;
+            }
+
+            try {
+                const entitlement = await verifyAndroidPurchase(purchaseToken, productId);
+                await persistAndroidEntitlement(uid, purchaseToken, entitlement);
+                verified++;
+            } catch (error) {
+                const expiresAt = typeof data.expiresAt === "string" ? data.expiresAt : null;
+                if (expiresAt && Date.parse(expiresAt) <= Date.now()) {
+                    await persistAndroidEntitlement(uid, purchaseToken, {
+                        entitled: false,
+                        status: "expired",
+                        productId,
+                        expiresAt,
+                        subscriptionState: "SUBSCRIPTION_STATE_EXPIRED",
+                        latestOrderId: typeof data.latestOrderId === "string"
+                            ? data.latestOrderId
+                            : null,
+                    });
+                }
+                failed++;
+                functions.logger.error("Scheduled Google Play verification failed", {
+                    uid,
+                    error,
+                });
+            }
+        }
+
+        functions.logger.info("Android entitlement reconciliation complete", {
+            scanned: snapshots.size,
+            verified,
+            failed,
+        });
+        return null;
+    });

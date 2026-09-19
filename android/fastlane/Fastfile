@@ -1,0 +1,44 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "Deploy a new build to the Play Store Production track"
+  lane :deploy do
+    # 1. Build the release AAB (flutter build handles signing via key.properties)
+    Dir.chdir("../..") do
+      sh("flutter build appbundle --release")
+    end
+
+    # 2. Upload to Play Console production track
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      release_status: "completed",
+      ack_bundle_installation_warning: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+
+  desc "Deploy to internal test track (safe for testing the pipeline)"
+  lane :deploy_internal do
+    Dir.chdir("../..") do
+      sh("flutter build appbundle --release")
+    end
+
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      release_status: "completed",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+
+end

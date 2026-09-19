@@ -11,6 +11,7 @@ class HomeHeader extends StatelessWidget {
   final VoidCallback onSignOut;
   final VoidCallback? onSettings;
   final bool hasUnreadFeedback;
+  final int currentStreak;
 
   const HomeHeader({
     super.key,
@@ -19,6 +20,7 @@ class HomeHeader extends StatelessWidget {
     required this.onSignOut,
     this.onSettings,
     this.hasUnreadFeedback = false,
+    this.currentStreak = 0,
   });
 
   @override
@@ -51,14 +53,48 @@ class HomeHeader extends StatelessWidget {
                             fontSize: 28,
                             fontWeight: FontWeight.w300,
                             letterSpacing: 1.0)),
-                    Text(userName.toUpperCase(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.oswald(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            color: palette.textPrimary,
-                            height: 1.1)),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            userName.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.oswald(
+                                fontSize: 48,
+                                fontWeight: FontWeight.bold,
+                                color: palette.textPrimary,
+                                height: 1.1),
+                          ),
+                        ),
+                        if (currentStreak > 0) ...[
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.orange.withOpacity(0.4)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('🔥', style: TextStyle(fontSize: 14)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$currentStreak',
+                                  style: GoogleFonts.oswald(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
                 ),

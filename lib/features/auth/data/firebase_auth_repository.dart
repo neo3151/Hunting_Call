@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
 import 'package:outcall/features/auth/domain/entities/auth_user.dart';
@@ -11,16 +12,17 @@ class FirebaseAuthRepository implements AuthRepository {
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   @override
-  Stream<AuthUser?> get authStateChanges => _auth.authStateChanges().map(_mapFirebaseUser);
+  Stream<AuthUser?> get authStateChanges =>
+      _auth.authStateChanges().map(_mapFirebaseUser);
 
   AuthUser? _mapFirebaseUser(User? user) {
-      if (user == null) return null;
-      return AuthUser(
-          id: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          isAnonymous: user.isAnonymous,
-      );
+    if (user == null) return null;
+    return AuthUser(
+      id: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      isAnonymous: user.isAnonymous,
+    );
   }
 
   @override
@@ -38,13 +40,19 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<void> signInWithEmail(String email, String password) async {
     AppLogger.d('🔐 FirebaseAuthRepository: Signing in with email: $email');
-    await _auth.signInWithEmailAndPassword(email: email, password: password);
+    final credential = await _auth.signInWithEmailAndPassword(
+        email: email, password: password);
+    final user = credential.user;
+    if (user != null) {
+      await _ensureProfileInFirestore(user.uid, user.email, user.displayName);
+    }
   }
 
   @override
   Future<void> signUpWithEmail(String email, String password) async {
     AppLogger.d('🔐 FirebaseAuthRepository: Signing up with email: $email');
-    final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+    final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email, password: password);
     final user = userCredential.user;
     if (user != null) {
       await _ensureProfileInFirestore(user.uid, email, null);
@@ -53,7 +61,8 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {
-    AppLogger.d('🔐 FirebaseAuthRepository: Sending password reset email to: $email');
+    AppLogger.d(
+        '🔐 FirebaseAuthRepository: Sending password reset email to: $email');
     await _auth.sendPasswordResetEmail(email: email);
   }
 
@@ -61,9 +70,10 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<AuthUser> signInWithGoogle() async {
     try {
       AppLogger.d('🔐 FirebaseAuthRepository: Starting Google Sign-In...');
-      
+
       UserCredential userCredential;
-      
+
+      String? googleDisplayName;
       if (Platform.isAndroid || Platform.isIOS) {
         // Use native Google Sign-In for mobile to avoid redirect issues
         final GoogleSignIn googleSignIn = GoogleSignIn.instance;
@@ -72,19 +82,22 @@ class FirebaseAuthRepository implements AuthRepository {
         } catch (e) {
           AppLogger.d('GoogleSignIn.initialize() failed (non-critical): $e');
         }
-        
-        final GoogleSignInAccount googleUser = await googleSignIn.authenticate(scopeHint: ['email', 'profile']);
-        
+
+        final GoogleSignInAccount googleUser =
+            await googleSignIn.authenticate(scopeHint: ['email', 'profile']);
+        googleDisplayName = googleUser.displayName;
+
         final GoogleSignInAuthentication googleAuth = googleUser.authentication;
         final authClient = googleUser.authorizationClient;
-        final authz = await authClient.authorizationForScopes(['email', 'profile']) ?? 
-                      await authClient.authorizeScopes(['email', 'profile']);
-        
+        final authz =
+            await authClient.authorizationForScopes(['email', 'profile']) ??
+                await authClient.authorizeScopes(['email', 'profile']);
+
         final OAuthCredential credential = GoogleAuthProvider.credential(
           accessToken: authz.accessToken,
           idToken: googleAuth.idToken,
         );
-        
+
         userCredential = await _auth.signInWithCredential(credential);
       } else {
         // Fallback or Desktop/Web flow
@@ -93,21 +106,37 @@ class FirebaseAuthRepository implements AuthRepository {
         googleProvider.addScope('profile');
         userCredential = await _auth.signInWithProvider(googleProvider);
       }
-      
+
       final user = userCredential.user;
       if (user == null) throw Exception('Google Sign-In returned null user');
 
       final email = user.email;
-      final displayName = user.displayName;
+      final displayName = (user.displayName != null &&
+              user.displayName!.trim().isNotEmpty)
+          ? user.displayName!.trim()
+          : (googleDisplayName != null && googleDisplayName.trim().isNotEmpty)
+              ? googleDisplayName.trim()
+              : null;
       final uid = user.uid;
-      
+
+      if (user.displayName == null && displayName != null) {
+        try {
+          await user.updateDisplayName(displayName);
+        } catch (_) {}
+      }
+
       AppLogger.d('✅ Google Sign-In successful!');
       AppLogger.d('👤 Name: $displayName | Email: $email | UID: $uid');
-      
+
       await _ensureProfileInFirestore(uid, email, displayName);
-      
-      return _mapFirebaseUser(user)!;
-      
+
+      final mapped = _mapFirebaseUser(user);
+      return AuthUser(
+        id: uid,
+        email: email,
+        displayName: displayName ?? mapped?.displayName,
+        isAnonymous: user.isAnonymous,
+      );
     } catch (e, stackTrace) {
       AppLogger.d('❌ Google Sign-In Error: $e');
       AppLogger.d('Stack trace: $stackTrace');
@@ -115,33 +144,43 @@ class FirebaseAuthRepository implements AuthRepository {
     }
   }
 
-  /// Creates or finds a profile in Firestore directly.
-  Future<void> _ensureProfileInFirestore(String uid, String? email, String? displayName) async {
+  Future<void> _ensureProfileInFirestore(
+      String uid, String? email, String? displayName) async {
     try {
-      final profilesRef = _firestore.collection('profiles');
-      
-      // 1. Check if profile exists by UID
-      final docSnap = await profilesRef.doc(uid).get();
-      if (docSnap.exists) {
-        AppLogger.d('🔍 Profile already exists for UID $uid');
+      final callable =
+          FirebaseFunctions.instance.httpsCallable('ensureUserProfile');
+      await callable.call<void>();
+      AppLogger.d('Profile reconciled for authenticated UID $uid');
+      return;
+    } catch (e) {
+      AppLogger.d('Profile reconciliation function unavailable: $e');
+    }
+
+    try {
+      final profileRef = _firestore.collection('profiles').doc(uid);
+      final snapshot = await profileRef.get();
+      final profileName = (displayName != null && displayName.trim().isNotEmpty)
+          ? displayName.trim()
+          : (email != null &&
+                  email.contains('@') &&
+                  email.split('@').first.isNotEmpty)
+              ? email.split('@').first
+              : 'Hunter';
+      if (snapshot.exists) {
+        final currentName = snapshot.data()?['name'] as String?;
+        if ((currentName == null ||
+                currentName == 'Hunter' ||
+                currentName == 'New Hunter') &&
+            profileName != 'Hunter') {
+          await profileRef.update({
+            'name': profileName,
+            if (email != null) 'email': email,
+          });
+        }
         return;
       }
-      
-      // 2. Check if profile exists by email
-      if (email != null) {
-        final emailQuery = await profilesRef.where('email', isEqualTo: email).limit(1).get();
-        if (emailQuery.docs.isNotEmpty) {
-          AppLogger.d("🔍 Profile found by email: ${emailQuery.docs.first.data()['name']}");
-          return;
-        }
-      }
-      
-      // 3. No profile exists - create one
-      final profileName = displayName ?? email?.split('@').first ?? 'Hunter';
-      
-      AppLogger.d('🆕 Creating profile: $profileName (email: $email, uid: $uid)');
-      
-      await profilesRef.doc(uid).set({
+
+      await profileRef.set({
         'id': uid,
         'name': profileName,
         'email': email,
@@ -155,12 +194,10 @@ class FirebaseAuthRepository implements AuthRepository {
         'lastDailyChallengeDate': null,
         'achievements': [],
         'history': [],
+        'isPremium': false,
       });
-      
-      AppLogger.d('✅ Profile created in Firestore!');
-      
     } catch (e) {
-      AppLogger.d('⚠️ Error in _ensureProfileInFirestore: $e');
+      AppLogger.d('Error ensuring UID profile: $e');
     }
   }
 
@@ -170,11 +207,15 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthUser?> get currentUser async => _mapFirebaseUser(_auth.currentUser);
+  Future<AuthUser?> get currentUser async =>
+      _mapFirebaseUser(_auth.currentUser);
 
   @override
   Future<void> ensureTechnicalSession() async {
-    // No-op for Firebase — session handled automatically
+    final user = _auth.currentUser;
+    if (user != null) {
+      await _ensureProfileInFirestore(user.uid, user.email, user.displayName);
+    }
   }
 
   @override

@@ -15,6 +15,9 @@ abstract class ProfileRepository {
       {String? nickname, String? avatarUrl, DateTime? lastActiveAt});
   Future<void> toggleFavoriteCall(String userId, String callId, bool isFavorite);
 
+  /// Streams real-time updates for a specific user profile document.
+  Stream<UserProfile?> watchProfile(String userId);
+
   /// Logs a profanity violation attempt for admin review.
   Future<void> logProfanityViolation({
     required String userId,

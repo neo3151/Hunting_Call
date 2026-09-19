@@ -62,6 +62,17 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     final onboardingAsync = ref.watch(onboardingProvider);
     final profileState = ref.watch(profileNotifierProvider);
 
+    // Ensure profile load is triggered on initial render if user is already authenticated
+    authState.whenData((user) {
+      if (user != null && profileState.profile?.id != user.id && !profileState.isProfileLoading) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ref.read(profileNotifierProvider.notifier).loadProfile(user.id);
+          }
+        });
+      }
+    });
+
     // REACTIVE TRIGGER: Kick off profile loading and manage the "Grace Period" timer
     ref.listen(authControllerProvider, (previous, next) {
       next.whenData((user) {

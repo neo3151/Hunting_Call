@@ -1,0 +1,13 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../Hunting_Call_AI_Backend"
+        },
+        {
+            "path": "../Sentinel_Orchestrator"
+        }
+    ]
+}

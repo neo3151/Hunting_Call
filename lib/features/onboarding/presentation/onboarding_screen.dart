@@ -73,7 +73,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   _buildPage(
                     icon: Icons.multitrack_audio_rounded,
                     title: 'Master Hunting\nCalls',
-                    description: 'Learn to call 50+ animals with high-quality reference audio and live visual feedback.',
+                    description: 'Practice 135+ hunting calls with high-quality reference audio and real-time AI scoring.',
                     colors: colors,
                     primary: primary,
                   ),

@@ -18,7 +18,11 @@ service cloud.firestore {
     // ─── /profiles/{userId} ─────────────────────────────────────────
     match /profiles/{userId} {
       // READ/CREATE: Standard owner access
-      allow read, create: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+                    && !request.resource.data.keys().hasAny(['premiumExpiresAt'])
+                    && (!request.resource.data.keys().hasAny(['isPremium'])
+                        || request.resource.data.isPremium == false);
 
       // UPDATE: Allow updating stats, but LOCK the isPremium field.
       // This prevents users from "hacking" themselves into a Pro subscription.
@@ -26,7 +30,8 @@ service cloud.firestore {
                     && (
                       // Only allow the update if isPremium isn't being changed by the client.
                       // Premium status should be handled via a secure Admin SDK or Cloud Function.
-                      request.resource.data.isPremium == resource.data.isPremium
+                      !request.resource.data.diff(resource.data).affectedKeys()
+                        .hasAny(['isPremium', 'premiumExpiresAt'])
                     );
 
       // DELETE: Required for Google Play / App Store compliance.

@@ -38,6 +38,9 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
           ? null
           : DateTime.parse(json['birthday'] as String),
       isPremium: json['isPremium'] as bool? ?? false,
+      premiumExpiresAt: json['premiumExpiresAt'] == null
+          ? null
+          : DateTime.parse(json['premiumExpiresAt'] as String),
       isAlphaTester: json['isAlphaTester'] as bool? ?? false,
       nameRestricted: json['nameRestricted'] as bool? ?? false,
       referralCode: json['referralCode'] as String?,
@@ -77,6 +80,7 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'longestStreak': instance.longestStreak,
       'birthday': instance.birthday?.toIso8601String(),
       'isPremium': instance.isPremium,
+      'premiumExpiresAt': instance.premiumExpiresAt?.toIso8601String(),
       'isAlphaTester': instance.isAlphaTester,
       'nameRestricted': instance.nameRestricted,
       'referralCode': instance.referralCode,

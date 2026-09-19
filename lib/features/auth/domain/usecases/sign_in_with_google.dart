@@ -27,6 +27,14 @@ class SignInWithGoogle {
       if (profile.id == 'guest' && user.id != 'guest') {
         throw Exception('Profile not found, guest fallback returned');
       }
+
+      // If existing profile has a default fallback name ('Hunter', 'New Hunter'), upgrade to real Google display name
+      if ((profile.name == 'Hunter' || profile.name == 'New Hunter' || profile.name == 'Guest Hunter') &&
+          user.displayName != null &&
+          user.displayName!.trim().isNotEmpty &&
+          user.displayName != 'Hunter') {
+        await profileRepository.updateProfileDetails(user.id, nickname: user.displayName);
+      }
     } catch (e) {
       // If retrieval fails (or returns guest fallback depending on implementation), create it.
       // Ideally getProfile throws or returns null if not found for strict logic, 

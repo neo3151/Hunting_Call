@@ -23,6 +23,6 @@ class ReferralService {
     return '🦌 I\'m using OUTCALL to master my hunting calls — '
         'real-time audio analysis, AI scoring, and 135+ pro calls.\n\n'
         'Use my code $referralCode when you sign up!\n\n'
-        'Download: https://hunting-call-perfection.web.app';
+        'Download: https://outcall.xyz';
   }
 }

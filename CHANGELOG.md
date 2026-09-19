@@ -1,6 +1,53 @@
 # 📋 Changelog - OUTCALL Updates
 
-## Version 2.0.0+40 - March 8, 2026
+## Version 3.2.6+218 - September 18, 2026
+
+### Premium Access Reliability
+- Premium access now refreshes immediately when account entitlements change.
+- Google Play purchases and restores are securely verified by the backend.
+- Account-to-profile reconciliation prevents paid access from attaching to the wrong profile.
+- Subscription expiry and offline access now follow verified entitlement dates.
+- Improved sign-in, profile loading, and general stability.
+
+---
+
+## Version 3.2.3+215 - May 22, 2026
+
+### 🛠️ Deep Brand Integration Fix
+- **System Icons**: Added explicit support for "Round Icons" and "Adaptive Icons" to ensure compatibility with all modern Android launchers (Pixel, Samsung, etc.).
+- **Cache Purge**: Performed a full system-level cache purge (Flutter & Gradle) to resolve issues where the old bird logo was being cached in system settings.
+- **Consistency**: Verified mountain logo across all density buckets (hdpi to xxxhdpi) for both standard and round icon slots.
+
+---
+
+## Version 3.2.2+214 - May 21, 2026
+
+### �️ The Modern Outdoors Release
+- **New Branding**: Introducing our new high-contrast mountain and waveform icon.
+- **Visual Identity**: Full refresh of app icons across Android, iOS, and Web for a modern, professional look.
+- **Consistency**: Unified the in-app splash experience with the new launcher branding.
+
+---
+
+## Version 3.2.1+213 - May 21, 2026
+
+## Version 3.2.0+212 - May 21, 2026
+
+### 🚀 Summer Scouting Release
+- **Production Pipeline**: Optimized build configurations for faster deployment and reduced APK/AAB size.
+- **Scoring Engine**: Enhanced stability and performance of the 13-dimension audio analysis pipeline.
+- **UI/UX**: Minor refinements to animal profile layouts and navigation flow.
+- **Maintenance**: Updated dependencies and resolved internal telemetry edge cases.
+
+---
+
+## Version 3.1.1+211 - March 25, 2026
+
+### 🔧 Stability Maintenance
+- **CI/CD**: Resolved Gradle OOM errors during production obfuscation.
+- **Build**: Incrementing build number for production deployment stability.
+
+---
 
 ### 🧠 V2 Pro Architecture — Complete DSP Overhaul
 - **DSP Engine**: Rewrote `comprehensive_audio_analyzer.dart` with 7 new static methods (~500 lines) — MFCC extraction, formant analysis (LPC Levinson-Durbin), A-weighting, cross-correlation.

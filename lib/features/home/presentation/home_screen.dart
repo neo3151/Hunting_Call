@@ -81,6 +81,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               userName: homeState.userName,
                               isCloudMode: homeState.isCloudMode,
                               hasUnreadFeedback: unreadCount > 0,
+                              currentStreak: homeState.profile?.currentStreak ?? 0,
                               onSignOut: () => ref.read(homeNotifierProvider.notifier).signOut(),
                               onSettings: () => Navigator.of(context).push(
                                 MaterialPageRoute(builder: (_) => const SettingsScreen()),

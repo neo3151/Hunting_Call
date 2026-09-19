@@ -171,6 +171,11 @@ class LocalProfileRepository implements ProfileRepository {
   Future<int> getViolationCount(String userId) async => 0;
 
   @override
+  Stream<UserProfile?> watchProfile(String userId) async* {
+    yield await getProfile(userId);
+  }
+
+  @override
   Future<void> restrictUserName(String userId) async {
     // No-op for local-only
   }

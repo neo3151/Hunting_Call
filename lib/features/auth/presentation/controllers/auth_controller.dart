@@ -60,13 +60,16 @@ final getAuthStateStreamUseCaseProvider = Provider((ref) {
 
 // --- Controller ---
 
-final authControllerProvider = StreamNotifierProvider<AuthController, AuthUser?>(() {
+final authControllerProvider =
+    StreamNotifierProvider<AuthController, AuthUser?>(() {
   return AuthController();
 });
 
 class AuthController extends StreamNotifier<AuthUser?> {
   @override
   Stream<AuthUser?> build() {
+    final repository = ref.watch(authRepositoryProvider);
+    unawaited(repository.ensureTechnicalSession());
     final getAuthStateStream = ref.watch(getAuthStateStreamUseCaseProvider);
     return getAuthStateStream();
   }
@@ -77,18 +80,23 @@ class AuthController extends StreamNotifier<AuthUser?> {
       ref.read(loggerServiceProvider).log('Attempting sign in anonymously');
       final useCase = ref.read(signInAnonymouslyUseCaseProvider);
       await useCase();
-      
+
       // EAGER LOAD: Reach out and grab the profile immediately after auth success.
       final currentUser = await ref.read(authRepositoryProvider).currentUser;
       if (currentUser != null) {
-        AppLogger.d('AuthController: Eagerly loading profile for Anonymous user ${currentUser.id}');
-        await ref.read(profileNotifierProvider.notifier).loadProfile(currentUser.id);
+        AppLogger.d(
+            'AuthController: Eagerly loading profile for Anonymous user ${currentUser.id}');
+        await ref
+            .read(profileNotifierProvider.notifier)
+            .loadProfile(currentUser.id);
       }
 
       ref.read(loggerServiceProvider).log('Signed in anonymously successfully');
       // State updates automatically via stream
     } catch (e, st) {
-      ref.read(loggerServiceProvider).recordError(e, st, reason: 'Anonymous sign in failed');
+      ref
+          .read(loggerServiceProvider)
+          .recordError(e, st, reason: 'Anonymous sign in failed');
       state = AsyncValue.error(e, st);
     }
   }
@@ -99,19 +107,24 @@ class AuthController extends StreamNotifier<AuthUser?> {
       ref.read(loggerServiceProvider).log('Attempting sign in with Google');
       final useCase = ref.read(signInWithGoogleUseCaseProvider);
       await useCase();
-      
+
       // EAGER LOAD: Reach out and grab the profile immediately after auth success.
       // This "pre-warms" the ProfileNotifier so AuthWrapper finds it instantly.
       final currentUser = await ref.read(authRepositoryProvider).currentUser;
       if (currentUser != null) {
-        AppLogger.d('AuthController: Eagerly loading profile for Google user ${currentUser.id}');
-        await ref.read(profileNotifierProvider.notifier).loadProfile(currentUser.id);
+        AppLogger.d(
+            'AuthController: Eagerly loading profile for Google user ${currentUser.id}');
+        await ref
+            .read(profileNotifierProvider.notifier)
+            .loadProfile(currentUser.id);
       }
-      
+
       ref.read(loggerServiceProvider).log('Signed in with Google successfully');
       // State updates automatically via stream
     } catch (e, st) {
-      ref.read(loggerServiceProvider).recordError(e, st, reason: 'Google sign in failed');
+      ref
+          .read(loggerServiceProvider)
+          .recordError(e, st, reason: 'Google sign in failed');
       state = AsyncValue.error(e, st);
     }
   }
@@ -119,22 +132,30 @@ class AuthController extends StreamNotifier<AuthUser?> {
   Future<void> signInWithEmail(String email, String password) async {
     state = const AsyncValue.loading();
     try {
-      ref.read(loggerServiceProvider).log('Attempting sign in with Email ($email)');
+      ref
+          .read(loggerServiceProvider)
+          .log('Attempting sign in with Email ($email)');
       final useCase = ref.read(signInWithEmailUseCaseProvider);
       await useCase(email, password);
-      
+
       // EAGER LOAD: Reach out and grab the profile immediately after auth success.
       final currentUser = await ref.read(authRepositoryProvider).currentUser;
       if (currentUser != null) {
-        AppLogger.d('AuthController: Eagerly loading profile for Email user ${currentUser.id}');
-        await ref.read(profileNotifierProvider.notifier).loadProfile(currentUser.id);
+        AppLogger.d(
+            'AuthController: Eagerly loading profile for Email user ${currentUser.id}');
+        await ref
+            .read(profileNotifierProvider.notifier)
+            .loadProfile(currentUser.id);
       }
 
       ref.read(loggerServiceProvider).log('Signed in with Email successfully');
     } catch (e, st) {
       final error = _normalizeAuthError(e);
-      ref.read(loggerServiceProvider).recordError(error, st, reason: 'Email sign in failed');
-      state = const AsyncValue.data(null); // Revert to unauthenticated data state to avoid global error screen
+      ref
+          .read(loggerServiceProvider)
+          .recordError(error, st, reason: 'Email sign in failed');
+      state = const AsyncValue.data(
+          null); // Revert to unauthenticated data state to avoid global error screen
       throw error; // Throw normalized error to be caught by UI
     }
   }
@@ -152,7 +173,7 @@ class AuthController extends StreamNotifier<AuthUser?> {
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
-    // We don't change state to loading here because it's usually a background action 
+    // We don't change state to loading here because it's usually a background action
     // that doesn't sign the user in or out.
     try {
       final useCase = ref.read(sendPasswordResetEmailUseCaseProvider);
@@ -166,10 +187,18 @@ class AuthController extends StreamNotifier<AuthUser?> {
     final errorStr = e.toString();
     // Normalise Firedart/REST errors to Firebase SDK style strings
     // so the LoginScreen catches them properly.
-    if (errorStr.contains('EMAIL_EXISTS')) return Exception('email-already-in-use');
-    if (errorStr.contains('INVALID_PASSWORD')) return Exception('invalid-credential');
-    if (errorStr.contains('EMAIL_NOT_FOUND')) return Exception('invalid-credential');
-    if (errorStr.contains('WEAK_PASSWORD')) return Exception('weak-password');
+    if (errorStr.contains('EMAIL_EXISTS')) {
+      return Exception('email-already-in-use');
+    }
+    if (errorStr.contains('INVALID_PASSWORD')) {
+      return Exception('invalid-credential');
+    }
+    if (errorStr.contains('EMAIL_NOT_FOUND')) {
+      return Exception('invalid-credential');
+    }
+    if (errorStr.contains('WEAK_PASSWORD')) {
+      return Exception('weak-password');
+    }
     return e;
   }
 
@@ -190,13 +219,15 @@ class AuthController extends StreamNotifier<AuthUser?> {
       AppLogger.d('AuthController: Resetting profile state before sign-out');
       ref.read(loggerServiceProvider).log('Attempting sign out');
       ref.read(profileNotifierProvider.notifier).reset();
-      
+
       final useCase = ref.read(signOutUseCaseProvider);
       await useCase();
       ref.read(loggerServiceProvider).log('Signed out successfully');
       // State updates automatically via stream
     } catch (e, st) {
-      ref.read(loggerServiceProvider).recordError(e, st, reason: 'Sign out failed');
+      ref
+          .read(loggerServiceProvider)
+          .recordError(e, st, reason: 'Sign out failed');
       state = AsyncValue.error(e, st);
     }
   }

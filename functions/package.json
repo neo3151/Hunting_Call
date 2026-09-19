@@ -6,6 +6,7 @@
         "serve": "npm run build && firebase emulators:start --only functions",
         "shell": "npm run build && firebase functions:shell",
         "start": "npm run shell",
+        "test": "npm run build && node --test",
         "deploy": "firebase deploy --only functions",
         "logs": "firebase functions:log"
     },
@@ -15,7 +16,8 @@
     "main": "lib/index.js",
     "dependencies": {
         "firebase-admin": "^12.7.0",
-        "firebase-functions": "^5.0.0"
+        "firebase-functions": "^5.0.0",
+        "google-auth-library": "^9.15.1"
     },
     "devDependencies": {
         "firebase-functions-test": "^3.1.0",

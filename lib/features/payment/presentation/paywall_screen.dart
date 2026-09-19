@@ -30,15 +30,24 @@ class PaywallScreen extends ConsumerStatefulWidget {
   ConsumerState<PaywallScreen> createState() => _PaywallScreenState();
 }
 
-class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTickerProviderStateMixin {
+class _PaywallScreenState extends ConsumerState<PaywallScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _shimmerController;
 
   List<ProductDetails> _storeProducts = [];
   bool _isLoadingProducts = true;
 
   static const _staticPlans = [
-    _PlanOption(id: 'outcall_premium_monthly', title: 'Monthly', price: '\$4.99', period: '/mo'),
-    _PlanOption(id: 'outcall_premium_yearly', title: 'Yearly', price: '\$29.99', period: '/yr'),
+    _PlanOption(
+        id: 'outcall_premium_monthly',
+        title: 'Monthly',
+        price: '\$4.99',
+        period: '/mo'),
+    _PlanOption(
+        id: 'outcall_premium_yearly',
+        title: 'Yearly',
+        price: '\$29.99',
+        period: '/yr'),
   ];
 
   String _selectedProductId = 'outcall_premium_yearly';
@@ -69,8 +78,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
             _storeProducts = products;
             _isLoadingProducts = false;
             if (_storeProducts.isNotEmpty) {
-              final hasYearly = _storeProducts.any((p) => p.id == 'outcall_premium_yearly');
-              _selectedProductId = hasYearly ? 'outcall_premium_yearly' : _storeProducts.first.id;
+              final hasYearly =
+                  _storeProducts.any((p) => p.id == 'outcall_premium_yearly');
+              _selectedProductId = hasYearly
+                  ? 'outcall_premium_yearly'
+                  : _storeProducts.first.id;
             }
           });
         }
@@ -120,9 +132,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
     // e.g., "$24.99/30 min" -> "$24.99"
     // e.g., "$4.99 (30 minutes)" -> "$4.99"
     // e.g., "$14.99 per year" -> "$14.99"
-    
+
     // 1. Strip anything after a slash or " per "
-    final slashMatch = RegExp(r'^(.*?\d[\d.,]*)\s*(/| per | - |\(|\[).*$').firstMatch(price);
+    final slashMatch =
+        RegExp(r'^(.*?\d[\d.,]*)\s*(/| per | - |\(|\[).*$').firstMatch(price);
     if (slashMatch != null) return slashMatch.group(1)!.trim();
 
     return price;
@@ -201,7 +214,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                     else
                       _buildPricingToggle(colors),
                     const SizedBox(height: 20),
-                    if (!_isLoadingProducts) _buildPurchaseButton(paymentState, colors),
+                    if (!_isLoadingProducts)
+                      _buildPurchaseButton(paymentState, colors),
                     const SizedBox(height: 12),
                     _buildRestoreButton(paymentState, colors),
                     const SizedBox(height: 16),
@@ -224,7 +238,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
           height: 64,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppColors.accentGoldDark, AppColors.accentGold, AppColors.accentGoldLight],
+              colors: [
+                AppColors.accentGoldDark,
+                AppColors.accentGold,
+                AppColors.accentGoldLight
+              ],
               begin: Alignment.bottomLeft,
               end: Alignment.topRight,
             ),
@@ -236,7 +254,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                   spreadRadius: 2),
             ],
           ),
-          child: const Icon(Icons.workspace_premium_rounded, size: 36, color: Colors.white),
+          child: const Icon(Icons.workspace_premium_rounded,
+              size: 36, color: Colors.white),
         ),
         const SizedBox(height: 16),
         Text(S.of(context).unlockOutcallPro,
@@ -249,7 +268,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
             )),
         const SizedBox(height: 8),
         Text(
-          'Master every species with unlimited access',
+          'Master 135+ hunting calls with unlimited access',
           style: TextStyle(fontSize: 14, color: colors.textSecondary),
           textAlign: TextAlign.center,
         ),
@@ -279,21 +298,25 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
             child: Row(children: [
               Expanded(
                   flex: 2,
-                  child: Text(S.of(context).featureColumn, style: _matrixHeaderStyle(colors))),
+                  child: Text(S.of(context).featureColumn,
+                      style: _matrixHeaderStyle(colors))),
               Expanded(
                   flex: 1,
                   child: Text(S.of(context).freeColumn,
-                      textAlign: TextAlign.center, style: _matrixHeaderStyle(colors))),
+                      textAlign: TextAlign.center,
+                      style: _matrixHeaderStyle(colors))),
               Expanded(
                   flex: 1,
                   child: Text(S.of(context).proColumn,
                       textAlign: TextAlign.center,
-                      style: _matrixHeaderStyle(colors).copyWith(color: AppColors.accentGold))),
+                      style: _matrixHeaderStyle(colors)
+                          .copyWith(color: AppColors.accentGold))),
             ]),
           ),
           Divider(color: colors.border, height: 1),
           ...features.map((f) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(children: [
                   Expanded(
                       flex: 2,
@@ -306,7 +329,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                       flex: 1,
                       child: Text(f.$2,
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: colors.textSecondary, fontSize: 12))),
+                          style: TextStyle(
+                              color: colors.textSecondary, fontSize: 12))),
                   Expanded(
                       flex: 1,
                       child: Text(f.$3,
@@ -324,14 +348,17 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
 
   TextStyle _matrixHeaderStyle(AppColorPalette colors) {
     return TextStyle(
-        fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1, color: colors.textTertiary);
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 1,
+        color: colors.textTertiary);
   }
 
   Widget _buildPricingToggle(AppColorPalette colors) {
     return Container(
       padding: const EdgeInsets.all(4),
-      decoration:
-          BoxDecoration(color: colors.surfaceLight, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+          color: colors.surfaceLight, borderRadius: BorderRadius.circular(16)),
       child: Row(
         children: _plans.map((plan) {
           final isSelected = _selectedProductId == plan.id;
@@ -350,8 +377,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
     );
   }
 
-  Widget _pricingOption(String title, String price, String period, bool selected,
-      AppColorPalette colors, VoidCallback onTap,
+  Widget _pricingOption(String title, String price, String period,
+      bool selected, AppColorPalette colors, VoidCallback onTap,
       {bool showBadge = false}) {
     return Expanded(
       child: GestureDetector(
@@ -362,10 +389,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
           decoration: BoxDecoration(
             color: selected ? colors.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
-            border:
-                selected ? Border.all(color: AppColors.accentGold.withOpacity(0.5)) : null,
+            border: selected
+                ? Border.all(color: AppColors.accentGold.withOpacity(0.5))
+                : null,
             boxShadow: selected
-                ? [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 8)]
+                ? [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.15), blurRadius: 8)
+                  ]
                 : null,
           ),
           child: Stack(
@@ -377,7 +408,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                       style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: selected ? colors.textPrimary : colors.textTertiary)),
+                          color: selected
+                              ? colors.textPrimary
+                              : colors.textTertiary)),
                 ),
                 const SizedBox(height: 2),
                 Center(
@@ -389,7 +422,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: selected ? AppColors.accentGold : colors.textSubtle,
+                            color: selected
+                                ? AppColors.accentGold
+                                : colors.textSubtle,
                           ),
                         ),
                         TextSpan(
@@ -410,7 +445,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                   top: -24,
                   right: -4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppColors.accentGold,
                       borderRadius: BorderRadius.circular(8),
@@ -422,7 +458,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                       ],
                     ),
                     child: const Text(
-                      'SAVE 50%',
+                      'SAVE OVER 50%',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 8,
@@ -439,7 +475,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
     );
   }
 
-  Widget _buildPurchaseButton(PaymentState paymentState, AppColorPalette colors) {
+  Widget _buildPurchaseButton(
+      PaymentState paymentState, AppColorPalette colors) {
     final profile = ref.watch(profileNotifierProvider).profile;
     final isProcessing = paymentState.isProcessing;
     final plan = _selectedPlan;
@@ -483,10 +520,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                         if (userId.isNotEmpty) {
                           final success = await ref
                               .read(paymentNotifierProvider.notifier)
-                              .purchasePremium(userId, packageId: _selectedProductId);
+                              .purchasePremium(userId,
+                                  packageId: _selectedProductId);
                           if (context.mounted) {
                             if (success) {
-                              Navigator.of(context).pop(true);
+                              await ref
+                                  .read(profileNotifierProvider.notifier)
+                                  .loadProfile(userId);
+                              if (context.mounted) {
+                                Navigator.of(context).pop(true);
+                              }
                             }
                             // Error feedback is handled by the ref.listen above
                           }
@@ -498,7 +541,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
                       ? const SizedBox(
                           width: 24,
                           height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2.5, color: Colors.white))
                       : Text(buttonText,
                           style: const TextStyle(
                               fontSize: 16,
@@ -514,7 +558,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
     );
   }
 
-  Widget _buildRestoreButton(PaymentState paymentState, AppColorPalette colors) {
+  Widget _buildRestoreButton(
+      PaymentState paymentState, AppColorPalette colors) {
     final profile = ref.watch(profileNotifierProvider).profile;
     return TextButton(
       onPressed: paymentState.isProcessing
@@ -522,14 +567,22 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> with SingleTicker
           : () async {
               final userId = profile?.id ?? '';
               if (userId.isNotEmpty) {
-                final success =
-                    await ref.read(paymentNotifierProvider.notifier).restorePurchases(userId);
-                if (success && mounted) Navigator.of(context).pop(true);
+                final success = await ref
+                    .read(paymentNotifierProvider.notifier)
+                    .restorePurchases(userId);
+                if (success && mounted) {
+                  await ref
+                      .read(profileNotifierProvider.notifier)
+                      .loadProfile(userId);
+                  if (mounted) Navigator.of(context).pop(true);
+                }
               }
             },
       child: Text('Restore Purchases',
           style: TextStyle(
-              fontSize: 13, color: colors.textTertiary, decoration: TextDecoration.underline)),
+              fontSize: 13,
+              color: colors.textTertiary,
+              decoration: TextDecoration.underline)),
     );
   }
 
@@ -549,5 +602,8 @@ class _PlanOption {
   final String price;
   final String period;
   const _PlanOption(
-      {required this.id, required this.title, required this.price, required this.period});
+      {required this.id,
+      required this.title,
+      required this.price,
+      required this.period});
 }

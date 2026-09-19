@@ -47,8 +47,13 @@ class ProfileState {
 
 /// Notifier for profile operations
 class ProfileNotifier extends Notifier<ProfileState> {
+  StreamSubscription<UserProfile?>? _profileSubscription;
+
   @override
   ProfileState build() {
+    ref.onDispose(() {
+      _profileSubscription?.cancel();
+    });
     return const ProfileState();
   }
 
@@ -57,7 +62,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
   Future<UserProfile> fetchProfile(String userId) => _repo.getProfile(userId);
 
   /// Save achievements for a user (public access for cross-feature use)
-  Future<void> saveAchievementsForUser(String userId, List<String> achievementIds) async {
+  Future<void> saveAchievementsForUser(
+      String userId, List<String> achievementIds) async {
     await _repo.saveAchievements(userId, achievementIds);
   }
 
@@ -83,14 +89,30 @@ class ProfileNotifier extends Notifier<ProfileState> {
     if (isInitialLoad) {
       state = state.copyWith(isProfileLoading: true, error: null);
     }
-    
+
     try {
       final profile = await _repo.getProfile(userId).timeout(
             const Duration(seconds: 10),
-            onTimeout: () => throw TimeoutException('Profile load timed out after 10s'),
+            onTimeout: () =>
+                throw TimeoutException('Profile load timed out after 10s'),
           );
       // AppLogger.d("ProfileNotifier: loadProfile success for $userId");
       state = state.copyWith(profile: profile, isProfileLoading: false);
+
+      // Subscribe to live profile stream from repository
+      await _profileSubscription?.cancel();
+      if (userId != 'guest') {
+        _profileSubscription = _repo.watchProfile(userId).listen(
+          (updatedProfile) {
+            if (updatedProfile != null) {
+              state = state.copyWith(profile: updatedProfile);
+            }
+          },
+          onError: (e) {
+            AppLogger.d('ProfileNotifier: watchProfile stream error: $e');
+          },
+        );
+      }
 
       // Sync with Analytics
       final packageInfo = await PackageInfo.fromPlatform();
@@ -112,13 +134,15 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   /// Create a new profile
-  Future<UserProfile> createProfile(String name, {String? id, DateTime? birthday}) async {
+  Future<UserProfile> createProfile(String name,
+      {String? id, DateTime? birthday}) async {
     // Sanitize and filter the name
     final cleanName = InputSanitizer.sanitizeName(name);
 
     state = state.copyWith(isProfileLoading: true, error: null);
     try {
-      final profile = await _repo.createProfile(cleanName, id: id, birthday: birthday);
+      final profile =
+          await _repo.createProfile(cleanName, id: id, birthday: birthday);
       final updatedProfiles = [...state.allProfiles, profile];
       state = state.copyWith(
         profile: profile,
@@ -141,7 +165,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   /// Save a rating result to the user's history
-  Future<void> saveResult(String userId, RatingResult result, String animalId) async {
+  Future<void> saveResult(
+      String userId, RatingResult result, String animalId) async {
     try {
       await _repo.saveResultForUser(userId, result, animalId);
       // Reload profile to get updated history
@@ -150,7 +175,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
       final currentProfile = state.profile;
       if (currentProfile != null && userId != 'guest') {
         // Use domain use case for achievement calculation
-        final achievementUseCase = ref.read(calculateNewAchievementsUseCaseProvider);
+        final achievementUseCase =
+            ref.read(calculateNewAchievementsUseCaseProvider);
         final achievementsResult = achievementUseCase.execute(
           currentProfile,
           currentProfile.achievements,
@@ -163,7 +189,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
           (newAchievements) async {
             if (newAchievements.isNotEmpty) {
               // Merge new with existing — don't wipe old achievements!
-              final merged = {...currentProfile.achievements, ...newAchievements}.toList();
+              final merged =
+                  {...currentProfile.achievements, ...newAchievements}.toList();
               await _repo.saveAchievements(userId, merged);
               // Reload again to get badges
               await loadProfile(userId);
@@ -187,17 +214,21 @@ class ProfileNotifier extends Notifier<ProfileState> {
     // Check if user is name-restricted due to past violations
     if (nickname != null && currentProfile.nameRestricted) {
       state = state.copyWith(
-        error: 'Your name has been permanently locked due to repeated violations.',
+        error:
+            'Your name has been permanently locked due to repeated violations.',
       );
       return false;
     }
 
     // Block inappropriate nicknames — local profanity filter
-    if (nickname != null && InputSanitizer.containsInappropriateContent(nickname)) {
-      AppLogger.d('⚠️ ProfileNotifier: blocked inappropriate nickname "$nickname"');
+    if (nickname != null &&
+        InputSanitizer.containsInappropriateContent(nickname)) {
+      AppLogger.d(
+          '⚠️ ProfileNotifier: blocked inappropriate nickname "$nickname"');
 
       // Log the violation and apply strike system
-      final strikeCount = await _logAndApplyStrikes(currentProfile.id, nickname);
+      final strikeCount =
+          await _logAndApplyStrikes(currentProfile.id, nickname);
 
       final errorMsg = strikeCount >= 3
           ? 'Your name has been permanently locked due to repeated violations.'
@@ -209,7 +240,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
 
     // Sanitize the nickname (XSS, length, etc.)
-    final cleanNickname = nickname != null ? InputSanitizer.sanitizeName(nickname) : null;
+    final cleanNickname =
+        nickname != null ? InputSanitizer.sanitizeName(nickname) : null;
 
     state = state.copyWith(error: null);
     try {
@@ -217,12 +249,14 @@ class ProfileNotifier extends Notifier<ProfileState> {
           nickname: cleanNickname, avatarUrl: avatarUrl);
 
       // Update local state immediately for snappy UI
-      final updatedProfile = currentProfile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
+      final updatedProfile =
+          currentProfile.copyWith(nickname: nickname, avatarUrl: avatarUrl);
       state = state.copyWith(profile: updatedProfile);
 
       // Also update in allProfiles if it exists
-      final updatedAll =
-          state.allProfiles.map((p) => p.id == updatedProfile.id ? updatedProfile : p).toList();
+      final updatedAll = state.allProfiles
+          .map((p) => p.id == updatedProfile.id ? updatedProfile : p)
+          .toList();
       state = state.copyWith(allProfiles: updatedAll);
 
       return true;
@@ -261,7 +295,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
             profile: profile.copyWith(nameRestricted: true, nickname: null),
           );
         }
-        AppLogger.d('🚫 User $userId permanently name-restricted after $violationCount violations');
+        AppLogger.d(
+            '🚫 User $userId permanently name-restricted after $violationCount violations');
       }
 
       return violationCount;
@@ -286,12 +321,14 @@ class ProfileNotifier extends Notifier<ProfileState> {
       currentFavorites.add(callId);
     }
 
-    final updatedProfile = currentProfile.copyWith(favoriteCallIds: currentFavorites);
+    final updatedProfile =
+        currentProfile.copyWith(favoriteCallIds: currentFavorites);
     state = state.copyWith(profile: updatedProfile);
 
     // Update allProfiles list
-    final updatedAll =
-        state.allProfiles.map((p) => p.id == updatedProfile.id ? updatedProfile : p).toList();
+    final updatedAll = state.allProfiles
+        .map((p) => p.id == updatedProfile.id ? updatedProfile : p)
+        .toList();
     state = state.copyWith(allProfiles: updatedAll);
 
     // Persist
@@ -306,10 +343,13 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   /// Resets the profile state to its initial, unauthenticated state.
   void reset() {
+    _profileSubscription?.cancel();
+    _profileSubscription = null;
     state = const ProfileState();
   }
 }
 
-final profileNotifierProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
+final profileNotifierProvider =
+    NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
 });

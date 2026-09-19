@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/di_providers.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:outcall/features/payment/data/purchase_verification_service.dart';
 import 'package:outcall/features/payment/domain/repositories/payment_repository.dart';
 import 'package:outcall/features/profile/domain/repositories/profile_repository.dart';
 
@@ -19,7 +21,8 @@ const kProductIds = <String>{
 /// Selects NativePaymentRepository on mobile, MockPaymentRepository on desktop.
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
-  final isDesktop = !kIsWeb && (Platform.isLinux || Platform.isWindows || Platform.isMacOS);
+  final isDesktop =
+      !kIsWeb && (Platform.isLinux || Platform.isWindows || Platform.isMacOS);
 
   if (isDesktop) {
     return MockPaymentRepository(ref.read(profileRepositoryProvider));
@@ -27,6 +30,7 @@ final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
 
   final repo = NativePaymentRepository(
     profileRepo: ref.read(profileRepositoryProvider),
+    verificationService: FirebasePurchaseVerificationService(),
   );
   repo.initialize();
 
@@ -40,15 +44,24 @@ final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
 
 class NativePaymentRepository implements PaymentRepository {
   final ProfileRepository _profileRepo;
-  final InAppPurchase _iap = InAppPurchase.instance;
+  final PurchaseVerificationService _verificationService;
+  final InAppPurchase _iap;
 
   StreamSubscription<List<PurchaseDetails>>? _subscription;
   String? _pendingUserId;
   Completer<bool>? _purchaseCompleter;
+  Timer? _restoreResolutionTimer;
+  bool _isRestoring = false;
+  bool _restoreEntitled = false;
+  int _pendingRestoreVerifications = 0;
 
   NativePaymentRepository({
     required ProfileRepository profileRepo,
-  }) : _profileRepo = profileRepo;
+    required PurchaseVerificationService verificationService,
+    InAppPurchase? inAppPurchase,
+  })  : _profileRepo = profileRepo,
+        _verificationService = verificationService,
+        _iap = inAppPurchase ?? InAppPurchase.instance;
 
   /// Start listening to the global purchase stream.
   void initialize() {
@@ -57,7 +70,7 @@ class NativePaymentRepository implements PaymentRepository {
       onDone: () => _subscription?.cancel(),
       onError: (error) {
         AppLogger.d('❌ IAP stream error: $error');
-        _completePurchase(false);
+        _resolvePurchase(false);
       },
     );
   }
@@ -66,6 +79,7 @@ class NativePaymentRepository implements PaymentRepository {
   void dispose() {
     _subscription?.cancel();
     _subscription = null;
+    _restoreResolutionTimer?.cancel();
   }
 
   /// Query products from the store — used by the paywall to show real prices.
@@ -89,7 +103,8 @@ class NativePaymentRepository implements PaymentRepository {
   Future<bool> purchasePremium(String userId, {String? packageId}) async {
     if (!await _iap.isAvailable()) {
       AppLogger.d('❌ IAP: Store not available');
-      throw Exception('Store not available. Please check your connection and try again.');
+      throw Exception(
+          'Store not available. Please check your connection and try again.');
     }
 
     final productId = packageId ?? 'outcall_premium_yearly';
@@ -104,12 +119,17 @@ class NativePaymentRepository implements PaymentRepository {
 
     final product = response.productDetails.first;
     if (_purchaseCompleter != null && !_purchaseCompleter!.isCompleted) {
-      AppLogger.d('⚠️ IAP: Purchase already in progress — ignoring duplicate tap');
+      AppLogger.d(
+          '⚠️ IAP: Purchase already in progress — ignoring duplicate tap');
       return _purchaseCompleter!.future;
     }
 
     _pendingUserId = userId;
     _purchaseCompleter = Completer<bool>();
+    _isRestoring = false;
+    _restoreEntitled = false;
+    _pendingRestoreVerifications = 0;
+    _restoreResolutionTimer?.cancel();
 
     // Initiate the purchase — Google Play billing dialog will appear
     final purchaseParam = PurchaseParam(productDetails: product);
@@ -131,6 +151,10 @@ class NativePaymentRepository implements PaymentRepository {
     AppLogger.d('🛒 IAP: Restoring purchases for $userId...');
     _pendingUserId = userId;
     _purchaseCompleter = Completer<bool>();
+    _isRestoring = true;
+    _restoreEntitled = false;
+    _pendingRestoreVerifications = 0;
+    _restoreResolutionTimer?.cancel();
 
     await _iap.restorePurchases();
 
@@ -139,8 +163,9 @@ class NativePaymentRepository implements PaymentRepository {
       const Duration(seconds: 10),
       onTimeout: () {
         AppLogger.d('⚠️ IAP: Restore timed out — no purchases found');
-        _completePurchase(false);
-        return false;
+        final result = _restoreEntitled;
+        _completePurchase(result);
+        return result;
       },
     );
   }
@@ -159,31 +184,63 @@ class NativePaymentRepository implements PaymentRepository {
 
   void _onPurchaseUpdate(List<PurchaseDetails> purchaseDetailsList) async {
     for (final purchase in purchaseDetailsList) {
-      AppLogger.d('🛒 IAP: Purchase update — ${purchase.productID} status=${purchase.status}');
+      AppLogger.d(
+          '🛒 IAP: Purchase update — ${purchase.productID} status=${purchase.status}');
 
       switch (purchase.status) {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
-          // Verify and grant premium
-          final userId = _pendingUserId;
-          if (userId != null && userId.isNotEmpty) {
-            AppLogger.d('✅ IAP: Purchase/restore successful for $userId');
-            await _profileRepo.setPremiumStatus(userId, true);
-            _completePurchase(true);
-          } else {
-            AppLogger.d('⚠️ IAP: Purchase succeeded but no pending userId — user should restore');
-            _completePurchase(false);
+          var userId = _pendingUserId;
+          if (userId == null || userId.isEmpty) {
+            final authUser = FirebaseAuth.instance.currentUser;
+            if (authUser != null && authUser.uid.isNotEmpty) {
+              userId = authUser.uid;
+              AppLogger.d(
+                  'ℹ️ IAP: Recovered user ID $userId from FirebaseAuth instance');
+            }
           }
 
-          // IMPORTANT: Complete/finalize the transaction with the store
-          if (purchase.pendingCompletePurchase) {
-            await _iap.completePurchase(purchase);
+          final isRestoreVerification =
+              _isRestoring && purchase.status == PurchaseStatus.restored;
+          if (isRestoreVerification) {
+            _pendingRestoreVerifications++;
+            _restoreResolutionTimer?.cancel();
+          }
+
+          try {
+            if (userId == null || userId.isEmpty) {
+              AppLogger.d(
+                  '⚠️ IAP: Purchase succeeded but no user ID could be determined');
+              _resolvePurchase(false);
+              break;
+            }
+
+            final purchaseToken =
+                purchase.verificationData.serverVerificationData;
+            final result = await _verificationService.verifyAndroidPurchase(
+              productId: purchase.productID,
+              purchaseToken: purchaseToken,
+            );
+            AppLogger.d(
+                'IAP: Server verification status=${result.status} entitled=${result.entitled}');
+            _resolvePurchase(result.entitled);
+          } catch (e) {
+            AppLogger.d('❌ IAP: Server verification failed: $e');
+            _resolvePurchase(false);
+          } finally {
+            if (purchase.pendingCompletePurchase) {
+              await _iap.completePurchase(purchase);
+            }
+            if (isRestoreVerification) {
+              _pendingRestoreVerifications--;
+              _scheduleRestoreResolution();
+            }
           }
           break;
 
         case PurchaseStatus.error:
           AppLogger.d('❌ IAP: Purchase error: ${purchase.error?.message}');
-          _completePurchase(false);
+          _resolvePurchase(false);
 
           if (purchase.pendingCompletePurchase) {
             await _iap.completePurchase(purchase);
@@ -192,7 +249,7 @@ class NativePaymentRepository implements PaymentRepository {
 
         case PurchaseStatus.canceled:
           AppLogger.d('⚠️ IAP: Purchase cancelled by user');
-          _completePurchase(false);
+          _resolvePurchase(false);
           break;
 
         case PurchaseStatus.pending:
@@ -202,10 +259,35 @@ class NativePaymentRepository implements PaymentRepository {
     }
   }
 
+  void _resolvePurchase(bool success) {
+    if (success) {
+      _restoreEntitled = true;
+      _completePurchase(true);
+      return;
+    }
+    if (_isRestoring) {
+      _scheduleRestoreResolution();
+      return;
+    }
+    _completePurchase(false);
+  }
+
+  void _scheduleRestoreResolution() {
+    if (!_isRestoring || _pendingRestoreVerifications > 0) return;
+    _restoreResolutionTimer?.cancel();
+    _restoreResolutionTimer = Timer(const Duration(seconds: 2), () {
+      if (_pendingRestoreVerifications == 0) {
+        _completePurchase(_restoreEntitled);
+      }
+    });
+  }
+
   void _completePurchase(bool success) {
     if (_purchaseCompleter != null && !_purchaseCompleter!.isCompleted) {
       _purchaseCompleter!.complete(success);
     }
+    _restoreResolutionTimer?.cancel();
+    _isRestoring = false;
     _pendingUserId = null;
   }
 }
@@ -222,7 +304,8 @@ class MockPaymentRepository implements PaymentRepository {
     await Future.delayed(const Duration(seconds: 1));
 
     try {
-      AppLogger.d('🛒 MockPayment: Processing mock purchase ($packageId) for $userId...');
+      AppLogger.d(
+          '🛒 MockPayment: Processing mock purchase ($packageId) for $userId...');
       await _profileRepo.setPremiumStatus(userId, true);
       AppLogger.d('✅ MockPayment: User is now PREMIUM.');
       return true;
