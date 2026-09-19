@@ -54,12 +54,22 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<AuthUser> signInWithGoogle() async {
     _currentUser = const AuthUser(
-        id: 'google_user_456', 
-        email: 'mock@example.com', 
-        displayName: 'Mock User'
-    );
+        id: 'google_user_456',
+        email: 'mock.google@example.com',
+        displayName: 'Mock Google User');
     _controller.add(_currentUser);
-    AppLogger.d('Mock Auth: Signed in with Google as ${_currentUser?.id}');
+    AppLogger.d('Mock Auth: Signed in with Google');
+    return _currentUser!;
+  }
+
+  @override
+  Future<AuthUser> signInWithApple() async {
+    _currentUser = const AuthUser(
+        id: 'apple_user_789',
+        email: 'mock.apple@example.com',
+        displayName: 'Mock Apple User');
+    _controller.add(_currentUser);
+    AppLogger.d('Mock Auth: Signed in with Apple');
     return _currentUser!;
   }
 

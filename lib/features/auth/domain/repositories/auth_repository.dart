@@ -9,6 +9,9 @@ abstract class AuthRepository {
   
   Future<AuthUser> signInWithGoogle();
   
+  /// Authenticates using Apple Sign-In (required for iOS App Store compliance).
+  Future<AuthUser> signInWithApple();
+  
   /// Authenticates with email and password.
   Future<void> signInWithEmail(String email, String password);
 

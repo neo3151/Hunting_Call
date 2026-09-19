@@ -129,6 +129,31 @@ class AuthController extends StreamNotifier<AuthUser?> {
     }
   }
 
+  Future<void> signInWithApple() async {
+    state = const AsyncValue.loading();
+    try {
+      ref.read(loggerServiceProvider).log('Attempting sign in with Apple');
+      final repository = ref.read(authRepositoryProvider);
+      await repository.signInWithApple();
+
+      final currentUser = await repository.currentUser;
+      if (currentUser != null) {
+        AppLogger.d(
+            'AuthController: Eagerly loading profile for Apple user ${currentUser.id}');
+        await ref
+            .read(profileNotifierProvider.notifier)
+            .loadProfile(currentUser.id);
+      }
+
+      ref.read(loggerServiceProvider).log('Signed in with Apple successfully');
+    } catch (e, st) {
+      ref
+          .read(loggerServiceProvider)
+          .recordError(e, st, reason: 'Apple sign in failed');
+      state = AsyncValue.error(e, st);
+    }
+  }
+
   Future<void> signInWithEmail(String email, String password) async {
     state = const AsyncValue.loading();
     try {

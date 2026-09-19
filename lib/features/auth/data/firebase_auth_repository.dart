@@ -144,6 +144,40 @@ class FirebaseAuthRepository implements AuthRepository {
     }
   }
 
+  @override
+  Future<AuthUser> signInWithApple() async {
+    try {
+      AppLogger.d('🔐 FirebaseAuthRepository: Starting Apple Sign-In...');
+      final appleProvider = OAuthProvider('apple.com');
+      appleProvider.addScope('email');
+      appleProvider.addScope('name');
+
+      final userCredential = await _auth.signInWithProvider(appleProvider);
+      final user = userCredential.user;
+      if (user == null) throw Exception('Apple Sign-In returned null user');
+
+      final email = user.email;
+      final displayName = user.displayName?.trim();
+      final uid = user.uid;
+
+      AppLogger.d('✅ Apple Sign-In successful!');
+      AppLogger.d('👤 Name: $displayName | Email: $email | UID: $uid');
+
+      await _ensureProfileInFirestore(uid, email, displayName);
+
+      final mapped = _mapFirebaseUser(user);
+      return AuthUser(
+        id: uid,
+        email: email,
+        displayName: displayName ?? mapped?.displayName,
+        isAnonymous: user.isAnonymous,
+      );
+    } catch (e, stackTrace) {
+      AppLogger.d('❌ Apple Sign-In failed: $e\n$stackTrace');
+      rethrow;
+    }
+  }
+
   Future<void> _ensureProfileInFirestore(
       String uid, String? email, String? displayName) async {
     try {
