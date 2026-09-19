@@ -236,32 +236,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         child: SignInWithAppleButton(
                                           onPressed: () async {
                                             try {
-                                              // Satisfies Apple's requirement for the native flow UI wrapper
-                                              // We execute anonymous sign in so the user can immediately enter the app
-                                              final credential = await SignInWithApple.getAppleIDCredential(
-                                                scopes: [
-                                                  AppleIDAuthorizationScopes.email,
-                                                  AppleIDAuthorizationScopes.fullName,
-                                                ],
-                                              );
-                                              if (context.mounted) {
-                                                // Create profile using Apple provided name
-                                                final name = [credential.givenName, credential.familyName]
-                                                    .where((s) => s != null && s.isNotEmpty)
-                                                    .join(' ');
-                                                
-                                                AppLogger.d('Apple Sign-In Success. Proceeding to app...');
-                                                await ref.read(authControllerProvider.notifier).signInAnonymously();
-                                                
-                                                final authRepo = ref.read(authRepositoryProvider);
-                                                final profileNotifier = ref.read(profileNotifierProvider.notifier);
-                                                final currentUser = await authRepo.currentUser;
-                                                
-                                                if (currentUser?.id != null && name.isNotEmpty) {
-                                                  await profileNotifier.createProfile(name, id: currentUser!.id);
-                                                  authRepo.emitAuthState();
-                                                }
-                                              }
+                                              await ref.read(authControllerProvider.notifier).signInWithApple();
                                             } catch (e) {
                                               AppLogger.d('Apple Sign-In Error: $e');
                                               if (context.mounted) {
