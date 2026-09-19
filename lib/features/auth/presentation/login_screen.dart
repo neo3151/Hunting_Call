@@ -420,7 +420,7 @@ class _CreateProfileSheetState extends State<_CreateProfileSheet> {
   }
 
   void _validateInput() {
-    bool valid = _controller.text.trim().length >= _minNameLength && _birthday != null;
+    bool valid = _controller.text.trim().length >= _minNameLength;
     if (_useEmail) {
       valid = valid && _emailController.text.contains('@') && _passwordController.text.length >= 6;
     }

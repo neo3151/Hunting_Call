@@ -53,7 +53,13 @@ android {
 
     buildTypes {
         debug {
+            applicationIdSuffix = ".dev"
             resValue("string", "app_name", "OUTCALL DEV")
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
         release {
             resValue("string", "app_name", "OUTCALL")

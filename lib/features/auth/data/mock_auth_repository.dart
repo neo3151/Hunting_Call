@@ -71,6 +71,13 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> deleteAccount() async {
+    _currentUser = null;
+    _controller.add(null);
+    AppLogger.d('Mock Auth: Deleted account');
+  }
+
+  @override
   Future<void> ensureTechnicalSession() async {
     // No-op for mock
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -40,7 +41,7 @@ class BackendRatingService implements RatingService {
         }
       }
 
-      final response = await request.send();
+      final response = await request.send().timeout(const Duration(seconds: 15));
       final responseBody = await response.stream.bytesToString();
 
       final latency = DateTime.now().difference(startTime).inMilliseconds;
@@ -58,6 +59,18 @@ class BackendRatingService implements RatingService {
         }
 
         return result;
+      } else if (response.statusCode >= 500) {
+        // Retryable server error — queue call in outbox
+        if (!isBackgroundSync) {
+          await _outboxRepo.queueCall(userId, audioPath, animalType);
+        }
+        return RatingResult(
+          score: -1.0,
+          feedback: "Server busy. Audio safely queued and will retry automatically when connection stabilizes.",
+          pitchHz: 0.0,
+          metrics: {'offline_pending': 1.0},
+          archetypeLabel: "Offline Pending"
+        );
       } else {
         AnalyticsService.logRecordingRejected(animalType, 'server_error_${response.statusCode}');
         throw Exception('Backend returned status ${response.statusCode}: $responseBody');
@@ -71,6 +84,19 @@ class BackendRatingService implements RatingService {
       return RatingResult(
         score: -1.0, // Special flag for pending
         feedback: "Audio safely queued. We will automatically score your call when you reconnect to Wi-Fi or LTE.",
+        pitchHz: 0.0,
+        metrics: {'offline_pending': 1.0},
+        archetypeLabel: "Offline Pending"
+      );
+    } on TimeoutException catch (_) {
+      // 🌲 TIMEOUT FALLBACK 🌲
+      if (!isBackgroundSync) {
+        await _outboxRepo.queueCall(userId, audioPath, animalType);
+      }
+
+      return RatingResult(
+        score: -1.0,
+        feedback: "Connection timed out. Audio safely queued and will retry automatically.",
         pitchHz: 0.0,
         metrics: {'offline_pending': 1.0},
         archetypeLabel: "Offline Pending"

@@ -207,6 +207,28 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final callable = FirebaseFunctions.instance.httpsCallable('deleteUserAccount');
+      await callable.call();
+      AppLogger.d('✅ Account deletion function invoked successfully for ${user.uid}');
+    } catch (e) {
+      AppLogger.e('Cloud deleteUserAccount failed, attempting client fallback deletion: $e');
+      // Fallback: Delete profile doc and auth user if function call failed
+      try {
+        await _firestore.collection('profiles').doc(user.uid).delete();
+        await user.delete();
+      } catch (err) {
+        AppLogger.e('Client fallback deletion failed: $err');
+        rethrow;
+      }
+    }
+  }
+
+  @override
   Future<AuthUser?> get currentUser async =>
       _mapFirebaseUser(_auth.currentUser);
 

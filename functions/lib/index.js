@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reconcileAndroidEntitlements = exports.verifyAndroidEntitlement = exports.ensureUserProfile = exports.getCoachingFeedback = exports.backfillAverageScores = exports.scrubInactiveProfilesManual = exports.scrubInactiveProfiles = exports.submitScore = void 0;
+exports.deleteUserAccount = exports.grantSupportPremium = exports.reconcileAndroidEntitlements = exports.verifyAndroidEntitlement = exports.ensureUserProfile = exports.getCoachingFeedback = exports.backfillAverageScores = exports.scrubInactiveProfilesManual = exports.scrubInactiveProfiles = exports.submitScore = void 0;
 exports.entitlementFromSubscription = entitlementFromSubscription;
 const crypto_1 = require("crypto");
 const admin = __importStar(require("firebase-admin"));
@@ -53,6 +53,18 @@ const db = admin.firestore();
 //   3. Sort descending by score
 //   4. Keep top 20 entries
 //
+const ADMIN_EMAILS = new Set(["benchmarkappsllc@gmail.com", "pongownsyou@gmail.com"]);
+function verifyIsAdmin(context) {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "Must be logged in.");
+    }
+    const email = context.auth.token.email;
+    const isAdminClaim = context.auth.token.admin === true;
+    const isEmailAdmin = typeof email === "string" && ADMIN_EMAILS.has(email.toLowerCase());
+    if (!isAdminClaim && !isEmailAdmin) {
+        throw new functions.https.HttpsError("permission-denied", "Admin privileges required.");
+    }
+}
 exports.submitScore = functions.https.onCall(async (data, context) => {
     // ── Auth check ──
     if (!context.auth) {
@@ -65,18 +77,21 @@ exports.submitScore = functions.https.onCall(async (data, context) => {
     if (typeof data.score !== "number" || data.score < 0 || data.score > 100) {
         throw new functions.https.HttpsError("invalid-argument", "score must be a number between 0 and 100.");
     }
-    if (!data.userName || typeof data.userName !== "string") {
-        throw new functions.https.HttpsError("invalid-argument", "userName is required.");
-    }
     // Use the authenticated UID, not the client-supplied one (security)
     const userId = context.auth.uid;
+    // Fetch actual server-side profile to prevent username/avatar/alpha forgery
+    const profileSnap = await db.collection("profiles").doc(userId).get();
+    const profileData = profileSnap.exists ? profileSnap.data() : null;
+    const userName = (profileData === null || profileData === void 0 ? void 0 : profileData.name) || data.userName || "Hunter";
+    const profileImageUrl = (profileData === null || profileData === void 0 ? void 0 : profileData.avatarUrl) || (profileData === null || profileData === void 0 ? void 0 : profileData.profileImageUrl) || data.profileImageUrl || undefined;
+    const isAlphaTester = (profileData === null || profileData === void 0 ? void 0 : profileData.isAlphaTester) === true;
     const newEntry = {
         userId: userId,
-        userName: data.userName,
+        userName: userName,
         score: data.score,
         timestamp: Date.now(),
-        profileImageUrl: data.profileImageUrl || undefined,
-        isAlphaTester: data.isAlphaTester || false,
+        profileImageUrl: profileImageUrl,
+        isAlphaTester: isAlphaTester,
     };
     const docRef = db.collection("leaderboards").doc(data.animalId);
     // ── Transaction with server-side retries ──
@@ -245,10 +260,7 @@ exports.scrubInactiveProfiles = functions.pubsub
 });
 // ── Manual trigger: callable from Firebase console or client ──
 exports.scrubInactiveProfilesManual = functions.https.onCall(async (_data, context) => {
-    // Only allow authenticated admin calls
-    if (!context.auth) {
-        throw new functions.https.HttpsError("unauthenticated", "Must be logged in to trigger scrub.");
-    }
+    verifyIsAdmin(context);
     functions.logger.info("🧹 Starting manual profile scrub...");
     const result = await runProfileScrub();
     functions.logger.info("🧹 Manual profile scrub complete", result);
@@ -261,9 +273,7 @@ exports.scrubInactiveProfilesManual = functions.https.onCall(async (_data, conte
 // Fixes the bug where averageScore was never updated on cloud writes.
 //
 exports.backfillAverageScores = functions.https.onCall(async (_data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError("unauthenticated", "Must be logged in to trigger backfill.");
-    }
+    verifyIsAdmin(context);
     const profilesSnap = await db.collection("profiles").get();
     let updated = 0;
     let skipped = 0;
@@ -570,6 +580,10 @@ async function persistAndroidEntitlement(uid, purchaseToken, entitlement, email 
             transaction.set(entitlementRef, Object.assign(Object.assign({ uid, platform: "android", packageName: ANDROID_PACKAGE_NAME, purchaseToken,
                 tokenHash, createdAt: ((_b = existing.data()) === null || _b === void 0 ? void 0 : _b.createdAt) || admin.firestore.FieldValue.serverTimestamp() }, entitlement), { lastVerifiedAt: admin.firestore.FieldValue.serverTimestamp() }), { merge: true });
         }
+        const supportGrantSnap = await transaction.get(db.collection("supportGrants").doc(uid));
+        const supportGrantData = supportGrantSnap.exists ? supportGrantSnap.data() : null;
+        const supportExpiresAt = typeof (supportGrantData === null || supportGrantData === void 0 ? void 0 : supportGrantData.expiresAt) === "string" ? supportGrantData.expiresAt : null;
+        const hasValidSupportGrant = (supportGrantData === null || supportGrantData === void 0 ? void 0 : supportGrantData.active) === true && (supportExpiresAt === null || Date.parse(supportExpiresAt) > Date.now());
         const otherActive = activeEntitlements.docs.filter((doc) => {
             if (doc.id === tokenHash || doc.data().entitled !== true)
                 return false;
@@ -578,11 +592,12 @@ async function persistAndroidEntitlement(uid, purchaseToken, entitlement, email 
         });
         const premiumExpiresAt = [
             ...(entitlement.entitled && entitlement.expiresAt ? [entitlement.expiresAt] : []),
+            ...(hasValidSupportGrant && supportExpiresAt ? [supportExpiresAt] : []),
             ...otherActive
                 .map((doc) => doc.data().expiresAt)
                 .filter((value) => typeof value === "string"),
         ].sort().pop() || null;
-        const isPremium = entitlement.entitled || otherActive.length > 0;
+        const isPremium = entitlement.entitled || hasValidSupportGrant || otherActive.length > 0;
         const premiumFields = {
             id: uid,
             isPremium,
@@ -669,11 +684,120 @@ exports.reconcileAndroidEntitlements = functions.pubsub
             });
         }
     }
-    functions.logger.info("Android entitlement reconciliation complete", {
+    // Reconcile manual support grants that have expired
+    const supportGrantsSnap = await db.collection("supportGrants").get();
+    for (const grantDoc of supportGrantsSnap.docs) {
+        const data = grantDoc.data();
+        const uid = grantDoc.id;
+        const expiresAt = typeof data.expiresAt === "string" ? data.expiresAt : null;
+        if (data.active === true && expiresAt && Date.parse(expiresAt) <= Date.now()) {
+            await grantDoc.ref.update({ active: false });
+            const profileRef = db.collection("profiles").doc(uid);
+            const profileSnap = await profileRef.get();
+            if (profileSnap.exists) {
+                const profileData = profileSnap.data();
+                if ((profileData === null || profileData === void 0 ? void 0 : profileData.isPremium) === true) {
+                    await profileRef.update({
+                        isPremium: false,
+                        premiumExpiresAt: admin.firestore.FieldValue.delete(),
+                    });
+                }
+            }
+        }
+    }
+    functions.logger.info("Android entitlement & support grant reconciliation complete", {
         scanned: snapshots.size,
         verified,
         failed,
     });
     return null;
+});
+// ─── grantSupportPremium ────────────────────────────────────────────
+//
+// Admin-only Callable Cloud Function to grant temporary Pro access for support.
+// Prevents direct raw database manipulation of profile.isPremium.
+//
+exports.grantSupportPremium = functions.https.onCall(async (data, context) => {
+    var _a, _b;
+    verifyIsAdmin(context);
+    const targetUid = typeof (data === null || data === void 0 ? void 0 : data.targetUid) === "string" ? data.targetUid.trim() : "";
+    const durationDays = typeof (data === null || data === void 0 ? void 0 : data.durationDays) === "number" && data.durationDays > 0 ? data.durationDays : 30;
+    const reason = typeof (data === null || data === void 0 ? void 0 : data.reason) === "string" ? data.reason.trim() : "Support grant";
+    if (!targetUid) {
+        throw new functions.https.HttpsError("invalid-argument", "targetUid is required.");
+    }
+    const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+    await db.collection("supportGrants").doc(targetUid).set({
+        uid: targetUid,
+        active: true,
+        durationDays,
+        reason,
+        expiresAt,
+        grantedBy: ((_a = context.auth) === null || _a === void 0 ? void 0 : _a.token.email) || ((_b = context.auth) === null || _b === void 0 ? void 0 : _b.uid),
+        grantedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    await db.collection("profiles").doc(targetUid).set({
+        id: targetUid,
+        isPremium: true,
+        premiumExpiresAt: expiresAt,
+    }, { merge: true });
+    functions.logger.info(`🎁 Support grant issued to ${targetUid} until ${expiresAt} (${reason})`);
+    return { success: true, targetUid, expiresAt };
+});
+// ─── deleteUserAccount ──────────────────────────────────────────────
+//
+// Callable Cloud Function that executes complete deletion of a user's data:
+// 1. Profile document (/profiles/{uid})
+// 2. Storage objects under users/{uid}/
+// 3. Removes user entries from all leaderboards
+// 4. Android entitlement documents tied to this user
+// 5. Firebase Auth user account
+//
+exports.deleteUserAccount = functions.https.onCall(async (_data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "Must be logged in to delete your account.");
+    }
+    const uid = context.auth.uid;
+    functions.logger.info(`🗑️ Starting account deletion for user: ${uid}`);
+    try {
+        // 1. Delete profile document
+        await db.collection("profiles").doc(uid).delete();
+        // 2. Remove user from all leaderboards
+        const leaderboardsSnap = await db.collection("leaderboards").get();
+        for (const lbDoc of leaderboardsSnap.docs) {
+            const lbData = lbDoc.data();
+            if (!Array.isArray(lbData.scores))
+                continue;
+            const originalLen = lbData.scores.length;
+            const filtered = lbData.scores.filter((entry) => entry.userId !== uid);
+            if (filtered.length < originalLen) {
+                await lbDoc.ref.update({
+                    scores: filtered,
+                    lastUpdated: new Date().toISOString(),
+                });
+            }
+        }
+        // 3. Delete android entitlements tied to UID
+        const entitlementsSnap = await db.collection("androidEntitlements").where("uid", "==", uid).get();
+        for (const doc of entitlementsSnap.docs) {
+            await doc.ref.delete();
+        }
+        // 4. Delete user files in Firebase Storage
+        try {
+            const bucket = admin.storage().bucket();
+            await bucket.deleteFiles({ prefix: `users/${uid}/` });
+        }
+        catch (storageErr) {
+            functions.logger.warn(`Storage deletion cleanup notice for ${uid}:`, storageErr);
+        }
+        // 5. Delete Firebase Auth user
+        await admin.auth().deleteUser(uid);
+        functions.logger.info(`✅ Account deletion completed successfully for user: ${uid}`);
+        return { success: true };
+    }
+    catch (error) {
+        functions.logger.error(`❌ Account deletion failed for user ${uid}:`, error);
+        throw new functions.https.HttpsError("internal", "Failed to complete account deletion. Please try again or contact support.");
+    }
 });
 //# sourceMappingURL=index.js.map

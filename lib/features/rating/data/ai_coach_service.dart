@@ -6,32 +6,12 @@ import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/features/rating/data/coaching_session_history.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 
-/// Service that calls the AI backend to get personalized
-/// coaching powered by Gemini 2.0 Flash.
-///
-/// Previously this hit a Railway-hosted FastAPI backend at `/api/coach`.
-/// Now calls the Gemini API directly from the app using [google_generative_ai].
-///
-/// Falls back to a rich rule-based fallback when:
-///  - Offline (no connectivity)
-///  - No API key configured
-///  - Gemini API errors
-///  - Running on Linux/desktop (no Firebase → no remote config key)
+import 'package:cloud_functions/cloud_functions.dart';
+
+/// Service that calls the AI backend/cloud function to get personalized
+/// coaching, falling back to a rule-based engine when offline or unavailable.
 class AiCoachService {
-  // Gemini API key — injected from RemoteConfig or env.
-  // Stored as a remote config value rather than hardcoded for security.
-  static String? _apiKey;
-
-  /// Set the Gemini API key at startup from Remote Config or secure storage.
-  static void setApiKey(String key) {
-    _apiKey = key.isNotEmpty ? key : null;
-  }
-
   /// Request AI coaching feedback based on rating results.
-  ///
-  /// [baseUrl] should come from RemoteConfigService.aiCoachUrl for dynamic updates.
-  /// Injects user's session history for personalized, adaptive coaching.
-  /// Returns the coaching text, or a fallback string if backend is unreachable.
   static Future<String> getCoaching({
     required String animalName,
     required String callType,
@@ -42,7 +22,7 @@ class AiCoachService {
     required String audioPath,
   }) async {
     try {
-      // Desktop: always use fallback (no Firebase/network in dev)
+      // Desktop / dev check: fallback for non-mobile platforms
       if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
         AppLogger.d('AI Coach: Desktop platform, using local fallback');
         return _fallback(
@@ -52,7 +32,7 @@ class AiCoachService {
             callType: callType);
       }
 
-      // Check connectivity
+      // Connectivity check
       final connectivityResults = await Connectivity().checkConnectivity();
       final isOffline = connectivityResults.isEmpty ||
           connectivityResults.every((r) => r == ConnectivityResult.none);
@@ -61,78 +41,41 @@ class AiCoachService {
         return '${_fallback(result: result, idealPitchHz: idealPitchHz, animalName: animalName, callType: callType)}\n\n(Offline — connect to get AI-powered coaching)';
       }
 
-      // No API key → fallback
-      if (_apiKey == null || _apiKey!.isEmpty) {
-        AppLogger.d('AI Coach: No Gemini API key, using fallback');
-        return _fallback(
-            result: result,
-            idealPitchHz: idealPitchHz,
-            animalName: animalName,
-            callType: callType);
-      }
+      // Invoke authenticated Cloud Function backend
+      final callable = FirebaseFunctions.instance.httpsCallable('getCoachingFeedback');
+      final res = await callable.call<Map<String, dynamic>>({
+        'animalName': animalName,
+        'callType': callType,
+        'score': result.score,
+        'pitchHz': result.pitchHz,
+        'idealPitchHz': idealPitchHz,
+        'metrics': result.metrics,
+        'proTips': proTips,
+      }).timeout(const Duration(seconds: 15));
 
-      // Fetch session history for context (non-blocking)
-      String historySummary = '';
-      if (userId != null && userId.isNotEmpty) {
-        try {
-          historySummary =
-              await CoachingSessionHistory.getHistorySummary(userId);
-        } catch (_) {
-          // History is nice-to-have
+      final coaching = res.data['coaching'] as String?;
+      if (coaching != null && coaching.trim().isNotEmpty) {
+        if (userId != null && userId.isNotEmpty) {
+          CoachingSessionHistory.saveSession(
+            userId: userId,
+            animalId: animalName,
+            animalName: animalName,
+            callType: callType,
+            score: result.score,
+            metrics: result.metrics,
+            coachingText: coaching.trim(),
+          );
         }
+        return coaching.trim();
       }
 
-      // Create Gemini model
-      final model = GenerativeModel(
-        model: 'gemini-2.0-flash',
-        apiKey: _apiKey!,
-        systemInstruction: Content.text(_systemPrompt),
-      );
-
-      final userPrompt = '''
-Animal: $animalName
-Call Type: $callType
-User Pitch: ${result.pitchHz.toStringAsFixed(1)} Hz (Ideal: ${idealPitchHz.toStringAsFixed(1)} Hz)
-Pitch Score: ${result.metrics['score_pitch']?.toStringAsFixed(1) ?? result.score.toStringAsFixed(1)}/100
-Duration Score: ${result.metrics['score_duration']?.toStringAsFixed(1) ?? result.score.toStringAsFixed(1)}/100
-Timbre Score: ${result.metrics['score_timbre']?.toStringAsFixed(1) ?? 'N/A'}
-Rhythm Score: ${result.metrics['score_rhythm']?.toStringAsFixed(1) ?? 'N/A'}
-Overall Score: ${result.score.toStringAsFixed(1)}/100
-${historySummary.isNotEmpty ? '\nSession History:\n$historySummary' : ''}
-
-Give me coaching feedback based on these metrics.
-''';
-
-      final response = await model
-          .generateContent([Content.text(userPrompt)])
-          .timeout(const Duration(seconds: 15));
-
-      final coaching = response.text?.trim() ?? '';
-
-      if (coaching.length < 10) {
-        return _fallback(
-            result: result,
-            idealPitchHz: idealPitchHz,
-            animalName: animalName,
-            callType: callType);
-      }
-
-      // Save session for future context (fire and forget)
-      if (userId != null && userId.isNotEmpty) {
-        CoachingSessionHistory.saveSession(
-          userId: userId,
-          animalId: animalName,
+      return _fallback(
+          result: result,
+          idealPitchHz: idealPitchHz,
           animalName: animalName,
-          callType: callType,
-          score: result.score,
-          metrics: result.metrics,
-          coachingText: coaching,
-        );
-      }
-
-      return coaching;
+          callType: callType);
     } catch (e) {
-      AppLogger.e('AI Coach: Gemini call failed', e);
+      AppLogger.e('AI Coach: Coaching request failed', e);
       return _fallback(
           result: result,
           idealPitchHz: idealPitchHz,

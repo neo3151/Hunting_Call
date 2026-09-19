@@ -41,23 +41,11 @@ service cloud.firestore {
 
     // ─── /leaderboards/{animalId} ───────────────────────────────────
     match /leaderboards/{animalId} {
-      // Publicly readable for all hunters
+      // Publicly readable for all authenticated hunters
       allow read: if isAuthenticated();
 
-      // PROTECT the Leaderboard from being wiped.
-      // We only allow an update if the new list is at least as long as the old one
-      // (preventing the "Empty List" wipe hack) and stays within the top 20 limit.
-      allow update: if isAuthenticated()
-                   && request.resource.data.keys().hasOnly(['scores', 'lastUpdated'])
-                   && request.resource.data.scores is list
-                   && request.resource.data.scores.size() >= resource.data.scores.size()
-                   && request.resource.data.scores.size() <= 20;
-
-      // First-time creation (if a species doesn't have a leaderboard yet)
-      allow create: if isAuthenticated() 
-                    && request.resource.data.scores.size() <= 20;
-
-      allow delete: if false;
+      // Client writes denied — updates must go through the submitScore Cloud Function
+      allow write: if false;
     }
 
     // ─── /config/{document=**} ─────────────────────────────────────

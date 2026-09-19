@@ -15,9 +15,9 @@ When you create an account, we collect:
 - User-generated profile information
 
 ### Audio Recordings
-- Practice call recordings you create within the app
-- Audio analysis data and performance scores
-- These recordings are stored locally on your device and optionally in your personal cloud storage
+- Practice call recordings you create within the app are transmitted securely over HTTPS to our dedicated scoring service for real-time acoustic analysis and scoring.
+- Audio analysis data and performance scores are stored with your profile to track your calling progress over time.
+- Temporary audio files created during practice sessions are stored locally on your device and automatically cleaned up.
 
 ### Location Data
 - GPS coordinates when you create hunting log entries

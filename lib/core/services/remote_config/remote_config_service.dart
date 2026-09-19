@@ -42,9 +42,6 @@ class RemoteConfigService {
 
       // Load remote profanity terms into the filter
       _loadProfanityTerms();
-
-      // Inject Gemini API key into the AI Coach service
-      _loadGeminiApiKey();
     } catch (e) {
       // If fetching fails (e.g., no internet), it will safely use the defaults
       AppLogger.d('Remote Config fetch failed: $e');
@@ -67,15 +64,6 @@ class RemoteConfigService {
 
     if (terms.isNotEmpty) {
       ProfanityFilter.loadRemoteTerms(terms);
-    }
-  }
-
-  /// Loads the Gemini API key from Remote Config and injects it into the AI Coach.
-  void _loadGeminiApiKey() {
-    final key = _remoteConfig?.getString('gemini_api_key') ?? '';
-    if (key.isNotEmpty) {
-      AiCoachService.setApiKey(key);
-      AppLogger.d('Gemini API key loaded from Remote Config');
     }
   }
 }

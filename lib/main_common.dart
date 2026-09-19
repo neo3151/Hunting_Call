@@ -45,42 +45,40 @@ Future<void> mainCommon() async {
 
   _setupErrorHandling(env.isFirebaseEnabled);
 
-  // Initialize Remote Config for AI Coach and feature flags
-  if (env.isFirebaseEnabled) {
-    await container.read(remoteConfigServiceProvider).initialize();
-  }
-
-  // Initialize analytics
-  if (env.isFirebaseEnabled) AnalyticsService.initialize();
-
-  // Initialize push notifications
-  if (env.isFirebaseEnabled) {
-    final notifService = NotificationService(
-      SharedPrefsStorage(env.sharedPreferences),
-    );
-    await notifService.initialize();
-  }
-
   // Initialize Desktop sqlite
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
 
-  // Initialize HuntingLog database tables eagerly
-  try {
-    final huntingLogRepo = LocalHuntingLogRepository();
-    await huntingLogRepo.initialize();
-  } catch (e) {
-    AppLogger.d('HuntingLog DB init failed: $e');
-  }
+  // Launch non-blocking background initialization tasks after first frame
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (env.isFirebaseEnabled) {
+      container.read(remoteConfigServiceProvider).initialize().catchError((e) {
+        AppLogger.d('RemoteConfig init error: $e');
+      });
+      AnalyticsService.initialize();
+      final notifService = NotificationService(
+        SharedPrefsStorage(env.sharedPreferences),
+      );
+      notifService.initialize().catchError((e) {
+        AppLogger.d('NotificationService init error: $e');
+      });
+    }
 
-  // Phase 2: Eagerly start the offline outbox sync listener
-  try {
-    container.read(offlineSyncServiceProvider);
-  } catch (e) {
-    AppLogger.d('OfflineSyncService init failed: $e');
-  }
+    try {
+      final huntingLogRepo = LocalHuntingLogRepository();
+      await huntingLogRepo.initialize();
+    } catch (e) {
+      AppLogger.d('HuntingLog DB init failed: $e');
+    }
+
+    try {
+      container.read(offlineSyncServiceProvider);
+    } catch (e) {
+      AppLogger.d('OfflineSyncService init failed: $e');
+    }
+  });
 
   runApp(
     UncontrolledProviderScope(

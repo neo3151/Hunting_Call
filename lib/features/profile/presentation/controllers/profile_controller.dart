@@ -82,8 +82,16 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
+  int _loadGeneration = 0;
+
   /// Load a specific user's profile
   Future<void> loadProfile(String userId) async {
+    final currentGen = ++_loadGeneration;
+
+    // Immediately cancel any existing stream subscription before fetching new profile
+    await _profileSubscription?.cancel();
+    _profileSubscription = null;
+
     // Only show the full-screen loading spinner if we don't already have the profile
     final isInitialLoad = state.profile == null || state.profile!.id != userId;
     if (isInitialLoad) {
@@ -96,15 +104,20 @@ class ProfileNotifier extends Notifier<ProfileState> {
             onTimeout: () =>
                 throw TimeoutException('Profile load timed out after 10s'),
           );
-      // AppLogger.d("ProfileNotifier: loadProfile success for $userId");
+
+      // Ignore completion if a newer loadProfile invocation has started
+      if (currentGen != _loadGeneration) {
+        AppLogger.d('ProfileNotifier: Stale loadProfile completion ignored for $userId (gen $currentGen vs $_loadGeneration)');
+        return;
+      }
+
       state = state.copyWith(profile: profile, isProfileLoading: false);
 
       // Subscribe to live profile stream from repository
-      await _profileSubscription?.cancel();
       if (userId != 'guest') {
         _profileSubscription = _repo.watchProfile(userId).listen(
           (updatedProfile) {
-            if (updatedProfile != null) {
+            if (currentGen == _loadGeneration && updatedProfile != null) {
               state = state.copyWith(profile: updatedProfile);
             }
           },

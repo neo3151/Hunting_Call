@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:outcall/core/utils/app_logger.dart';
@@ -76,13 +78,32 @@ class SqliteOutboxRepository {
     );
   }
 
-  /// Add a failed call to the offline outbox
+  /// Add a failed call to the offline outbox, ensuring audio is saved to durable storage
   Future<int> queueCall(String userId, String audioPath, String animalType) async {
     try {
+      final sourceFile = File(audioPath);
+      String durablePath = audioPath;
+
+      if (await sourceFile.exists()) {
+        try {
+          final docsDir = await getApplicationDocumentsDirectory();
+          final outboxFolder = Directory(join(docsDir.path, 'outbox_audio'));
+          if (!await outboxFolder.exists()) {
+            await outboxFolder.create(recursive: true);
+          }
+          final fileName = 'outbox_${DateTime.now().millisecondsSinceEpoch}_${basename(audioPath)}';
+          final targetFile = await sourceFile.copy(join(outboxFolder.path, fileName));
+          durablePath = targetFile.path;
+          AppLogger.d('SqliteOutboxRepository: Copied audio to durable path $durablePath');
+        } catch (copyErr) {
+          AppLogger.e('SqliteOutboxRepository: Failed to copy audio to durable path, using original', copyErr);
+        }
+      }
+
       final db = await database;
       final entry = OutboxEntry(
         userId: userId,
-        audioPath: audioPath,
+        audioPath: durablePath,
         animalType: animalType,
         timestampMs: DateTime.now().millisecondsSinceEpoch,
       );

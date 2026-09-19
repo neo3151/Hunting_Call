@@ -9,6 +9,7 @@ import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/features/payment/data/payment_repository.dart';
 import 'package:outcall/features/payment/presentation/controllers/payment_controller.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 
 /// Luxury upgrade screen — fetches real prices from Google Play on mobile,
@@ -57,6 +58,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
   @override
   void initState() {
     super.initState();
+    AnalyticsService.logPaywallViewed();
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -151,19 +153,22 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
     final paymentState = ref.watch(paymentNotifierProvider);
     final colors = AppColors.of(context);
 
-    // Show error feedback when a purchase fails
+    // Show error feedback when a purchase fails (except when user cancels)
     ref.listen<PaymentState>(paymentNotifierProvider, (prev, next) {
       if (next.status == PurchaseStatus.failed && context.mounted) {
-        final errorMsg = next.error;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMsg != null && errorMsg.contains('not found')
-                ? 'Product not available yet. Please try again later.'
-                : 'Purchase failed. Please try again.'),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        final errorMsg = next.error ?? '';
+        final isUserCancel = errorMsg.contains('cancelled') || errorMsg.contains('canceled');
+        if (!isUserCancel) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMsg.contains('not found')
+                  ? 'Product not available yet. Please try again later.'
+                  : 'Purchase failed. Please try again.'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
         ref.read(paymentNotifierProvider.notifier).reset();
       }
     });
@@ -278,11 +283,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
 
   Widget _buildComparisonMatrix(AppColorPalette colors) {
     final features = [
-      ('Call Library', 'Limited', 'All 135+ Calls'),
-      ('Audio Analysis', 'Basic Info', 'Detailed Scoring'),
+      ('Call Library', '16 Free Calls', 'All 135+ Calls'),
+      ('Audio Analysis', 'Basic Info', 'Detailed AI Scoring'),
       ('Daily Challenge', 'Free Calls Only', 'Unlimited Access'),
-      ('Global Rankings', '❌', '✔️'),
-      ('Offline Mode', '❌', '✔️'),
+      ('Global Rankings', '✔️', '✔️'),
+      ('Offline Practice', 'Free Calls', 'All Downloaded Calls'),
     ];
 
     return Container(
@@ -518,12 +523,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
                     : () async {
                         final userId = profile?.id ?? '';
                         if (userId.isNotEmpty) {
+                          AnalyticsService.logPurchaseStarted(_selectedProductId);
                           final success = await ref
                               .read(paymentNotifierProvider.notifier)
                               .purchasePremium(userId,
                                   packageId: _selectedProductId);
                           if (context.mounted) {
                             if (success) {
+                              AnalyticsService.logPurchaseCompleted(_selectedProductId);
                               await ref
                                   .read(profileNotifierProvider.notifier)
                                   .loadProfile(userId);
@@ -587,11 +594,29 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
   }
 
   Widget _buildLegal(AppColorPalette colors) {
-    return Text(
-      'Payment will be charged to your Google Play or Apple ID account. '
-      'Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period.',
-      style: TextStyle(fontSize: 10, color: colors.textSubtle, height: 1.5),
-      textAlign: TextAlign.center,
+    return Column(
+      children: [
+        Text(
+          'Payment will be charged to your Google Play account upon confirmation of purchase. '
+          'Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current billing period.',
+          style: TextStyle(fontSize: 10, color: colors.textSubtle, height: 1.5),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 6),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
+          },
+          child: Text(
+            'Privacy Policy & Terms',
+            style: TextStyle(
+              fontSize: 10,
+              color: colors.textTertiary,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

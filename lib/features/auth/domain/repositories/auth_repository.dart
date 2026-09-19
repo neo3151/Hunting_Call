@@ -32,6 +32,9 @@ abstract class AuthRepository {
   Future<void> signIn(String userId);
 
   Future<void> signOut();
+
+  /// Permanently deletes the current user's account and associated data.
+  Future<void> deleteAccount();
   
   /// Creates a technical session for Firestore access without
   /// triggering auth state changes (no AuthWrapper rebuild).

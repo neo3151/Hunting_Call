@@ -1,0 +1,4 @@
+- Enhanced Audio Outbox: Queued recordings are now safely preserved across app restarts and network interruptions.
+- Leaderboard & Security Hardening: Anti-tampering protection for leaderboard submissions and secure AI feedback processing.
+- Account Concurrency Fixes: Monitored profile loading to prevent stream conflicts when switching accounts.
+- Performance & UI Enhancements: Instant startup load times and improved subscription management screens.

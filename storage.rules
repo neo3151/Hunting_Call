@@ -7,9 +7,13 @@ service firebase.storage {
       allow read: if request.auth != null;
     }
     
-    // Allows users to upload their own recordings/data to a private folder
+    // Allows users to upload their own recordings/data to a private folder with size & content limitations
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.size < 10 * 1024 * 1024
+                    && (request.resource.contentType.matches('audio/.*') || request.resource.contentType.matches('image/.*'));
     }
 
     // Default: Deny all
