@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,10 +34,13 @@ class LeaderboardScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.public, color: Colors.white70),
             tooltip: 'Global Rankings',
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const GlobalLeaderboardScreen()),
-            ),
+            onPressed: () {
+              AnalyticsService.logLeaderboardViewed('global');
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const GlobalLeaderboardScreen()),
+              );
+            },
           ),
         ],
       ),

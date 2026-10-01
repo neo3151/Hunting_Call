@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:audioplayers/audioplayers.dart';
+import 'package:outcall/features/demo/presentation/demo_practice_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/core/services/cloud_audio_service.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/utils/app_logger.dart';
@@ -247,7 +250,31 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
         }
       } else {
         // Starting recording
-        if (!Platform.isLinux) {
+        if (kIsWeb) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Web Demo: Live mic recording is active on iOS & Android. Use Sample Call Lab for web telemetry.',
+              ),
+              backgroundColor: AppColors.surface,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'TRY SAMPLE',
+                textColor: AppColors.accentGold,
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => DemoPracticeScreen(userId: widget.userId),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+          return;
+        }
+
+        if (Platform.isAndroid || Platform.isIOS) {
           final permissionStatus = await Permission.microphone.status;
 
           if (permissionStatus.isDenied) {
@@ -295,7 +322,8 @@ class _RecorderPageState extends ConsumerState<RecorderPage> with TickerProvider
           // Recording actually started (countdown finished)
           _recordingStartTime = DateTime.now();
           _timeTicker.start();
-          
+          AnalyticsService.logRecordingStarted(selectedCallId);
+
           final call = ReferenceDatabase.getById(selectedCallId);
           final autoStopSec = (call.idealDurationSec + 2).clamp(3, 60).toInt();
           _autoStopTimer?.cancel();

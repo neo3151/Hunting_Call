@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/config/app_config.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/core/services/audio_service.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/utils/animal_image_alignment.dart';
@@ -257,6 +258,7 @@ class _CallDetailScreenState extends ConsumerState<CallDetailScreen> {
                               width: double.infinity,
                               child: OutlinedButton.icon(
                                 onPressed: () {
+                                  AnalyticsService.logLeaderboardViewed(widget.call.id);
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/core/services/remote_config/remote_config_service.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/utils/friendly_errors.dart';
@@ -15,6 +16,8 @@ import 'package:outcall/core/widgets/skeleton_loader.dart';
 import 'package:outcall/core/widgets/staggered_fade_slide.dart';
 import 'package:outcall/features/daily_challenge/presentation/controllers/daily_challenge_controller.dart';
 import 'package:outcall/features/daily_challenge/presentation/daily_challenge_screen.dart';
+import 'package:outcall/features/demo/demo_mode_controller.dart';
+import 'package:outcall/features/demo/presentation/demo_practice_screen.dart';
 import 'package:outcall/features/home/presentation/controllers/home_controller.dart';
 import 'package:outcall/features/home/presentation/widgets/daily_challenge_card.dart';
 import 'package:outcall/features/home/presentation/widgets/general_feedback_modal.dart';
@@ -269,8 +272,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildActionGrid(BuildContext context, String activeUserId) {
+    final demoMode = ref.watch(demoModeProvider);
     return Column(
       children: [
+        if (demoMode.isActive) ...[
+          _buildQuickActionCard(
+            icon: Icons.auto_graph_rounded,
+            iconColor: AppColors.accentGold,
+            title: 'Try a Sample Call',
+            subtitle: 'See scoring and Coach Buck in action',
+            onTap: () => Navigator.of(context).push(
+              FadeScaleRoute(
+                page: DemoPracticeScreen(userId: activeUserId),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         Row(
           children: [
             // Quick Practice card
@@ -317,9 +335,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   iconColor: AppColors.accentBlue,
                   title: 'Global\nRankings',
                   subtitle: 'See top hunters',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const GlobalLeaderboardScreen()),
-                  ),
+                  onTap: () {
+                    AnalyticsService.logLeaderboardViewed('global');
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const GlobalLeaderboardScreen()),
+                    );
+                  },
                 ),
               )
             else

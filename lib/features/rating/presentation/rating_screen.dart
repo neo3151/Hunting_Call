@@ -10,6 +10,7 @@ import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/widgets/achievement_overlay.dart';
 import 'package:outcall/di_providers.dart' show appRatingServiceProvider;
 import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:outcall/features/daily_challenge/presentation/controllers/daily_challenge_controller.dart';
 import 'package:outcall/features/library/domain/providers.dart';
 import 'package:outcall/features/profile/domain/achievement_service.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
@@ -178,6 +179,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       final achievement = AchievementService.achievements.firstWhere(
         (a) => a.id == newIds[i],
       );
+      AnalyticsService.logAchievementUnlocked(achievement.id);
       Future.delayed(Duration(milliseconds: 800 + (i * 3500)), () {
         if (mounted) {
           AchievementOverlay.show(
@@ -202,6 +204,11 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           _checkForAchievements();
           // Track analytics
           AnalyticsService.logRecordingCompleted(widget.animalId, next.result!.score);
+          // If this recording was today's challenge call, log a challenge rep
+          final todayChallenge = ref.read(dailyChallengeProvider).value;
+          if (todayChallenge != null && todayChallenge.id == widget.animalId) {
+            AnalyticsService.logDailyChallengeCompleted(widget.animalId, next.result!.score);
+          }
           // Maybe prompt for app review after a high score
           if (next.result!.score >= 80) {
             ref.read(appRatingServiceProvider).maybePromptReview();
@@ -425,6 +432,9 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                                       ),
                                     const SizedBox(height: 24),
                                     _tryRender(() => ProBreakdown(result: result), 'Pro Breakdown'),
+                                    const SizedBox(height: 16),
+                                    _tryRender(
+                                        () => CadenceBreakdownCard(result: result), 'Cadence Sequence'),
                                     const SizedBox(height: 16),
                                     _tryRender(
                                         () => PrimaryFlawCard(result: result), 'Primary Flaw'),

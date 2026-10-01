@@ -2,14 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/core/services/audio_service.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/features/home/presentation/home_screen.dart';
+import 'package:outcall/features/demo/demo_mode_controller.dart';
+import 'package:outcall/features/demo/presentation/demo_tour_dialog.dart';
 import 'package:outcall/features/library/presentation/category_grid_screen.dart';
 import 'package:outcall/features/profile/presentation/profile_screen.dart';
 import 'package:outcall/features/progress_map/presentation/progress_map_screen.dart';
 import 'package:outcall/features/recording/presentation/controllers/recording_controller.dart';
 import 'package:outcall/features/recording/presentation/recorder_page.dart';
+
+import 'package:outcall/features/demo/presentation/demo_practice_screen.dart';
+import 'package:outcall/features/demo/presentation/executive_pitch_dialog.dart';
 
 /// Persistent bottom navigation shell that wraps all main screens.
 /// Matches the Play Store screenshot design with dark green + orange brand colors.
@@ -41,6 +47,15 @@ class _MainShellState extends ConsumerState<MainShell> {
       ProgressMapScreen(userId: widget.userId),
       ProfileScreen(userId: widget.userId),
     ];
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final demo = ref.read(demoModeProvider);
+      if (demo.isActive && ref.read(demoModeProvider.notifier).beginTour() && mounted) {
+        DemoTourDialog.show(context).whenComplete(() {
+          if (mounted) ref.read(demoModeProvider.notifier).completeTour();
+        });
+      }
+    });
   }
 
   @override
@@ -60,6 +75,10 @@ class _MainShellState extends ConsumerState<MainShell> {
     setState(() {
       _currentIndex = index;
     });
+    const tabNames = ['home', 'library', 'record', 'progress_map', 'profile'];
+    if (index < tabNames.length) {
+      AnalyticsService.logScreenView(tabNames[index]);
+    }
   }
 
   void _onBottomNavTapped(int index) {
@@ -137,11 +156,101 @@ class _MainShellState extends ConsumerState<MainShell> {
             ),
           ),
         ),
-        body: PageView(
-          controller: _pageController,
-          onPageChanged: _onPageChanged,
-          physics: const BouncingScrollPhysics(),
-          children: _screens,
+        body: Stack(
+          children: [
+            PageView(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              physics: const BouncingScrollPhysics(),
+              children: _screens,
+            ),
+            if (ref.watch(demoModeProvider).isActive)
+              Positioned(
+                top: 12,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: colors.surface,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      builder: (ctx) => SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'DEMO MODE OPTIONS',
+                                style: GoogleFonts.oswald(
+                                  fontSize: 20,
+                                  color: AppColors.accentGold,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ListTile(
+                                leading: const Icon(Icons.graphic_eq_rounded, color: Colors.tealAccent),
+                                title: const Text('Sample Call Lab', style: TextStyle(color: Colors.white)),
+                                subtitle: const Text('Simulate duck, turkey, elk, coyote calls with AI scoring', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => const DemoPracticeScreen(userId: 'prospect_guest')),
+                                  );
+                                },
+                              ),
+                              if (ref.read(demoModeProvider).isPresenterMode)
+                                ListTile(
+                                  leading: const Icon(Icons.qr_code_2_rounded, color: AppColors.accentGold),
+                                  title: const Text('Executive Pitch Hub', style: TextStyle(color: Colors.white)),
+                                  subtitle: const Text('Generate scannable QR codes & presentation controls', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    ExecutivePitchDialog.show(context);
+                                  },
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.75),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.accentGold, width: 1.2),
+                      boxShadow: [
+                        BoxShadow(color: AppColors.accentGold.withOpacity(0.3), blurRadius: 8),
+                      ],
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.stars_rounded, color: AppColors.accentGold, size: 14),
+                          SizedBox(width: 5),
+                          Text(
+                            'DEMO MODE',
+                            style: TextStyle(
+                              color: AppColors.accentGold,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
         bottomNavigationBar: Container(
           decoration: BoxDecoration(

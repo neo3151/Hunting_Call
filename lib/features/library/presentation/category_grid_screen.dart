@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/features/library/data/reference_database.dart';
@@ -139,6 +140,7 @@ class CategoryGridScreen extends ConsumerWidget {
       label: '${item.name} category, $callCount calls',
       child: InkWell(
         onTap: () async {
+          AnalyticsService.logLibraryBrowse(item.name);
           final result = await Navigator.push<String>(
             context,
             MaterialPageRoute(
@@ -323,6 +325,7 @@ class CategoryGridScreen extends ConsumerWidget {
   }
 
   void _navigateToFavorites(BuildContext context) {
+    AnalyticsService.logLibraryBrowse('favorites');
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -336,6 +339,7 @@ class CategoryGridScreen extends ConsumerWidget {
   }
 
   void _navigateToAll(BuildContext context) {
+    AnalyticsService.logLibraryBrowse('all');
     Navigator.push(
       context,
       MaterialPageRoute(

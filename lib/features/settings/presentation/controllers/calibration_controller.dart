@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/features/settings/domain/calibration_profile.dart';
 import 'package:outcall/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:record/record.dart';
@@ -140,6 +141,7 @@ class CalibrationNotifier extends Notifier<CalibrationState> {
       calibratedAt: DateTime.now(),
     );
     await ref.read(settingsNotifierProvider.notifier).setCalibration(calibration);
+    AnalyticsService.logCalibrationPerformed(state.scoreOffset, state.micSensitivity);
     return true;
   }
 

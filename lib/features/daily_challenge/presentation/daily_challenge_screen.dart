@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/features/daily_challenge/presentation/controllers/daily_challenge_controller.dart';
 import 'package:outcall/features/recording/presentation/recorder_page.dart';
 import 'package:outcall/features/daily_challenge/presentation/widgets/challenge_card.dart';
@@ -127,6 +128,7 @@ class DailyChallengeScreen extends ConsumerWidget {
                           todayReps: todayReps,
                           currentStreak: currentStreak,
                           onStart: () {
+                            AnalyticsService.logDailyChallengeStarted(challengeCall.id);
                             Navigator.of(context).push(
                               SlideUpRoute(
                                 page: RecorderPage(

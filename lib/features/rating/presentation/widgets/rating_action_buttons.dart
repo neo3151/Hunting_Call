@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:outcall/core/services/analytics_service.dart';
 import 'package:outcall/features/rating/domain/rating_model.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:outcall/features/library/domain/providers.dart';
@@ -138,6 +139,7 @@ class RatingActionButtons extends ConsumerWidget {
         width: double.infinity,
         child: OutlinedButton.icon(
           onPressed: () {
+            AnalyticsService.logLeaderboardViewed(animalId);
             Navigator.push(context, MaterialPageRoute(
               builder: (_) => LeaderboardScreen(animalId: animalId, animalName: animalName),
             ));
@@ -176,6 +178,7 @@ class RatingActionButtons extends ConsumerWidget {
     final score = result!.score;
     final scoreStr = score.toInt().toString();
     final tierLabel = _getTierLabel(score);
+    AnalyticsService.logShareScore(animalId, score);
     
     // Build rich stats text
     final buffer = StringBuffer();
