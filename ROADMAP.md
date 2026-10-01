@@ -43,15 +43,25 @@ animal calls" with a coach built in. Nobody else is close.
 *Ship everything already in flight. Peak deer/elk season is NOW — a stable
 dual-store launch is the highest-leverage move before any moonshot work.*
 
-- [ ] **[App]** Commit and release v3.3.0 to Play production; land the
-      bioacoustic scorer platform split and connectivity/auth refactors
+- [x] **[App]** Commit and push v3.3.0 work — bioacoustic scorer platform
+      split, demo mode, macOS scaffold, auth/connectivity hardening all landed
+      (`940f9c5` + `3c5fae1`). Play production upload still pending —
+      `android/fastlane/play-store-key.json` missing
 - [ ] **[App]** Ship iOS App Store launch — first season on both stores
-- [ ] **[Backend]** Commit + deploy demo invites and cadence-sequence scoring
-- [ ] **[Backend]** Finish pre-launch checklist: UptimeRobot + HTTPS via Caddy
-      (`SCALING_PLAN.md` Tier 1/2 leftovers)
-- [ ] **[App]** Analytics instrumentation — retention, scored-calls/user,
-      premium funnel. Every metric below is currently unmeasured. No data, no
-      moonshot.
+- [x] **[Backend]** Demo invites + cadence-sequence scoring committed, pushed,
+      and **deployed live** on the droplet (`/v1/demo/invites` responding)
+- [x] **[Backend]** HTTPS already live via Caddy (`outcallbackend.xyz` → 200).
+      Added `restart: unless-stopped` + a 5-min health watchdog cron on the
+      droplet. Still open: external UptimeRobot monitor (needs account signup)
+- [x] **[App]** Analytics instrumentation — wired all 8 dead events:
+      screen_view per tab, recording_started, daily_challenge started/completed,
+      achievement_unlocked, leaderboard_viewed, share_score, library_browse,
+      calibration_performed (`a7bfa1d`)
+- [ ] **[App]** Decide the web story for `bioacoustic_scorer_web.dart`
+      (currently returns empty) — real web scoring or explicit native-only gating
+- [ ] **[Sec]** Rotate the Google OAuth desktop client secret — it briefly
+      lived in source (unpushed); now loaded from git-ignored
+      `assets/secrets/oauth_desktop.json`
 
 **Exit criteria:** iOS live, v3.3.0 on Play, HTTPS + alerts on, analytics
 flowing, zero uncommitted feature work on `main`/`master`.
@@ -62,6 +72,15 @@ flowing, zero uncommitted feature work on `main`/`master`.
 
 *The flagship bet. Move scoring from "record → wait → read" to "the app is
 listening with you."*
+
+> **Feasibility spike (Sept 30, prod hardware):** fingerprint match alone is
+> **0.12–0.23s** — far under budget. The real cost is audio *ingestion*:
+> `librosa.load` on an 11s MP3 takes ~3s; on a 3.9s clip it's 0.16s. Full
+> quick-mode swarm: 0.83s on a short clip. **Verdict: <2s live species ID is
+> feasible** on 2–4s rolling windows fed as raw PCM (skip file decode). The
+> SpeechGuardian f0 path (~1s on 11s audio) needs window bounding for live
+> scoring. Weak match scores (elk bugle → "deer fawn", 53) confirm the
+> fingerprint-DB coverage work below is load-bearing.
 
 - [ ] **[App]** **Live listen mode** — continuous ambient analysis on-device:
       rolling buffer → local fingerprint match → "that's a hen yelp, 80m
