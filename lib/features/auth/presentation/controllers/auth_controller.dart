@@ -67,11 +67,13 @@ final authControllerProvider =
 
 class AuthController extends StreamNotifier<AuthUser?> {
   @override
-  Stream<AuthUser?> build() {
+  Stream<AuthUser?> build() async* {
     final repository = ref.watch(authRepositoryProvider);
     unawaited(repository.ensureTechnicalSession());
+    final currentUser = await repository.currentUser;
+    yield currentUser;
     final getAuthStateStream = ref.watch(getAuthStateStreamUseCaseProvider);
-    return getAuthStateStream();
+    yield* getAuthStateStream();
   }
 
   Future<void> signInAnonymously() async {
@@ -102,7 +104,6 @@ class AuthController extends StreamNotifier<AuthUser?> {
   }
 
   Future<void> signInWithGoogle() async {
-    state = const AsyncValue.loading();
     try {
       ref.read(loggerServiceProvider).log('Attempting sign in with Google');
       final useCase = ref.read(signInWithGoogleUseCaseProvider);
@@ -122,15 +123,15 @@ class AuthController extends StreamNotifier<AuthUser?> {
       ref.read(loggerServiceProvider).log('Signed in with Google successfully');
       // State updates automatically via stream
     } catch (e, st) {
+      final error = _normalizeAuthError(e);
       ref
           .read(loggerServiceProvider)
-          .recordError(e, st, reason: 'Google sign in failed');
-      state = AsyncValue.error(e, st);
+          .recordError(error, st, reason: 'Google sign in failed');
+      throw error;
     }
   }
 
   Future<void> signInWithApple() async {
-    state = const AsyncValue.loading();
     try {
       ref.read(loggerServiceProvider).log('Attempting sign in with Apple');
       final repository = ref.read(authRepositoryProvider);
@@ -147,15 +148,15 @@ class AuthController extends StreamNotifier<AuthUser?> {
 
       ref.read(loggerServiceProvider).log('Signed in with Apple successfully');
     } catch (e, st) {
+      final error = _normalizeAuthError(e);
       ref
           .read(loggerServiceProvider)
-          .recordError(e, st, reason: 'Apple sign in failed');
-      state = AsyncValue.error(e, st);
+          .recordError(error, st, reason: 'Apple sign in failed');
+      throw error;
     }
   }
 
   Future<void> signInWithEmail(String email, String password) async {
-    state = const AsyncValue.loading();
     try {
       ref
           .read(loggerServiceProvider)
@@ -179,20 +180,16 @@ class AuthController extends StreamNotifier<AuthUser?> {
       ref
           .read(loggerServiceProvider)
           .recordError(error, st, reason: 'Email sign in failed');
-      state = const AsyncValue.data(
-          null); // Revert to unauthenticated data state to avoid global error screen
       throw error; // Throw normalized error to be caught by UI
     }
   }
 
   Future<void> signUpWithEmail(String email, String password) async {
-    state = const AsyncValue.loading();
     try {
       final useCase = ref.read(signUpWithEmailUseCaseProvider);
       await useCase(email, password);
     } catch (e) {
       final error = _normalizeAuthError(e);
-      state = const AsyncValue.data(null);
       throw error;
     }
   }
@@ -209,19 +206,28 @@ class AuthController extends StreamNotifier<AuthUser?> {
   }
 
   Object _normalizeAuthError(Object e) {
-    final errorStr = e.toString();
-    // Normalise Firedart/REST errors to Firebase SDK style strings
-    // so the LoginScreen catches them properly.
-    if (errorStr.contains('EMAIL_EXISTS')) {
+    final errorStr = e.toString().toLowerCase();
+    if (errorStr.contains('popup_closed_by_user') ||
+        errorStr.contains('canceled') ||
+        errorStr.contains('cancelled') ||
+        errorStr.contains('authorizationerrorcode.canceled')) {
+      return Exception('Sign in was cancelled.');
+    }
+    if (errorStr.contains('email_exists') ||
+        errorStr.contains('email-already-in-use')) {
       return Exception('email-already-in-use');
     }
-    if (errorStr.contains('INVALID_PASSWORD')) {
+    if (errorStr.contains('invalid_password') ||
+        errorStr.contains('invalid-credential') ||
+        errorStr.contains('invalid_credential')) {
       return Exception('invalid-credential');
     }
-    if (errorStr.contains('EMAIL_NOT_FOUND')) {
+    if (errorStr.contains('email_not_found') ||
+        errorStr.contains('user-not-found')) {
       return Exception('invalid-credential');
     }
-    if (errorStr.contains('WEAK_PASSWORD')) {
+    if (errorStr.contains('weak_password') ||
+        errorStr.contains('weak-password')) {
       return Exception('weak-password');
     }
     return e;

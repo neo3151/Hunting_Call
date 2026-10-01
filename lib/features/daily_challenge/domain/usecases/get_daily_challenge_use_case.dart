@@ -35,7 +35,7 @@ class GetDailyChallengeUseCase {
       // Get all available calls
       final allCallsResult = _getAllCallsUseCase.execute();
 
-      return allCallsResult.fold(
+      final outcome = allCallsResult.fold<Either<DailyChallengeFailure, ReferenceCall>>(
         (failure) => right(_getDefaultChallenge()),
         (allCalls) {
           // If we got a cloud ID, try to find it
@@ -79,6 +79,7 @@ class GetDailyChallengeUseCase {
           }
         },
       );
+      return outcome;
     } catch (e) {
       return left(InvalidDateFormat(e.toString()));
     }

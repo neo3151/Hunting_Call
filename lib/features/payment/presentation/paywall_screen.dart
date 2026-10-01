@@ -9,6 +9,7 @@ import 'package:outcall/core/theme/app_colors.dart';
 import 'package:outcall/features/payment/data/payment_repository.dart';
 import 'package:outcall/features/payment/presentation/controllers/payment_controller.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/demo/demo_mode_controller.dart';
 import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
 import 'package:outcall/l10n/app_localizations.dart';
 
@@ -523,6 +524,26 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
                     : () async {
                         final userId = profile?.id ?? '';
                         if (userId.isNotEmpty) {
+                          if (kIsWeb && !ref.read(demoModeProvider).canPreviewPremium) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Premium preview is available for invited prospects.'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (kIsWeb) {
+                            ref.read(demoModeProvider.notifier).enablePremium();
+                            await ref
+                                .read(profileNotifierProvider.notifier)
+                                .enableDemoPremium(userId);
+                            if (context.mounted) {
+                              Navigator.of(context).pop(true);
+                            }
+                            return;
+                          }
+
                           AnalyticsService.logPurchaseStarted(_selectedProductId);
                           final success = await ref
                               .read(paymentNotifierProvider.notifier)

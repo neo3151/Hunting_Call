@@ -163,3 +163,6 @@ untracked_assets/
 archive/
 assets/models/*.tflite
 android/.kotlin/
+
+# Bundled OAuth credentials — never commit the real file
+assets/secrets/oauth_desktop.json

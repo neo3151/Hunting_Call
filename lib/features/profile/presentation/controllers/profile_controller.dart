@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/input_sanitizer.dart';
@@ -107,7 +108,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
       // Ignore completion if a newer loadProfile invocation has started
       if (currentGen != _loadGeneration) {
-        AppLogger.d('ProfileNotifier: Stale loadProfile completion ignored for $userId (gen $currentGen vs $_loadGeneration)');
+        AppLogger.d(
+            'ProfileNotifier: Stale loadProfile completion ignored for $userId (gen $currentGen vs $_loadGeneration)');
         return;
       }
 
@@ -142,7 +144,25 @@ class ProfileNotifier extends Notifier<ProfileState> {
       }
     } catch (e) {
       AppLogger.d('ProfileNotifier: loadProfile failed for $userId: $e');
-      state = state.copyWith(error: e.toString(), isProfileLoading: false);
+      final user = FirebaseAuth.instance.currentUser;
+      final fallbackName = (user?.uid == userId && user?.displayName?.trim().isNotEmpty == true)
+          ? user!.displayName!.trim()
+          : (user?.uid == userId && user?.email?.contains('@') == true && user!.email!.split('@').first.isNotEmpty)
+              ? user.email!.split('@').first
+              : 'Hunter';
+
+      final fallbackProfile = UserProfile(
+        id: userId,
+        name: fallbackName,
+        email: user?.uid == userId ? user?.email : null,
+        joinedDate: DateTime.now(),
+      );
+
+      state = state.copyWith(
+        profile: state.profile ?? fallbackProfile,
+        error: e.toString(),
+        isProfileLoading: false,
+      );
     }
   }
 
@@ -175,6 +195,61 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(error: e.toString(), isProfileLoading: false);
       rethrow;
     }
+  }
+
+  Future<void> seedDemoHistory(String userId) async {
+    final samples =
+        <({String animalId, double score, String feedback, double pitchHz})>[
+      (
+        animalId: 'duck',
+        score: 78.0,
+        feedback: 'Solid cadence. Tighten the final note for a cleaner finish.',
+        pitchHz: 331.0,
+      ),
+      (
+        animalId: 'turkey',
+        score: 86.0,
+        feedback: 'Strong pitch and good control. Keep the rhythm consistent.',
+        pitchHz: 748.0,
+      ),
+      (
+        animalId: 'elk',
+        score: 71.0,
+        feedback:
+            'Good projection. Work on holding the sustain a little longer.',
+        pitchHz: 892.0,
+      ),
+    ];
+
+    for (final sample in samples) {
+      await _repo.saveResultForUser(
+        userId,
+        RatingResult(
+          score: sample.score,
+          feedback: sample.feedback,
+          pitchHz: sample.pitchHz,
+          metrics: {
+            'score_pitch': sample.score,
+            'score_duration': sample.score - 4,
+            'score_timbre': sample.score + 3,
+            'score_rhythm': sample.score - 2,
+          },
+        ),
+        sample.animalId,
+      );
+    }
+
+    await loadProfile(userId);
+  }
+
+  Future<void> enableDemoPremium(String userId) async {
+    await _repo.setPremiumStatus(userId, true);
+    await loadProfile(userId);
+  }
+
+  Future<void> resetDemoProfile(String userId) async {
+    await createProfile('Demo Hunter', id: userId);
+    await seedDemoHistory(userId);
   }
 
   /// Save a rating result to the user's history

@@ -1,10 +1,15 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outcall/di_providers.dart';
 import 'package:outcall/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:outcall/core/widgets/main_shell.dart';
+import 'package:outcall/features/demo/demo_invite_service.dart';
+import 'package:outcall/features/demo/demo_mode_controller.dart';
+import 'package:outcall/features/demo/presentation/demo_practice_screen.dart';
 
 import 'package:outcall/core/widgets/background_wrapper.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
@@ -25,12 +30,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Load profiles on init
-    // Load profiles on init - REMOVED for Release (Privacy/Perf)
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   ref.read(profileNotifierProvider.notifier).loadAllProfiles();
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final tier = await DemoInviteService.resolveAccessTier();
+      final hasInviteQuery = kIsWeb && Uri.base.queryParameters.containsKey('invite');
+
+      if (tier == DemoAccessTier.prospectDemo || hasInviteQuery) {
+        if (!mounted) return;
+        ref.read(demoModeProvider.notifier).activate(tier: DemoAccessTier.prospectDemo);
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const MainShell(userId: 'prospect_guest'),
+          ),
+        );
+      }
+    });
   }
+
 
   Future<void> _createNewProfile() async {
     final result = await showModalBottomSheet<Map<String, dynamic>>(
@@ -107,6 +123,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _signInAsDemo() async {
+    final accessTier = await DemoInviteService.resolveAccessTier();
+    ref.read(demoModeProvider.notifier).activate(tier: accessTier);
+    final authRepo = ref.read(authRepositoryProvider);
+    final profileNotifier = ref.read(profileNotifierProvider.notifier);
+    final authNotifier = ref.read(authControllerProvider.notifier);
+
+    try {
+      await authNotifier.signInAnonymously();
+      final currentUser = await authRepo.currentUser;
+      final userId = currentUser?.id;
+      if (userId == null) throw Exception('Demo user could not be created.');
+
+      await profileNotifier.createProfile('Demo Hunter', id: userId);
+      await profileNotifier.seedDemoHistory(userId);
+      authRepo.emitAuthState();
+    } catch (e) {
+      AppLogger.d('Demo sign-in failed: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Demo sign-in failed: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _signInWithEmail() async {
     final result = await showModalBottomSheet<Map<String, String>>(
       context: context,
@@ -166,14 +208,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Success is handled by AuthWrapper watching the state change
       // AppLogger.d('✅ Google Sign-In triggered successfully');
       
-    } catch (e, stackTrace) {
+    } catch (e) {
       AppLogger.d('❌ Google Sign-In failed: $e');
-      AppLogger.d('Stack trace: $stackTrace');
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google Sign-In failed: $e'), backgroundColor: Colors.red)
-        );
+        final errStr = e.toString().toLowerCase();
+        if (errStr.contains('cancelled') ||
+            errStr.contains('canceled') ||
+            errStr.contains('closed')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Google Sign-In was cancelled.'),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          final cleanMsg = e.toString().replaceAll('Exception: ', '');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Google Sign-In failed: $cleanMsg'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     }
   }
@@ -226,7 +285,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const SizedBox(height: 48),
                               // === LOGIN OPTIONS ===
                               // Apple Sign-In (iOS/macOS)
-                              if (Platform.isIOS || Platform.isMacOS) ...[
+                              if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) ...[
                                 FutureBuilder<bool>(
                                   future: SignInWithApple.isAvailable(),
                                   builder: (context, snapshot) {
@@ -240,9 +299,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             } catch (e) {
                                               AppLogger.d('Apple Sign-In Error: $e');
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('Sign in with Apple failed: $e'))
-                                                );
+                                                final errStr = e.toString().toLowerCase();
+                                                if (errStr.contains('cancelled') ||
+                                                    errStr.contains('canceled') ||
+                                                    errStr.contains('closed')) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text('Apple Sign-In was cancelled.'),
+                                                      backgroundColor: Colors.orange,
+                                                      behavior: SnackBarBehavior.floating,
+                                                    ),
+                                                  );
+                                                } else {
+                                                  final cleanMsg = e.toString().replaceAll('Exception: ', '');
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text('Sign in with Apple failed: $cleanMsg'),
+                                                      backgroundColor: Colors.redAccent,
+                                                      behavior: SnackBarBehavior.floating,
+                                                    ),
+                                                  );
+                                                }
                                               }
                                             }
                                           },
@@ -256,8 +333,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ],
                               
-                              // Google Sign-In (Mobile Only)
-                              if (!Platform.isWindows && !Platform.isLinux) ...[
+                              // Google Sign-In (Mobile & macOS Desktop)
+                              if (!kIsWeb && !Platform.isWindows && !Platform.isLinux) ...[
                                 OutlinedButton.icon(
                                   onPressed: _signInWithGoogle,
                                   icon: const Icon(Icons.login, color: Colors.white, size: 24),
@@ -276,10 +353,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
                                 ),
+                                const SizedBox(height: 16),
                               ],
                               
-                              // Email Login (Desktop - Manual Sync)
-                              if (Platform.isWindows || Platform.isLinux) ...[
+                              // Email Login (All Native Platforms)
+                              if (!kIsWeb) ...[
                                 OutlinedButton.icon(
                                   onPressed: _signInWithEmail,
                                   icon: const Icon(Icons.email_outlined, color: Colors.white, size: 24),
@@ -314,6 +392,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               
                               const SizedBox(height: 16),
                               
+                              if (kIsWeb) ...[
+                                OutlinedButton(
+                                  onPressed: _signInAsDemo,
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: Text(
+                                    'ENTER DEMO MODE',
+                                    style: GoogleFonts.oswald(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.0,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+
                               // Create New Profile / Play as Guest
                               ElevatedButton(
                                 onPressed: _createNewProfile,

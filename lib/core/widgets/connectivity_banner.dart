@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Lightweight connectivity banner that shows when the device is offline.
@@ -46,6 +47,10 @@ class _ConnectivityBannerState extends State<ConnectivityBanner>
 
   Future<void> _checkConnectivity() async {
     if (!mounted) return;
+    if (kIsWeb) {
+      _setOffline(false);
+      return;
+    }
     try {
       // In tests, InternetAddress.lookup might hang or cause issues with pending timers
       if (Platform.environment.containsKey('FLUTTER_TEST')) {
@@ -54,7 +59,8 @@ class _ConnectivityBannerState extends State<ConnectivityBanner>
 
       final result = await InternetAddress.lookup('google.com')
           .timeout(const Duration(seconds: 3));
-      final hasConnection = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      final hasConnection =
+          result.isNotEmpty && result[0].rawAddress.isNotEmpty;
       _setOffline(!hasConnection);
     } catch (_) {
       _setOffline(true);
@@ -82,6 +88,8 @@ class _ConnectivityBannerState extends State<ConnectivityBanner>
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) return widget.child;
+
     return Stack(
       children: [
         // Pad the child down when offline to avoid overlap
@@ -102,7 +110,8 @@ class _ConnectivityBannerState extends State<ConnectivityBanner>
               color: Colors.transparent,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -116,7 +125,8 @@ class _ConnectivityBannerState extends State<ConnectivityBanner>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.wifi_off_rounded, color: Colors.white, size: 16),
+                      Icon(Icons.wifi_off_rounded,
+                          color: Colors.white, size: 16),
                       SizedBox(width: 8),
                       Text(
                         'No Internet Connection',

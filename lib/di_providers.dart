@@ -50,11 +50,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Other entry points or isolates can simply `await ref.read(asyncPlatformEnvironmentProvider.future)`
 final asyncPlatformEnvironmentProvider = FutureProvider<PlatformEnvironment>((ref) async {
   final prefs = await SharedPreferences.getInstance();
-  final isDesktop = Platform.isLinux || Platform.isWindows || Platform.isMacOS;
+  final isDesktop = !kIsWeb &&
+      (Platform.isLinux || Platform.isWindows || Platform.isMacOS);
   
   bool firebaseReady = false;
   try {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       await Firebase.initializeApp();
     } else {
       await Firebase.initializeApp(
@@ -62,7 +63,7 @@ final asyncPlatformEnvironmentProvider = FutureProvider<PlatformEnvironment>((re
       );
     }
     // Skip App Check in debug mode or on desktop
-    if (!kDebugMode && !Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) {
+    if (!kIsWeb && !kDebugMode && !Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) {
       await FirebaseAppCheck.instance.activate(
         providerAndroid: const AndroidPlayIntegrityProvider(),
         appleProvider: AppleProvider.deviceCheck,
@@ -129,7 +130,9 @@ class PlatformEnvironment {
 final apiGatewayProvider = Provider<ApiGateway?>((ref) {
   final env = ref.watch(platformEnvironmentProvider);
   if (!env.isFirebaseEnabled) return null;
-  if (env.isDesktop) return RestFirestoreApiGateway(FirebaseFirestore.instance); // Note: we'll implement this to use official auth to connect to REST
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+    return RestFirestoreApiGateway(FirebaseFirestore.instance);
+  }
   return FirebaseApiGateway(FirebaseFirestore.instance);
 });
 

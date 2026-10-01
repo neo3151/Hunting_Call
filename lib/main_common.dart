@@ -29,9 +29,12 @@ final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<v
 
 Future<void> mainCommon() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  if (!kIsWeb) {
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  }
 
   await _configurePlatform();
+
   await ReferenceDatabase.init();
 
   final container = ProviderContainer(
@@ -46,7 +49,7 @@ Future<void> mainCommon() async {
   _setupErrorHandling(env.isFirebaseEnabled);
 
   // Initialize Desktop sqlite
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }

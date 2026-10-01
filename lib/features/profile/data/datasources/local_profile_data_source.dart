@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:outcall/core/services/simple_storage.dart';
 
 import 'package:outcall/features/profile/domain/entities/user_profile.dart';
@@ -26,10 +27,17 @@ class LocalProfileDataSource implements ProfileDataSource {
       AppLogger.d('🔍 LocalProfileDataSource: Parsed isPremium=${p.isPremium}');
       return p;
     } else {
-      // Return default new profile
+      final user = FirebaseAuth.instance.currentUser;
+      final fallbackName = (user?.uid == userId && user?.displayName?.trim().isNotEmpty == true)
+          ? user!.displayName!.trim()
+          : (user?.uid == userId && user?.email?.contains('@') == true && user!.email!.split('@').first.isNotEmpty)
+              ? user.email!.split('@').first
+              : 'Hunter';
+
       return UserProfile(
         id: userId,
-        name: 'New Hunter',
+        name: fallbackName,
+        email: user?.uid == userId ? user?.email : null,
         joinedDate: DateTime.now(),
         totalCalls: 0,
         averageScore: 0,

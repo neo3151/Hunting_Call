@@ -26,8 +26,6 @@ enum VersionCheckStatus { pending, ok, required }
 
 class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   VersionCheckStatus _versionStatus = VersionCheckStatus.pending;
-  bool _showLoadingUI = false;
-  Timer? _loadingTimer;
 
   @override
   void initState() {
@@ -35,16 +33,10 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     _performVersionCheck();
   }
 
-  @override
-  void dispose() {
-    _loadingTimer?.cancel();
-    super.dispose();
-  }
-
   Future<void> _performVersionCheck() async {
     try {
       final service = ref.read(versionCheckServiceProvider);
-      final isRequired = await service.isUpdateRequired();
+      final isRequired = await service.isUpdateRequired().timeout(const Duration(seconds: 2));
       if (mounted) {
         setState(() => _versionStatus = isRequired ? VersionCheckStatus.required : VersionCheckStatus.ok);
       }
@@ -52,6 +44,7 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       if (mounted) setState(() => _versionStatus = VersionCheckStatus.ok);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -73,31 +66,18 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
       }
     });
 
-    // REACTIVE TRIGGER: Kick off profile loading and manage the "Grace Period" timer
+    // REACTIVE TRIGGER: Kick off profile loading when auth user changes
     ref.listen(authControllerProvider, (previous, next) {
       next.whenData((user) {
         if (user != null) {
-          // Read the *current* state, not the state from the build method closure
           final currentProfileState = ref.read(profileNotifierProvider);
-          
-          // 1. Kick off the load only if we don't have THIS user's profile and aren't already loading
           if (currentProfileState.profile?.id != user.id && !currentProfileState.isProfileLoading) {
             ref.read(profileNotifierProvider.notifier).loadProfile(user.id);
-            
-            // 2. Start a "Grace Period" timer. We only show the Loading UI if 
-            // it takes LONGER than 500ms to load the profile.
-            _loadingTimer?.cancel();
-            setState(() => _showLoadingUI = false);
-            _loadingTimer = Timer(const Duration(milliseconds: 500), () {
-              if (mounted) setState(() => _showLoadingUI = true);
-            });
           }
         } else {
           // Clean up on sign out
           final currentProfileState = ref.read(profileNotifierProvider);
           if (currentProfileState.profile != null || currentProfileState.isProfileLoading) {
-             _loadingTimer?.cancel();
-             setState(() => _showLoadingUI = false);
              ref.read(profileNotifierProvider.notifier).reset();
           }
         }
@@ -111,10 +91,8 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
             if (!hasSeenOnboarding) return const OnboardingScreen();
             if (user == null) return const LoginScreen();
 
-            // IF PROFILE NOT READY: Decide between Login Screen (Grace Period) or Loading Screen
+            // IF PROFILE NOT READY: Show loading screen until profile is loaded
             if (profileState.profile == null || profileState.isProfileLoading) {
-              if (!_showLoadingUI) return const LoginScreen();
-              
               return const Scaffold(
                 body: Center(
                   child: Column(

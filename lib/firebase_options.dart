@@ -28,10 +28,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         return windows;
       case TargetPlatform.linux:
@@ -56,6 +53,16 @@ class DefaultFirebaseOptions {
     appId: '1:654995904748:ios:fc05c8c866caf70682adc9',
     messagingSenderId: '654995904748',
     projectId: 'hunting-call-perfection',
+    storageBucket: 'hunting-call-perfection.firebasestorage.app',
+    iosBundleId: 'com.neo3151.huntingcalls',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyCWoSv27Cu_AOYP3hLia92vSS59pz9CTsY',
+    appId: '1:654995904748:ios:fc05c8c866caf70682adc9',
+    messagingSenderId: '654995904748',
+    projectId: 'hunting-call-perfection',
+    authDomain: 'hunting-call-perfection.firebaseapp.com',
     storageBucket: 'hunting-call-perfection.firebasestorage.app',
     iosBundleId: 'com.neo3151.huntingcalls',
   );

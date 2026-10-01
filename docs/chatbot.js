@@ -260,10 +260,38 @@ OUTCALL promotes responsible, ethical hunting. Over-calling educates wildlife an
         return div;
     }
 
+    function formatMarkdown(text) {
+        if (!text) return '';
+        // Strip internal thinking scratchpads
+        text = text.replace(/<think>[\s\S]*?<\/think>/gi, '');
+        text = text.replace(/Thinking Process:[\s\S]*?\n\n/gi, '');
+        
+        let html = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+            
+        // Clean Headers & Sectioning
+        html = html.replace(/^### (.*$)/gim, '<h4 style="margin:10px 0 4px 0;font-size:0.95rem;font-weight:700;color:#2563eb;">$1</h4>');
+        html = html.replace(/^## (.*$)/gim, '<h3 style="margin:12px 0 6px 0;font-size:1.05rem;font-weight:800;">$1</h3>');
+        
+        // Bold & Italic
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        // Code / Metric Highlight Pills
+        html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(37,99,235,0.1);color:#2563eb;padding:2px 6px;border-radius:4px;font-weight:600;">$1</code>');
+        
+        // Bullet Lists
+        html = html.replace(/^\- (.*$)/gim, '<li style="margin-left:14px;margin-bottom:4px;">$1</li>');
+        
+        // Line breaks
+        html = html.replace(/\n/g, '<br/>');
+        return html;
+    }
+
     function escapeHtml(text) {
-        const d = document.createElement('div');
-        d.textContent = text;
-        return d.innerHTML;
+        return formatMarkdown(text);
     }
 
     async function sendMessage(question) {

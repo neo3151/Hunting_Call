@@ -1,3 +1,4 @@
+import 'dart:io' show Platform, Process;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -31,11 +32,15 @@ void showMicPermissionDeniedDialog(BuildContext context, {VoidCallback? onGrante
         ElevatedButton(
           onPressed: () async {
             Navigator.pop(ctx);
-            final status = await Permission.microphone.request();
-            if (status.isGranted) {
+            if (Platform.isAndroid || Platform.isIOS) {
+              final status = await Permission.microphone.request();
+              if (status.isGranted) {
+                onGranted?.call();
+              } else if (status.isPermanentlyDenied) {
+                await openAppSettings();
+              }
+            } else {
               onGranted?.call();
-            } else if (status.isPermanentlyDenied) {
-              await openAppSettings();
             }
           },
           style: ElevatedButton.styleFrom(
@@ -76,7 +81,11 @@ void showMicPermissionSettingsDialog(BuildContext context) {
         ElevatedButton(
           onPressed: () async {
             final navigator = Navigator.of(ctx);
-            await openAppSettings();
+            if (Platform.isAndroid || Platform.isIOS) {
+              await openAppSettings();
+            } else if (Platform.isMacOS) {
+              Process.run('open', ['x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone']);
+            }
             navigator.pop();
           },
           style: ElevatedButton.styleFrom(

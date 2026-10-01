@@ -25,6 +25,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
   late final Animation<double> _logoScale;
   late final Animation<double> _logoOpacity;
   String _appVersion = '';
+  bool _hasNavigated = false;
 
   @override
   void initState() {
@@ -58,54 +59,66 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
 
     // Start logo animation
     _logoController.forward();
+    Timer(const Duration(seconds: 3), _navigateToAuth);
+    _continueFromSplash();
+  }
 
-    // Wait for both the minimum splash duration (for animation) and background services
-    Future.wait([
-      Future.delayed(const Duration(milliseconds: 2800)),
-      _initDeferredServices(),
-    ]).then((_) {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const AuthWrapper(),
-            transitionsBuilder: (_, animation, __, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
-      }
-    });
+  Future<void> _continueFromSplash() async {
+    try {
+      await Future.wait<void>([
+        Future.delayed(const Duration(milliseconds: 2200)),
+        _initDeferredServices(),
+      ]).timeout(const Duration(seconds: 4));
+    } catch (e) {
+      AppLogger.d('Splash initialization incomplete; continuing to app: $e');
+    }
+
+    _navigateToAuth();
+  }
+
+  void _navigateToAuth() {
+    if (!mounted || _hasNavigated) return;
+    _hasNavigated = true;
+
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const AuthWrapper(),
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
   }
 
   Future<void> _initDeferredServices() async {
-    // 1. Ensure Flutter has rendered the first frame of this widget
     await Future.delayed(const Duration(milliseconds: 100));
 
-    // 2. Remove the OS native splash screen to reveal our animated splash
-    FlutterNativeSplash.remove();
+    try {
+      FlutterNativeSplash.remove();
+    } catch (_) {}
 
-    // 3. Precache heavy images to prevent jumping when navigating
     if (mounted) {
-      precacheImage(const AssetImage('assets/images/forest_pattern.png'), context);
-      precacheImage(const AssetImage('assets/images/app_icon.webp'), context);
+      try {
+        precacheImage(const AssetImage('assets/images/app_icon.webp'), context);
+      } catch (_) {}
     }
 
-    // 4. Initialize services deferred from main.dart
     try {
       final remoteConfig = RemoteConfigService(FirebaseRemoteConfig.instance);
-      await remoteConfig.initialize();
+      await remoteConfig.initialize().timeout(const Duration(seconds: 2));
     } catch (e) {
       AppLogger.d('RemoteConfig init skipped: $e');
     }
 
     try {
       final cloudAudio = ref.read(cloudAudioServiceProvider);
-      await cloudAudio.init();
+      await cloudAudio.init().timeout(const Duration(seconds: 2));
     } catch (e) {
       AppLogger.d('CloudAudioService init skipped: $e');
     }
   }
+
 
   @override
   void dispose() {

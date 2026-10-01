@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,6 +9,9 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:outcall/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:outcall/features/demo/demo_mode_controller.dart';
+import 'package:outcall/features/demo/presentation/executive_pitch_dialog.dart';
+
 import 'package:outcall/features/settings/presentation/privacy_policy_screen.dart';
 import 'package:outcall/features/settings/presentation/calibration_screen.dart';
 import 'package:outcall/l10n/app_localizations.dart';
@@ -74,7 +78,7 @@ class SettingsScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (const ['benchmarkappsllc@gmail.com', 'pongownsyou@gmail.com'].contains(FirebaseAuth.instance.currentUser?.email?.toLowerCase())) ...[
+                          if (!kIsWeb && const ['benchmarkappsllc@gmail.com', 'pongownsyou@gmail.com'].contains(FirebaseAuth.instance.currentUser?.email?.toLowerCase())) ...[
                             _sectionTitle(context, 'DEVELOPER TOOLS'),
                             _settingsTile(
                               context: context,
@@ -333,6 +337,27 @@ class SettingsScreen extends ConsumerWidget {
                           Divider(color: colors.divider),
 
                           _sectionTitle(context, S.of(context).aboutSection),
+                          if (ref.watch(demoModeProvider).isActive) ...[
+                            _settingsTile(
+                              context: context,
+                              icon: Icons.present_to_all_rounded,
+                              title: 'Executive Pitch Hub',
+                              subtitle: 'QR prospect passes & 7-agent AI swarm demo mode',
+                              trailing: Icon(Icons.chevron_right, color: colors.iconSubtle),
+                              onTap: () => ExecutivePitchDialog.show(context),
+                            ),
+                            Divider(color: colors.divider),
+                            _settingsTile(
+                              context: context,
+                              icon: Icons.restart_alt_rounded,
+                              title: 'Reset Demo Data',
+                              subtitle: 'Restore the original demo profile and tour',
+                              trailing: Icon(Icons.chevron_right, color: colors.iconSubtle),
+                              onTap: () => _resetDemoData(context, ref),
+                            ),
+                            Divider(color: colors.divider),
+                          ],
+
                           _settingsTile(
                             context: context,
                             icon: Icons.eco_outlined,
@@ -462,6 +487,41 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _resetDemoData(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Reset Demo Data?'),
+        content: const Text(
+          'This restores the seeded history, clears simulated premium, and replays the demo tour.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('CANCEL'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('RESET'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final profile = ref.read(profileNotifierProvider).profile;
+    if (profile == null) return;
+
+    await ref.read(profileNotifierProvider.notifier).resetDemoProfile(profile.id);
+    ref.read(demoModeProvider.notifier).resetProgress();
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Demo data reset.')),
+      );
+    }
+  }
+
   Widget _sectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 12),
@@ -547,7 +607,10 @@ class SettingsScreen extends ConsumerWidget {
     String deviceModel = 'Unknown Device';
     String osVersion = 'Unknown OS';
 
-    if (Platform.isAndroid) {
+    if (kIsWeb) {
+      deviceModel = 'Web Browser';
+      osVersion = 'Browser';
+    } else if (Platform.isAndroid) {
       final info = await deviceInfo.androidInfo;
       deviceModel = '${info.manufacturer} ${info.model}';
       osVersion = 'Android ${info.version.release} (SDK ${info.version.sdkInt})';

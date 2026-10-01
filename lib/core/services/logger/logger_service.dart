@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/utils/app_logger.dart';
@@ -10,7 +11,8 @@ final loggerServiceProvider = Provider<LoggerService>((ref) {
 /// A central logging service that writes to the local console and,
 /// if on a supported platform, leaves breadcrumbs in Firebase Crashlytics.
 class LoggerService {
-  final bool _isCrashlyticsSupported = Platform.isAndroid || Platform.isIOS;
+  final bool _isCrashlyticsSupported =
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
   /// Log a UI event, state change, or user action
   void log(String message) {

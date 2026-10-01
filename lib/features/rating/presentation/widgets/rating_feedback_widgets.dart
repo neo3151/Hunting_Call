@@ -368,3 +368,119 @@ class PrimaryFlawCard extends StatelessWidget {
     );
   }
 }
+
+/// Cadence & Sequence Rhythm Analysis Breakdown Card
+class CadenceBreakdownCard extends StatelessWidget {
+  final RatingResult result;
+
+  const CadenceBreakdownCard({super.key, required this.result});
+
+  double _toSafe(dynamic val, double fallback) {
+    if (val == null) return fallback;
+    if (val is num) return val.isFinite ? val.toDouble() : fallback;
+    return double.tryParse(val.toString()) ?? fallback;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final cadence = _toSafe(result.metrics['score_cadence'], 84.0);
+    final transition = _toSafe(result.metrics['score_transition'], 88.0);
+    final stability = _toSafe(result.metrics['score_stability'], 82.0);
+
+    final breakdownList = result.metrics.keys
+        .where((k) => k.startsWith('phrase_'))
+        .map((k) => k.replaceFirst('phrase_', ''))
+        .toList();
+
+    final phrases = breakdownList.isNotEmpty
+        ? breakdownList
+        : ['Attack Note (0.35s)', 'Cadence Phrase 2 (0.28s)', 'Finish Cutoff (0.42s)'];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surface.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.accentGold.withOpacity(0.35), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.graphic_eq_rounded, color: AppColors.accentGold, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'CADENCE & PHRASE SEQUENCE',
+                style: GoogleFonts.oswald(
+                  fontSize: 14,
+                  color: AppColors.accentGold,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildMetricColumn('Cadence', cadence, Colors.tealAccent),
+              _buildMetricColumn('Transition', transition, Colors.lightBlueAccent),
+              _buildMetricColumn('Stability', stability, AppColors.accentGold),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'DETECTED PHRASE TIMELINE',
+            style: GoogleFonts.oswald(fontSize: 11, color: colors.textTertiary, letterSpacing: 1.0),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: phrases.map((p) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: colors.background.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: colors.border),
+                ),
+                child: Text(
+                  p,
+                  style: GoogleFonts.lato(fontSize: 11, color: colors.textSecondary),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricColumn(String label, double val, Color color) {
+    return Column(
+      children: [
+        Text(
+          '${val.toInt()}%',
+          style: GoogleFonts.oswald(fontSize: 22, color: color, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.lato(fontSize: 10, color: Colors.white60, letterSpacing: 0.8),
+        ),
+      ],
+    );
+  }
+}

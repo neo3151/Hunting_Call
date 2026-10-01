@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:outcall/core/utils/app_logger.dart';
@@ -8,7 +9,7 @@ import 'package:outcall/features/rating/data/ai_coach_service.dart';
 
 /// Provider for the RemoteConfigService
 final remoteConfigServiceProvider = Provider<RemoteConfigService>((ref) {
-  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+  if (kIsWeb || Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
     return RemoteConfigService(null);
   }
   return RemoteConfigService(FirebaseRemoteConfig.instance);
@@ -28,7 +29,7 @@ class RemoteConfigService {
       await _remoteConfig!.setDefaults(const {
         'is_leaderboard_enabled': true,
         'profanity_blocklist': '', // Comma-separated extra blocked terms
-        'ai_coach_url': '',
+        'ai_coach_url': 'https://outcallbackend.xyz',
       });
 
       // Configure fetch interval (e.g., fetch every 1 hour, or 0 during dev)
@@ -52,7 +53,10 @@ class RemoteConfigService {
   bool get isLeaderboardEnabled => _remoteConfig?.getBool('is_leaderboard_enabled') ?? true;
 
   /// Dynamic AI Coach URL — set via Firebase Console (Remote Config key: ai_coach_url)
-  String get aiCoachUrl => _remoteConfig?.getString('ai_coach_url') ?? '';
+  String get aiCoachUrl {
+    final url = _remoteConfig?.getString('ai_coach_url') ?? '';
+    return url.isNotEmpty ? url : 'https://outcallbackend.xyz';
+  }
 
   /// Parses the remote profanity blocklist and loads it into ProfanityFilter.
   void _loadProfanityTerms() {

@@ -192,7 +192,8 @@ class AiCoachService {
     return buf.toString().trim();
   }
 
-  // ── Species-specific system prompt (from backend services.py) ────────
+  /// System prompt used for AI coaching.
+  static String get systemPrompt => _systemPrompt;
 
   static const String _systemPrompt =
       '''You are Coach Buck — a 40-year veteran hunting guide and world-class calling specialist.

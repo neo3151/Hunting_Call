@@ -1,15 +1,36 @@
+import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:outcall/features/auth/domain/repositories/auth_repository.dart';
 import 'package:outcall/features/auth/domain/entities/auth_user.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'dart:io';
 
+import 'package:outcall/features/auth/data/desktop_oauth_helper.dart';
+
 class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuth get _auth => FirebaseAuth.instance;
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
+
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789FFFFFFABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
+  }
+
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
 
   @override
   Stream<AuthUser?> get authStateChanges =>
@@ -72,10 +93,10 @@ class FirebaseAuthRepository implements AuthRepository {
       AppLogger.d('🔐 FirebaseAuthRepository: Starting Google Sign-In...');
 
       UserCredential userCredential;
-
       String? googleDisplayName;
-      if (Platform.isAndroid || Platform.isIOS) {
-        // Use native Google Sign-In for mobile to avoid redirect issues
+
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        // Native Google Sign-In for mobile
         final GoogleSignIn googleSignIn = GoogleSignIn.instance;
         try {
           await googleSignIn.initialize();
@@ -83,8 +104,22 @@ class FirebaseAuthRepository implements AuthRepository {
           AppLogger.d('GoogleSignIn.initialize() failed (non-critical): $e');
         }
 
-        final GoogleSignInAccount googleUser =
-            await googleSignIn.authenticate(scopeHint: ['email', 'profile']);
+        GoogleSignInAccount googleUser;
+        try {
+          googleUser =
+              await googleSignIn.authenticate(scopeHint: ['email', 'profile']);
+        } catch (e) {
+          AppLogger.d('GoogleSignIn.authenticate failed: $e');
+          final errStr = e.toString().toLowerCase();
+          if (errStr.contains('canceled') ||
+              errStr.contains('cancelled') ||
+              errStr.contains('closed') ||
+              errStr.contains('user_canceled')) {
+            throw Exception('Google Sign-In was cancelled or closed.');
+          }
+          rethrow;
+        }
+
         googleDisplayName = googleUser.displayName;
 
         final GoogleSignInAuthentication googleAuth = googleUser.authentication;
@@ -99,12 +134,26 @@ class FirebaseAuthRepository implements AuthRepository {
         );
 
         userCredential = await _auth.signInWithCredential(credential);
+      } else if (!kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux)) {
+        // Desktop Google Sign-In via Web OAuth Bridge
+        userCredential = await DesktopOAuthHelper.signInWithGoogleDesktop();
       } else {
-        // Fallback or Desktop/Web flow
+        // Web flow
         final googleProvider = GoogleAuthProvider();
         googleProvider.addScope('email');
         googleProvider.addScope('profile');
-        userCredential = await _auth.signInWithProvider(googleProvider);
+        try {
+          userCredential = await _auth.signInWithProvider(googleProvider);
+        } catch (e) {
+          final errStr = e.toString().toLowerCase();
+          if (errStr.contains('canceled') ||
+              errStr.contains('cancelled') ||
+              errStr.contains('closed') ||
+              errStr.contains('popup_closed')) {
+            throw Exception('Google Sign-In was cancelled or closed.');
+          }
+          rethrow;
+        }
       }
 
       final user = userCredential.user;
@@ -148,11 +197,60 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<AuthUser> signInWithApple() async {
     try {
       AppLogger.d('🔐 FirebaseAuthRepository: Starting Apple Sign-In...');
-      final appleProvider = OAuthProvider('apple.com');
-      appleProvider.addScope('email');
-      appleProvider.addScope('name');
 
-      final userCredential = await _auth.signInWithProvider(appleProvider);
+      UserCredential userCredential;
+
+      if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
+        // Native Apple Sign-In on Apple platforms with Desktop Web OAuth Bridge fallback
+        try {
+          final rawNonce = _generateNonce();
+          final nonce = _sha256ofString(rawNonce);
+
+          final appleCredential = await SignInWithApple.getAppleIDCredential(
+            scopes: [
+              AppleIDAuthorizationScopes.email,
+              AppleIDAuthorizationScopes.fullName,
+            ],
+            nonce: nonce,
+          );
+
+          final oauthCredential = OAuthProvider('apple.com').credential(
+            idToken: appleCredential.identityToken,
+            rawNonce: rawNonce,
+          );
+
+          userCredential = await _auth.signInWithCredential(oauthCredential);
+        } catch (e) {
+          final errStr = e.toString().toLowerCase();
+          AppLogger.d('Native Apple Sign-In error: $e');
+
+          if (e is SignInWithAppleAuthorizationException &&
+                  e.code == AuthorizationErrorCode.canceled ||
+              errStr.contains('authorizationerrorcode.canceled') ||
+              errStr.contains('user_canceled')) {
+            throw Exception('Apple Sign-In was cancelled.');
+          }
+
+          AppLogger.d('Native Apple Sign-In unavailable ($e), launching Desktop Web OAuth Bridge...');
+          userCredential = await DesktopOAuthHelper.signInWithAppleDesktop();
+        }
+      } else {
+        final appleProvider = OAuthProvider('apple.com');
+        appleProvider.addScope('email');
+        appleProvider.addScope('name');
+        try {
+          userCredential = await _auth.signInWithProvider(appleProvider);
+        } catch (e) {
+          final errStr = e.toString().toLowerCase();
+          if (errStr.contains('cancel') ||
+              errStr.contains('closed') ||
+              errStr.contains('null value')) {
+            throw Exception('Apple Sign-In was cancelled.');
+          }
+          rethrow;
+        }
+      }
+
       final user = userCredential.user;
       if (user == null) throw Exception('Apple Sign-In returned null user');
 
@@ -183,7 +281,7 @@ class FirebaseAuthRepository implements AuthRepository {
     try {
       final callable =
           FirebaseFunctions.instance.httpsCallable('ensureUserProfile');
-      await callable.call<void>();
+      await callable.call<void>().timeout(const Duration(seconds: 2));
       AppLogger.d('Profile reconciled for authenticated UID $uid');
       return;
     } catch (e) {
@@ -192,7 +290,8 @@ class FirebaseAuthRepository implements AuthRepository {
 
     try {
       final profileRef = _firestore.collection('profiles').doc(uid);
-      final snapshot = await profileRef.get();
+      final snapshot =
+          await profileRef.get().timeout(const Duration(seconds: 2));
       final profileName = (displayName != null && displayName.trim().isNotEmpty)
           ? displayName.trim()
           : (email != null &&
@@ -209,7 +308,7 @@ class FirebaseAuthRepository implements AuthRepository {
           await profileRef.update({
             'name': profileName,
             if (email != null) 'email': email,
-          });
+          }).timeout(const Duration(seconds: 2));
         }
         return;
       }
@@ -229,7 +328,7 @@ class FirebaseAuthRepository implements AuthRepository {
         'achievements': [],
         'history': [],
         'isPremium': false,
-      });
+      }).timeout(const Duration(seconds: 2));
     } catch (e) {
       AppLogger.d('Error ensuring UID profile: $e');
     }

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:outcall/core/services/api_gateway.dart';
 import 'package:outcall/core/utils/app_logger.dart';
 import 'package:outcall/core/utils/profanity_filter.dart';
@@ -36,7 +37,39 @@ class UnifiedProfileRepository implements ProfileRepository {
         _sanitizeProfileData(data, userId);
         profile = UserProfile.fromJson(data);
       } else {
-        profile = UserProfile.guest();
+        // Doc doesn't exist in cloud yet for this user: try local cache or derive from auth
+        UserProfile? cachedLocal;
+        if (_localDataSource != null) {
+          try {
+            final l = await _localDataSource!.getProfile(userId);
+            if (l.id == userId) cachedLocal = l;
+          } catch (_) {}
+        }
+
+        if (cachedLocal != null) {
+          profile = cachedLocal;
+        } else {
+          final firebaseUser = FirebaseAuth.instance.currentUser;
+          final fallbackName = (firebaseUser?.displayName?.trim().isNotEmpty == true)
+              ? firebaseUser!.displayName!.trim()
+              : (firebaseUser?.email?.contains('@') == true &&
+                      firebaseUser!.email!.split('@').first.isNotEmpty)
+                  ? firebaseUser.email!.split('@').first
+                  : 'Hunter';
+
+          profile = UserProfile(
+            id: userId,
+            name: fallbackName,
+            email: firebaseUser?.email,
+            joinedDate: DateTime.now(),
+          );
+
+          try {
+            await _apiGateway.setDocument(_collectionPath, userId, profile.toJson());
+          } catch (e) {
+            AppLogger.d('Failed to seed initial profile for $userId: $e');
+          }
+        }
       }
 
       // Cloud is the source of truth for premium status.
